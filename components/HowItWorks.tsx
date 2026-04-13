@@ -26,7 +26,7 @@ export function HowItWorks({ lang }: Props) {
             <div className="w-9 h-9 rounded-full bg-accent/10 border border-accent/25 flex items-center justify-center text-accent font-black text-sm mx-auto">
               {s.n}
             </div>
-            <p className="text-white text-xs font-bold leading-snug">{s.title}</p>
+            <p className="text-fg text-xs font-bold leading-snug">{s.title}</p>
             <p className="text-muted text-[11px] leading-relaxed">{s.desc}</p>
           </div>
         ))}

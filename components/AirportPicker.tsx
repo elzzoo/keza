@@ -136,7 +136,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
                     ? "Ville, pays ou code IATA…"
                     : "City, country or IATA code…"
                 }
-                className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-white text-sm placeholder-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-fg text-sm placeholder-muted focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
           </div>
@@ -157,7 +157,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
                 >
                   <span className="text-xl flex-shrink-0">{airport.flag}</span>
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-sm text-white">{airport.code}</span>
+                    <span className="font-bold text-sm text-fg">{airport.code}</span>
                     <span className="text-muted text-sm">
                       {" — "}
                       {lang === "fr" ? airport.city : airport.cityEn},{" "}

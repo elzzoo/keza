@@ -58,7 +58,7 @@ export function PromoBanner({ lang }: Props) {
           return (
             <div
               key={i}
-              className="flex-shrink-0 rounded-xl px-3.5 py-2.5 border border-white/5 flex items-center gap-2.5"
+              className="flex-shrink-0 rounded-xl px-3.5 py-2.5 border border-black/5 flex items-center gap-2.5 shadow-sm"
               style={{ background: colors.bg }}
             >
               {/* Discount pill */}
@@ -69,7 +69,7 @@ export function PromoBanner({ lang }: Props) {
                 -{Math.round(p.discount * 100)}%
               </span>
               <div>
-                <p className="text-xs font-bold text-white leading-none">{p.airline}</p>
+                <p className="text-xs font-bold text-fg leading-none">{p.airline}</p>
                 {p.validUntil && (
                   <p className="text-[10px] text-muted mt-0.5">
                     {lang === "fr" ? "jusqu'au" : "until"} {formatExpiry(p.validUntil, lang)}

@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+:root { color-scheme: light; }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
-  background-color: #0D1B2E;
-  color: #ffffff;
+  background-color: #F0F4F8;
+  color: #0F172A;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -16,27 +16,28 @@ html, body {
 /* ── Glass ─────────────────────────────────────── */
 @layer components {
   .glass {
-    background: rgba(26, 46, 70, 0.65);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.09);
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
   }
   .glass-nav {
-    background: rgba(13, 27, 46, 0.88);
+    background: rgba(240, 244, 248, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(0,0,0,0.07);
   }
 
   /* Gradient text */
   .text-gradient {
-    background: linear-gradient(135deg, #fff 0%, #60A5FA 60%, #3B82F6 100%);
+    background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 55%, #60A5FA 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .text-gradient-gold {
-    background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+    background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -51,13 +52,13 @@ html, body {
     font-weight: 700;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-    color: #64748B;
+    color: #94A3B8;
   }
   .section-rule::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, #1A2840, transparent);
+    background: linear-gradient(to right, #CBD5E1, transparent);
   }
 
   /* Boarding pass tear line */
@@ -66,8 +67,8 @@ html, body {
     height: 1px;
     background: repeating-linear-gradient(
       90deg,
-      rgba(255,255,255,0.1) 0px,
-      rgba(255,255,255,0.1) 6px,
+      rgba(0,0,0,0.1) 0px,
+      rgba(0,0,0,0.1) 6px,
       transparent 6px,
       transparent 12px
     );
@@ -81,8 +82,8 @@ html, body {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #0D1B2E;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #F0F4F8;
+    border: 1px solid rgba(0,0,0,0.07);
   }
   .tear-line::before { left: -7px; }
   .tear-line::after  { right: -7px; }
@@ -98,7 +99,7 @@ html, body {
 
 /* ── Skeleton ───────────────────────────────────── */
 .skeleton {
-  background: linear-gradient(90deg, #1A2E46 0px, #1F3650 40%, #1A2E46 80%);
+  background: linear-gradient(90deg, #E2E8F0 0px, #F1F5F9 40%, #E2E8F0 80%);
   background-size: 1000px 100%;
   animation: shimmer 1.8s infinite linear;
 }
@@ -109,8 +110,8 @@ html, body {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.22) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 80% 70%, rgba(245,158,11,0.08) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 70%, rgba(245,158,11,0.05) 0%, transparent 60%);
 }
 
 /* ── Scrollbar ──────────────────────────────────── */
@@ -118,13 +119,13 @@ html, body {
 .scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none }
 
 ::-webkit-scrollbar { width:5px }
-::-webkit-scrollbar-track { background:#0D1B2E }
-::-webkit-scrollbar-thumb { background:#243D58; border-radius:3px }
-::-webkit-scrollbar-thumb:hover { background:#2E4E6B }
+::-webkit-scrollbar-track { background:#F0F4F8 }
+::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px }
+::-webkit-scrollbar-thumb:hover { background:#94A3B8 }
 
 /* ── Date input ─────────────────────────────────── */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.4) sepia(1) saturate(0.5);
+  filter: opacity(0.4);
   cursor: pointer;
 }
 
@@ -134,5 +135,5 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .card-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04);
 }

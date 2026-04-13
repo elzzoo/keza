@@ -116,7 +116,7 @@ export function FlightCard({ flight, lang = "en" }: Props) {
         <div className="flex items-center gap-3">
           {/* Origin */}
           <div className="flex-shrink-0">
-            <div className="text-[40px] font-black text-white tracking-tight leading-none">
+            <div className="text-[40px] font-black text-fg tracking-tight leading-none">
               {flight.from}
             </div>
             <div className="text-xs text-muted-2 mt-1 flex items-center gap-1">
@@ -161,7 +161,7 @@ export function FlightCard({ flight, lang = "en" }: Props) {
 
           {/* Destination */}
           <div className="flex-shrink-0 text-right">
-            <div className="text-[40px] font-black text-white tracking-tight leading-none">
+            <div className="text-[40px] font-black text-fg tracking-tight leading-none">
               {flight.to}
             </div>
             <div className="text-xs text-muted-2 mt-1 flex items-center justify-end gap-1">
@@ -201,7 +201,7 @@ export function FlightCard({ flight, lang = "en" }: Props) {
           <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
             {lang === "fr" ? "💳 Payer cash" : "💳 Pay cash"}
           </p>
-          <p className="text-[28px] font-black text-white leading-none font-mono tabular-nums">
+          <p className="text-[28px] font-black text-fg leading-none font-mono tabular-nums">
             ${total.toFixed(0)}
           </p>
           <p className="text-[11px] text-muted/60 mt-1 font-mono">

@@ -24,7 +24,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <span className="font-black text-lg tracking-tight">
               <span className="text-accent">KE</span>
-              <span className="text-white">ZA</span>
+              <span className="text-fg">ZA</span>
             </span>
             <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-success/70 bg-success/8 border border-success/15 rounded-full px-2.5 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
@@ -67,7 +67,7 @@ export default function HomePage() {
                 {lang === "fr" ? "Cash ou miles ?" : "Cash or miles?"}
               </span>
               <br />
-              <span className="text-white/90 text-4xl sm:text-5xl">
+              <span className="text-fg/90 text-4xl sm:text-5xl">
                 {lang === "fr" ? "KEZA décide." : "KEZA decides."}
               </span>
             </h1>
@@ -107,7 +107,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setResults([])}
-                className="w-full py-3 rounded-2xl border border-border text-xs text-muted hover:text-white hover:border-border-light transition-all"
+                className="w-full py-3 rounded-2xl border border-border text-xs text-muted hover:text-fg hover:border-border-light transition-all"
               >
                 ← {lang === "fr" ? "Nouvelle recherche" : "New search"}
               </button>
@@ -121,12 +121,12 @@ export default function HomePage() {
       {/* ── Footer ────────────────────────────────── */}
       <footer className="border-t border-border/40 py-8">
         <div className="max-w-2xl mx-auto px-4 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs text-muted/40">
+          <span className="text-xs text-muted/60">
             <span className="text-accent font-bold">KE</span>
-            <span className="font-bold text-white/30">ZA</span>
+            <span className="font-bold text-fg/30">ZA</span>
             {" · "}Travel Decision Engine
           </span>
-          <span className="text-xs text-muted/40">
+          <span className="text-xs text-muted/60">
             {lang === "fr" ? "Conçu à Dakar 🇸🇳" : "Built in Dakar 🇸🇳"}
           </span>
         </div>

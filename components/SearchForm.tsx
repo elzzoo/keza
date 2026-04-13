@@ -123,7 +123,7 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
             type="button"
             onClick={() => { setFrom(to); setTo(from); }}
             aria-label={lang === "fr" ? "Inverser" : "Swap"}
-            className="mb-1 w-9 h-9 flex-shrink-0 rounded-full border border-border text-muted hover:text-accent hover:border-accent/40 hover:bg-accent/8 flex items-center justify-center transition-all"
+            className="mb-1 w-9 h-9 flex-shrink-0 rounded-full border border-border bg-white text-muted hover:text-accent hover:border-accent/40 hover:bg-accent/8 flex items-center justify-center transition-all shadow-sm"
           >
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v14M17 12.5 12.5 17m0 0L8 12.5M12.5 17V3" />
@@ -139,13 +139,13 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.dep}</label>
             <input type="date" value={depDate} min={today} onChange={e => onDep(e.target.value)} required
-              className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all [color-scheme:dark]" />
+              className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all [color-scheme:light]" />
           </div>
           {tripType === "roundtrip" && (
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.ret}</label>
               <input type="date" value={retDate} min={addDays(depDate,1)} onChange={e => setRetDate(e.target.value)} required
-                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all [color-scheme:dark]" />
+                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all [color-scheme:light]" />
             </div>
           )}
         </div>
@@ -180,10 +180,10 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
             <div className="bg-surface border border-border rounded-xl flex flex-col items-center justify-center gap-2 py-3 h-[calc(100%-1.5rem)]">
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setPassengers(p => Math.max(1,p-1))}
-                  className="w-7 h-7 rounded-lg bg-card border border-border text-muted hover:text-white hover:border-accent/40 flex items-center justify-center text-lg font-bold transition-all">−</button>
-                <span className="text-2xl font-black text-white tabular-nums w-6 text-center font-mono">{passengers}</span>
+                  className="w-7 h-7 rounded-lg bg-surface border border-border text-muted hover:text-fg hover:border-accent/40 flex items-center justify-center text-lg font-bold transition-all shadow-sm">−</button>
+                <span className="text-2xl font-black text-fg tabular-nums w-6 text-center font-mono">{passengers}</span>
                 <button type="button" onClick={() => setPassengers(p => Math.min(9,p+1))}
-                  className="w-7 h-7 rounded-lg bg-card border border-border text-muted hover:text-white hover:border-accent/40 flex items-center justify-center text-lg font-bold transition-all">+</button>
+                  className="w-7 h-7 rounded-lg bg-surface border border-border text-muted hover:text-fg hover:border-accent/40 flex items-center justify-center text-lg font-bold transition-all shadow-sm">+</button>
               </div>
               <p className="text-[10px] text-muted">{t.adult(passengers)}</p>
             </div>
@@ -199,7 +199,7 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           <input
             type="text" value={programs} onChange={e => setPrograms(e.target.value)}
             placeholder={t.ph}
-            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-white placeholder-muted/30 text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-fg placeholder-muted/50 text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all"
           />
         </div>
 

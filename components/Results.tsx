@@ -74,7 +74,7 @@ export function Results({ results, loading, lang = "en" }: Props) {
       <div className="text-center py-20 space-y-4 animate-fade-in">
         <div className="text-6xl animate-[float_6s_ease-in-out_infinite]">✈️</div>
         <div className="space-y-1.5">
-          <p className="text-white font-bold text-lg">
+          <p className="text-fg font-bold text-lg">
             {lang === "fr" ? "Prêt à décoller ?" : "Ready for takeoff?"}
           </p>
           <p className="text-sm text-muted max-w-xs mx-auto leading-relaxed">
@@ -132,7 +132,7 @@ export function Results({ results, loading, lang = "en" }: Props) {
                 "flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150",
                 active
                   ? "text-bg shadow-sm"
-                  : "bg-card border border-border text-muted hover:text-white hover:border-border-light"
+                  : "bg-white border border-border text-muted hover:text-fg hover:border-border-light shadow-sm"
               )}
               style={active ? { backgroundColor: color, borderColor: color } : {}}
             >
