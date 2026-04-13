@@ -6,24 +6,107 @@
   color-scheme: dark;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
 html, body {
-  background-color: #111111;
+  background-color: #0F0F0F;
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove date input calendar icon tint */
+/* ── Glass morphism ─────────────────────────────── */
+@layer components {
+  .glass {
+    background: rgba(28, 28, 28, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .glass-strong {
+    background: rgba(22, 22, 22, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #ffffff 0%, #38BDF8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #F0C96B 0%, #D4A843 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-rule {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #64748B;
+  }
+  .section-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #252525, transparent);
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0F0F0F; }
+::-webkit-scrollbar-thumb { background: #252525; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #333333; }
+
+/* ── Date input ─────────────────────────────────── */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7);
+  filter: invert(0.5);
   cursor: pointer;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111111; }
-::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 3px; }
+/* ── Shimmer skeleton ───────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #1c1c1c 0px, #252525 40%, #1c1c1c 80%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.8s infinite linear;
+}
+
+.animate-slide-up  { animation: slideUp 0.35s ease-out; }
+.animate-fade-in   { animation: fadeIn 0.25s ease-out; }
+
+/* ── Hero glow ──────────────────────────────────── */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 90% 55% at 50% -5%, rgba(14,165,233,0.13) 0%, transparent 70%);
+  pointer-events: none;
+}

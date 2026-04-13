@@ -1,12 +1,10 @@
 [
-  { "airline": "Air France", "discount": 0.15 },
-  { "airline": "KLM", "discount": 0.10 },
-  { "airline": "Emirates", "discount": 0.20 },
-  { "airline": "Qatar Airways", "discount": 0.12 },
-  { "airline": "Turkish Airlines", "discount": 0.18 },
-  { "airline": "Lufthansa", "discount": 0.08 },
-  { "airline": "British Airways", "discount": 0.10 },
-  { "airline": "Ethiopian Airlines", "discount": 0.05 },
-  { "airline": "Kenya Airways", "discount": 0.07 },
-  { "airline": "Royal Air Maroc", "discount": 0.12 }
+  { "airline": "Air France",         "discount": 0.12, "validUntil": "2026-05-31", "routes": ["DSS-CDG","DKR-CDG","ABJ-CDG"] },
+  { "airline": "Air Sénégal",        "discount": 0.15, "validUntil": "2026-06-15", "routes": [] },
+  { "airline": "Turkish Airlines",   "discount": 0.10, "validUntil": "2026-05-15", "routes": [] },
+  { "airline": "Royal Air Maroc",    "discount": 0.08, "validUntil": "2026-04-30", "routes": ["DSS-CMN","DKR-CMN","ABJ-CMN"] },
+  { "airline": "Emirates",           "discount": 0.12, "validUntil": "2026-05-20", "routes": [] },
+  { "airline": "Ethiopian Airlines", "discount": 0.07, "validUntil": "2026-05-01", "routes": ["ADD-DSS","ADD-LOS"] },
+  { "airline": "Kenya Airways",      "discount": 0.09, "validUntil": "2026-05-10", "routes": [] },
+  { "airline": "Qatar Airways",      "discount": 0.10, "validUntil": "2026-06-01", "routes": [] }
 ]
