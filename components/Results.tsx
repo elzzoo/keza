@@ -7,99 +7,80 @@ import clsx from "clsx";
 
 type Filter = "all" | "USE MILES" | "CONSIDER" | "USE CASH";
 
-interface ResultsProps {
-  results: FlightResult[];
-  loading: boolean;
-  lang?: "fr" | "en";
-}
+interface Props { results: FlightResult[]; loading: boolean; lang?: "fr" | "en" }
 
-const FILTER_CONFIG: { key: Filter; labelFr: string; labelEn: string; dot: string }[] = [
-  { key: "all",       labelFr: "Tous",           labelEn: "All",       dot: "bg-muted"    },
-  { key: "USE MILES", labelFr: "Miles",           labelEn: "Miles",     dot: "bg-accent"   },
-  { key: "CONSIDER",  labelFr: "À considérer",   labelEn: "Consider",  dot: "bg-success"  },
-  { key: "USE CASH",  labelFr: "Cash",            labelEn: "Cash",      dot: "bg-warn"     },
+const FILTERS: { key: Filter; fr: string; en: string; color: string }[] = [
+  { key: "all",       fr: "Tous",         en: "All",      color: "#94A3B8" },
+  { key: "USE MILES", fr: "Miles",        en: "Miles",    color: "#93C5FD" },
+  { key: "CONSIDER",  fr: "À considérer", en: "Consider", color: "#6EE7B7" },
+  { key: "USE CASH",  fr: "Cash",         en: "Cash",     color: "#FCD34D" },
 ];
 
-function SkeletonCard() {
+function Skeleton() {
   return (
-    <div className="rounded-2xl border border-border overflow-hidden border-l-[3px] border-l-border">
-      <div className="p-4 pb-3 space-y-2">
-        <div className="skeleton h-7 w-40 rounded-lg" />
-        <div className="flex gap-2">
-          <div className="skeleton h-5 w-20 rounded-md" />
-          <div className="skeleton h-5 w-16 rounded-md" />
+    <div className="rounded-2xl overflow-hidden border border-white/[0.05] animate-fade-in">
+      <div className="skeleton h-11 w-full" />
+      <div className="p-5 space-y-4">
+        <div className="flex justify-between">
+          <div className="skeleton h-10 w-24 rounded-lg" />
+          <div className="skeleton h-6 w-16 rounded-full" />
+          <div className="skeleton h-10 w-24 rounded-lg" />
         </div>
-      </div>
-      <div className="px-4 pb-3 grid grid-cols-2 gap-2">
-        <div className="skeleton h-20 rounded-xl" />
-        <div className="skeleton h-20 rounded-xl" />
-      </div>
-      <div className="px-4 pb-4 space-y-2">
+        <div className="skeleton h-px w-full" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="skeleton h-20 rounded-xl" />
+          <div className="skeleton h-20 rounded-xl" />
+        </div>
         <div className="skeleton h-1 rounded-full" />
-        <div className="flex justify-between gap-2">
+        <div className="flex gap-2">
           <div className="skeleton h-7 w-32 rounded-full" />
-          <div className="skeleton h-7 w-28 rounded-full" />
+          <div className="skeleton h-7 w-24 rounded-full ml-auto" />
         </div>
       </div>
     </div>
   );
 }
 
-export function Results({ results, loading, lang = "en" }: ResultsProps) {
+export function Results({ results, loading, lang = "en" }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const sorted = useMemo(
-    () =>
-      [...results].sort((a, b) =>
-        b.value !== a.value
-          ? b.value - a.value
-          : (a.totalPrice ?? a.price) - (b.totalPrice ?? b.price)
-      ),
+    () => [...results].sort((a, b) =>
+      b.value !== a.value ? b.value - a.value : (a.totalPrice ?? a.price) - (b.totalPrice ?? b.price)
+    ),
     [results]
   );
 
   const filtered = useMemo(
-    () => (filter === "all" ? sorted : sorted.filter((f) => f.recommendation === filter)),
+    () => filter === "all" ? sorted : sorted.filter(f => f.recommendation === filter),
     [sorted, filter]
   );
 
-  // Summary stats
-  const bestPrice = useMemo(
-    () => (sorted.length ? Math.min(...sorted.map((f) => f.totalPrice ?? f.price)) : null),
-    [sorted]
-  );
-  const maxSavings = useMemo(
-    () => (sorted.length ? Math.max(...sorted.map((f) => f.savings ?? 0)) : null),
-    [sorted]
-  );
   const counts = useMemo(() => ({
-    "USE MILES": sorted.filter((f) => f.recommendation === "USE MILES").length,
-    "CONSIDER":  sorted.filter((f) => f.recommendation === "CONSIDER").length,
-    "USE CASH":  sorted.filter((f) => f.recommendation === "USE CASH").length,
+    "USE MILES": sorted.filter(f => f.recommendation === "USE MILES").length,
+    "CONSIDER":  sorted.filter(f => f.recommendation === "CONSIDER").length,
+    "USE CASH":  sorted.filter(f => f.recommendation === "USE CASH").length,
   }), [sorted]);
 
-  // ── Loading ───────────────────────────────────────
+  const bestPrice  = sorted.length ? Math.min(...sorted.map(f => f.totalPrice ?? f.price)) : null;
+  const maxSavings = sorted.length ? Math.max(...sorted.map(f => f.savings ?? 0)) : null;
+
   if (loading) {
-    return (
-      <div className="space-y-3 animate-fade-in">
-        {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
-      </div>
-    );
+    return <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} />)}</div>;
   }
 
-  // ── Empty ─────────────────────────────────────────
-  if (results.length === 0) {
+  if (!results.length) {
     return (
-      <div className="text-center py-16 space-y-3 animate-fade-in">
-        <div className="text-5xl">✈️</div>
-        <div className="space-y-1">
-          <p className="text-white font-bold text-base">
-            {lang === "fr" ? "Prêt à décoller ?" : "Ready to fly?"}
+      <div className="text-center py-20 space-y-4 animate-fade-in">
+        <div className="text-6xl animate-[float_6s_ease-in-out_infinite]">✈️</div>
+        <div className="space-y-1.5">
+          <p className="text-white font-bold text-lg">
+            {lang === "fr" ? "Prêt à décoller ?" : "Ready for takeoff?"}
           </p>
           <p className="text-sm text-muted max-w-xs mx-auto leading-relaxed">
             {lang === "fr"
-              ? "Entrez votre itinéraire pour comparer les prix cash vs miles en temps réel."
-              : "Enter your route to compare cash vs miles prices in real time."}
+              ? "Entrez votre itinéraire ci-dessus pour comparer cash vs miles instantanément."
+              : "Enter your route above to compare cash vs miles instantly."}
           </p>
         </div>
       </div>
@@ -109,36 +90,38 @@ export function Results({ results, loading, lang = "en" }: ResultsProps) {
   return (
     <div className="space-y-4 animate-fade-in">
 
-      {/* ── Stats bar ─────────────────────────────── */}
-      <div className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
-        <span className="text-white font-bold">
-          {sorted.length} {lang === "fr"
-            ? `vol${sorted.length > 1 ? "s" : ""} trouvé${sorted.length > 1 ? "s" : ""}`
-            : `flight${sorted.length > 1 ? "s" : ""} found`}
-        </span>
-        {bestPrice !== null && (
-          <span className="text-muted">
-            {lang === "fr" ? "Meilleur prix" : "Best price"}
-            {" "}
-            <span className="font-bold text-white">${bestPrice.toFixed(0)}</span>
-          </span>
-        )}
-        {maxSavings !== null && maxSavings > 0 && (
-          <span className="text-muted">
-            {lang === "fr" ? "Éco. max" : "Max saving"}
-            {" "}
-            <span className="font-bold text-success">+${maxSavings.toFixed(0)}</span>
-          </span>
-        )}
-        <span className="ml-auto text-muted-2 hidden sm:block">
-          {lang === "fr" ? "Trié par valeur miles" : "Sorted by miles value"}
-        </span>
+      {/* ── Stat tiles ───────────────────────────── */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          {
+            value: sorted.length.toString(),
+            label: lang === "fr" ? `vol${sorted.length > 1 ? "s" : ""} trouvé${sorted.length > 1 ? "s" : ""}` : `flight${sorted.length > 1 ? "s" : ""}`,
+            color: "#94A3B8",
+          },
+          {
+            value: bestPrice !== null ? `$${bestPrice.toFixed(0)}` : "—",
+            label: lang === "fr" ? "meilleur prix" : "best price",
+            color: "#FCD34D",
+          },
+          {
+            value: maxSavings !== null && maxSavings > 0 ? `+$${maxSavings.toFixed(0)}` : "—",
+            label: lang === "fr" ? "économie max" : "max saving",
+            color: "#6EE7B7",
+          },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-card border border-border rounded-xl p-3 text-center">
+            <p className="text-xl font-black font-mono tabular-nums" style={{ color: stat.color }}>
+              {stat.value}
+            </p>
+            <p className="text-[10px] text-muted mt-0.5 leading-tight">{stat.label}</p>
+          </div>
+        ))}
       </div>
 
-      {/* ── Filter tabs ───────────────────────────── */}
+      {/* ── Filter tabs ──────────────────────────── */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
-        {FILTER_CONFIG.map(({ key, labelFr, labelEn, dot }) => {
-          const count = key === "all" ? sorted.length : counts[key as keyof typeof counts];
+        {FILTERS.map(({ key, fr, en, color }) => {
+          const count  = key === "all" ? sorted.length : counts[key as keyof typeof counts];
           const active = filter === key;
           return (
             <button
@@ -146,17 +129,20 @@ export function Results({ results, loading, lang = "en" }: ResultsProps) {
               type="button"
               onClick={() => setFilter(key)}
               className={clsx(
-                "flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150",
+                "flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150",
                 active
-                  ? "bg-accent text-white shadow-sm shadow-accent/25"
+                  ? "text-bg shadow-sm"
                   : "bg-card border border-border text-muted hover:text-white hover:border-border-light"
               )}
+              style={active ? { backgroundColor: color, borderColor: color } : {}}
             >
-              {!active && <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0", dot)} />}
-              {lang === "fr" ? labelFr : labelEn}
+              {!active && (
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+              )}
+              {lang === "fr" ? fr : en}
               <span className={clsx(
-                "text-[10px] rounded-full px-1.5 py-0.5",
-                active ? "bg-white/20" : "bg-surface-2 text-muted-2"
+                "text-[10px] rounded-full px-1.5 py-px tabular-nums",
+                active ? "bg-black/20" : "bg-surface text-muted-2"
               )}>
                 {count}
               </span>
@@ -165,11 +151,11 @@ export function Results({ results, loading, lang = "en" }: ResultsProps) {
         })}
       </div>
 
-      {/* ── Flight cards ──────────────────────────── */}
+      {/* ── Cards ────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div className="text-center py-10 text-muted text-sm">
+        <p className="text-center py-10 text-muted text-sm">
           {lang === "fr" ? "Aucun vol dans cette catégorie." : "No flights in this category."}
-        </div>
+        </p>
       ) : (
         <div className="space-y-3">
           {filtered.map((flight) => (

@@ -1,174 +1,214 @@
 import type { FlightResult } from "@/lib/engine";
 import type { OptimizerDecision } from "@/lib/optimizer";
+import { airportsMap } from "@/data/airports";
 import clsx from "clsx";
 
-interface FlightCardProps {
-  flight: FlightResult;
-  lang?: "fr" | "en";
-}
+interface Props { flight: FlightResult; lang?: "fr" | "en" }
 
-// 1 USD ≈ 600 FCFA (XOF) — approximation for display
-const FCFA_RATE = 600;
-function toFcfa(usd: number): string {
-  return Math.round(usd * FCFA_RATE).toLocaleString("fr-FR");
-}
-
-// Approximate miles needed, derived from engine formula:
-// value (c/mile) = totalPrice * 0.8 * 100 / milesRequired
-// → milesRequired ≈ totalPrice * 80 / value
-function approxMiles(totalPrice: number, value: number): number {
+// ── Constants ───────────────────────────────────────
+const FCFA = 600; // 1 USD ≈ 600 XOF
+function fcfa(usd: number) { return Math.round(usd * FCFA).toLocaleString("fr-FR"); }
+function approxMiles(total: number, value: number) {
   if (value <= 0) return 0;
-  return Math.round((totalPrice * 80) / value / 1000) * 1000;
+  return Math.round((total * 80) / value / 1000) * 1000;
 }
+function city(code: string, lang: "fr" | "en") {
+  const a = airportsMap[code];
+  if (!a) return code;
+  return lang === "fr" ? a.city : a.cityEn;
+}
+function flag(code: string) { return airportsMap[code]?.flag ?? ""; }
 
-const REC_CONFIG: Record<
-  FlightResult["recommendation"],
-  { labelEn: string; labelFr: string; border: string; badge: string; badgeDot: string; bar: string; color: string; milesHighlight: boolean }
-> = {
+// ── Recommendation config ────────────────────────────
+const REC: Record<FlightResult["recommendation"], {
+  band: string; text: string; labelFr: string; labelEn: string; icon: string;
+}> = {
   "USE MILES": {
-    labelEn: "USE MILES",   labelFr: "UTILISER MILES",
-    border:  "border-l-accent",
-    badge:   "bg-accent/10 text-accent border-accent/25",
-    badgeDot:"bg-accent",
-    bar:     "#0EA5E9",     color: "#0EA5E9",
-    milesHighlight: true,
+    band:    "bg-miles-band",
+    text:    "#93C5FD",
+    labelFr: "UTILISER LES MILES",
+    labelEn: "USE MILES",
+    icon:    "✈",
   },
   "CONSIDER": {
-    labelEn: "CONSIDER",    labelFr: "À CONSIDÉRER",
-    border:  "border-l-success",
-    badge:   "bg-success/10 text-success border-success/25",
-    badgeDot:"bg-success",
-    bar:     "#10B981",     color: "#10B981",
-    milesHighlight: true,
+    band:    "bg-consider-band",
+    text:    "#6EE7B7",
+    labelFr: "À CONSIDÉRER",
+    labelEn: "CONSIDER",
+    icon:    "◎",
   },
   "USE CASH": {
-    labelEn: "USE CASH",    labelFr: "PAYER EN CASH",
-    border:  "border-l-warn",
-    badge:   "bg-warn/10 text-warn border-warn/25",
-    badgeDot:"bg-warn",
-    bar:     "#F59E0B",     color: "#F59E0B",
-    milesHighlight: false,
+    band:    "bg-cash-band",
+    text:    "#FCD34D",
+    labelFr: "PAYER EN CASH",
+    labelEn: "USE CASH",
+    icon:    "◈",
   },
 };
 
-const CABIN_LABEL: Record<string, { fr: string; en: string }> = {
-  economy:  { fr: "Éco",        en: "Economy"  },
-  business: { fr: "Business",   en: "Business" },
-  first:    { fr: "1ère Cl.",   en: "First"    },
+const CABIN: Record<string, { fr: string; en: string }> = {
+  economy:  { fr: "Éco",      en: "Economy"  },
+  business: { fr: "Business", en: "Business" },
+  first:    { fr: "1ʳᵉ Cl.",  en: "First"    },
 };
 
-function OptimizerBadge({ opt, lang }: { opt: OptimizerDecision; lang: "fr" | "en" }) {
-  if (opt.type === "DIRECT") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs bg-success/8 text-success border border-success/20 rounded-full px-2.5 py-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
-        {lang === "fr" ? "Direct" : "Direct"} — {opt.program}
-      </span>
-    );
-  }
-  if (opt.type === "ALLIANCE") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs bg-accent/8 text-accent border border-accent/20 rounded-full px-2.5 py-1">
-        <span className="text-accent/80">◆</span>
-        {opt.alliance} · {opt.viaProgram}
-      </span>
-    );
-  }
-  if (opt.type === "TRANSFER") {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs bg-warn/8 text-warn border border-warn/20 rounded-full px-2.5 py-1">
-        <span>⇄</span>
-        {opt.from} → {opt.to}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs bg-muted/8 text-muted border border-border rounded-full px-2.5 py-1">
-      {lang === "fr" ? "Payer cash" : "Pay cash"}
-    </span>
-  );
+// ── Optimizer badge ──────────────────────────────────
+function OptBadge({ opt, lang }: { opt: OptimizerDecision; lang: "fr" | "en" }) {
+  const base = "inline-flex items-center gap-1.5 text-[11px] font-semibold border rounded-full px-2.5 py-1";
+  if (opt.type === "DIRECT")
+    return <span className={clsx(base, "bg-success/8 text-success border-success/20")}>
+      <span className="w-1.5 h-1.5 rounded-full bg-success" />
+      Direct — {opt.program}
+    </span>;
+  if (opt.type === "ALLIANCE")
+    return <span className={clsx(base, "bg-accent/8 text-accent-light border-accent/20")}>
+      ◆ {opt.alliance} · {opt.viaProgram}
+    </span>;
+  if (opt.type === "TRANSFER")
+    return <span className={clsx(base, "bg-gold/8 text-gold border-gold/20")}>
+      ⇄ {opt.from} → {opt.to}
+    </span>;
+  return <span className={clsx(base, "text-muted border-border")}>
+    {lang === "fr" ? "Payer cash" : "Pay cash"}
+  </span>;
 }
 
-export function FlightCard({ flight, lang = "en" }: FlightCardProps) {
-  const cfg         = REC_CONFIG[flight.recommendation] ?? REC_CONFIG["USE CASH"];
-  const isRound     = flight.tripType === "roundtrip";
-  const cabinLabel  = CABIN_LABEL[flight.cabin] ?? CABIN_LABEL["economy"];
-  const totalPrice  = flight.totalPrice ?? flight.price;
-  const milesEst    = approxMiles(totalPrice, flight.value);
-  const meterWidth  = Math.min(100, Math.round((flight.value / 3) * 100));
+// ── Main component ───────────────────────────────────
+export function FlightCard({ flight, lang = "en" }: Props) {
+  const rec        = REC[flight.recommendation] ?? REC["USE CASH"];
+  const isRound    = flight.tripType === "roundtrip";
+  const total      = flight.totalPrice ?? flight.price;
+  const miles      = approxMiles(total, flight.value);
+  const milesK     = miles > 0 ? `~${(miles / 1000).toFixed(0)}K` : "—";
+  const meterW     = Math.min(100, Math.round((flight.value / 3) * 100));
+  const cabin      = CABIN[flight.cabin] ?? CABIN.economy;
+  const isMilesGood = flight.recommendation !== "USE CASH";
 
   return (
-    <div
+    <article
       className={clsx(
-        "relative overflow-hidden rounded-2xl border border-border border-l-[3px]",
-        "bg-card hover:bg-card-hover hover:border-border-light",
-        "transition-all duration-200 hover:shadow-card-hover animate-slide-up",
-        cfg.border
+        "rounded-2xl overflow-hidden shadow-card card-lift",
+        "border border-white/[0.06] bg-card",
+        "animate-slide-up"
       )}
     >
-      {/* ── Top section ────────────────────────────── */}
-      <div className="p-4 pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            {/* Route */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xl font-black text-white tracking-tight">{flight.from}</span>
-              <span className="text-muted-2 text-base" aria-hidden="true">
-                {isRound ? "⇄" : "→"}
-              </span>
-              <span className="text-xl font-black text-white tracking-tight">{flight.to}</span>
-              {isRound && (
-                <span className="text-[10px] bg-accent/10 text-accent border border-accent/20 rounded-full px-2 py-0.5 font-bold tracking-wide">
-                  A/R
-                </span>
-              )}
-            </div>
+      {/* ── Recommendation banner ─────────────────── */}
+      <div className={clsx("px-5 py-3 flex items-center justify-between", rec.band)}>
+        <div className="flex items-center gap-2.5">
+          <span className="text-base leading-none" aria-hidden="true">{rec.icon}</span>
+          <span
+            className="text-xs font-black tracking-[2.5px] uppercase"
+            style={{ color: rec.text }}
+          >
+            {lang === "fr" ? rec.labelFr : rec.labelEn}
+          </span>
+        </div>
+        <span
+          className="font-mono text-xs font-bold tabular-nums"
+          style={{ color: rec.text }}
+        >
+          {flight.value.toFixed(2)} cts/mile
+        </span>
+      </div>
 
-            {/* Meta tags */}
-            <div className="flex flex-wrap items-center gap-1.5 mt-2">
-              {flight.airlines.map((a) => (
-                <span key={a} className="text-xs text-muted bg-surface-2 border border-border rounded-md px-1.5 py-0.5">
-                  {a}
-                </span>
-              ))}
-              {flight.stops !== undefined && (
-                <span className="text-xs text-muted-2">
-                  {flight.stops === 0
-                    ? "Direct"
-                    : `${flight.stops} ${lang === "fr" ? "escale" : "stop"}${flight.stops > 1 ? "s" : ""}`}
+      {/* ── Route ────────────────────────────────── */}
+      <div className="px-5 pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          {/* Origin */}
+          <div className="flex-shrink-0">
+            <div className="text-[40px] font-black text-white tracking-tight leading-none">
+              {flight.from}
+            </div>
+            <div className="text-xs text-muted-2 mt-1 flex items-center gap-1">
+              <span>{flag(flight.from)}</span>
+              <span>{city(flight.from, lang)}</span>
+            </div>
+          </div>
+
+          {/* Path */}
+          <div className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+            <div className="flex items-center w-full gap-1">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-muted text-sm flex-shrink-0" aria-hidden="true">✈</span>
+              <div className="flex-1 h-px bg-border" />
+              {isRound && <>
+                <span className="text-muted text-sm flex-shrink-0" aria-hidden="true">✈</span>
+                <div className="flex-1 h-px bg-border" />
+              </>}
+            </div>
+            {/* Route tags */}
+            <div className="flex flex-wrap justify-center gap-1">
+              {isRound && (
+                <span className="text-[9px] font-bold bg-accent/10 text-accent-light border border-accent/20 rounded px-1.5 py-0.5">
+                  {lang === "fr" ? "A/R" : "RT"}
                 </span>
               )}
-              <span className="text-xs text-muted bg-surface-2 border border-border rounded-md px-1.5 py-0.5">
-                {lang === "fr" ? cabinLabel.fr : cabinLabel.en}
+              {flight.stops !== undefined && (
+                <span className="text-[10px] text-muted-2">
+                  {flight.stops === 0
+                    ? (lang === "fr" ? "Direct" : "Direct")
+                    : `${flight.stops} ${lang === "fr" ? "esc." : "stop"}`}
+                </span>
+              )}
+              <span className="text-[10px] text-muted-2">
+                {lang === "fr" ? cabin.fr : cabin.en}
               </span>
-              <span className="text-xs text-muted-2">
-                {flight.passengers} {lang === "fr"
-                  ? `pax`
-                  : `pax`}
+              <span className="text-[10px] text-muted-2">
+                {flight.passengers} {lang === "fr" ? "pax" : "pax"}
               </span>
             </div>
           </div>
+
+          {/* Destination */}
+          <div className="flex-shrink-0 text-right">
+            <div className="text-[40px] font-black text-white tracking-tight leading-none">
+              {flight.to}
+            </div>
+            <div className="text-xs text-muted-2 mt-1 flex items-center justify-end gap-1">
+              <span>{city(flight.to, lang)}</span>
+              <span>{flag(flight.to)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Airlines */}
+        <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+          {flight.airlines.map((a) => (
+            <span key={a} className="text-xs text-muted-2 bg-surface border border-border/80 rounded-md px-2 py-0.5">
+              {a}
+            </span>
+          ))}
+          {isRound && flight.returnAirlines && flight.returnAirlines.length > 0 &&
+            flight.returnAirlines.filter(a => !flight.airlines.includes(a)).map((a) => (
+              <span key={`ret-${a}`} className="text-xs text-muted bg-surface border border-border/50 rounded-md px-2 py-0.5 opacity-70">
+                {a}
+              </span>
+            ))
+          }
         </div>
       </div>
 
-      {/* ── Cash vs Miles comparison ─────────────── */}
-      <div className="px-4 pb-3 grid grid-cols-2 gap-2">
+      {/* ── Boarding pass tear line ───────────────── */}
+      <div className="tear-line mx-5 my-1" />
+
+      {/* ── Price comparison ─────────────────────── */}
+      <div className="px-5 py-4 grid grid-cols-2 gap-3">
         {/* Cash */}
         <div className={clsx(
-          "rounded-xl p-3 border",
-          cfg.milesHighlight ? "bg-surface-2 border-border" : "bg-accent/5 border-accent/20"
+          "rounded-xl p-3 border transition-opacity",
+          !isMilesGood ? "border-gold/20 bg-gold/5" : "border-border bg-surface/50"
         )}>
-          <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1.5">
-            💳 {lang === "fr" ? "Payer cash" : "Pay cash"}
+          <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
+            {lang === "fr" ? "💳 Payer cash" : "💳 Pay cash"}
           </p>
-          <p className="text-2xl font-black text-white leading-none">
-            ${totalPrice.toFixed(0)}
+          <p className="text-[28px] font-black text-white leading-none font-mono tabular-nums">
+            ${total.toFixed(0)}
           </p>
           <p className="text-[11px] text-muted/60 mt-1 font-mono">
-            ~{toFcfa(totalPrice)} FCFA
+            ~{fcfa(total)}&thinsp;FCFA
           </p>
           {isRound && flight.returnPrice !== undefined && (
-            <p className="text-[10px] text-muted/50 mt-1">
+            <p className="text-[10px] text-muted/40 mt-1">
               ${flight.price.toFixed(0)} + ${flight.returnPrice.toFixed(0)}
               {flight.passengers > 1 ? ` × ${flight.passengers}` : ""}
             </p>
@@ -177,85 +217,56 @@ export function FlightCard({ flight, lang = "en" }: FlightCardProps) {
 
         {/* Miles */}
         <div className={clsx(
-          "rounded-xl p-3 border",
-          cfg.milesHighlight ? "border-accent/20" : "bg-surface-2 border-border",
-          cfg.milesHighlight ? "bg-accent/5" : ""
+          "rounded-xl p-3 border transition-opacity",
+          isMilesGood ? "border-accent/25 bg-accent/5" : "border-border bg-surface/50 opacity-50"
         )}>
-          <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1.5">
-            ✈️ {lang === "fr" ? "Utiliser miles" : "Use miles"}
+          <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
+            {lang === "fr" ? "✈️ Utiliser miles" : "✈️ Use miles"}
           </p>
-          {milesEst > 0 ? (
-            <>
-              <p className="text-2xl font-black text-white leading-none">
-                ~{milesEst.toLocaleString()}
-              </p>
-              <p className="text-[11px] font-mono mt-1" style={{ color: cfg.color }}>
-                {flight.value.toFixed(2)} cts/mile
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-muted italic mt-1">—</p>
-          )}
+          <p
+            className="text-[28px] font-black leading-none font-mono tabular-nums"
+            style={{ color: isMilesGood ? rec.text : "#64748B" }}
+          >
+            {milesK}
+          </p>
+          <p className="text-[11px] text-muted/60 mt-1">
+            {lang === "fr" ? "pts estimés" : "est. points"}
+          </p>
           {flight.savings !== undefined && flight.savings > 0 && (
-            <p className="text-[10px] text-success mt-1 font-medium">
+            <p className="text-[10px] font-bold text-success mt-1">
               {lang === "fr" ? `Éco. $${flight.savings.toFixed(0)}` : `Save $${flight.savings.toFixed(0)}`}
             </p>
           )}
         </div>
       </div>
 
-      {/* ── Return leg airlines ──────────────────── */}
-      {isRound && flight.returnAirlines && flight.returnAirlines.length > 0 && (
-        <div className="px-4 pb-2 flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] text-muted uppercase tracking-wide font-bold">
-            {lang === "fr" ? "Retour" : "Return"}
-          </span>
-          {flight.returnAirlines.map((a) => (
-            <span key={a} className="text-xs text-muted bg-surface-2 border border-border rounded-md px-1.5 py-0.5">
-              {a}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* ── Value meter ──────────────────────────── */}
-      <div className="px-4 pb-3 space-y-1.5">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted">{lang === "fr" ? "Valeur miles" : "Miles value"}</span>
-          <span className="font-mono font-semibold" style={{ color: cfg.color }}>
-            {flight.value.toFixed(2)} cts/mile
-          </span>
+      <div className="px-5 pb-4 space-y-3">
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[11px]">
+            <span className="text-muted">{lang === "fr" ? "Valeur miles" : "Miles value"}</span>
+            <span className="font-mono font-semibold" style={{ color: rec.text }}>
+              {flight.value.toFixed(2)} cts/mile
+            </span>
+          </div>
+          <div className="h-1 bg-surface rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${meterW}%`, backgroundColor: rec.text }}
+            />
+          </div>
         </div>
-        <div className="h-1 bg-surface rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${meterWidth}%`, backgroundColor: cfg.bar }}
-          />
+
+        {/* Bottom row */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <OptBadge opt={flight.optimization} lang={lang} />
+          {flight.savings !== undefined && flight.savings >= 10 && (
+            <span className="text-xs font-bold text-success bg-success/8 border border-success/20 rounded-full px-2.5 py-1">
+              +${flight.savings.toFixed(0)} {lang === "fr" ? "d'économie" : "saved"}
+            </span>
+          )}
         </div>
       </div>
-
-      {/* ── Decision row ─────────────────────────── */}
-      <div className="px-4 pb-4 flex items-center justify-between flex-wrap gap-2">
-        <OptimizerBadge opt={flight.optimization} lang={lang} />
-        <span className={clsx(
-          "inline-flex items-center gap-1.5 text-[11px] font-bold border rounded-full px-3 py-1 tracking-wider",
-          cfg.badge
-        )}>
-          <span className={clsx("w-1.5 h-1.5 rounded-full flex-shrink-0", cfg.badgeDot)} />
-          {lang === "fr" ? cfg.labelFr : cfg.labelEn}
-        </span>
-      </div>
-
-      {/* ── Savings banner (when significant) ────── */}
-      {flight.savings !== undefined && flight.savings >= 10 && (
-        <div className="mx-4 mb-4 flex items-center gap-2 bg-success/6 border border-success/20 rounded-xl px-3 py-2.5 text-xs">
-          <span>💰</span>
-          <span className="text-muted flex-1">
-            {lang === "fr" ? "Économies estimées avec miles" : "Estimated savings with miles"}
-          </span>
-          <span className="font-mono font-bold text-success">+${flight.savings.toFixed(0)}</span>
-        </div>
-      )}
-    </div>
+    </article>
   );
 }
