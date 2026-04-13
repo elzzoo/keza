@@ -16,6 +16,11 @@ export async function POST(request: Request) {
       from: body.from,
       to: body.to,
       date: body.date,
+      returnDate:   body.returnDate,
+      tripType:     body.tripType     ?? "oneway",
+      stops:        body.stops        ?? "any",
+      cabin:        body.cabin        ?? "economy",
+      passengers:   body.passengers   ?? 1,
       userPrograms: body.userPrograms ?? [],
     });
 

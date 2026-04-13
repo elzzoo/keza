@@ -8,35 +8,59 @@ import {
 } from "./milesEngine";
 import { optimizeMiles, type OptimizerDecision } from "./optimizer";
 
+// ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
+const CABIN_MULTIPLIER: Record<Cabin, number> = {
+  economy:  1.0,
+  business: 2.5,
+  first:    4.0,
+};
+
+export type TripType = "oneway" | "roundtrip";
+export type Stops    = "any" | "direct" | "with_stops";
+export type Cabin    = "economy" | "business" | "first";
+
 export interface SearchParams {
   from: string;
   to: string;
-  date: string;                    // YYYY-MM-DD
+  date: string;            // YYYY-MM-DD departure
+  returnDate?: string;     // YYYY-MM-DD return leg (roundtrip only)
+  tripType?: TripType;     // default "oneway"
+  stops?: Stops;           // default "any"
+  cabin?: Cabin;           // default "economy"
+  passengers?: number;     // default 1
   userPrograms?: string[];
 }
 
-// ─── Public API surface (what the UI receives) ───────────────────────────────
-// Keep this minimal. Add fields here only when the UI strictly needs them.
+// ─── Public API surface ──────────────────────────────────────────────────────
 export interface FlightResult {
-  // Flight identity
   from: string;
   to: string;
-  price: number;
+  price: number;           // per-person outbound price (cabin + promo applied)
   airlines: string[];
   stops?: number;
+  duration?: number;
+  // Round-trip additions (Option A: two separate legs)
+  tripType: TripType;
+  returnPrice?: number;    // per-person return leg price
+  returnAirlines?: string[];
+  totalPrice?: number;     // (price + returnPrice) × passengers
+  // Options echoed back for display
+  cabin: Cabin;
+  passengers: number;
   // Decision layer
-  value: number;                               // value per mile in cents (e.g. 1.42)
+  value: number;           // value per mile in cents
   recommendation: "USE MILES" | "CONSIDER" | "USE CASH";
   optimization: OptimizerDecision;
-  savings?: number;                            // USD saved vs cash (omitted if negative)
+  savings?: number;        // positive savings only
 }
 
-// ─── Travelpayouts fetch ───────────────────────────────────────────────────────
+// ─── Travelpayouts fetch ─────────────────────────────────────────────────────
 
 async function fetchFromTravelpayouts(
   from: string,
   to: string,
-  date: string
+  date: string,
+  direct: boolean
 ): Promise<NormalizedFlight[]> {
   const token = process.env.TRAVELPAYOUTS_TOKEN;
   if (!token || token === "xxx") {
@@ -44,7 +68,6 @@ async function fetchFromTravelpayouts(
     return [];
   }
 
-  // date format: YYYY-MM → Travelpayouts uses month-level cheapest prices
   const [year, month] = date.split("-");
   const monthParam = `${year}-${month}`;
 
@@ -55,6 +78,7 @@ async function fetchFromTravelpayouts(
   url.searchParams.set("currency", "USD");
   url.searchParams.set("show_to_affiliates", "false");
   url.searchParams.set("token", token);
+  if (direct) url.searchParams.set("direct", "true");
 
   try {
     const res = await fetch(url.toString(), {
@@ -63,7 +87,7 @@ async function fetchFromTravelpayouts(
     });
 
     if (!res.ok) {
-      console.error(`[engine] Travelpayouts error ${res.status}: ${res.statusText}`);
+      console.error(`[engine] Travelpayouts ${res.status} for ${from}→${to}`);
       return [];
     }
 
@@ -96,68 +120,121 @@ async function fetchFromTravelpayouts(
   }
 }
 
-// ─── Kiwi/Tequila stub (future integration) ──────────────────────────────────
-// async function fetchFromKiwi(from: string, to: string, date: string) {
-//   const url = `https://api.tequila.kiwi.com/v2/search?fly_from=${from}&fly_to=${to}&date_from=${date}&date_to=${date}`;
-//   const res = await fetch(url, { headers: { apikey: process.env.TEQUILA_API_KEY } });
-//   const data = await res.json();
-//   return data.data.map((f: { cityFrom: string; cityTo: string; price: number; airlines: string[] }) => ({
-//     from: f.cityFrom, to: f.cityTo, price: f.price, airlines: f.airlines,
-//   }));
-// }
+// ─── Filter by stops preference ──────────────────────────────────────────────
+
+function filterByStops(flights: NormalizedFlight[], stops: Stops): NormalizedFlight[] {
+  if (stops === "any") return flights;
+  if (stops === "direct") return flights.filter((f) => (f.stops ?? 0) === 0);
+  return flights.filter((f) => (f.stops ?? 0) > 0);
+}
+
+// ─── Enrich a single flight into a FlightResult ──────────────────────────────
+
+function enrich(
+  f: NormalizedFlight,
+  cabin: Cabin,
+  passengers: number,
+  userPrograms: string[],
+  tripType: TripType,
+  returnFlight?: NormalizedFlight
+): FlightResult {
+  const multiplier = CABIN_MULTIPLIER[cabin];
+
+  // Apply cabin multiplier to base price
+  const outboundPrice = Math.round(f.price * multiplier * 100) / 100;
+  const returnPrice   = returnFlight
+    ? Math.round(returnFlight.price * multiplier * 100) / 100
+    : undefined;
+
+  // Total cost for all passengers
+  const totalPrice = returnPrice !== undefined
+    ? Math.round((outboundPrice + returnPrice) * passengers * 100) / 100
+    : Math.round(outboundPrice * passengers * 100) / 100;
+
+  // Miles V2 calc on total trip cost
+  const distanceProxy   = totalPrice * 4;
+  const estimatedMiles  = estimateMiles(distanceProxy);
+  const taxes           = totalPrice * 0.2;
+  const calc            = calculateMilesValue({ cashPrice: totalPrice, taxes, milesRequired: estimatedMiles });
+  const recommendation  = getRecommendation(calc.valuePerMile);
+  const optimization    = optimizeMiles(f.airlines, userPrograms);
+
+  const result: FlightResult = {
+    from: f.from,
+    to: f.to,
+    price: outboundPrice,
+    airlines: f.airlines,
+    stops: f.stops,
+    duration: f.duration,
+    tripType,
+    cabin,
+    passengers,
+    value: calc.valuePerMile,
+    recommendation,
+    optimization,
+    totalPrice,
+  };
+
+  if (returnPrice !== undefined) {
+    result.returnPrice    = returnPrice;
+    result.returnAirlines = returnFlight?.airlines;
+  }
+  if (calc.savings > 0) result.savings = calc.savings;
+
+  return result;
+}
 
 // ─── Main engine ─────────────────────────────────────────────────────────────
 
 export async function searchEngine(params: SearchParams): Promise<FlightResult[]> {
-  const { from, to, date, userPrograms = [] } = params;
-  const cacheKey = `keza:${from}:${to}:${date}`;
+  const {
+    from, to, date,
+    returnDate,
+    tripType    = "oneway",
+    stops       = "any",
+    cabin       = "economy",
+    passengers  = 1,
+    userPrograms = [],
+  } = params;
+
+  const directOnly = stops === "direct";
+  const cacheKey   = `keza:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
   if (cached) return cached;
 
-  // 2. Fetch flights
-  const raw = await fetchFromTravelpayouts(from, to, date);
+  // 2. Fetch outbound flights
+  const rawOutbound = await fetchFromTravelpayouts(from, to, date, directOnly);
+  const outbound    = filterByStops(rawOutbound, stops);
 
-  // 3. Apply promotions
-  const promotions = loadPromotions();
-  const withPromos = applyPromotions(raw, promotions);
+  // 3. Fetch return flights (Option A — two separate calls)
+  let returnFlights: NormalizedFlight[] = [];
+  if (tripType === "roundtrip" && returnDate) {
+    const rawReturn = await fetchFromTravelpayouts(to, from, returnDate, directOnly);
+    returnFlights   = filterByStops(rawReturn, stops);
+  }
 
-  // 4. Enrich — run full V2 logic internally, expose only the clean API surface
-  const results: FlightResult[] = withPromos.map((f) => {
-    // V2 internals (never exposed to API consumers)
-    const distanceProxy = f.price * 4;
-    const estimatedMiles = estimateMiles(distanceProxy);
-    const taxes = f.price * 0.2;
-    const calc = calculateMilesValue({
-      cashPrice: f.price,
-      taxes,
-      milesRequired: estimatedMiles,
-    });
-    // breakeven, badge, recommendationColor, savingsPercent used internally only
+  // 4. Apply promotions
+  const promotions     = loadPromotions();
+  const withPromos     = applyPromotions(outbound, promotions);
+  const returnWithPromos = returnFlights.length
+    ? applyPromotions(returnFlights, promotions)
+    : [];
 
-    // Public recommendation (V1 signature — 3-tier)
-    const recommendation = getRecommendation(calc.valuePerMile);
+  // 5. Pair outbound + cheapest return, enrich
+  const cheapestReturn = returnWithPromos.length
+    ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best))
+    : undefined;
 
-    // Optimizer
-    const optimization = optimizeMiles(f.airlines, userPrograms);
+  const results: FlightResult[] = withPromos.map((f) =>
+    enrich(f, cabin, passengers, userPrograms, tripType, cheapestReturn)
+  );
 
-    // Build clean public result
-    const result: FlightResult = {
-      from: f.from,
-      to: f.to,
-      price: f.price,
-      airlines: f.airlines,
-      stops: f.stops,
-      value: calc.valuePerMile,
-      recommendation,
-      optimization,
-    };
-    if (calc.savings > 0) result.savings = calc.savings;
-    return result;
-  });
+  // Sort: best value first
+  results.sort((a, b) => b.value !== a.value ? b.value - a.value : a.totalPrice! - b.totalPrice!);
 
-  // 5. Cache result
+  // 6. Cache
   await redis.set(cacheKey, results, { ex: 3600 }).catch(() => null);
 
   return results;
