@@ -42,8 +42,11 @@ export function Results({ results, loading }: ResultsProps) {
         </p>
         <p className="text-xs text-muted/60">Sorted by value</p>
       </div>
-      {sorted.map((flight, i) => (
-        <FlightCard key={i} flight={flight} />
+      {sorted.map((flight) => (
+        <FlightCard
+          key={`${flight.from}-${flight.to}-${flight.airlines[0] ?? ""}-${flight.price}`}
+          flight={flight}
+        />
       ))}
     </div>
   );

@@ -37,21 +37,21 @@ function OptimizerBadge({ optimization }: { optimization: OptimizerDecision }) {
   if (optimization.type === "DIRECT") {
     return (
       <span className="inline-flex items-center gap-1 text-xs bg-success/10 text-success border border-success/20 rounded-full px-2.5 py-0.5">
-        ● Direct — {optimization.program}
+        <span aria-hidden="true">●</span> Direct — {optimization.program}
       </span>
     );
   }
   if (optimization.type === "ALLIANCE") {
     return (
       <span className="inline-flex items-center gap-1 text-xs bg-accent/10 text-accent border border-accent/20 rounded-full px-2.5 py-0.5">
-        ◆ {optimization.alliance} via {optimization.viaProgram}
+        <span aria-hidden="true">◆</span> {optimization.alliance} via {optimization.viaProgram}
       </span>
     );
   }
   if (optimization.type === "TRANSFER") {
     return (
       <span className="inline-flex items-center gap-1 text-xs bg-warn/10 text-warn border border-warn/20 rounded-full px-2.5 py-0.5">
-        ⇄ Transfer {optimization.from} → {optimization.to}
+        <span aria-hidden="true">⇄</span> Transfer {optimization.from} <span aria-hidden="true">→</span> {optimization.to}
       </span>
     );
   }
@@ -63,7 +63,7 @@ function OptimizerBadge({ optimization }: { optimization: OptimizerDecision }) {
 }
 
 export function FlightCard({ flight }: FlightCardProps) {
-  const style = REC_STYLES[flight.recommendation];
+  const style = REC_STYLES[flight.recommendation] ?? REC_STYLES["USE CASH"];
   const meterWidth = Math.min(100, (flight.value / 3) * 100);
 
   return (
