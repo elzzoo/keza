@@ -5,7 +5,6 @@ import {
   estimateMiles,
   calculateMilesValue,
   getRecommendation,
-  AIRLINE_MILES_RATES,
 } from "./milesEngine";
 import { optimizeMiles, type OptimizerDecision } from "./optimizer";
 
