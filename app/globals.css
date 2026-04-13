@@ -7,7 +7,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
-  background-color: #060D1B;
+  background-color: #0D1B2E;
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -16,16 +16,16 @@ html, body {
 /* ── Glass ─────────────────────────────────────── */
 @layer components {
   .glass {
-    background: rgba(15, 30, 53, 0.7);
+    background: rgba(26, 46, 70, 0.65);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.09);
   }
   .glass-nav {
-    background: rgba(6, 13, 27, 0.85);
+    background: rgba(13, 27, 46, 0.88);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
   }
 
   /* Gradient text */
@@ -81,7 +81,7 @@ html, body {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #060D1B;
+    background: #0D1B2E;
     border: 1px solid rgba(255,255,255,0.08);
   }
   .tear-line::before { left: -7px; }
@@ -98,7 +98,7 @@ html, body {
 
 /* ── Skeleton ───────────────────────────────────── */
 .skeleton {
-  background: linear-gradient(90deg, #0F1E35 0px, #142440 40%, #0F1E35 80%);
+  background: linear-gradient(90deg, #1A2E46 0px, #1F3650 40%, #1A2E46 80%);
   background-size: 1000px 100%;
   animation: shimmer 1.8s infinite linear;
 }
@@ -109,8 +109,8 @@ html, body {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 50% at 50% -5%, rgba(59,130,246,0.14) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 80% 60%, rgba(245,158,11,0.05) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 70%, rgba(245,158,11,0.08) 0%, transparent 60%);
 }
 
 /* ── Scrollbar ──────────────────────────────────── */
@@ -118,9 +118,9 @@ html, body {
 .scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none }
 
 ::-webkit-scrollbar { width:5px }
-::-webkit-scrollbar-track { background:#060D1B }
-::-webkit-scrollbar-thumb { background:#1A2840; border-radius:3px }
-::-webkit-scrollbar-thumb:hover { background:#22364F }
+::-webkit-scrollbar-track { background:#0D1B2E }
+::-webkit-scrollbar-thumb { background:#243D58; border-radius:3px }
+::-webkit-scrollbar-thumb:hover { background:#2E4E6B }
 
 /* ── Date input ─────────────────────────────────── */
 input[type="date"]::-webkit-calendar-picker-indicator {
