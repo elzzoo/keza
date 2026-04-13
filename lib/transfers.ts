@@ -11,7 +11,7 @@ export const TRANSFERS: TransferPartner[] = [
   { from: "Amex MR", to: "British Airways Avios", ratio: 1.0 },
   { from: "Chase UR", to: "United MileagePlus", ratio: 1.0 },
   { from: "Chase UR", to: "British Airways Avios", ratio: 1.0 },
-  { from: "Chase UR", to: "Air France Flying Blue", ratio: 1.0 },
+  { from: "Chase UR", to: "Flying Blue", ratio: 1.0 },
   { from: "Citi TY", to: "Turkish Miles&Smiles", ratio: 1.0 },
   { from: "Citi TY", to: "Qatar Privilege Club", ratio: 1.0 },
   { from: "Capital One", to: "Flying Blue", ratio: 1.0 },
