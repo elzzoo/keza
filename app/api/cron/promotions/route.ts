@@ -3,27 +3,29 @@ import fs from "fs";
 import path from "path";
 
 export async function GET(request: Request) {
-  // Basic cron auth — Vercel sends the CRON_SECRET header
+  // CRON_SECRET is mandatory — endpoint is locked even without the env var
   const authHeader = request.headers.get("authorization");
-  if (
-    process.env.CRON_SECRET &&
-    authHeader !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
+    // validUntil = 30 days from now so promos auto-expire after each refresh cycle
+    const validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+
     const promos = [
-      { airline: "Air France", discount: 0.15 },
-      { airline: "KLM", discount: 0.10 },
-      { airline: "Emirates", discount: 0.20 },
-      { airline: "Qatar Airways", discount: 0.12 },
-      { airline: "Turkish Airlines", discount: 0.18 },
-      { airline: "Lufthansa", discount: 0.08 },
-      { airline: "British Airways", discount: 0.10 },
-      { airline: "Ethiopian Airlines", discount: 0.05 },
-      { airline: "Kenya Airways", discount: 0.07 },
-      { airline: "Royal Air Maroc", discount: 0.12 },
+      { airline: "Air France",       discount: 0.15, validUntil },
+      { airline: "KLM",              discount: 0.10, validUntil },
+      { airline: "Emirates",         discount: 0.20, validUntil },
+      { airline: "Qatar Airways",    discount: 0.12, validUntil },
+      { airline: "Turkish Airlines", discount: 0.18, validUntil },
+      { airline: "Lufthansa",        discount: 0.08, validUntil },
+      { airline: "British Airways",  discount: 0.10, validUntil },
+      { airline: "Ethiopian Airlines", discount: 0.05, validUntil },
+      { airline: "Kenya Airways",    discount: 0.07, validUntil },
+      { airline: "Royal Air Maroc",  discount: 0.12, validUntil },
     ];
 
     const outPath = path.join(process.cwd(), "data", "promotions.json");

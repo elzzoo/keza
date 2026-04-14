@@ -11,13 +11,14 @@ import { optimizeMiles, type OptimizerDecision } from "./optimizer";
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
   economy:  1.0,
+  premium:  1.6,
   business: 2.5,
   first:    4.0,
 };
 
 export type TripType = "oneway" | "roundtrip";
 export type Stops    = "any" | "direct" | "with_stops";
-export type Cabin    = "economy" | "business" | "first";
+export type Cabin    = "economy" | "premium" | "business" | "first";
 
 export interface SearchParams {
   from: string;
