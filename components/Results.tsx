@@ -81,7 +81,7 @@ export function Results({ results, loading, lang, onBack }: Props) {
     cash:    results.filter(r => r.recommendation === "USE CASH").length,
   }), [results]);
 
-  const bestPrice   = results.length ? Math.min(...results.map(r => r.totalPrice)) : 0;
+  const bestPrice   = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings  = results.length ? Math.max(0, ...results.map(r => r.savings ?? 0)) : 0;
 
   const filtered = useMemo(() => {
@@ -89,9 +89,9 @@ export function Results({ results, loading, lang, onBack }: Props) {
     if (tab === "miles")   r = r.filter(x => x.recommendation === "USE MILES");
     if (tab === "consider") r = r.filter(x => x.recommendation === "CONSIDER");
     if (tab === "cash")    r = r.filter(x => x.recommendation === "USE CASH");
-    if (stopFilter === "direct") r = r.filter(x => x.stops === 0);
-    if (stopFilter === "stops")  r = r.filter(x => x.stops > 0);
-    if (sortBy === "price") r.sort((a, b) => a.totalPrice - b.totalPrice);
+    if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
+    if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
+    if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
     else r.sort((a, b) => b.value - a.value);
     return r;
   }, [results, tab, stopFilter, sortBy]);

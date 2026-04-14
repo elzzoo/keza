@@ -141,7 +141,7 @@ export function FlightCard({ flight, lang }: Props) {
 
         {/* Airline tags */}
         <div className="flex flex-wrap gap-1.5">
-          {[...flight.airlines, ...flight.returnAirlines]
+          {[...flight.airlines, ...(flight.returnAirlines ?? [])]
             .filter((a, i, arr) => arr.indexOf(a) === i)
             .map(a => (
               <span key={a} className="text-xs text-muted bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg font-medium">
@@ -170,7 +170,7 @@ export function FlightCard({ flight, lang }: Props) {
               ${total.toFixed(0)}
             </p>
             <p className="text-[11px] text-muted mt-0.5">~{fcfa(total)} FCFA</p>
-            {flight.returnPrice > 0 && (
+            {(flight.returnPrice ?? 0) > 0 && (
               <p className="text-[10px] text-muted/60 mt-0.5">
                 ${flight.price} + ${flight.returnPrice}
               </p>
