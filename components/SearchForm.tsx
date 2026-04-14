@@ -23,26 +23,24 @@ const addDays = (base: string, n: number) => {
 
 const L = {
   fr: {
-    round:"Aller-retour", one:"Aller simple",
-    from:"Départ", to:"Destination",
-    dep:"Date aller", ret:"Date retour",
-    stops:{ label:"Escales", any:"Toutes", direct:"Direct", with_stops:"Avec escales" },
-    cabin:{ label:"Classe", economy:"Économique", business:"Business", first:"Première" },
-    pax:"Passagers", adult:(n:number)=>`adulte${n>1?"s":""}`,
-    programs:"Programmes miles", ph:"Flying Blue, Chase UR, Amex MR…",
-    hint:"optionnel",
-    cta:"Trouver le meilleur vol", loading:"Recherche…", err:"Erreur de recherche",
+    round: "Aller-retour", one: "Aller simple",
+    from: "Départ", to: "Destination",
+    dep: "Date aller", ret: "Date retour",
+    stops: { label: "Escales", any: "Toutes", direct: "Direct", with_stops: "Avec escales" },
+    cabin: { label: "Classe", economy: "Économique", business: "Business", first: "Première" },
+    pax: "Passagers", adult: (n: number) => `adulte${n > 1 ? "s" : ""}`,
+    programs: "Programmes miles", ph: "Flying Blue, Chase UR, Amex MR…", hint: "optionnel",
+    cta: "Trouver le meilleur vol", loading: "Recherche en cours…", err: "Erreur de recherche",
   },
   en: {
-    round:"Round trip", one:"One way",
-    from:"From", to:"To",
-    dep:"Departure", ret:"Return",
-    stops:{ label:"Stops", any:"Any", direct:"Direct", with_stops:"With stops" },
-    cabin:{ label:"Cabin", economy:"Economy", business:"Business", first:"First" },
-    pax:"Passengers", adult:(n:number)=>`adult${n>1?"s":""}`,
-    programs:"Miles programs", ph:"Flying Blue, Chase UR, Amex MR…",
-    hint:"optional",
-    cta:"Find best option", loading:"Searching…", err:"Search error",
+    round: "Round trip", one: "One way",
+    from: "From", to: "To",
+    dep: "Departure date", ret: "Return date",
+    stops: { label: "Stops", any: "Any", direct: "Direct", with_stops: "With stops" },
+    cabin: { label: "Cabin", economy: "Economy", business: "Business", first: "First" },
+    pax: "Passengers", adult: (n: number) => `adult${n > 1 ? "s" : ""}`,
+    programs: "Miles programs", ph: "Flying Blue, Chase UR, Amex MR…", hint: "optional",
+    cta: "Find best option", loading: "Searching…", err: "Search error",
   },
 };
 
@@ -57,11 +55,10 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
   const [cabin,      setCabin]      = useState<Cabin>("economy");
   const [passengers, setPassengers] = useState(1);
   const [programs,   setPrograms]   = useState("");
-  const [error,      setError]      = useState<string|null>(null);
+  const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
 
   const canGo = !!from && !!to && from !== to;
-
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
 
   const submit = useCallback(async (e: React.FormEvent) => {
@@ -88,31 +85,30 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
     } finally { setBusy(false); onLoading(false); }
   }, [from, to, depDate, retDate, tripType, stops, cabin, passengers, programs, busy, canGo, onResults, onLoading, t.err]);
 
-  // ── Pill helpers ────────────────────────────────
-  const tripPill = (active: boolean) => clsx(
-    "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5",
-    active ? "bg-accent text-white shadow-sm shadow-accent/30" : "text-muted hover:text-white"
+  const tripBtn = (active: boolean) => clsx(
+    "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center justify-center gap-1.5",
+    active
+      ? "bg-white text-primary shadow-sm border border-slate-200"
+      : "text-muted hover:text-fg"
   );
   const chip = (active: boolean) => clsx(
-    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-left",
-    active ? "bg-accent/15 text-accent-light" : "text-muted hover:text-muted-2"
+    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 text-left",
+    active ? "bg-primary/10 text-primary" : "text-muted hover:text-fg hover:bg-slate-50"
   );
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form onSubmit={submit}>
+      <div className="bg-white rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,.10)] p-5 space-y-4">
 
-      {/* ── Trip type toggle ──────────────────────── */}
-      <div className="flex gap-1 bg-surface border border-border rounded-2xl p-1.5">
-        <button type="button" onClick={() => setTripType("roundtrip")} className={tripPill(tripType === "roundtrip")}>
-          <span>⇄</span>{t.round}
-        </button>
-        <button type="button" onClick={() => setTripType("oneway")} className={tripPill(tripType === "oneway")}>
-          <span>→</span>{t.one}
-        </button>
-      </div>
-
-      {/* ── Main search card ─────────────────────── */}
-      <div className="glass rounded-2xl p-5 space-y-4">
+        {/* Trip type toggle */}
+        <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
+          <button type="button" onClick={() => setTripType("roundtrip")} className={tripBtn(tripType === "roundtrip")}>
+            <span>⇄</span>{t.round}
+          </button>
+          <button type="button" onClick={() => setTripType("oneway")} className={tripBtn(tripType === "oneway")}>
+            <span>→</span>{t.one}
+          </button>
+        </div>
 
         {/* From / Swap / To */}
         <div className="flex items-end gap-2">
@@ -123,7 +119,7 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
             type="button"
             onClick={() => { setFrom(to); setTo(from); }}
             aria-label={lang === "fr" ? "Inverser" : "Swap"}
-            className="mb-1 w-9 h-9 flex-shrink-0 rounded-full border border-border bg-white text-muted hover:text-accent hover:border-accent/40 hover:bg-accent/8 flex items-center justify-center transition-all shadow-sm"
+            className="mb-1 w-9 h-9 flex-shrink-0 rounded-full border border-slate-200 bg-white text-muted hover:text-primary hover:border-primary/40 hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm"
           >
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v14M17 12.5 12.5 17m0 0L8 12.5M12.5 17V3" />
@@ -139,25 +135,25 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.dep}</label>
             <input type="date" value={depDate} min={today} onChange={e => onDep(e.target.value)} required
-              className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all [color-scheme:light]" />
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all [color-scheme:light]" />
           </div>
           {tripType === "roundtrip" && (
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.ret}</label>
-              <input type="date" value={retDate} min={addDays(depDate,1)} onChange={e => setRetDate(e.target.value)} required
-                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all [color-scheme:light]" />
+              <input type="date" value={retDate} min={addDays(depDate, 1)} onChange={e => setRetDate(e.target.value)} required
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all [color-scheme:light]" />
             </div>
           )}
         </div>
 
         {/* Filters row */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {/* Stops */}
           <div className="space-y-1.5">
             <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.stops.label}</p>
-            <div className="bg-surface border border-border rounded-xl p-1 flex flex-col gap-0.5">
-              {(["any","direct","with_stops"] as Stops[]).map(s => (
-                <button key={s} type="button" onClick={() => setStops(s)} className={chip(stops===s)}>
+            <div className="bg-white border border-slate-200 rounded-xl p-1 flex flex-col gap-0.5">
+              {(["any", "direct", "with_stops"] as Stops[]).map(s => (
+                <button key={s} type="button" onClick={() => setStops(s)} className={chip(stops === s)}>
                   {t.stops[s]}
                 </button>
               ))}
@@ -166,9 +162,9 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           {/* Cabin */}
           <div className="space-y-1.5">
             <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.cabin.label}</p>
-            <div className="bg-surface border border-border rounded-xl p-1 flex flex-col gap-0.5">
-              {(["economy","business","first"] as Cabin[]).map(c => (
-                <button key={c} type="button" onClick={() => setCabin(c)} className={chip(cabin===c)}>
+            <div className="bg-white border border-slate-200 rounded-xl p-1 flex flex-col gap-0.5">
+              {(["economy", "business", "first"] as Cabin[]).map(c => (
+                <button key={c} type="button" onClick={() => setCabin(c)} className={chip(cabin === c)}>
                   {t.cabin[c]}
                 </button>
               ))}
@@ -177,13 +173,13 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           {/* Passengers */}
           <div className="space-y-1.5">
             <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.pax}</p>
-            <div className="bg-surface border border-border rounded-xl flex flex-col items-center justify-center gap-2 py-3 h-[calc(100%-1.5rem)]">
+            <div className="bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1.5 py-3 h-[calc(100%-1.5rem)]">
               <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setPassengers(p => Math.max(1,p-1))}
-                  className="w-7 h-7 rounded-lg bg-surface border border-border text-muted hover:text-fg hover:border-accent/40 flex items-center justify-center text-lg font-bold transition-all shadow-sm">−</button>
-                <span className="text-2xl font-black text-fg tabular-nums w-6 text-center font-mono">{passengers}</span>
-                <button type="button" onClick={() => setPassengers(p => Math.min(9,p+1))}
-                  className="w-7 h-7 rounded-lg bg-surface border border-border text-muted hover:text-fg hover:border-accent/40 flex items-center justify-center text-lg font-bold transition-all shadow-sm">+</button>
+                <button type="button" onClick={() => setPassengers(p => Math.max(1, p - 1))}
+                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-muted hover:text-fg hover:border-primary/40 flex items-center justify-center text-base font-bold transition-all shadow-sm">−</button>
+                <span className="text-2xl font-black text-fg tabular-nums w-6 text-center">{passengers}</span>
+                <button type="button" onClick={() => setPassengers(p => Math.min(9, p + 1))}
+                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-muted hover:text-fg hover:border-primary/40 flex items-center justify-center text-base font-bold transition-all shadow-sm">+</button>
               </div>
               <p className="text-[10px] text-muted">{t.adult(passengers)}</p>
             </div>
@@ -194,18 +190,18 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-muted uppercase tracking-widest flex items-center gap-2">
             {t.programs}
-            <span className="font-normal normal-case text-muted/40">— {t.hint}</span>
+            <span className="font-normal normal-case text-muted/60">— {t.hint}</span>
           </label>
           <input
             type="text" value={programs} onChange={e => setPrograms(e.target.value)}
             placeholder={t.ph}
-            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-fg placeholder-muted/50 text-sm focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-all"
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg placeholder-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
           />
         </div>
 
         {/* Error */}
         {error && (
-          <div role="alert" className="text-danger text-sm bg-danger/8 border border-danger/20 rounded-xl px-4 py-3 flex items-center gap-2">
+          <div role="alert" className="text-danger-text text-sm bg-danger-dim border border-danger/20 rounded-xl px-4 py-3 flex items-center gap-2">
             <span>⚠️</span>{error}
           </div>
         )}
@@ -215,11 +211,10 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           type="submit"
           disabled={busy || !canGo}
           className={clsx(
-            "w-full py-4 rounded-2xl text-white font-black text-sm tracking-wide transition-all duration-200",
-            "focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-2 focus:ring-offset-bg",
+            "w-full py-3.5 rounded-2xl text-white font-semibold text-sm tracking-wide transition-all duration-150",
             busy || !canGo
-              ? "opacity-40 cursor-not-allowed bg-accent"
-              : "bg-accent hover:bg-accent-light active:scale-[0.98] shadow-lg shadow-accent/25 hover:shadow-accent/40"
+              ? "opacity-50 cursor-not-allowed bg-primary"
+              : "bg-primary hover:bg-primary-hover active:scale-[0.99] shadow-blue"
           )}
         >
           {busy ? `⏳ ${t.loading}` : `🔍  ${t.cta}`}

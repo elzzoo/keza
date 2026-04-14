@@ -1,141 +1,159 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
-import { SearchForm }  from "@/components/SearchForm";
-import { Results }     from "@/components/Results";
-import { PromoBanner } from "@/components/PromoBanner";
-import { HowItWorks }  from "@/components/HowItWorks";
-
-type Lang = "fr" | "en";
+import { Header }        from "@/components/Header";
+import { Footer }        from "@/components/Footer";
+import { TrustBar }      from "@/components/TrustBar";
+import { SearchForm }    from "@/components/SearchForm";
+import { Results }       from "@/components/Results";
+import { HowItWorks }    from "@/components/HowItWorks";
+import { PromoBanner }   from "@/components/PromoBanner";
+import { PopularRoutes } from "@/components/PopularRoutes";
 
 export default function HomePage() {
+  const [lang,    setLang]    = useState<"fr" | "en">("fr");
   const [results, setResults] = useState<FlightResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [lang, setLang]       = useState<Lang>("fr");
-  const hasResults = results.length > 0 || loading;
+  const [hasSearched, setHasSearched] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  const handleResults = useCallback((r: FlightResult[]) => {
+    setResults(r);
+    setHasSearched(true);
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+  }, []);
+
+  const handleBack = () => {
+    setResults([]); setHasSearched(false);
+  };
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang={lang} onLangChange={setLang} />
+      <TrustBar lang={lang} />
 
-      {/* ── Sticky nav ────────────────────────────── */}
-      <header className="sticky top-0 z-50 glass-nav">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-black text-lg tracking-tight">
-              <span className="text-accent">KE</span>
-              <span className="text-fg">ZA</span>
-            </span>
-            <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-success/70 bg-success/8 border border-success/15 rounded-full px-2.5 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              Live
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden md:block text-[11px] text-muted tracking-wide">Travel Decision Engine</span>
-            <div className="flex gap-0.5 bg-surface border border-border rounded-xl p-1">
-              {(["fr","en"] as Lang[]).map(l => (
-                <button key={l} type="button" onClick={() => setLang(l)}
-                  className={clsx(
-                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all",
-                    lang === l ? "bg-accent text-white" : "text-muted hover:text-white"
-                  )}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </header>
+      <main className="flex-1 max-w-lg mx-auto w-full px-4 pb-12">
 
-      {/* ── Hero (landing only) ───────────────────── */}
-      {!hasResults && (
-        <section className="relative overflow-hidden">
-          <div className="hero-glow" />
-          <div className="relative z-10 max-w-2xl mx-auto px-4 pt-16 pb-12 text-center">
-            {/* Status pill */}
-            <div className="inline-flex items-center gap-2 bg-accent/8 border border-accent/15 rounded-full px-4 py-1.5 text-xs text-accent/70 font-semibold mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              {lang === "fr"
-                ? "Comparateur cash vs miles · Données en temps réel"
-                : "Cash vs miles · Real-time pricing"}
+        {/* ── Hero ──────────────────────────────────────────── */}
+        {!hasSearched && (
+          <div className="pt-10 pb-8 text-center space-y-4 animate-fade-up">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-xs font-semibold text-primary">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              {lang === "fr" ? "Comparateur cash vs miles · Données en temps réel" : "Cash vs miles comparator · Real-time data"}
             </div>
 
             {/* Title */}
-            <h1 className="text-5xl sm:text-6xl font-black tracking-tight leading-[1.05] mb-5">
-              <span className="text-gradient">
-                {lang === "fr" ? "Cash ou miles ?" : "Cash or miles?"}
-              </span>
-              <br />
-              <span className="text-fg/90 text-4xl sm:text-5xl">
-                {lang === "fr" ? "KEZA décide." : "KEZA decides."}
-              </span>
-            </h1>
-
-            <p className="text-muted-2 text-base max-w-sm mx-auto leading-relaxed">
-              {lang === "fr"
-                ? "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol partant d'Afrique."
-                : "Compare the true cost of each option — cash, miles, or transfer — on every flight from Africa."}
-            </p>
+            <div className="space-y-1">
+              <h1 className="text-4xl sm:text-5xl font-black leading-tight">
+                <span className="bg-gradient-to-br from-blue-800 via-primary to-blue-400 bg-clip-text text-transparent">
+                  {lang === "fr" ? "Cash ou miles ?" : "Cash or miles?"}
+                </span>
+                <br />
+                <span className="text-fg">
+                  {lang === "fr" ? "KEZA décide." : "KEZA decides."}
+                </span>
+              </h1>
+              <p className="text-base text-muted max-w-sm mx-auto leading-relaxed">
+                {lang === "fr"
+                  ? "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol partant d'Afrique."
+                  : "Compare the real cost of each option — cash, miles or transfer — on every flight from Africa."}
+              </p>
+            </div>
           </div>
-        </section>
-      )}
-
-      {/* ── Content ───────────────────────────────── */}
-      <main className="max-w-2xl mx-auto px-4 pb-20 space-y-6">
-
-        {!hasResults && <PromoBanner lang={lang} />}
-
-        {/* Search */}
-        <section>
-          {!hasResults && (
-            <p className="section-rule mb-4">
-              {lang === "fr" ? "Rechercher" : "Search"}
-            </p>
-          )}
-          <SearchForm onResults={setResults} onLoading={setLoading} lang={lang} />
-        </section>
-
-        {/* Results */}
-        {hasResults && (
-          <section className="space-y-4">
-            <p className="section-rule">
-              {lang === "fr" ? "Résultats" : "Results"}
-            </p>
-            <Results results={results} loading={loading} lang={lang} />
-            {!loading && results.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setResults([])}
-                className="w-full py-3 rounded-2xl border border-border text-xs text-muted hover:text-fg hover:border-border-light transition-all"
-              >
-                ← {lang === "fr" ? "Nouvelle recherche" : "New search"}
-              </button>
-            )}
-          </section>
         )}
 
-        {!hasResults && <HowItWorks lang={lang} />}
+        {/* ── Compact heading in results mode ───────────────── */}
+        {hasSearched && (
+          <div className="pt-6 pb-4">
+            <div className="flex items-center justify-between">
+              <span className="font-black text-lg">
+                <span className="text-primary">KE</span>
+                <span className="text-fg">ZA</span>
+              </span>
+              <span className="text-xs text-muted">
+                {lang === "fr" ? "Cash ou Miles ?" : "Cash or Miles?"}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ── Search form ───────────────────────────────────── */}
+        <div className="animate-fade-up">
+          <SearchForm onResults={handleResults} onLoading={setLoading} lang={lang} />
+        </div>
+
+        {/* ── Results ───────────────────────────────────────── */}
+        {(hasSearched || loading) && (
+          <div ref={resultsRef} className="mt-6">
+            <Results
+              results={results}
+              loading={loading}
+              lang={lang}
+              onBack={handleBack}
+            />
+          </div>
+        )}
+
+        {/* ── Homepage content (hidden during results) ──────── */}
+        {!hasSearched && (
+          <div className="mt-8 space-y-6 animate-fade-up">
+            {/* Popular routes */}
+            <PopularRoutes
+              lang={lang}
+              onSelect={(_from, _to) => {
+                // Selecting a popular route scrolls to form — the user then submits
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+
+            {/* Promo banner */}
+            <PromoBanner lang={lang} />
+
+            {/* How it works */}
+            <HowItWorks lang={lang} />
+
+            {/* Recommendation legend */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
+              <p className="section-rule">
+                {lang === "fr" ? "Nos recommandations" : "Our recommendations"}
+              </p>
+              <div className="space-y-2.5">
+                {[
+                  {
+                    band: "bg-miles-band",
+                    label: lang === "fr" ? "UTILISER LES MILES" : "USE MILES",
+                    desc: lang === "fr" ? "La valeur de vos miles est supérieure au prix cash. Rachetez vos points !" : "Your miles value exceeds the cash price. Redeem your points!",
+                    icon: "✈",
+                  },
+                  {
+                    band: "bg-consider-band",
+                    label: lang === "fr" ? "À CONSIDÉRER" : "CONSIDER",
+                    desc: lang === "fr" ? "Valeur correcte. Bon choix selon votre programme et vos points disponibles." : "Decent value. Good choice depending on your program and available points.",
+                    icon: "◎",
+                  },
+                  {
+                    band: "bg-cash-band",
+                    label: lang === "fr" ? "PAYER EN CASH" : "USE CASH",
+                    desc: lang === "fr" ? "Le prix cash est plus avantageux. Gardez vos miles pour une meilleure occasion." : "Cash price is more advantageous. Save your miles for a better deal.",
+                    icon: "◈",
+                  },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <div className={`flex-shrink-0 w-20 px-2 py-1 rounded-lg ${item.band} flex items-center justify-center`}>
+                      <span className="text-white text-[10px] font-black tracking-wide">{item.icon} {item.label.split(" ")[0]}</span>
+                    </div>
+                    <p className="text-xs text-muted leading-relaxed flex-1">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* ── Footer ────────────────────────────────── */}
-      <footer className="border-t border-border/40 py-8">
-        <div className="max-w-2xl mx-auto px-4 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs text-muted/60">
-            <span className="text-accent font-bold">KE</span>
-            <span className="font-bold text-fg/30">ZA</span>
-            {" · "}Travel Decision Engine
-          </span>
-          <span className="text-xs text-muted/60">
-            {lang === "fr" ? "Conçu à Dakar 🇸🇳" : "Built in Dakar 🇸🇳"}
-          </span>
-        </div>
-      </footer>
+      {!hasSearched && <Footer lang={lang} />}
     </div>
   );
-}
-
-// clsx inline pour page.tsx (pas d'import supplémentaire)
-function clsx(...args: (string | boolean | undefined)[]) {
-  return args.filter(Boolean).join(" ");
 }
