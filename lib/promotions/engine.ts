@@ -26,9 +26,15 @@ export function applyPromotions(
   flights: NormalizedFlight[],
   promotions: Promotion[]
 ): NormalizedFlight[] {
+  const now = new Date();
+  // Only apply promotions that have not expired
+  const activePromos = promotions.filter(
+    (p) => !p.validUntil || new Date(p.validUntil) >= now
+  );
+
   return flights.map((f) => {
     let price = f.price;
-    for (const promo of promotions) {
+    for (const promo of activePromos) {
       const airlineMatch = f.airlines.some(
         (a) => a.toLowerCase() === promo.airline.toLowerCase()
       );
