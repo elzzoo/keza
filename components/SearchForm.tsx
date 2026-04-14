@@ -12,8 +12,7 @@ interface Props {
 }
 
 type TripType = "oneway" | "roundtrip";
-type Stops    = "any" | "direct" | "with_stops";
-type Cabin    = "economy" | "business" | "first";
+type Cabin    = "economy" | "business";
 
 const today   = new Date().toISOString().split("T")[0]!;
 const addDays = (base: string, n: number) => {
@@ -21,37 +20,12 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
-const L = {
-  fr: {
-    round: "Aller-retour", one: "Aller simple",
-    from: "Départ", to: "Destination",
-    dep: "Date aller", ret: "Date retour",
-    stops: { label: "Escales", any: "Toutes", direct: "Direct", with_stops: "Avec escales" },
-    cabin: { label: "Classe", economy: "Économique", business: "Business", first: "Première" },
-    pax: "Passagers", adult: (n: number) => `adulte${n > 1 ? "s" : ""}`,
-    programs: "Programmes miles", ph: "Flying Blue, Chase UR, Amex MR…", hint: "optionnel",
-    cta: "Trouver le meilleur vol", loading: "Recherche en cours…", err: "Erreur de recherche",
-  },
-  en: {
-    round: "Round trip", one: "One way",
-    from: "From", to: "To",
-    dep: "Departure date", ret: "Return date",
-    stops: { label: "Stops", any: "Any", direct: "Direct", with_stops: "With stops" },
-    cabin: { label: "Cabin", economy: "Economy", business: "Business", first: "First" },
-    pax: "Passengers", adult: (n: number) => `adult${n > 1 ? "s" : ""}`,
-    programs: "Miles programs", ph: "Flying Blue, Chase UR, Amex MR…", hint: "optional",
-    cta: "Find best option", loading: "Searching…", err: "Search error",
-  },
-};
-
 export function SearchForm({ onResults, onLoading, lang }: Props) {
-  const t = L[lang];
   const [from,       setFrom]       = useState("");
   const [to,         setTo]         = useState("");
   const [tripType,   setTripType]   = useState<TripType>("roundtrip");
   const [depDate,    setDepDate]    = useState(addDays(today, 30));
   const [retDate,    setRetDate]    = useState(addDays(today, 37));
-  const [stops,      setStops]      = useState<Stops>("any");
   const [cabin,      setCabin]      = useState<Cabin>("economy");
   const [passengers, setPassengers] = useState(1);
   const [programs,   setPrograms]   = useState("");
@@ -72,136 +46,173 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
         body: JSON.stringify({
           from, to, date: depDate,
           returnDate: tripType === "roundtrip" ? retDate : undefined,
-          tripType, stops, cabin, passengers,
+          tripType, cabin, passengers,
           userPrograms: programs ? programs.split(",").map(p => p.trim()).filter(Boolean) : [],
         }),
       });
       const json = await res.json() as { results: FlightResult[]; error?: string };
-      if (!res.ok) throw new Error(json.error ?? t.err);
+      if (!res.ok) throw new Error(json.error ?? (lang === "fr" ? "Erreur de recherche" : "Search error"));
       onResults(json.results);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.err);
+      setError(err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error"));
       onResults([]);
     } finally { setBusy(false); onLoading(false); }
-  }, [from, to, depDate, retDate, tripType, stops, cabin, passengers, programs, busy, canGo, onResults, onLoading, t.err]);
+  }, [from, to, depDate, retDate, tripType, cabin, passengers, programs, busy, canGo, onResults, onLoading, lang]);
 
   const tripBtn = (active: boolean) => clsx(
-    "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center justify-center gap-1.5",
+    "flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-150",
+    active ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+  );
+
+  const cabinBtn = (active: boolean) => clsx(
+    "flex-1 py-2.5 rounded-xl font-semibold text-sm border transition-all duration-150",
     active
-      ? "bg-white text-primary shadow-sm border border-slate-200"
-      : "text-muted hover:text-fg"
+      ? "bg-primary/10 border-primary/30 text-primary"
+      : "bg-slate-50 border-slate-200 text-muted hover:border-slate-300 hover:text-fg"
   );
-  const chip = (active: boolean) => clsx(
-    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 text-left",
-    active ? "bg-primary/10 text-primary" : "text-muted hover:text-fg hover:bg-slate-50"
-  );
+
+  const fr = lang === "fr";
 
   return (
     <form onSubmit={submit}>
-      <div className="bg-white rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,.10)] p-5 space-y-4">
+      <div className="bg-white rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,.10)] border border-slate-100 p-5 space-y-4">
 
         {/* Trip type toggle */}
         <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
           <button type="button" onClick={() => setTripType("roundtrip")} className={tripBtn(tripType === "roundtrip")}>
-            <span>⇄</span>{t.round}
+            {fr ? "Aller-retour" : "Round trip"}
           </button>
           <button type="button" onClick={() => setTripType("oneway")} className={tripBtn(tripType === "oneway")}>
-            <span>→</span>{t.one}
+            {fr ? "Aller simple" : "One way"}
           </button>
         </div>
 
         {/* From / Swap / To */}
         <div className="flex items-end gap-2">
           <div className="flex-1 min-w-0">
-            <AirportPicker label={t.from} labelEn="From" value={from} onChange={setFrom} exclude={to} lang={lang} />
+            <AirportPicker
+              label={fr ? "Départ" : "From"} labelEn="From"
+              value={from} onChange={setFrom} exclude={to} lang={lang}
+            />
           </div>
           <button
             type="button"
             onClick={() => { setFrom(to); setTo(from); }}
-            aria-label={lang === "fr" ? "Inverser" : "Swap"}
-            className="mb-1 w-9 h-9 flex-shrink-0 rounded-full border border-slate-200 bg-white text-muted hover:text-primary hover:border-primary/40 hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm"
+            aria-label={fr ? "Inverser" : "Swap"}
+            className="mb-1 w-9 h-9 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-primary text-slate-500 flex items-center justify-center transition-all flex-shrink-0"
           >
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v14M17 12.5 12.5 17m0 0L8 12.5M12.5 17V3" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
             </svg>
           </button>
           <div className="flex-1 min-w-0">
-            <AirportPicker label={t.to} labelEn="To" value={to} onChange={setTo} exclude={from} lang={lang} />
+            <AirportPicker
+              label={fr ? "Destination" : "To"} labelEn="To"
+              value={to} onChange={setTo} exclude={from} lang={lang}
+            />
           </div>
         </div>
 
         {/* Dates */}
         <div className={clsx("grid gap-3", tripType === "roundtrip" ? "grid-cols-2" : "grid-cols-1")}>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.dep}</label>
-            <input type="date" value={depDate} min={today} onChange={e => onDep(e.target.value)} required
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all [color-scheme:light]" />
+          <div>
+            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+              {fr ? "Date aller" : "Departure"}
+            </p>
+            <button
+              type="button"
+              onClick={() => (document.getElementById("keza-dep") as HTMLInputElement)?.showPicker?.()}
+              className="w-full flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 transition-all relative"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
+                <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="font-medium">
+                {new Date(depDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
+              </span>
+              <input id="keza-dep" type="date" value={depDate} min={today}
+                onChange={e => onDep(e.target.value)}
+                className="sr-only" tabIndex={-1} />
+            </button>
           </div>
           {tripType === "roundtrip" && (
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.ret}</label>
-              <input type="date" value={retDate} min={addDays(depDate, 1)} onChange={e => setRetDate(e.target.value)} required
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all [color-scheme:light]" />
+            <div>
+              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+                {fr ? "Date retour" : "Return"}
+              </p>
+              <button
+                type="button"
+                onClick={() => (document.getElementById("keza-ret") as HTMLInputElement)?.showPicker?.()}
+                className="w-full flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 transition-all relative"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                <span className="font-medium">
+                  {new Date(retDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
+                </span>
+                <input id="keza-ret" type="date" value={retDate} min={addDays(depDate, 1)}
+                  onChange={e => setRetDate(e.target.value)}
+                  className="sr-only" tabIndex={-1} />
+              </button>
             </div>
           )}
         </div>
 
-        {/* Filters row */}
-        <div className="grid grid-cols-3 gap-3">
-          {/* Stops */}
-          <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.stops.label}</p>
-            <div className="bg-white border border-slate-200 rounded-xl p-1 flex flex-col gap-0.5">
-              {(["any", "direct", "with_stops"] as Stops[]).map(s => (
-                <button key={s} type="button" onClick={() => setStops(s)} className={chip(stops === s)}>
-                  {t.stops[s]}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Cabin + Passengers */}
+        <div className="flex gap-3">
           {/* Cabin */}
-          <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.cabin.label}</p>
-            <div className="bg-white border border-slate-200 rounded-xl p-1 flex flex-col gap-0.5">
-              {(["economy", "business", "first"] as Cabin[]).map(c => (
-                <button key={c} type="button" onClick={() => setCabin(c)} className={chip(cabin === c)}>
-                  {t.cabin[c]}
-                </button>
-              ))}
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+              {fr ? "Classe" : "Cabin"}
+            </p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setCabin("economy")} className={cabinBtn(cabin === "economy")}>
+                {fr ? "Éco" : "Economy"}
+              </button>
+              <button type="button" onClick={() => setCabin("business")} className={cabinBtn(cabin === "business")}>
+                Business
+              </button>
             </div>
           </div>
+
           {/* Passengers */}
-          <div className="space-y-1.5">
-            <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{t.pax}</p>
-            <div className="bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1.5 py-3 h-[calc(100%-1.5rem)]">
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setPassengers(p => Math.max(1, p - 1))}
-                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-muted hover:text-fg hover:border-primary/40 flex items-center justify-center text-base font-bold transition-all shadow-sm">−</button>
-                <span className="text-2xl font-black text-fg tabular-nums w-6 text-center">{passengers}</span>
-                <button type="button" onClick={() => setPassengers(p => Math.min(9, p + 1))}
-                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-muted hover:text-fg hover:border-primary/40 flex items-center justify-center text-base font-bold transition-all shadow-sm">+</button>
-              </div>
-              <p className="text-[10px] text-muted">{t.adult(passengers)}</p>
+          <div className="w-32">
+            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+              {fr ? "Passagers" : "Passengers"}
+            </p>
+            <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2.5 h-[42px]">
+              <button
+                type="button"
+                onClick={() => setPassengers(p => Math.max(1, p - 1))}
+                className="w-6 h-6 rounded-lg bg-slate-100 hover:bg-primary/10 hover:text-primary text-muted flex items-center justify-center text-sm font-bold transition-all"
+              >−</button>
+              <span className="text-sm font-bold text-fg tabular-nums">{passengers} {fr ? "pax" : "pax"}</span>
+              <button
+                type="button"
+                onClick={() => setPassengers(p => Math.min(9, p + 1))}
+                className="w-6 h-6 rounded-lg bg-slate-100 hover:bg-primary/10 hover:text-primary text-muted flex items-center justify-center text-sm font-bold transition-all"
+              >+</button>
             </div>
           </div>
         </div>
 
-        {/* Miles programs */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-muted uppercase tracking-widest flex items-center gap-2">
-            {t.programs}
-            <span className="font-normal normal-case text-muted/60">— {t.hint}</span>
+        {/* Miles programs — collapsible hint */}
+        <div>
+          <label className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
+            {fr ? "Programmes miles" : "Miles programs"}
+            <span className="font-normal normal-case text-muted/60 tracking-normal">— {fr ? "optionnel" : "optional"}</span>
           </label>
           <input
             type="text" value={programs} onChange={e => setPrograms(e.target.value)}
-            placeholder={t.ph}
-            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg placeholder-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
+            placeholder="Flying Blue, Chase UR, Amex MR…"
+            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-fg placeholder-muted/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
           />
         </div>
 
         {/* Error */}
         {error && (
-          <div role="alert" className="text-danger-text text-sm bg-danger-dim border border-danger/20 rounded-xl px-4 py-3 flex items-center gap-2">
+          <div role="alert" className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
             <span>⚠️</span>{error}
           </div>
         )}
@@ -211,13 +222,19 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
           type="submit"
           disabled={busy || !canGo}
           className={clsx(
-            "w-full py-3.5 rounded-2xl text-white font-semibold text-sm tracking-wide transition-all duration-150",
+            "w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-all duration-150",
             busy || !canGo
               ? "opacity-50 cursor-not-allowed bg-primary"
               : "bg-primary hover:bg-primary-hover active:scale-[0.99] shadow-blue"
           )}
         >
-          {busy ? `⏳ ${t.loading}` : `🔍  ${t.cta}`}
+          {busy
+            ? <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                {fr ? "Recherche en cours…" : "Searching…"}
+              </span>
+            : `🔍  ${fr ? "Trouver le meilleur vol" : "Find best option"}`
+          }
         </button>
       </div>
     </form>

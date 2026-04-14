@@ -69,7 +69,7 @@ export function FlightCard({ flight, lang }: Props) {
   const rec = REC[flight.recommendation as keyof typeof REC] ?? REC["USE CASH"];
   const isMilesGood = flight.recommendation !== "USE CASH";
   const total = flight.totalPrice;
-  const milesEst = approxMiles(total, flight.value);
+  const milesEst = approxMiles(total, flight.value ?? 0);
   const label = lang === "fr" ? rec.labelFr : rec.labelEn;
 
   const opt = flight.optimization;
@@ -83,7 +83,7 @@ export function FlightCard({ flight, lang }: Props) {
       optBadge = { text: `⇄ Transfert`, cls: "bg-violet-100 text-violet-700 border-violet-200" };
   }
 
-  const valuePercent = Math.min(100, Math.max(0, (flight.value / 3) * 100));
+  const valuePercent = Math.min(100, Math.max(0, ((flight.value ?? 0) / 3) * 100));
 
   return (
     <div className={clsx(
@@ -97,7 +97,7 @@ export function FlightCard({ flight, lang }: Props) {
             {rec.icon} {label}
           </span>
         </div>
-        <DealScore value={flight.value} lang={lang} />
+        <DealScore value={flight.value ?? 0} lang={lang} />
       </div>
 
       {/* Card body */}
@@ -126,10 +126,10 @@ export function FlightCard({ flight, lang }: Props) {
               <div className="w-8 h-px bg-slate-300" />
             </div>
             <div className="text-[10px] text-muted text-center">
-              {flight.stops === 0
+              {(flight.stops ?? 0) === 0
                 ? (lang === "fr" ? "Direct" : "Direct")
-                : `${flight.stops} ${lang === "fr" ? "esc." : "stop"}`
-              } · {lang === "fr" ? "Éco" : "Eco"} · {flight.passengers} pax
+                : `${flight.stops ?? 0} ${lang === "fr" ? "esc." : "stop"}`
+              } · {lang === "fr" ? "Éco" : "Eco"} · {flight.passengers ?? 1} pax
             </div>
           </div>
 
@@ -194,7 +194,7 @@ export function FlightCard({ flight, lang }: Props) {
                   ~{milesEst >= 1000 ? `${(milesEst / 1000).toFixed(0)}K` : milesEst}
                 </p>
                 <p className="text-[11px] text-muted mt-0.5">{lang === "fr" ? "pts estimés" : "est. points"}</p>
-                {flight.savings > 0 && (
+                {(flight.savings ?? 0) > 0 && (
                   <p className="text-[11px] font-bold text-emerald-600 mt-0.5">
                     {lang === "fr" ? "Éco." : "Save"} ${flight.savings}
                   </p>
@@ -210,13 +210,13 @@ export function FlightCard({ flight, lang }: Props) {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted">{lang === "fr" ? "Valeur miles" : "Miles value"}</span>
-            <span className="font-bold text-fg">{flight.value.toFixed(2)} cts/mile</span>
+            <span className="font-bold text-fg">{(flight.value ?? 0).toFixed(2)} cts/mile</span>
           </div>
           <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div
               className={clsx(
                 "h-full rounded-full transition-all duration-700",
-                flight.value >= 2 ? "bg-emerald-500" : flight.value >= 1.2 ? "bg-primary" : "bg-amber-400"
+                (flight.value ?? 0) >= 2 ? "bg-emerald-500" : (flight.value ?? 0) >= 1.2 ? "bg-primary" : "bg-amber-400"
               )}
               style={{ width: `${valuePercent}%` }}
             />
@@ -230,9 +230,9 @@ export function FlightCard({ flight, lang }: Props) {
               {optBadge.text}
             </span>
           )}
-          {flight.savings > 0 && (
+          {(flight.savings ?? 0) > 0 && (
             <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 ml-auto">
-              +${flight.savings} {lang === "fr" ? "d'économie" : "saved"}
+              +${flight.savings ?? 0} {lang === "fr" ? "d'économie" : "saved"}
             </span>
           )}
         </div>

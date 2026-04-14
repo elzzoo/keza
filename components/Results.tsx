@@ -82,7 +82,7 @@ export function Results({ results, loading, lang, onBack }: Props) {
   }), [results]);
 
   const bestPrice   = results.length ? Math.min(...results.map(r => r.totalPrice)) : 0;
-  const maxSavings  = results.length ? Math.max(...results.map(r => r.savings ?? 0)) : 0;
+  const maxSavings  = results.length ? Math.max(0, ...results.map(r => r.savings ?? 0)) : 0;
 
   const filtered = useMemo(() => {
     let r = [...results];
