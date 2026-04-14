@@ -12,7 +12,7 @@ interface Props {
 }
 
 type TripType = "oneway" | "roundtrip";
-type Cabin    = "economy" | "business";
+type Cabin    = "economy" | "premium" | "business";
 
 const today   = new Date().toISOString().split("T")[0]!;
 const addDays = (base: string, n: number) => {
@@ -166,9 +166,12 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
             <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Classe" : "Cabin"}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               <button type="button" onClick={() => setCabin("economy")} className={cabinBtn(cabin === "economy")}>
                 {fr ? "Éco" : "Economy"}
+              </button>
+              <button type="button" onClick={() => setCabin("premium")} className={cabinBtn(cabin === "premium")}>
+                Premium
               </button>
               <button type="button" onClick={() => setCabin("business")} className={cabinBtn(cabin === "business")}>
                 Business

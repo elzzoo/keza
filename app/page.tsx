@@ -33,7 +33,7 @@ export default function HomePage() {
       <Header lang={lang} onLangChange={setLang} />
       <TrustBar lang={lang} />
 
-      <main className="flex-1 max-w-lg mx-auto w-full px-4 pb-12">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
 
         {/* ── Hero ──────────────────────────────────────────── */}
         {!hasSearched && (
@@ -55,7 +55,7 @@ export default function HomePage() {
                   {lang === "fr" ? "KEZA décide." : "KEZA decides."}
                 </span>
               </h1>
-              <p className="text-base text-muted max-w-sm mx-auto leading-relaxed">
+              <p className="text-base text-muted max-w-lg mx-auto leading-relaxed">
                 {lang === "fr"
                   ? "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol partant d'Afrique."
                   : "Compare the real cost of each option — cash, miles or transfer — on every flight from Africa."}
