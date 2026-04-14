@@ -6,8 +6,8 @@
 import type { Zone } from "@/lib/zones";
 import type { Cabin } from "@/lib/engine";
 
-// Miles required: [economy, premium, business]
-// premium index = 1, if not defined falls back to midpoint of eco/biz
+// Miles required per person, one-way: economy / premium / business
+// "first" cabin falls back to business values in getMilesRequired
 type CabinMiles = { economy: number; premium: number; business: number };
 type ZoneChart = Partial<Record<Zone, CabinMiles>>;
 type ProgramChart = Partial<Record<Zone, ZoneChart>>;
