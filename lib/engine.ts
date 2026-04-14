@@ -77,7 +77,7 @@ async function fetchFromTravelpayouts(
   url.searchParams.set("destination", to.toUpperCase());
   url.searchParams.set("month", monthParam);
   url.searchParams.set("currency", "USD");
-  url.searchParams.set("show_to_affiliates", "false");
+  url.searchParams.set("show_to_affiliates", "true");
   url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
@@ -92,29 +92,37 @@ async function fetchFromTravelpayouts(
       return [];
     }
 
+    // API returns { data: [...] } — no "success" field
     const json = (await res.json()) as {
-      success: boolean;
-      data: Array<{
-        origin: string;
-        destination: string;
-        price: number;
-        airline: string;
-        transfers: number;
+      data?: Array<{
+        value: number;
+        number_of_changes: number;
         duration: number;
-        departure_at: string;
+        depart_date: string;
+        actual?: boolean;
       }>;
     };
 
-    if (!json.success || !Array.isArray(json.data)) return [];
+    if (!Array.isArray(json.data) || json.data.length === 0) return [];
 
-    return json.data.map((f) => ({
-      from: f.origin,
-      to: f.destination,
-      price: f.price,
-      airlines: [f.airline],
-      duration: f.duration,
-      stops: f.transfers,
-    }));
+    // Deduplicate by date, keep cheapest price per departure date
+    const byDate = new Map<string, typeof json.data[0]>();
+    for (const f of json.data) {
+      if (f.actual === false) continue;
+      const existing = byDate.get(f.depart_date);
+      if (!existing || f.value < existing.value) byDate.set(f.depart_date, f);
+    }
+
+    return Array.from(byDate.values())
+      .slice(0, 15) // cap at 15 results per direction
+      .map((f) => ({
+        from,
+        to,
+        price: f.value,
+        airlines: [],
+        duration: f.duration > 0 ? f.duration : undefined,
+        stops: f.number_of_changes,
+      }));
   } catch (err) {
     console.error("[engine] fetch failed:", err);
     return [];
