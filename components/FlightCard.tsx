@@ -22,7 +22,7 @@ const REC = {
   "USE CASH": {
     labelFr: "PAYER EN CASH",
     labelEn: "USE CASH",
-    cls: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+    cls: "bg-warning/10 text-warning border-warning/25",
     icon: "◈",
   },
 } as const;
@@ -91,9 +91,9 @@ export function FlightCard({ flight, lang }: Props) {
     ? Math.round((total * 80) / value / 1000) * 1000
     : 0;
 
-  // Value bar — blue always (green reserved for savings only)
-  const valuePercent = Math.min(100, Math.max(0, (value / 3) * 100));
-  const barCls = value >= 1.2 ? "bg-primary" : "bg-subtle";
+  // Value bar — blue for USE MILES, dimmer for lower values (green reserved for savings)
+  const valuePercent = Math.min(100, Math.max(0, (value / 2) * 100));
+  const barCls = value >= 2 ? "bg-primary" : value >= 1 ? "bg-primary/50" : "bg-subtle";
 
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
@@ -204,7 +204,7 @@ export function FlightCard({ flight, lang }: Props) {
           </span>
           <span className={clsx(
             "font-bold",
-            value >= 2 ? "text-primary" : value >= 1.2 ? "text-primary" : "text-muted"
+            value >= 2 ? "text-primary" : value >= 1 ? "text-blue-400/70" : "text-muted"
           )}>
             {value.toFixed(2)}¢/mile{value >= 2 ? " ★" : ""}
           </span>
@@ -229,7 +229,7 @@ export function FlightCard({ flight, lang }: Props) {
         </span>
         {(flight.returnPrice ?? 0) > 0 && (
           <span className="text-[11px] text-muted bg-surface-2 border border-border px-2 py-0.5 rounded-md">
-            ${flight.price} + ${flight.returnPrice}
+            {fr ? "Aller" : "Out"} ${flight.price} · {fr ? "Retour" : "Ret"} ${flight.returnPrice}
           </span>
         )}
       </div>
