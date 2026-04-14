@@ -100,10 +100,15 @@ function buildOption(
   cashTotal: number,
   effectivePrices: Map<string, number>
 ): MilesOption {
+  // For TRANSFER options: prefer the destination program's effective price if set,
+  // otherwise fall back to the source (via) currency's price.
+  // For DIRECT/ALLIANCE: use the program's own price.
   const sourceProgram = via ?? program;
-  const basePrice = effectivePrices.get(sourceProgram)
-    ?? MILES_PRICE_MAP.get(sourceProgram)
-    ?? 3.0;
+  const basePrice =
+    effectivePrices.get(program) ??
+    effectivePrices.get(sourceProgram) ??
+    MILES_PRICE_MAP.get(sourceProgram) ??
+    3.0;
 
   const pricePerMile   = basePrice;
   const acquisitionCost = Math.round((milesRequired * pricePerMile) / 100 * 100) / 100;
@@ -236,7 +241,7 @@ export function buildCostOptions(
 
 export async function getEffectivePrices(): Promise<Map<string, number>> {
   const map = new Map<string, number>();
-  const programs = [...MILES_PRICE_MAP.keys()];
+  const programs = Array.from(MILES_PRICE_MAP.keys());
 
   try {
     const { redis } = await import("./redis");
@@ -252,9 +257,9 @@ export async function getEffectivePrices(): Promise<Map<string, number>> {
       })
     );
   } catch {
-    for (const [program, price] of MILES_PRICE_MAP) {
+    Array.from(MILES_PRICE_MAP.entries()).forEach(([program, price]) => {
       map.set(program, price);
-    }
+    });
   }
 
   return map;
