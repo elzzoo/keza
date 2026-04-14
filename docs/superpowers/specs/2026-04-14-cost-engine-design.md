@@ -367,7 +367,10 @@ interface FlightResult {
   savings: number   // max savings in dollars (positive = miles win)
 
   // ── Kept for sorting & backwards compat ───────────────────
-  value: number              // best cents/mile across all options
+  // value = bestOwnedOption.ownedSavings / (bestOwnedOption.milesRequired / 100)
+  // i.e. cents saved per mile spent — used to sort results by best deal
+  // Falls back to 0 if no miles options exist
+  value: number
   optimization: OptimizerDecision
 }
 ```
