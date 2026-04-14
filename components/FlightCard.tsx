@@ -68,7 +68,7 @@ interface Props {
 export function FlightCard({ flight, lang }: Props) {
   const rec = REC[flight.recommendation as keyof typeof REC] ?? REC["USE CASH"];
   const isMilesGood = flight.recommendation !== "USE CASH";
-  const total = flight.totalPrice;
+  const total = flight.totalPrice ?? 0;
   const milesEst = approxMiles(total, flight.value ?? 0);
   const label = lang === "fr" ? rec.labelFr : rec.labelEn;
 
