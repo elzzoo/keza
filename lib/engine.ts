@@ -1,12 +1,8 @@
 import "server-only";
 import { redis } from "./redis";
 import { loadPromotions, applyPromotions, type NormalizedFlight } from "./promotions/engine";
-import {
-  estimateMiles,
-  calculateMilesValue,
-  getRecommendation,
-} from "./milesEngine";
 import { optimizeMiles, type OptimizerDecision } from "./optimizer";
+import { buildCostOptions, getEffectivePrices, type FlightInput } from "./costEngine";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
@@ -40,19 +36,24 @@ export interface FlightResult {
   airlines: string[];
   stops?: number;
   duration?: number;
-  // Round-trip additions (Option A: two separate legs)
   tripType: TripType;
-  returnPrice?: number;    // per-person return leg price
+  returnPrice?: number;
   returnAirlines?: string[];
   totalPrice?: number;     // (price + returnPrice) × passengers
-  // Options echoed back for display
   cabin: Cabin;
   passengers: number;
-  // Decision layer
-  value: number;           // value per mile in cents
-  recommendation: "USE MILES" | "CONSIDER" | "USE CASH";
+
+  // ── Cost comparison ────────────────────────────────────────────────────────
+  cashTotal: number;
+  milesOptions: import("./costEngine").MilesOption[];
+  bestOwnedOption: import("./costEngine").MilesOption | null;
+  bestPurchasedOption: import("./costEngine").MilesOption | null;
+  recommendation: "MILES_WIN" | "MILES_IF_OWNED" | "CASH_WINS";
+  savings: number;
+
+  // ── Sorting + backwards compat ────────────────────────────────────────────
+  value: number;
   optimization: OptimizerDecision;
-  savings?: number;        // positive savings only
 }
 
 // ─── Travelpayouts fetch ─────────────────────────────────────────────────────
@@ -145,28 +146,33 @@ function enrich(
   passengers: number,
   userPrograms: string[],
   tripType: TripType,
+  effectivePrices: Map<string, number>,
   returnFlight?: NormalizedFlight
 ): FlightResult {
   const multiplier = CABIN_MULTIPLIER[cabin];
 
-  // Apply cabin multiplier to base price
   const outboundPrice = Math.round(f.price * multiplier * 100) / 100;
   const returnPrice   = returnFlight
     ? Math.round(returnFlight.price * multiplier * 100) / 100
     : undefined;
 
-  // Total cost for all passengers
   const totalPrice = returnPrice !== undefined
     ? Math.round((outboundPrice + returnPrice) * passengers * 100) / 100
     : Math.round(outboundPrice * passengers * 100) / 100;
 
-  // Miles V2 calc on total trip cost
-  const distanceProxy   = totalPrice * 4;
-  const estimatedMiles  = estimateMiles(distanceProxy);
-  const taxes           = totalPrice * 0.2;
-  const calc            = calculateMilesValue({ cashPrice: totalPrice, taxes, milesRequired: estimatedMiles });
-  const recommendation  = getRecommendation(calc.valuePerMile);
-  const optimization    = optimizeMiles(f.airlines, userPrograms);
+  const flightInput: FlightInput = {
+    from: f.from,
+    to: f.to,
+    totalPrice,
+    airlines: f.airlines,
+    stops: f.stops ?? 0,
+    cabin,
+    tripType,
+    passengers,
+  };
+
+  const comparison  = buildCostOptions(flightInput, effectivePrices);
+  const optimization = optimizeMiles(f.airlines, userPrograms);
 
   const result: FlightResult = {
     from: f.from,
@@ -178,17 +184,21 @@ function enrich(
     tripType,
     cabin,
     passengers,
-    value: calc.valuePerMile,
-    recommendation,
-    optimization,
     totalPrice,
+    cashTotal:           comparison.cashTotal,
+    milesOptions:        comparison.milesOptions,
+    bestOwnedOption:     comparison.bestOwnedOption,
+    bestPurchasedOption: comparison.bestPurchasedOption,
+    recommendation:      comparison.recommendation,
+    savings:             comparison.savings,
+    value:               comparison.value,
+    optimization,
   };
 
   if (returnPrice !== undefined) {
     result.returnPrice    = returnPrice;
     result.returnAirlines = returnFlight?.airlines;
   }
-  if (calc.savings > 0) result.savings = calc.savings;
 
   return result;
 }
@@ -212,6 +222,9 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
   if (cached) return cached;
+
+  // Fetch effective miles prices once (Redis → static fallback)
+  const effectivePrices = await getEffectivePrices();
 
   // 2. Fetch outbound flights
   const rawOutbound = await fetchFromTravelpayouts(from, to, date, directOnly);
@@ -237,7 +250,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     : undefined;
 
   const results: FlightResult[] = withPromos.map((f) =>
-    enrich(f, cabin, passengers, userPrograms, tripType, cheapestReturn)
+    enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn)
   );
 
   // Sort: best value first
