@@ -34,6 +34,9 @@ export function getAwardTaxes(
   cabin: "economy" | "premium" | "business" | "first",
   passengers: number
 ): number {
+  if (passengers < 0 || !Number.isInteger(passengers)) {
+    throw new Error(`Invalid passenger count: ${passengers}`);
+  }
   const record = AWARD_TAXES[airline] ?? AWARD_TAXES["_default"]!;
   // premium treated as business for taxes; first = business × 1.2
   const base =
