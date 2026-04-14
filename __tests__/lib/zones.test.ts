@@ -33,4 +33,8 @@ describe("getZone", () => {
     expect(getZone("dss")).toBe("AFRICA_WEST");
     expect(getZone("cdg")).toBe("EUROPE");
   });
+  it("handles mixed case input", () => {
+    expect(getZone("Dss")).toBe("AFRICA_WEST");
+    expect(getZone("cDG")).toBe("EUROPE");
+  });
 });
