@@ -10,14 +10,14 @@ interface Promo {
 }
 
 const AIRLINE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  "Air France":         { bg: "#EFF6FF", text: "#2563EB", border: "#BFDBFE" },
-  "Air Sénégal":        { bg: "#F0FDF4", text: "#16A34A", border: "#BBF7D0" },
-  "Turkish Airlines":   { bg: "#FFF7ED", text: "#EA580C", border: "#FED7AA" },
-  "Royal Air Maroc":    { bg: "#FEF2F2", text: "#DC2626", border: "#FECACA" },
-  "Emirates":           { bg: "#FEF2F2", text: "#DC2626", border: "#FECACA" },
-  "Ethiopian Airlines": { bg: "#F0FDF4", text: "#16A34A", border: "#BBF7D0" },
-  "Kenya Airways":      { bg: "#FEF2F2", text: "#B91C1C", border: "#FECACA" },
-  "Qatar Airways":      { bg: "#F5F3FF", text: "#7C3AED", border: "#DDD6FE" },
+  "Air France":         { bg: "#1e2d4f", text: "#60a5fa", border: "#2d4170" },
+  "Air Sénégal":        { bg: "#1a3328", text: "#34d399", border: "#1e4035" },
+  "Turkish Airlines":   { bg: "#2e2118", text: "#fb923c", border: "#3d2a1a" },
+  "Royal Air Maroc":    { bg: "#2e1a1a", text: "#f87171", border: "#3d2020" },
+  "Emirates":           { bg: "#2e1a1a", text: "#f87171", border: "#3d2020" },
+  "Ethiopian Airlines": { bg: "#1a3328", text: "#34d399", border: "#1e4035" },
+  "Kenya Airways":      { bg: "#2e1a1a", text: "#fca5a5", border: "#3d2020" },
+  "Qatar Airways":      { bg: "#211a38", text: "#c084fc", border: "#2d1d4d" },
 };
 
 function formatExpiry(dateStr: string, lang: "fr" | "en"): string {
@@ -52,7 +52,7 @@ export function PromoBanner({ lang }: Props) {
 
       <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-1">
         {promos.map((p, i) => {
-          const colors = AIRLINE_COLORS[p.airline] ?? { bg: "#EFF6FF", text: "#2563EB", border: "#BFDBFE" };
+          const colors = AIRLINE_COLORS[p.airline] ?? { bg: "#1e2d4f", text: "#60a5fa", border: "#2d4170" };
           return (
             <div
               key={i}
@@ -61,7 +61,7 @@ export function PromoBanner({ lang }: Props) {
             >
               <span
                 className="text-[11px] font-black rounded-lg px-2 py-0.5 border"
-                style={{ color: colors.text, background: "white", borderColor: colors.border }}
+                style={{ color: colors.text, background: "rgba(255,255,255,0.05)", borderColor: colors.border }}
               >
                 -{Math.round(p.discount * 100)}%
               </span>

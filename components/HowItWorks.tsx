@@ -16,22 +16,22 @@ const STEPS = {
 export function HowItWorks({ lang }: Props) {
   const steps = STEPS[lang];
   return (
-    <section id="how" className="bg-white rounded-2xl border border-slate-100 shadow-card p-6">
+    <section id="how" className="bg-surface rounded-2xl border border-border p-6">
       <p className="section-rule mb-5">
         {lang === "fr" ? "Comment ça fonctionne" : "How it works"}
       </p>
       <div className="grid grid-cols-3 gap-4 relative">
         {/* Arrow connectors */}
         <div className="absolute top-4 left-1/3 w-1/3 flex items-center justify-center pointer-events-none">
-          <div className="text-slate-300 text-sm">→</div>
+          <div className="text-subtle text-sm">→</div>
         </div>
         <div className="absolute top-4 left-2/3 w-1/3 flex items-center justify-center pointer-events-none">
-          <div className="text-slate-300 text-sm">→</div>
+          <div className="text-subtle text-sm">→</div>
         </div>
 
         {steps.map((s) => (
           <div key={s.n} className="text-center space-y-2.5">
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm mx-auto shadow-blue-sm">
+            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-black text-sm mx-auto">
               {s.n}
             </div>
             <p className="text-sm font-semibold text-fg leading-snug">{s.title}</p>
