@@ -2,7 +2,7 @@ import "server-only";
 import { redis } from "./redis";
 import { loadPromotions, applyPromotions, type NormalizedFlight } from "./promotions/engine";
 import { optimizeMiles, type OptimizerDecision } from "./optimizer";
-import { buildCostOptions, getEffectivePrices, type FlightInput } from "./costEngine";
+import { buildCostOptions, getEffectivePrices, type FlightInput, type MilesOption } from "./costEngine";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
@@ -45,14 +45,14 @@ export interface FlightResult {
 
   // ── Cost comparison ────────────────────────────────────────────────────────
   cashTotal: number;
-  milesOptions: import("./costEngine").MilesOption[];
-  bestOwnedOption: import("./costEngine").MilesOption | null;
-  bestPurchasedOption: import("./costEngine").MilesOption | null;
+  milesOptions: MilesOption[];
+  bestOwnedOption: MilesOption | null;
+  bestPurchasedOption: MilesOption | null;
   recommendation: "MILES_WIN" | "MILES_IF_OWNED" | "CASH_WINS";
   savings: number;
 
   // ── Sorting + backwards compat ────────────────────────────────────────────
-  value: number;
+  value: number;           // cents per 100 miles (owned savings) — used for sorting
   optimization: OptimizerDecision;
 }
 
@@ -224,7 +224,11 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   if (cached) return cached;
 
   // Fetch effective miles prices once (Redis → static fallback)
-  const effectivePrices = await getEffectivePrices();
+  const effectivePrices = await getEffectivePrices().catch(() => {
+    // If Redis is unreachable and static fallback also fails, use empty map
+    // buildCostOptions will still work — it falls back to acquisition cost = 0
+    return new Map<string, number>();
+  });
 
   // 2. Fetch outbound flights
   const rawOutbound = await fetchFromTravelpayouts(from, to, date, directOnly);
