@@ -2,64 +2,65 @@
 
 import clsx from "clsx";
 import type { FlightResult } from "@/lib/engine";
-import type { OptimizerDecision } from "@/lib/optimizer";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 
 // ── Recommendation config ────────────────────────────────────────────────────
 const REC = {
-  "USE MILES": {
-    labelFr: "UTILISER LES MILES",
-    labelEn: "USE MILES",
+  "MILES_WIN": {
+    labelFr: "MILES GAGNENT",
+    labelEn: "MILES WIN",
     cls: "bg-blue-500/15 text-blue-400 border-blue-500/25",
     icon: "✈",
   },
-  "CONSIDER": {
-    labelFr: "À CONSIDÉRER",
-    labelEn: "CONSIDER",
+  "MILES_IF_OWNED": {
+    labelFr: "SI TU AS LES MILES",
+    labelEn: "IF YOU HAVE MILES",
     cls: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     icon: "◎",
   },
-  "USE CASH": {
-    labelFr: "PAYER EN CASH",
-    labelEn: "USE CASH",
+  "CASH_WINS": {
+    labelFr: "CASH GAGNE",
+    labelEn: "CASH WINS",
     cls: "bg-warning/10 text-warning border-warning/25",
     icon: "◈",
   },
 } as const;
 
 // ── Why text ─────────────────────────────────────────────────────────────────
+function formatMiles(n: number): string {
+  return n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
+}
+
 function whyText(flight: FlightResult, lang: "fr" | "en"): string {
-  const v = (flight.value ?? 0).toFixed(1);
-  const opt: OptimizerDecision = flight.optimization;
   const fr = lang === "fr";
+  const owned = flight.bestOwnedOption;
+  const purchased = flight.bestPurchasedOption;
+  const cash = flight.cashTotal;
 
-  let program: string | null = null;
-  if (opt.type === "DIRECT")   program = opt.program;
-  if (opt.type === "ALLIANCE") program = opt.viaProgram ?? opt.alliance ?? null;
-  if (opt.type === "TRANSFER") program = opt.to;
-
-  if (flight.recommendation === "USE MILES") {
-    return program
-      ? (fr
-          ? `Tes miles ${program} valent ${v}¢ ici (seuil : 2¢). Excellent deal — rachète tes points maintenant.`
-          : `Your ${program} miles are worth ${v}¢ here (threshold: 2¢). Excellent — redeem now.`)
-      : (fr
-          ? `Valeur miles à ${v}¢ — au-dessus du seuil optimal. Utilise tes points.`
-          : `Miles value at ${v}¢ — above optimal threshold. Use your points.`);
+  if (flight.recommendation === "MILES_WIN" && purchased) {
+    const save = (cash - purchased.purchasedCost).toFixed(0);
+    const miles = formatMiles(purchased.milesRequired);
+    return fr
+      ? `Acheter ${miles} miles ${purchased.program} coûte ~$${purchased.purchasedCost.toFixed(0)} vs $${cash.toFixed(0)} cash. Économie : $${save}.`
+      : `Buying ${miles} ${purchased.program} miles costs ~$${purchased.purchasedCost.toFixed(0)} vs $${cash.toFixed(0)} cash. Save $${save}.`;
   }
-  if (flight.recommendation === "CONSIDER") {
-    return program
-      ? (fr
-          ? `Valeur correcte à ${v}¢/mile via ${program}. Pertinent si tu as des miles à écouler.`
-          : `Decent value at ${v}¢/mile via ${program}. Worth it if you have miles to use.`)
-      : (fr
-          ? `Valeur correcte à ${v}¢/mile. Pertinent si tu as des miles disponibles.`
-          : `Decent value at ${v}¢/mile. Worth it if you have miles available.`);
+  if (flight.recommendation === "MILES_IF_OWNED" && owned) {
+    const save = (cash - owned.ownedCost).toFixed(0);
+    const miles = formatMiles(owned.milesRequired);
+    return fr
+      ? `Si tu as déjà ${miles} miles ${owned.program}, tu paies juste les taxes (~$${owned.ownedCost.toFixed(0)}). Économie : $${save}.`
+      : `If you already have ${miles} ${owned.program} miles, you pay only taxes (~$${owned.ownedCost.toFixed(0)}). Save $${save}.`;
   }
-  // USE CASH
+  // CASH_WINS
+  if (purchased) {
+    const diff = (purchased.purchasedCost - cash).toFixed(0);
+    return fr
+      ? `Le cash ($${cash.toFixed(0)}) est moins cher que d'acheter des miles ($${purchased.purchasedCost.toFixed(0)}, soit $${diff} de plus). Garde tes miles.`
+      : `Cash ($${cash.toFixed(0)}) beats buying miles ($${purchased.purchasedCost.toFixed(0)}, $${diff} more). Save your miles.`;
+  }
   return fr
-    ? `À ${v}¢/mile, le cash est plus avantageux ici. Garde tes miles pour un meilleur deal.`
-    : `At ${v}¢/mile, cash wins here. Save your miles for a better opportunity.`;
+    ? `Aucune option miles disponible pour ce vol. Payez en cash.`
+    : `No miles option found for this flight. Pay with cash.`;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -78,18 +79,16 @@ interface Props {
 
 export function FlightCard({ flight, lang }: Props) {
   const fr = lang === "fr";
-  const rec = REC[flight.recommendation as keyof typeof REC] ?? REC["USE CASH"];
+  const rec = REC[flight.recommendation as keyof typeof REC] ?? REC["CASH_WINS"];
   const label = fr ? rec.labelFr : rec.labelEn;
 
   const total    = flight.totalPrice ?? 0;
   const value    = flight.value ?? 0;
-  const savings  = flight.savings ?? 0;
+  const savings  = flight.savings;
   const stops    = flight.stops ?? 0;
 
-  // Miles estimate (reverse from total + value)
-  const milesEst = total > 0 && value > 0
-    ? Math.round((total * 80) / value / 1000) * 1000
-    : 0;
+  const bestOption = flight.bestOwnedOption ?? flight.bestPurchasedOption;
+  const milesRequired = bestOption?.milesRequired ?? 0;
 
   // Value bar — blue for USE MILES, dimmer for lower values (green reserved for savings)
   const valuePercent = Math.min(100, Math.max(0, (value / 2) * 100));
@@ -176,20 +175,23 @@ export function FlightCard({ flight, lang }: Props) {
 
         {/* Miles */}
         <div className="px-3 py-4 text-center">
-          {milesEst > 0 ? (
+          {milesRequired > 0 ? (
             <>
               <div className="text-2xl font-black leading-none tabular-nums text-fg">
-                {milesEst >= 1000 ? `${(milesEst / 1000).toFixed(0)}K` : milesEst}
+                {milesRequired >= 1000 ? `${(milesRequired / 1000).toFixed(0)}K` : milesRequired}
               </div>
               <div className="text-[10px] text-muted uppercase tracking-widest mt-1.5 font-bold">
-                {fr ? "pts estimés" : "est. points"}
+                {fr ? "pts requis" : "pts needed"}
               </div>
+              {bestOption && (
+                <div className="text-[9px] text-muted/60 mt-0.5">{bestOption.program}</div>
+              )}
             </>
           ) : (
             <>
               <div className="text-2xl font-black leading-none text-subtle">—</div>
               <div className="text-[10px] text-muted uppercase tracking-widest mt-1.5 font-bold">
-                {fr ? "pts estimés" : "est. points"}
+                {fr ? "pts requis" : "pts needed"}
               </div>
             </>
           )}

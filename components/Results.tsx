@@ -76,19 +76,19 @@ export function Results({ results, loading, lang, onBack }: Props) {
   const [sortBy, setSortBy] = useState<SortBy>("value");
 
   const counts = useMemo(() => ({
-    miles:    results.filter(r => r.recommendation === "USE MILES").length,
-    consider: results.filter(r => r.recommendation === "CONSIDER").length,
-    cash:     results.filter(r => r.recommendation === "USE CASH").length,
+    miles:    results.filter(r => r.recommendation === "MILES_WIN").length,
+    consider: results.filter(r => r.recommendation === "MILES_IF_OWNED").length,
+    cash:     results.filter(r => r.recommendation === "CASH_WINS").length,
   }), [results]);
 
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
-  const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings ?? 0)) : 0;
+  const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
 
   const filtered = useMemo(() => {
     let r = [...results];
-    if (tab === "miles")    r = r.filter(x => x.recommendation === "USE MILES");
-    if (tab === "consider") r = r.filter(x => x.recommendation === "CONSIDER");
-    if (tab === "cash")     r = r.filter(x => x.recommendation === "USE CASH");
+    if (tab === "miles")    r = r.filter(x => x.recommendation === "MILES_WIN");
+    if (tab === "consider") r = r.filter(x => x.recommendation === "MILES_IF_OWNED");
+    if (tab === "cash")     r = r.filter(x => x.recommendation === "CASH_WINS");
     if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
     if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
     if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
