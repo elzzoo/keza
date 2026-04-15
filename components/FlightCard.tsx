@@ -37,14 +37,16 @@ function whyText(flight: FlightResult, lang: "fr" | "en"): string {
   const purchased = flight.bestPurchasedOption;
   const cash = flight.cashTotal;
 
-  if (flight.recommendation === "MILES_WIN" && purchased) {
+  if (flight.recommendation === "MILES_WIN") {
+    if (!purchased) return fr ? `Miles recommandés pour ce vol.` : `Miles recommended for this flight.`;
     const save = (cash - purchased.purchasedCost).toFixed(0);
     const miles = formatMiles(purchased.milesRequired);
     return fr
       ? `Acheter ${miles} miles ${purchased.program} coûte ~$${purchased.purchasedCost.toFixed(0)} vs $${cash.toFixed(0)} cash. Économie : $${save}.`
       : `Buying ${miles} ${purchased.program} miles costs ~$${purchased.purchasedCost.toFixed(0)} vs $${cash.toFixed(0)} cash. Save $${save}.`;
   }
-  if (flight.recommendation === "MILES_IF_OWNED" && owned) {
+  if (flight.recommendation === "MILES_IF_OWNED") {
+    if (!owned) return fr ? `Si tu as des miles, utilise-les pour ce vol.` : `Use your miles for this flight if you have them.`;
     const save = (cash - owned.ownedCost).toFixed(0);
     const miles = formatMiles(owned.milesRequired);
     return fr
@@ -90,7 +92,7 @@ export function FlightCard({ flight, lang }: Props) {
   const bestOption = flight.bestOwnedOption ?? flight.bestPurchasedOption;
   const milesRequired = bestOption?.milesRequired ?? 0;
 
-  // Value bar — blue for USE MILES, dimmer for lower values (green reserved for savings)
+  // Value bar — blue for MILES_WIN, dimmer for lower values (green reserved for savings)
   const valuePercent = Math.min(100, Math.max(0, (value / 2) * 100));
   const barCls = value >= 2 ? "bg-primary" : value >= 1 ? "bg-primary/50" : "bg-subtle";
 

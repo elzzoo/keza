@@ -124,7 +124,7 @@ export default function HomePage() {
                     bg: "bg-primary/15",
                     text: "text-blue-400",
                     border: "border-primary/30",
-                    label: lang === "fr" ? "USE MILES" : "USE MILES",
+                    label: lang === "fr" ? "MILES GAGNENT" : "MILES WIN",
                     desc: lang === "fr"
                       ? "La valeur de vos miles est supérieure au prix cash. Rachetez vos points !"
                       : "Your miles value exceeds the cash price. Redeem your points!",
@@ -134,7 +134,7 @@ export default function HomePage() {
                     bg: "bg-success/10",
                     text: "text-success",
                     border: "border-success/25",
-                    label: lang === "fr" ? "À CONSIDÉRER" : "CONSIDER",
+                    label: lang === "fr" ? "SI TU AS LES MILES" : "IF YOU HAVE MILES",
                     desc: lang === "fr"
                       ? "Valeur correcte. Bon choix selon votre programme et vos points disponibles."
                       : "Decent value. Good choice depending on your program and available points.",
@@ -144,7 +144,7 @@ export default function HomePage() {
                     bg: "bg-warning/10",
                     text: "text-warning",
                     border: "border-warning/25",
-                    label: lang === "fr" ? "PAYER CASH" : "USE CASH",
+                    label: lang === "fr" ? "CASH GAGNE" : "CASH WINS",
                     desc: lang === "fr"
                       ? "Le prix cash est plus avantageux. Gardez vos miles pour une meilleure occasion."
                       : "Cash price is more advantageous. Save your miles for a better deal.",
