@@ -4,6 +4,7 @@ import { loadPromotions, applyPromotions, type NormalizedFlight } from "./promot
 import { optimizeMiles, type OptimizerDecision } from "./optimizer";
 import { buildCostOptions, getEffectivePrices, type FlightInput, type MilesOption } from "./costEngine";
 import { iataToAirline } from "./iataAirlines";
+import { metroFor } from "./metroCodes";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
@@ -199,6 +200,11 @@ async function fetchMonthMatrix(
     }));
 }
 
+/** Rewrite a NormalizedFlight's from/to back to the airport codes the user asked for. */
+function rebrandRoute(flights: NormalizedFlight[], from: string, to: string): NormalizedFlight[] {
+  return flights.map((f) => ({ ...f, from, to }));
+}
+
 async function fetchFromTravelpayouts(
   from: string,
   to: string,
@@ -211,12 +217,30 @@ async function fetchFromTravelpayouts(
     return [];
   }
 
-  try {
-    const v3 = await fetchV3(from, to, date, direct, token);
-    if (v3.length > 0) return v3;
+  // Candidate (origin, destination) pairs to try in order. We always start with
+  // the exact codes the user asked for, then fall back to metro codes so that
+  // DSS→JFK retries as DKR→NYC (which is how most carriers index that route).
+  const fromMetro = metroFor(from);
+  const toMetro   = metroFor(to);
+  const attempts: Array<[string, string]> = [[from, to]];
+  if (fromMetro) attempts.push([fromMetro, to]);
+  if (toMetro)   attempts.push([from, toMetro]);
+  if (fromMetro && toMetro) attempts.push([fromMetro, toMetro]);
 
-    // v3 empty → try month-matrix (no airline data but keeps at least a cash price visible)
-    return await fetchMonthMatrix(from, to, date, direct, token);
+  try {
+    for (const [o, d] of attempts) {
+      const v3 = await fetchV3(o, d, date, direct, token);
+      if (v3.length > 0) return rebrandRoute(v3, from, to);
+    }
+
+    // All v3 attempts empty → try month-matrix with the same fallback cascade.
+    // Keeps at least a cash price visible even when airline data is missing.
+    for (const [o, d] of attempts) {
+      const mm = await fetchMonthMatrix(o, d, date, direct, token);
+      if (mm.length > 0) return rebrandRoute(mm, from, to);
+    }
+
+    return [];
   } catch (err) {
     console.error("[engine] fetch failed:", err);
     return [];
