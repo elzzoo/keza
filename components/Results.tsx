@@ -23,8 +23,14 @@ const L = {
     miles: "Miles",
     consider: "Si tu as les miles",
     cash: "Cash",
-    empty: "Aucun vol trouvé",
-    emptyDesc: "Essayez d'autres dates ou destinations.",
+    empty: "Aucun vol trouvé pour cette combinaison",
+    emptyDesc: "Nos sources de données couvrent mieux certaines routes. Essayez :",
+    emptyTips: [
+      "Élargir les dates (±7 jours)",
+      "Décocher le filtre \"Direct uniquement\"",
+      "Utiliser DKR (Dakar ville) au lieu de DSS pour les vols long-courriers",
+      "Passer par un hub (CDG, IST, DXB) pour l'Afrique ↔ USA",
+    ],
     back: "← Nouvelle recherche",
     loading: "Recherche en cours…",
   },
@@ -37,8 +43,14 @@ const L = {
     miles: "Miles",
     consider: "If owned",
     cash: "Cash",
-    empty: "No flights found",
-    emptyDesc: "Try different dates or destinations.",
+    empty: "No flights found for this combination",
+    emptyDesc: "Our data sources cover some routes better than others. Try:",
+    emptyTips: [
+      "Broaden the dates (±7 days)",
+      "Uncheck \"Direct only\" filter",
+      "Use DKR (Dakar city) instead of DSS for long-haul",
+      "Route via a hub (CDG, IST, DXB) for Africa ↔ USA",
+    ],
     back: "← New search",
     loading: "Searching…",
   },
@@ -183,10 +195,15 @@ export function Results({ results, loading, lang, onBack }: Props) {
 
       {/* Cards */}
       {filtered.length === 0 ? (
-        <div className="bg-surface rounded-2xl border border-border py-16 flex flex-col items-center gap-3">
+        <div className="bg-surface rounded-2xl border border-border py-12 px-6 flex flex-col items-center gap-3 max-w-md mx-auto">
           <span className="text-5xl animate-float">✈️</span>
-          <p className="font-bold text-fg">{t.empty}</p>
-          <p className="text-sm text-muted">{t.emptyDesc}</p>
+          <p className="font-bold text-fg text-center">{t.empty}</p>
+          <p className="text-sm text-muted text-center">{t.emptyDesc}</p>
+          <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
+            {t.emptyTips.map((tip, i) => (
+              <li key={i}>{tip}</li>
+            ))}
+          </ul>
         </div>
       ) : (
         <div className="space-y-3 stagger-children">

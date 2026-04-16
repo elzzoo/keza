@@ -245,6 +245,18 @@ export function FlightCard({ flight, lang }: Props) {
         </p>
         <p className="text-[12px] text-muted leading-relaxed">{why}</p>
       </div>
+
+      {/* ── Booking CTA ──────────────────────────────────────────── */}
+      {flight.bookingLink && (
+        <a
+          href={flight.bookingLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block px-5 py-3 text-center text-[12px] font-bold text-blue-400 bg-primary/5 hover:bg-primary/10 border-t border-border transition-colors uppercase tracking-widest"
+        >
+          {fr ? "Réserver ce vol →" : "Book this flight →"}
+        </a>
+      )}
     </div>
   );
 }

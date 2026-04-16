@@ -3,6 +3,7 @@ import { redis } from "./redis";
 import { loadPromotions, applyPromotions, type NormalizedFlight } from "./promotions/engine";
 import { optimizeMiles, type OptimizerDecision } from "./optimizer";
 import { buildCostOptions, getEffectivePrices, type FlightInput, type MilesOption } from "./costEngine";
+import { iataToAirline } from "./iataAirlines";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
@@ -42,6 +43,7 @@ export interface FlightResult {
   totalPrice?: number;     // (price + returnPrice) × passengers
   cabin: Cabin;
   passengers: number;
+  bookingLink?: string;    // Travelpayouts deep link (aviasales v3 only)
 
   // ── Cost comparison ────────────────────────────────────────────────────────
   cashTotal: number;
@@ -57,6 +59,145 @@ export interface FlightResult {
 }
 
 // ─── Travelpayouts fetch ─────────────────────────────────────────────────────
+// Primary:  aviasales/v3/prices_for_dates  — returns airline IATA codes + deep links
+// Fallback: v2/prices/month-matrix         — broader coverage, but no airline data
+//
+// We try the richer endpoint first because the cost engine's miles comparison
+// depends on knowing the operating airline. Only when v3 returns zero results
+// do we fall back to month-matrix (so users at least see a cash price).
+
+const TP_BASE = "https://api.travelpayouts.com";
+const AVIASALES_BASE_URL = "https://www.aviasales.com";
+
+async function fetchV3(
+  from: string,
+  to: string,
+  date: string,
+  direct: boolean,
+  token: string
+): Promise<NormalizedFlight[]> {
+  const [year, month] = date.split("-");
+  const monthParam = `${year}-${month}`;
+
+  const url = new URL(`${TP_BASE}/aviasales/v3/prices_for_dates`);
+  url.searchParams.set("origin", from.toUpperCase());
+  url.searchParams.set("destination", to.toUpperCase());
+  url.searchParams.set("departure_at", monthParam);
+  url.searchParams.set("currency", "usd");
+  url.searchParams.set("sorting", "price");
+  url.searchParams.set("unique", "false");
+  url.searchParams.set("limit", "30");
+  url.searchParams.set("token", token);
+  if (direct) url.searchParams.set("direct", "true");
+
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 3600 },
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) {
+    console.error(`[engine] aviasales v3 ${res.status} for ${from}→${to}`);
+    return [];
+  }
+
+  const json = (await res.json()) as {
+    success?: boolean;
+    data?: Array<{
+      price: number;
+      airline: string;
+      duration?: number;
+      transfers?: number;
+      departure_at?: string;
+      link?: string;
+    }>;
+  };
+
+  if (!Array.isArray(json.data) || json.data.length === 0) return [];
+
+  // Deduplicate by (airline, departure date) — keep cheapest price per pairing
+  const seen = new Map<string, typeof json.data[0]>();
+  for (const f of json.data) {
+    const day = f.departure_at?.slice(0, 10) ?? "";
+    const key = `${f.airline}::${day}`;
+    const existing = seen.get(key);
+    if (!existing || f.price < existing.price) seen.set(key, f);
+  }
+
+  return Array.from(seen.values())
+    .slice(0, 15)
+    .map((f) => {
+      const flight: NormalizedFlight = {
+        from,
+        to,
+        price: f.price,
+        airlines: [iataToAirline(f.airline)],
+        stops: f.transfers ?? 0,
+      };
+      if (f.duration && f.duration > 0) flight.duration = f.duration;
+      if (f.link) flight.bookingLink = `${AVIASALES_BASE_URL}${f.link}`;
+      return flight;
+    });
+}
+
+async function fetchMonthMatrix(
+  from: string,
+  to: string,
+  date: string,
+  direct: boolean,
+  token: string
+): Promise<NormalizedFlight[]> {
+  const [year, month] = date.split("-");
+  const monthParam = `${year}-${month}`;
+
+  const url = new URL(`${TP_BASE}/v2/prices/month-matrix`);
+  url.searchParams.set("origin", from.toUpperCase());
+  url.searchParams.set("destination", to.toUpperCase());
+  url.searchParams.set("month", monthParam);
+  url.searchParams.set("currency", "USD");
+  url.searchParams.set("show_to_affiliates", "true");
+  url.searchParams.set("token", token);
+  if (direct) url.searchParams.set("direct", "true");
+
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 3600 },
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) {
+    console.error(`[engine] month-matrix ${res.status} for ${from}→${to}`);
+    return [];
+  }
+
+  const json = (await res.json()) as {
+    data?: Array<{
+      value: number;
+      number_of_changes: number;
+      duration: number;
+      depart_date: string;
+      actual?: boolean;
+    }>;
+  };
+
+  if (!Array.isArray(json.data) || json.data.length === 0) return [];
+
+  const byDate = new Map<string, typeof json.data[0]>();
+  for (const f of json.data) {
+    if (f.actual === false) continue;
+    const existing = byDate.get(f.depart_date);
+    if (!existing || f.value < existing.value) byDate.set(f.depart_date, f);
+  }
+
+  return Array.from(byDate.values())
+    .slice(0, 15)
+    .map((f) => ({
+      from,
+      to,
+      price: f.value,
+      airlines: [],
+      duration: f.duration > 0 ? f.duration : undefined,
+      stops: f.number_of_changes,
+    }));
+}
 
 async function fetchFromTravelpayouts(
   from: string,
@@ -70,60 +211,12 @@ async function fetchFromTravelpayouts(
     return [];
   }
 
-  const [year, month] = date.split("-");
-  const monthParam = `${year}-${month}`;
-
-  const url = new URL("https://api.travelpayouts.com/v2/prices/month-matrix");
-  url.searchParams.set("origin", from.toUpperCase());
-  url.searchParams.set("destination", to.toUpperCase());
-  url.searchParams.set("month", monthParam);
-  url.searchParams.set("currency", "USD");
-  url.searchParams.set("show_to_affiliates", "true");
-  url.searchParams.set("token", token);
-  if (direct) url.searchParams.set("direct", "true");
-
   try {
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 3600 },
-      headers: { Accept: "application/json" },
-    });
+    const v3 = await fetchV3(from, to, date, direct, token);
+    if (v3.length > 0) return v3;
 
-    if (!res.ok) {
-      console.error(`[engine] Travelpayouts ${res.status} for ${from}→${to}`);
-      return [];
-    }
-
-    // API returns { data: [...] } — no "success" field
-    const json = (await res.json()) as {
-      data?: Array<{
-        value: number;
-        number_of_changes: number;
-        duration: number;
-        depart_date: string;
-        actual?: boolean;
-      }>;
-    };
-
-    if (!Array.isArray(json.data) || json.data.length === 0) return [];
-
-    // Deduplicate by date, keep cheapest price per departure date
-    const byDate = new Map<string, typeof json.data[0]>();
-    for (const f of json.data) {
-      if (f.actual === false) continue;
-      const existing = byDate.get(f.depart_date);
-      if (!existing || f.value < existing.value) byDate.set(f.depart_date, f);
-    }
-
-    return Array.from(byDate.values())
-      .slice(0, 15) // cap at 15 results per direction
-      .map((f) => ({
-        from,
-        to,
-        price: f.value,
-        airlines: [],
-        duration: f.duration > 0 ? f.duration : undefined,
-        stops: f.number_of_changes,
-      }));
+    // v3 empty → try month-matrix (no airline data but keeps at least a cash price visible)
+    return await fetchMonthMatrix(from, to, date, direct, token);
   } catch (err) {
     console.error("[engine] fetch failed:", err);
     return [];
@@ -199,6 +292,8 @@ function enrich(
     result.returnPrice    = returnPrice;
     result.returnAirlines = returnFlight?.airlines;
   }
+
+  if (f.bookingLink) result.bookingLink = f.bookingLink;
 
   return result;
 }

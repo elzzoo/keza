@@ -20,6 +20,7 @@ export interface NormalizedFlight {
   airlines: string[];
   duration?: number;
   stops?: number;
+  bookingLink?: string;
 }
 
 export function applyPromotions(
