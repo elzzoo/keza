@@ -22,8 +22,14 @@ export const AIRPORTS: Airport[] = [
   {code:"CKY",city:"Conakry",cityEn:"Conakry",country:"Guinée",countryEn:"Guinea",flag:"🇬🇳",iso2:"GN",lat:9.58,lon:-13.61},
   {code:"DLA",city:"Douala",cityEn:"Douala",country:"Cameroun",countryEn:"Cameroon",flag:"🇨🇲",iso2:"CM",lat:4.01,lon:9.72},
   {code:"LBV",city:"Libreville",cityEn:"Libreville",country:"Gabon",countryEn:"Gabon",flag:"🇬🇦",iso2:"GA",lat:0.46,lon:9.41},
+  {code:"LFW",city:"Lomé",cityEn:"Lomé",country:"Togo",countryEn:"Togo",flag:"🇹🇬",iso2:"TG",lat:6.17,lon:1.25},
   {code:"ADD",city:"Addis Abeba",cityEn:"Addis Ababa",country:"Éthiopie",countryEn:"Ethiopia",flag:"🇪🇹",iso2:"ET",lat:8.98,lon:38.80},
   {code:"NBO",city:"Nairobi",cityEn:"Nairobi",country:"Kenya",countryEn:"Kenya",flag:"🇰🇪",iso2:"KE",lat:-1.32,lon:36.93},
+  {code:"DAR",city:"Dar es Salaam",cityEn:"Dar es Salaam",country:"Tanzanie",countryEn:"Tanzania",flag:"🇹🇿",iso2:"TZ",lat:-6.88,lon:39.20},
+  {code:"EBB",city:"Entebbe",cityEn:"Entebbe",country:"Ouganda",countryEn:"Uganda",flag:"🇺🇬",iso2:"UG",lat:0.04,lon:32.44},
+  {code:"KGL",city:"Kigali",cityEn:"Kigali",country:"Rwanda",countryEn:"Rwanda",flag:"🇷🇼",iso2:"RW",lat:-1.97,lon:30.14},
+  {code:"FIH",city:"Kinshasa",cityEn:"Kinshasa",country:"RD Congo",countryEn:"DR Congo",flag:"🇨🇩",iso2:"CD",lat:-4.39,lon:15.44},
+  {code:"LAD",city:"Luanda",cityEn:"Luanda",country:"Angola",countryEn:"Angola",flag:"🇦🇴",iso2:"AO",lat:-8.86,lon:13.23},
   {code:"JNB",city:"Johannesburg",cityEn:"Johannesburg",country:"Afrique du Sud",countryEn:"South Africa",flag:"🇿🇦",iso2:"ZA",lat:-26.14,lon:28.24},
   {code:"CPT",city:"Le Cap",cityEn:"Cape Town",country:"Afrique du Sud",countryEn:"South Africa",flag:"🇿🇦",iso2:"ZA",lat:-33.96,lon:18.60},
   {code:"CAI",city:"Le Caire",cityEn:"Cairo",country:"Égypte",countryEn:"Egypt",flag:"🇪🇬",iso2:"EG",lat:30.12,lon:31.41},
@@ -86,7 +92,7 @@ export const AIRPORTS: Airport[] = [
 ];
 
 export const REGION = {
-  DSS:"africa",ABJ:"africa",ACC:"africa",BKO:"africa",LOS:"africa",ABV:"africa",OUA:"africa",COO:"africa",CKY:"africa",DLA:"africa",LBV:"africa",ADD:"africa",NBO:"africa",JNB:"africa",CPT:"africa",CAI:"africa",CMN:"africa",TUN:"africa",ALG:"africa",
+  DSS:"africa",ABJ:"africa",ACC:"africa",BKO:"africa",LOS:"africa",ABV:"africa",OUA:"africa",COO:"africa",CKY:"africa",DLA:"africa",LBV:"africa",LFW:"africa",ADD:"africa",NBO:"africa",DAR:"africa",EBB:"africa",KGL:"africa",FIH:"africa",LAD:"africa",JNB:"africa",CPT:"africa",CAI:"africa",CMN:"africa",TUN:"africa",ALG:"africa",
   LHR:"europe",LGW:"europe",CDG:"europe",ORY:"europe",AMS:"europe",BRU:"europe",FRA:"europe",MUC:"europe",MAD:"europe",BCN:"europe",LIS:"europe",FCO:"europe",MXP:"europe",ZRH:"europe",GVA:"europe",IST:"europe",
   DXB:"middle-east",AUH:"middle-east",DOH:"middle-east",RUH:"middle-east",JED:"middle-east",BEY:"middle-east",TLV:"middle-east",
   DEL:"asia",BOM:"asia",BKK:"asia",SIN:"asia",HKG:"asia",PEK:"asia",PVG:"asia",NRT:"asia",ICN:"asia",

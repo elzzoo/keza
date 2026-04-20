@@ -9,9 +9,9 @@ import { metroFor } from "./metroCodes";
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
   economy:  1.0,
-  premium:  1.6,
-  business: 2.5,
-  first:    4.0,
+  premium:  1.8,
+  business: 4.0,
+  first:    6.5,
 };
 
 export type TripType = "oneway" | "roundtrip";
@@ -393,7 +393,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v6:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v7:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);

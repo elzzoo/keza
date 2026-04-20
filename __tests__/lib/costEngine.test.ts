@@ -26,10 +26,10 @@ describe("buildCostOptions", () => {
       expect(fb).toBeDefined();
     });
 
-    it("calculates taxes as 380 × 2 pax = 760 for AF business", () => {
+    it("calculates taxes as 550 × 2 pax = 1100 for AF business", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.taxes).toBe(760);
+      expect(fb.taxes).toBe(1100);
     });
 
     it("totalMilesCost = milesCost + taxes", () => {

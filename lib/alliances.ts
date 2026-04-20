@@ -7,7 +7,9 @@ export const ALLIANCES: Record<string, string> = {
   "China Southern": "SkyTeam",
   "Aeromexico": "SkyTeam",
   "Air Europa": "SkyTeam",
-  "Alitalia": "SkyTeam",
+  "ITA Airways": "SkyTeam",
+  "Kenya Airways": "SkyTeam",
+  "ASKY Airlines": "SkyTeam",
   // Star Alliance
   "Lufthansa": "Star Alliance",
   "United": "Star Alliance",
@@ -17,6 +19,8 @@ export const ALLIANCES: Record<string, string> = {
   "Ethiopian Airlines": "Star Alliance",
   "South African Airways": "Star Alliance",
   "Swiss": "Star Alliance",
+  "EgyptAir": "Star Alliance",
+  "TAP Air Portugal": "Star Alliance",
   // Oneworld
   "British Airways": "Oneworld",
   "American Airlines": "Oneworld",
@@ -30,5 +34,4 @@ export const ALLIANCES: Record<string, string> = {
   "Etihad": "Independent",
   "RwandAir": "Independent",
   "Air Senegal": "Independent",
-  "Kenya Airways": "Independent",
 };

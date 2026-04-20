@@ -31,7 +31,7 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   },
   {
     program: "Turkish Miles&Smiles",
-    valueCents: 1.8,          // Excellent value on Star Alliance awards
+    valueCents: 1.4,          // Post-2023 devaluation, average value on Star Alliance
     confidence: "HIGH",
     lastUpdated: "2026-04-20",
   },
@@ -55,7 +55,7 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   },
   {
     program: "Ethiopian ShebaMiles",
-    valueCents: 1.6,          // Good value on African routes
+    valueCents: 1.2,          // Limited availability, lower liquidity
     confidence: "MEDIUM",
     lastUpdated: "2026-04-20",
   },
@@ -67,7 +67,7 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   },
   {
     program: "United MileagePlus",
-    valueCents: 1.5,          // Variable pricing but solid average value
+    valueCents: 1.3,          // Dynamic pricing, average value declining
     confidence: "HIGH",
     lastUpdated: "2026-04-20",
   },

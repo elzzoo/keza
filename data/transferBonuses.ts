@@ -14,27 +14,30 @@ export interface TransferBonusRecord {
 
 export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   // Amex Membership Rewards
-  { from: "Amex MR", to: "Flying Blue",          baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "Emirates Skywards",    baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "Air Canada Aeroplan",  baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "British Airways Avios",baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "Qatar Privilege Club", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Flying Blue",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Emirates Skywards",     baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Air Canada Aeroplan",   baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "British Airways Avios", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Ethiopian ShebaMiles",  baseRatio: 1.0, transferTime: "1-3 days" },
 
   // Chase Ultimate Rewards
-  { from: "Chase UR", to: "United MileagePlus",  baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR", to: "Air Canada Aeroplan", baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR", to: "British Airways Avios",baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "United MileagePlus",    baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "Flying Blue",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "British Airways Avios", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "Emirates Skywards",     baseRatio: 1.0, transferTime: "instant" },
 
   // Citi ThankYou
   { from: "Citi ThankYou", to: "Turkish Miles&Smiles", baseRatio: 1.0, transferTime: "1-3 days" },
   { from: "Citi ThankYou", to: "Flying Blue",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Citi ThankYou", to: "Qatar Privilege Club",   baseRatio: 1.0, transferTime: "1-3 days" },
   { from: "Citi ThankYou", to: "Emirates Skywards",     baseRatio: 1.0, transferTime: "1-3 days" },
 
   // Capital One
-  { from: "Capital One Miles", to: "Flying Blue",           baseRatio: 1.0, transferTime: "instant" },
-  { from: "Capital One Miles", to: "Turkish Miles&Smiles",   baseRatio: 1.0, transferTime: "instant" },
-  { from: "Capital One Miles", to: "Air Canada Aeroplan",    baseRatio: 1.0, transferTime: "instant" },
-  { from: "Capital One Miles", to: "Emirates Skywards",      baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Flying Blue",          baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Turkish Miles&Smiles", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Air Canada Aeroplan",  baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Emirates Skywards",    baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "British Airways Avios",baseRatio: 1.0, transferTime: "instant" },
 ];
 
 // Returns effective ratio (promo if valid and not expired, else base)
