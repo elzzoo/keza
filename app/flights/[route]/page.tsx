@@ -1,0 +1,173 @@
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { AIRPORTS, airportsMap } from "@/data/airports";
+import { fetchCalendarPrices } from "@/lib/engine";
+import { RoutePageClient } from "./RoutePageClient";
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+interface Props {
+  params: { route: string };
+}
+
+// ─── Parse route param (DSS-CDG → { from: "DSS", to: "CDG" }) ──────────────
+
+function parseRoute(route: string): { from: string; to: string } | null {
+  const match = route.match(/^([A-Z]{3})-([A-Z]{3})$/i);
+  if (!match) return null;
+  const from = match[1].toUpperCase();
+  const to = match[2].toUpperCase();
+  if (from === to) return null;
+  return { from, to };
+}
+
+// ─── Static generation for popular routes ───────────────────────────────────
+
+const POPULAR_ROUTES = [
+  "DSS-CDG", "ABJ-CDG", "LOS-LHR", "CMN-JFK", "NBO-CDG", "ACC-LHR",
+  "JFK-LHR", "CDG-NRT", "LAX-BKK", "SIN-SYD", "NBO-DXB", "DSS-IST",
+  "JNB-LHR", "CAI-CDG", "ADD-DXB", "LOS-ATL", "CMN-CDG", "ABJ-IST",
+  "DXB-LHR", "CDG-JFK", "LHR-NRT", "SFO-NRT", "LAX-CDG", "MIA-BOG",
+];
+
+export async function generateStaticParams() {
+  return POPULAR_ROUTES.map(route => ({ route }));
+}
+
+// ─── Metadata ───────────────────────────────────────────────────────────────
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const parsed = parseRoute(params.route);
+  if (!parsed) return { title: "Route not found — KEZA" };
+
+  const fromAirport = airportsMap[parsed.from];
+  const toAirport = airportsMap[parsed.to];
+  const fromCity = fromAirport?.cityEn ?? parsed.from;
+  const toCity = toAirport?.cityEn ?? parsed.to;
+
+  const title = `Flights ${fromCity} to ${toCity} — Cash or Miles? | KEZA`;
+  const description = `Compare cash vs miles prices for ${fromCity} (${parsed.from}) to ${toCity} (${parsed.to}). Find the cheapest way to book — pay cash, use miles, or transfer points. Updated daily.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `https://keza-taupe.vercel.app/flights/${params.route}`,
+    },
+    alternates: {
+      canonical: `https://keza-taupe.vercel.app/flights/${params.route.toUpperCase()}`,
+    },
+  };
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
+
+export default async function RoutePage({ params }: Props) {
+  const parsed = parseRoute(params.route);
+  if (!parsed) notFound();
+
+  const fromAirport = airportsMap[parsed.from];
+  const toAirport = airportsMap[parsed.to];
+
+  // If neither airport is known, still show the page (dynamic route)
+  const fromCity = fromAirport?.cityEn ?? parsed.from;
+  const fromCityFr = fromAirport?.city ?? parsed.from;
+  const toCity = toAirport?.cityEn ?? parsed.to;
+  const toCityFr = toAirport?.city ?? parsed.to;
+  const fromFlag = fromAirport?.flag ?? "";
+  const toFlag = toAirport?.flag ?? "";
+
+  // Fetch calendar prices for current + next month
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const nextMonth = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, "0")}-01`;
+
+  const [pricesThisMonth, pricesNextMonth] = await Promise.all([
+    fetchCalendarPrices(parsed.from, parsed.to, thisMonth).catch(() => []),
+    fetchCalendarPrices(parsed.from, parsed.to, nextMonth).catch(() => []),
+  ]);
+
+  const allPrices = [...pricesThisMonth, ...pricesNextMonth];
+  const cheapest = allPrices.length > 0
+    ? allPrices.reduce((min, d) => d.price < min.price ? d : min)
+    : null;
+
+  // Related routes: same origin, different destinations
+  const relatedRoutes = POPULAR_ROUTES
+    .filter(r => r !== params.route.toUpperCase())
+    .filter(r => r.startsWith(parsed.from) || r.endsWith(parsed.to))
+    .slice(0, 6);
+
+  // Add some global routes if not enough related
+  if (relatedRoutes.length < 4) {
+    for (const r of POPULAR_ROUTES) {
+      if (relatedRoutes.length >= 6) break;
+      if (!relatedRoutes.includes(r) && r !== params.route.toUpperCase()) {
+        relatedRoutes.push(r);
+      }
+    }
+  }
+
+  // Schema.org FAQ structured data
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `Should I use miles or cash for ${fromCity} to ${toCity}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `It depends on the program and dates. KEZA compares all options — cash price, miles redemption, and bank point transfers — to find the cheapest way to book ${fromCity} to ${toCity}. Use our search to get a personalized recommendation.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What is the cheapest month to fly ${fromCity} to ${toCity}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: cheapest
+            ? `Based on current data, prices start from $${cheapest.price} around ${cheapest.date}. Use KEZA's price calendar to find the best dates.`
+            : `Prices vary by season. Use KEZA's price calendar to compare daily prices and find the cheapest dates.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Which miles programs can I use for ${fromCity} to ${toCity}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `KEZA compares 46 loyalty programs including Flying Blue, Miles&Smiles, Emirates Skywards, British Airways Avios, and more. We also check if transferring bank points (Amex MR, Chase UR, Citi ThankYou) would be cheaper.`,
+        },
+      },
+    ],
+  };
+
+  return (
+    <>
+      {/* JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <RoutePageClient
+        from={parsed.from}
+        to={parsed.to}
+        fromCity={fromCity}
+        fromCityFr={fromCityFr}
+        toCity={toCity}
+        toCityFr={toCityFr}
+        fromFlag={fromFlag}
+        toFlag={toFlag}
+        cheapestPrice={cheapest?.price ?? null}
+        cheapestDate={cheapest?.date ?? null}
+        priceCount={allPrices.length}
+        relatedRoutes={relatedRoutes}
+      />
+    </>
+  );
+}

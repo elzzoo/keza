@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface Route {
   from: string;
   to: string;
@@ -46,6 +48,18 @@ export function PopularRoutes({ lang, onSelect }: Props) {
             <span className="font-semibold">{r.to}</span>
             <span>{r.toFlag}</span>
           </button>
+        ))}
+      </div>
+      {/* SEO internal links (hidden visually, crawlable) */}
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+        {ROUTES.map((r) => (
+          <Link
+            key={`link-${r.from}-${r.to}`}
+            href={`/flights/${r.from}-${r.to}`}
+            className="text-[10px] text-subtle hover:text-primary transition-colors"
+          >
+            {fr ? r.label : r.labelEn}
+          </Link>
         ))}
       </div>
     </div>
