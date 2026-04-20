@@ -8,9 +8,12 @@ import clsx from "clsx";
 interface Props {
   onResults: (r: FlightResult[]) => void;
   onLoading: (l: boolean) => void;
+  onSearchStart?: (params: {from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"}) => void;
   lang: "fr" | "en";
   initialFrom?: string;
   initialTo?: string;
+  savedPrograms?: string[];
+  savedCabin?: "economy" | "premium" | "business" | "first";
 }
 
 type TripType = "oneway" | "roundtrip";
@@ -22,7 +25,7 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
-export function SearchForm({ onResults, onLoading, lang, initialFrom, initialTo }: Props) {
+export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin }: Props) {
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");
   const [tripType,   setTripType]   = useState<TripType>("roundtrip");
@@ -38,6 +41,14 @@ export function SearchForm({ onResults, onLoading, lang, initialFrom, initialTo 
   useEffect(() => { if (initialFrom) setFrom(initialFrom); }, [initialFrom]);
   useEffect(() => { if (initialTo) setTo(initialTo); }, [initialTo]);
 
+  // Restore saved programs & cabin from profile (once on mount)
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  useEffect(() => {
+    if (profileLoaded) return;
+    if (savedPrograms?.length) { setPrograms(savedPrograms.join(", ")); setProfileLoaded(true); }
+    if (savedCabin) { setCabin(savedCabin); setProfileLoaded(true); }
+  }, [savedPrograms, savedCabin, profileLoaded]);
+
   const canGo = !!from && !!to && from !== to;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
 
@@ -45,6 +56,7 @@ export function SearchForm({ onResults, onLoading, lang, initialFrom, initialTo 
     e.preventDefault();
     if (busy || !canGo) return;
     setError(null); setBusy(true); onLoading(true);
+    onSearchStart?.({ from, to, date: depDate, cabin, tripType });
     try {
       const res = await fetch("/api/search", {
         method: "POST",

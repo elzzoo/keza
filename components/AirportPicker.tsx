@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { AIRPORTS } from "@/data/airports";
 import type { Airport } from "@/data/airports";
 import clsx from "clsx";
@@ -15,40 +15,91 @@ interface Props {
   placeholder?: string;
 }
 
+// Default priority airports shown when picker opens (global top destinations)
+const PRIORITY = [
+  "DSS","CDG","JFK","LHR","DXB","IST","NBO","ABJ","LOS","ACC",
+  "CMN","CAI","JNB","ADD","BKK","SIN","NRT","SYD","GRU","MEX",
+];
+
 export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, placeholder }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [apiResults, setApiResults] = useState<Airport[]>([]);
+  const [searching, setSearching] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const selected = AIRPORTS.find((a) => a.code === value);
   const displayLabel = lang === "fr" ? label : labelEn;
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(query), 150);
+    const t = setTimeout(() => setDebouncedQuery(query), 200);
     return () => clearTimeout(t);
   }, [query]);
 
-  const filtered = useMemo(() => {
+  // Client-side search (410 airports — instant)
+  const localResults = useMemo(() => {
     const lq = debouncedQuery.toLowerCase().trim();
     if (!lq) {
-      const priority = ["DSS", "DKR", "ABJ", "LOS", "ACC", "CMN", "CAI", "NBO", "JNB", "ADD"];
-      return AIRPORTS.filter((a) => a.code !== exclude && priority.includes(a.code))
-        .sort((a, b) => priority.indexOf(a.code) - priority.indexOf(b.code))
-        .concat(AIRPORTS.filter((a) => a.code !== exclude && !priority.includes(a.code)))
-        .slice(0, 8);
+      return AIRPORTS.filter((a) => a.code !== exclude && PRIORITY.includes(a.code))
+        .sort((a, b) => PRIORITY.indexOf(a.code) - PRIORITY.indexOf(b.code))
+        .slice(0, 12);
     }
     return AIRPORTS.filter(
       (a) =>
         a.code !== exclude &&
-        (a.code.toLowerCase().includes(lq) ||
+        (a.code.toLowerCase().startsWith(lq) ||
           a.city.toLowerCase().includes(lq) ||
           a.cityEn.toLowerCase().includes(lq) ||
           a.country.toLowerCase().includes(lq) ||
           a.countryEn.toLowerCase().includes(lq))
-    ).slice(0, 8);
+    ).slice(0, 10);
   }, [debouncedQuery, exclude]);
+
+  // Server-side search for airports not in client bundle (7914 total)
+  const searchAPI = useCallback(async (q: string) => {
+    if (q.length < 2) { setApiResults([]); return; }
+
+    // Cancel previous request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setSearching(true);
+    try {
+      const res = await fetch(`/api/airports?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { results: Airport[] };
+      if (!controller.signal.aborted) {
+        setApiResults(data.results ?? []);
+      }
+    } catch {
+      // Aborted or network error — ignore
+    } finally {
+      if (!controller.signal.aborted) setSearching(false);
+    }
+  }, []);
+
+  // Trigger API search when local results are sparse
+  useEffect(() => {
+    const lq = debouncedQuery.trim();
+    if (lq.length >= 2 && localResults.length < 3) {
+      searchAPI(lq);
+    } else {
+      setApiResults([]);
+    }
+  }, [debouncedQuery, localResults.length, searchAPI]);
+
+  // Merge local + API results (deduplicate by code)
+  const filtered = useMemo(() => {
+    const seen = new Set(localResults.map(a => a.code));
+    const extra = apiResults.filter(a => !seen.has(a.code) && a.code !== exclude);
+    return [...localResults, ...extra].slice(0, 12);
+  }, [localResults, apiResults, exclude]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -97,7 +148,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
           </>
         ) : (
           <span className="text-muted/60 text-sm">
-            {placeholder ?? (lang === "fr" ? "Ex: Paris, CDG, Dakar…" : "Ex: Paris, CDG, Dakar…")}
+            {placeholder ?? (lang === "fr" ? "Ex: Paris, CDG, Bangkok…" : "Ex: Paris, CDG, Bangkok…")}
           </span>
         )}
       </button>
@@ -124,10 +175,17 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
           </div>
 
           {/* Results */}
-          <div className="max-h-56 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto">
             {filtered.length === 0 ? (
               <div className="text-center py-6 text-muted text-sm">
-                {lang === "fr" ? "Aucun résultat" : "No results"}
+                {searching ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                    {lang === "fr" ? "Recherche…" : "Searching…"}
+                  </span>
+                ) : (
+                  lang === "fr" ? "Aucun aéroport trouvé" : "No airport found"
+                )}
               </div>
             ) : (
               filtered.map((airport) => (
@@ -148,6 +206,11 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
                   </div>
                 </button>
               ))
+            )}
+            {searching && filtered.length > 0 && (
+              <div className="text-center py-2 text-[10px] text-subtle">
+                {lang === "fr" ? "Recherche d'autres aéroports…" : "Searching more airports…"}
+              </div>
             )}
           </div>
         </div>

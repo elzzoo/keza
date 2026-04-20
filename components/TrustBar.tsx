@@ -2,13 +2,15 @@ interface Props { lang: "fr" | "en" }
 
 const ITEMS = {
   fr: [
-    { icon: "✈", value: "20k+", label: "comparaisons" },
-    { icon: "🏆", value: "19",   label: "programmes miles" },
+    { icon: "✈", value: "7 900+", label: "aéroports" },
+    { icon: "🏆", value: "46",   label: "programmes miles" },
+    { icon: "🌍", value: "120+", label: "compagnies" },
     { icon: "🆓", value: "100%", label: "gratuit" },
   ],
   en: [
-    { icon: "✈", value: "20k+", label: "comparisons" },
-    { icon: "🏆", value: "19",   label: "miles programs" },
+    { icon: "✈", value: "7,900+", label: "airports" },
+    { icon: "🏆", value: "46",   label: "miles programs" },
+    { icon: "🌍", value: "120+", label: "airlines" },
     { icon: "🆓", value: "100%", label: "free" },
   ],
 };

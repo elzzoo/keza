@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "KEZA — Cash ou Miles ?",
-  description: "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol partant d'Afrique.",
+  description: "Compare the real cost of every option — cash, miles or transfer — on any flight, anywhere in the world. | Comparez cash vs miles sur chaque vol, partout dans le monde.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { Header }        from "@/components/Header";
 import { Footer }        from "@/components/Footer";
@@ -10,20 +10,51 @@ import { Results }       from "@/components/Results";
 import { HowItWorks }    from "@/components/HowItWorks";
 import { PromoBanner }   from "@/components/PromoBanner";
 import { PopularRoutes } from "@/components/PopularRoutes";
+import { RecentSearches } from "@/components/RecentSearches";
+import { useProfile }    from "@/hooks/useProfile";
 
 export default function HomePage() {
+  const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
+
   const [lang,       setLang]       = useState<"fr" | "en">("fr");
   const [results,    setResults]    = useState<FlightResult[]>([]);
   const [loading,    setLoading]    = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo,   setPrefillTo]   = useState<string | undefined>();
+  const [lastSearch, setLastSearch]   = useState<{from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"} | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Restore language from profile
+  useEffect(() => {
+    if (isLoaded && profile?.lang) {
+      setLang(profile.lang);
+    }
+  }, [isLoaded, profile?.lang]);
+
+  const handleLangChange = useCallback((newLang: "fr" | "en") => {
+    setLang(newLang);
+    saveLang(newLang);
+  }, [saveLang]);
 
   const handleResults = useCallback((r: FlightResult[]) => {
     setResults(r);
     setHasSearched(true);
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+
+    // Record search in profile
+    if (lastSearch && r.length > 0) {
+      const best = r.reduce((a, b) => b.savings > a.savings ? b : a, r[0]);
+      recordSearch({
+        ...lastSearch,
+        bestSavings: best.savings,
+        recommendation: best.recommendation,
+      });
+    }
+  }, [lastSearch, recordSearch]);
+
+  const handleSearchStart = useCallback((params: {from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"}) => {
+    setLastSearch(params);
   }, []);
 
   const handleBack = () => {
@@ -32,12 +63,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={setLang} />
+      <Header lang={lang} onLangChange={handleLangChange} />
       <TrustBar lang={lang} />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
 
-        {/* ── Hero ──────────────────────────────────────────── */}
+        {/* -- Hero ------------------------------------------------- */}
         {!hasSearched && (
           <div className="pt-10 pb-8 text-center space-y-4 animate-fade-up">
             {/* Badge */}
@@ -59,14 +90,14 @@ export default function HomePage() {
               </h1>
               <p className="text-base text-muted max-w-lg mx-auto leading-relaxed">
                 {lang === "fr"
-                  ? "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol partant d'Afrique."
-                  : "Compare the real cost of each option — cash, miles or transfer — on every flight from Africa."}
+                  ? "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol, partout dans le monde."
+                  : "Compare the real cost of every option — cash, miles or transfer — on any flight, anywhere in the world."}
               </p>
             </div>
           </div>
         )}
 
-        {/* ── Compact heading in results mode ───────────────── */}
+        {/* -- Compact heading in results mode ---------------------- */}
         {hasSearched && (
           <div className="pt-6 pb-4">
             <div className="flex items-center justify-between">
@@ -81,12 +112,21 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── Search form ───────────────────────────────────── */}
+        {/* -- Search form ------------------------------------------ */}
         <div className="animate-fade-up">
-          <SearchForm onResults={handleResults} onLoading={setLoading} lang={lang} initialFrom={prefillFrom} initialTo={prefillTo} />
+          <SearchForm
+            onResults={handleResults}
+            onLoading={setLoading}
+            onSearchStart={handleSearchStart}
+            lang={lang}
+            initialFrom={prefillFrom}
+            initialTo={prefillTo}
+            savedPrograms={profile?.programs}
+            savedCabin={profile?.cabin}
+          />
         </div>
 
-        {/* ── Results ───────────────────────────────────────── */}
+        {/* -- Results ---------------------------------------------- */}
         {(hasSearched || loading) && (
           <div ref={resultsRef} className="mt-6">
             <Results
@@ -98,9 +138,22 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── Homepage content (hidden during results) ──────── */}
+        {/* -- Homepage content (hidden during results) ------------- */}
         {!hasSearched && (
           <div className="mt-8 space-y-6 animate-fade-up">
+            {/* Recent searches (from profile) */}
+            {profile && profile.recentSearches.length > 0 && (
+              <RecentSearches
+                searches={profile.recentSearches}
+                lang={lang}
+                onSelect={(from, to) => {
+                  setPrefillFrom(from);
+                  setPrefillTo(to);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
+            )}
+
             {/* Popular routes */}
             <PopularRoutes
               lang={lang}

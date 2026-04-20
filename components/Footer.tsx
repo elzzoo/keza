@@ -4,12 +4,12 @@ const LINKS = {
   fr: {
     product:  { title: "Produit",           items: [{ label: "Rechercher", href: "#" }, { label: "Meilleurs deals", href: "#deals" }, { label: "Comment ça marche", href: "#how" }, { label: "Calculateur", href: "#calc" }] },
     programs: { title: "Programmes miles",  items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
-    routes:   { title: "Routes populaires", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "Abidjan → Paris CDG", href: "#" }, { label: "Lagos → Londres LHR", href: "#" }, { label: "Nairobi → Paris CDG", href: "#" }] },
+    routes:   { title: "Routes populaires", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "New York → Londres", href: "#" }, { label: "Paris → Tokyo", href: "#" }, { label: "Lagos → Londres LHR", href: "#" }] },
   },
   en: {
     product:  { title: "Product",       items: [{ label: "Search", href: "#" }, { label: "Best deals", href: "#deals" }, { label: "How it works", href: "#how" }, { label: "Calculator", href: "#calc" }] },
     programs: { title: "Miles programs", items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
-    routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "Abidjan → Paris CDG", href: "#" }, { label: "Lagos → London LHR", href: "#" }, { label: "Nairobi → Paris CDG", href: "#" }] },
+    routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "New York → London", href: "#" }, { label: "Paris → Tokyo", href: "#" }, { label: "Lagos → London LHR", href: "#" }] },
   },
 };
 
@@ -29,8 +29,8 @@ export function Footer({ lang }: Props) {
             </div>
             <p className="text-sm text-muted leading-relaxed">
               {lang === "fr"
-                ? "Comparez cash vs miles sur chaque vol partant d'Afrique."
-                : "Compare cash vs miles on every flight from Africa."}
+                ? "Comparez cash vs miles sur chaque vol, partout dans le monde."
+                : "Compare cash vs miles on any flight, anywhere in the world."}
             </p>
             <p className="text-xs text-subtle mt-3">
               {lang === "fr" ? "Conçu à Dakar 🇸🇳" : "Built in Dakar 🇸🇳"}
