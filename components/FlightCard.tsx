@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
@@ -9,8 +10,33 @@ function formatMiles(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
 }
 
-const FCFA = 600;
-function fcfa(usd: number) { return Math.round(usd * FCFA).toLocaleString("fr-FR"); }
+// Dynamic forex rate — fetched once, cached globally
+let cachedFcfaRate: number | null = null;
+let fetchingForex = false;
+
+function useForexRate(): number {
+  const [rate, setRate] = useState(cachedFcfaRate ?? 605);
+
+  useEffect(() => {
+    if (cachedFcfaRate !== null) { setRate(cachedFcfaRate); return; }
+    if (fetchingForex) return;
+    fetchingForex = true;
+    fetch("/api/forex")
+      .then(r => r.json())
+      .then((data: { usdToXof?: number }) => {
+        if (data.usdToXof && data.usdToXof > 400 && data.usdToXof < 800) {
+          cachedFcfaRate = data.usdToXof;
+          setRate(data.usdToXof);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { fetchingForex = false; });
+  }, []);
+
+  return rate;
+}
+
+function fcfa(usd: number, rate: number) { return Math.round(usd * rate).toLocaleString("fr-FR"); }
 
 function city(code: string, lang: "fr" | "en") {
   const a = airportsMap.find(x => x.code === code);
@@ -30,6 +56,7 @@ interface Props {
 
 export function FlightCard({ flight, lang }: Props) {
   const fr = lang === "fr";
+  const forexRate = useForexRate();
 
   const cashCost   = flight.cashCost;
   const milesCost  = flight.milesCost;
@@ -94,7 +121,7 @@ export function FlightCard({ flight, lang }: Props) {
             Cash
           </div>
           <div className="text-[9px] text-muted/50 mt-0.5">
-            ~{fcfa(cashCost)} FCFA
+            ~{fcfa(cashCost, forexRate)} FCFA
           </div>
         </div>
 

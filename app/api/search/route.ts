@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchEngine, type SearchParams } from "@/lib/engine";
+import { getForexRate } from "@/lib/autoCalibrate";
 
 /* ── rate limiter: sliding window per IP ── */
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
@@ -79,7 +80,10 @@ export async function POST(request: Request) {
       userPrograms: Array.isArray(body.userPrograms) ? body.userPrograms.filter((p): p is string => typeof p === "string").slice(0, 20) : [],
     });
 
-    return NextResponse.json({ results, count: results.length });
+    // Fetch forex rate (non-blocking, fallback to 605 if fails)
+    const forexRate = await getForexRate().catch(() => 605);
+
+    return NextResponse.json({ results, count: results.length, forexRate });
   } catch (err) {
     console.error("[api/search] error:", err instanceof Error ? err.message : "Unknown error");
     return NextResponse.json(

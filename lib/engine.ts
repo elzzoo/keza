@@ -5,6 +5,7 @@ import { optimizeMiles, type OptimizerDecision } from "./optimizer";
 import { buildCostOptions, getEffectivePrices, type FlightInput, type MilesOption } from "./costEngine";
 import { iataToAirline } from "./iataAirlines";
 import { metroFor } from "./metroCodes";
+import { recordObservation } from "./autoCalibrate";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
@@ -435,6 +436,22 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
 
   // Sort: biggest savings first, then cheapest cash price
   results.sort((a, b) => b.savings !== a.savings ? b.savings - a.savings : a.totalPrice! - b.totalPrice!);
+
+  // 5b. Auto-calibrate: record observations for self-learning mile values
+  // Fire-and-forget — never block the response
+  Promise.allSettled(
+    results.map((r) => {
+      if (!r.bestOption || r.cashCost <= 0) return Promise.resolve();
+      return recordObservation(
+        r.bestOption.program,
+        r.cashCost,
+        r.bestOption.taxes,
+        r.bestOption.milesRequired,
+        `${from}-${to}`,
+        cabin
+      );
+    })
+  ).catch(() => null);
 
   // 6. Cache
   await redis.set(cacheKey, results, { ex: 3600 }).catch(() => null);
