@@ -39,7 +39,7 @@ export function useProfile() {
     update({ lang });
   }, [update]);
 
-  const setCurrency = useCallback((currency: "USD" | "EUR" | "GBP" | "XOF") => {
+  const setCurrency = useCallback((currency: string) => {
     update({ currency });
   }, [update]);
 

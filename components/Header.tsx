@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import clsx from "clsx";
+import { CurrencyPicker } from "./CurrencyPicker";
+import type { CurrencyCode } from "@/lib/currency";
 
 interface Props {
   lang: "fr" | "en";
   onLangChange: (l: "fr" | "en") => void;
+  currency?: CurrencyCode;
+  onCurrencyChange?: (code: CurrencyCode) => void;
 }
 
 const NAV = {
@@ -21,7 +25,7 @@ const NAV = {
   ],
 };
 
-export function Header({ lang, onLangChange }: Props) {
+export function Header({ lang, onLangChange, currency, onCurrencyChange }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = NAV[lang];
 
@@ -58,6 +62,11 @@ export function Header({ lang, onLangChange }: Props) {
             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot" />
             Live
           </span>
+
+          {/* Currency picker */}
+          {currency && onCurrencyChange && (
+            <CurrencyPicker currency={currency} onCurrencyChange={onCurrencyChange} />
+          )}
 
           {/* Lang toggle */}
           <div className="flex items-center rounded-lg border border-border bg-surface-2 p-0.5">

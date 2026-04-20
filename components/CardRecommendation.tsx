@@ -5,6 +5,7 @@ import type { FlightResult } from "@/lib/engine";
 interface Props {
   results: FlightResult[];
   lang: "fr" | "en";
+  formatPrice?: (usd: number) => string;
 }
 
 // Mapping: transfer source → recommended credit cards with referral links
@@ -63,8 +64,9 @@ const CARD_RECOMMENDATIONS: Record<string, {
   },
 };
 
-export function CardRecommendation({ results, lang }: Props) {
+export function CardRecommendation({ results, lang, formatPrice }: Props) {
   const fr = lang === "fr";
+  const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
 
   // Find the best transfer option across all results
   const transferOptions = results
@@ -92,8 +94,8 @@ export function CardRecommendation({ results, lang }: Props) {
 
       <p className="text-xs text-muted leading-relaxed">
         {fr
-          ? `Pour économiser jusqu'à $${best.savings.toFixed(0)} sur cette route, transférez vos points ${via} vers ${best.bestOption?.program}.`
-          : `To save up to $${best.savings.toFixed(0)} on this route, transfer your ${via} points to ${best.bestOption?.program}.`
+          ? `Pour économiser jusqu'à ${fmt(best.savings)} sur cette route, transférez vos points ${via} vers ${best.bestOption?.program}.`
+          : `To save up to ${fmt(best.savings)} on this route, transfer your ${via} points to ${best.bestOption?.program}.`
         }
       </p>
 

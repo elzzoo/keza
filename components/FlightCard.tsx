@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import clsx from "clsx";
 import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
@@ -9,34 +8,6 @@ import { AIRPORTS as airportsMap } from "@/data/airports";
 function formatMiles(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
 }
-
-// Dynamic forex rate — fetched once, cached globally
-let cachedFcfaRate: number | null = null;
-let fetchingForex = false;
-
-function useForexRate(): number {
-  const [rate, setRate] = useState(cachedFcfaRate ?? 605);
-
-  useEffect(() => {
-    if (cachedFcfaRate !== null) { setRate(cachedFcfaRate); return; }
-    if (fetchingForex) return;
-    fetchingForex = true;
-    fetch("/api/forex")
-      .then(r => r.json())
-      .then((data: { usdToXof?: number }) => {
-        if (data.usdToXof && data.usdToXof > 400 && data.usdToXof < 800) {
-          cachedFcfaRate = data.usdToXof;
-          setRate(data.usdToXof);
-        }
-      })
-      .catch(() => {})
-      .finally(() => { fetchingForex = false; });
-  }, []);
-
-  return rate;
-}
-
-function fcfa(usd: number, rate: number) { return Math.round(usd * rate).toLocaleString("fr-FR"); }
 
 function city(code: string, lang: "fr" | "en") {
   const a = airportsMap.find(x => x.code === code);
@@ -52,11 +23,13 @@ const TYPE_LABEL = {
 interface Props {
   flight: FlightResult;
   lang: "fr" | "en";
+  /** Format a USD amount into user's chosen currency */
+  formatPrice?: (usd: number) => string;
 }
 
-export function FlightCard({ flight, lang }: Props) {
+export function FlightCard({ flight, lang, formatPrice }: Props) {
   const fr = lang === "fr";
-  const forexRate = useForexRate();
+  const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
 
   const cashCost   = flight.cashCost;
   const milesCost  = flight.milesCost;
@@ -86,11 +59,11 @@ export function FlightCard({ flight, lang }: Props) {
       )}>
         {isUseMiles ? (
           <div className="text-lg font-black text-blue-400">
-            {fr ? `Économisez $${savings.toFixed(0)} avec les miles` : `Save $${savings.toFixed(0)} with miles`}
+            {fr ? `Économisez ${fmt(savings)} avec les miles` : `Save ${fmt(savings)} with miles`}
           </div>
         ) : savings > 0 ? (
           <div className="text-lg font-black text-warning">
-            {fr ? `Miles coûtent $${savings.toFixed(0)} de plus` : `Miles cost $${savings.toFixed(0)} more`}
+            {fr ? `Miles coûtent ${fmt(savings)} de plus` : `Miles cost ${fmt(savings)} more`}
           </div>
         ) : (
           <div className="text-lg font-black text-muted">
@@ -115,13 +88,10 @@ export function FlightCard({ flight, lang }: Props) {
             "text-2xl font-black tabular-nums",
             !isUseMiles ? "text-success" : "text-fg"
           )}>
-            ${cashCost.toFixed(0)}
+            {fmt(cashCost)}
           </div>
           <div className="text-[10px] text-muted uppercase tracking-widest mt-1 font-bold">
             Cash
-          </div>
-          <div className="text-[9px] text-muted/50 mt-0.5">
-            ~{fcfa(cashCost, forexRate)} FCFA
           </div>
         </div>
 
@@ -133,7 +103,7 @@ export function FlightCard({ flight, lang }: Props) {
                 "text-2xl font-black tabular-nums",
                 isUseMiles ? "text-success" : "text-fg"
               )}>
-                ${milesCost.toFixed(0)}
+                {fmt(milesCost)}
               </div>
               <div className="text-[10px] text-muted uppercase tracking-widest mt-1 font-bold">
                 Miles
@@ -177,7 +147,7 @@ export function FlightCard({ flight, lang }: Props) {
             )}
           </div>
           <div className="text-[11px] text-muted leading-relaxed">
-            {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢/mile + ${bestOption.taxes.toFixed(0)} taxes = <span className="font-bold text-fg">${milesCost.toFixed(0)}</span>
+            {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢/mile + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
             {bestOption.confidence !== "HIGH" && (
               <span className="ml-1 text-[9px] italic text-muted/60">({fr ? "estimé" : "est."})</span>
             )}

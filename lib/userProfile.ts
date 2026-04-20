@@ -7,7 +7,7 @@ export interface UserProfile {
   /** User's miles programs (e.g., ["Flying Blue", "Chase UR"]) */
   programs: string[];
   /** Preferred display currency */
-  currency: "USD" | "EUR" | "GBP" | "XOF";
+  currency: string;
   /** Preferred language */
   lang: "fr" | "en";
   /** Preferred cabin class */

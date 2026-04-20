@@ -5,6 +5,7 @@ import type { FlightResult } from "@/lib/engine";
 import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
 import { CardRecommendation } from "./CardRecommendation";
+import { PriceAlertForm } from "./PriceAlertForm";
 import clsx from "clsx";
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   loading: boolean;
   lang: "fr" | "en";
   onBack: () => void;
+  searchMeta?: { from: string; to: string; cabin: string };
+  formatPrice?: (usd: number) => string;
 }
 
 const L = {
@@ -80,8 +83,9 @@ function SkeletonCard() {
   );
 }
 
-export function Results({ results, loading, lang, onBack }: Props) {
+export function Results({ results, loading, lang, onBack, searchMeta, formatPrice }: Props) {
   const t = L[lang];
+  const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
   const [stopFilter, setStopFilter] = useState<"all" | "direct" | "stops">("all");
   const [sortBy, setSortBy] = useState<SortBy>("value");
@@ -144,18 +148,29 @@ export function Results({ results, loading, lang, onBack }: Props) {
             <p className="text-[11px] text-muted mt-0.5">{lang === "fr" ? "vols trouvés" : "flights found"}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
-            <p className="text-xl font-black text-warning">${bestPrice.toFixed(0)}</p>
+            <p className="text-xl font-black text-warning">{fmt(bestPrice)}</p>
             <p className="text-[11px] text-muted mt-0.5">{t.best}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
-            <p className="text-xl font-black text-success">+${maxSavings.toFixed(0)}</p>
+            <p className="text-xl font-black text-success">+{fmt(maxSavings)}</p>
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
           </div>
         </div>
       )}
 
       {/* Card recommendation (transfer savings) */}
-      {results.length > 0 && <CardRecommendation results={results} lang={lang} />}
+      {results.length > 0 && <CardRecommendation results={results} lang={lang} formatPrice={formatPrice} />}
+
+      {/* Price alert form */}
+      {results.length > 0 && searchMeta && bestPrice > 0 && (
+        <PriceAlertForm
+          from={searchMeta.from}
+          to={searchMeta.to}
+          cabin={searchMeta.cabin}
+          currentPrice={bestPrice}
+          lang={lang}
+        />
+      )}
 
       {/* Recommendation tabs */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none">
@@ -208,7 +223,7 @@ export function Results({ results, loading, lang, onBack }: Props) {
         <div className="space-y-3 stagger-children">
           {filtered.map((f, i) => (
             <div key={i} className="animate-fade-up">
-              <FlightCard flight={f} lang={lang} />
+              <FlightCard flight={f} lang={lang} formatPrice={formatPrice} />
             </div>
           ))}
         </div>

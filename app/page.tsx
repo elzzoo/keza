@@ -12,9 +12,16 @@ import { PromoBanner }   from "@/components/PromoBanner";
 import { PopularRoutes } from "@/components/PopularRoutes";
 import { RecentSearches } from "@/components/RecentSearches";
 import { useProfile }    from "@/hooks/useProfile";
+import { useCurrency }   from "@/hooks/useCurrency";
+import { useGeo }        from "@/hooks/useGeo";
+import { getRoutesForCountry, getRegionLabel } from "@/lib/geoRoutes";
 
 export default function HomePage() {
   const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
+  const { currency, setCurrency, formatPrice } = useCurrency();
+  const country = useGeo();
+  const geoRoutes = getRoutesForCountry(country);
+  const geoLabel = getRegionLabel(country);
 
   const [lang,       setLang]       = useState<"fr" | "en">("fr");
   const [results,    setResults]    = useState<FlightResult[]>([]);
@@ -63,7 +70,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={handleLangChange} />
+      <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
@@ -134,6 +141,8 @@ export default function HomePage() {
               loading={loading}
               lang={lang}
               onBack={handleBack}
+              searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
+              formatPrice={formatPrice}
             />
           </div>
         )}
@@ -162,6 +171,8 @@ export default function HomePage() {
                 setPrefillTo(routeTo);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
+              routes={geoRoutes}
+              title={lang === "fr" ? geoLabel.fr : geoLabel.en}
             />
 
             {/* Promo banner */}
