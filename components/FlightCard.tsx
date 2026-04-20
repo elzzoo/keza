@@ -33,17 +33,17 @@ function formatMiles(n: number): string {
 
 function whyText(flight: FlightResult, lang: "fr" | "en"): string {
   const fr = lang === "fr";
+  const best = flight.bestOption;
   const owned = flight.bestOwnedOption;
-  const purchased = flight.bestPurchasedOption;
   const cash = flight.cashTotal;
 
   if (flight.recommendation === "MILES_WIN") {
-    if (!purchased) return fr ? `Miles recommandés pour ce vol.` : `Miles recommended for this flight.`;
-    const save = (cash - purchased.purchasedCost).toFixed(0);
-    const miles = formatMiles(purchased.milesRequired);
+    if (!best) return fr ? `Miles recommandés pour ce vol.` : `Miles recommended for this flight.`;
+    const save = best.savings.toFixed(0);
+    const miles = formatMiles(best.milesRequired);
     return fr
-      ? `Acheter ${miles} miles ${purchased.program} coûte ~$${purchased.purchasedCost.toFixed(0)} vs $${cash.toFixed(0)} cash. Économie : $${save}.`
-      : `Buying ${miles} ${purchased.program} miles costs ~$${purchased.purchasedCost.toFixed(0)} vs $${cash.toFixed(0)} cash. Save $${save}.`;
+      ? `${miles} miles ${best.program} = ~$${best.totalMilesCost.toFixed(0)} (miles $${best.milesCost.toFixed(0)} + taxes $${best.taxes.toFixed(0)}) vs $${cash.toFixed(0)} cash. Économie : $${save}.`
+      : `${miles} ${best.program} miles = ~$${best.totalMilesCost.toFixed(0)} (miles $${best.milesCost.toFixed(0)} + taxes $${best.taxes.toFixed(0)}) vs $${cash.toFixed(0)} cash. Save $${save}.`;
   }
   if (flight.recommendation === "MILES_IF_OWNED") {
     if (!owned) return fr ? `Si tu as des miles, utilise-les pour ce vol.` : `Use your miles for this flight if you have them.`;
@@ -54,11 +54,11 @@ function whyText(flight: FlightResult, lang: "fr" | "en"): string {
       : `If you already have ${miles} ${owned.program} miles, you pay only taxes (~$${owned.ownedCost.toFixed(0)}). Save $${save}.`;
   }
   // CASH_WINS
-  if (purchased) {
-    const diff = (purchased.purchasedCost - cash).toFixed(0);
+  if (best) {
+    const diff = (best.totalMilesCost - cash).toFixed(0);
     return fr
-      ? `Le cash ($${cash.toFixed(0)}) est moins cher que d'acheter des miles ($${purchased.purchasedCost.toFixed(0)}, soit $${diff} de plus). Garde tes miles.`
-      : `Cash ($${cash.toFixed(0)}) beats buying miles ($${purchased.purchasedCost.toFixed(0)}, $${diff} more). Save your miles.`;
+      ? `Le cash ($${cash.toFixed(0)}) est moins cher. Miles coûteraient $${best.totalMilesCost.toFixed(0)} (soit $${diff} de plus). Garde tes miles.`
+      : `Cash ($${cash.toFixed(0)}) is cheaper. Miles would cost $${best.totalMilesCost.toFixed(0)} ($${diff} more). Save your miles.`;
   }
   return fr
     ? `Aucune option miles disponible pour ce vol. Payez en cash.`
@@ -85,16 +85,16 @@ export function FlightCard({ flight, lang }: Props) {
   const label = fr ? rec.labelFr : rec.labelEn;
 
   const total    = flight.totalPrice ?? 0;
-  const value    = flight.value ?? 0;
   const savings  = flight.savings;
   const stops    = flight.stops ?? 0;
 
-  const bestOption = flight.bestOwnedOption ?? flight.bestPurchasedOption;
+  const bestOption = flight.bestOption ?? flight.bestOwnedOption;
   const milesRequired = bestOption?.milesRequired ?? 0;
+  const milesCost = bestOption?.totalMilesCost ?? 0;
 
-  // Value bar — blue for MILES_WIN, dimmer for lower values (green reserved for savings)
-  const valuePercent = Math.min(100, Math.max(0, (value / 2) * 100));
-  const barCls = value >= 2 ? "bg-primary" : value >= 1 ? "bg-primary/50" : "bg-subtle";
+  // Savings bar — shows how much % cheaper miles are vs cash
+  const savingsPercent = total > 0 ? Math.min(100, Math.max(0, (savings / total) * 100)) : 0;
+  const barCls = savings > 50 ? "bg-success" : savings > 0 ? "bg-primary" : "bg-subtle";
 
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
@@ -200,26 +200,34 @@ export function FlightCard({ flight, lang }: Props) {
         </div>
       </div>
 
-      {/* ── Value bar ────────────────────────────────────────────── */}
-      <div className="px-5 py-3 border-t border-border space-y-1.5">
-        <div className="flex justify-between items-center text-[10px]">
-          <span className="text-muted font-medium uppercase tracking-wider">
-            {fr ? "Valeur miles" : "Miles value"}
-          </span>
-          <span className={clsx(
-            "font-bold",
-            value >= 2 ? "text-primary" : value >= 1 ? "text-blue-400/70" : "text-muted"
-          )}>
-            {value.toFixed(2)}¢/mile{value >= 2 ? " ★" : ""}
-          </span>
+      {/* ── Miles cost breakdown ─────────────────────────────────── */}
+      {bestOption && (
+        <div className="px-5 py-3 border-t border-border space-y-1.5">
+          <div className="flex justify-between items-center text-[10px]">
+            <span className="text-muted font-medium uppercase tracking-wider">
+              {fr ? "Coût miles" : "Miles cost"}
+            </span>
+            <span className={clsx(
+              "font-bold",
+              savings > 0 ? "text-success" : "text-muted"
+            )}>
+              ${milesCost.toFixed(0)} {savings > 0 ? (fr ? "← moins cher" : "← cheaper") : ""}
+            </span>
+          </div>
+          <div className="h-1.5 bg-border rounded-full overflow-hidden">
+            <div
+              className={clsx("h-full rounded-full transition-all duration-700", barCls)}
+              style={{ width: `${savingsPercent}%` }}
+            />
+          </div>
+          <div className="text-[9px] text-muted/70">
+            {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢ + ${bestOption.taxes.toFixed(0)} {fr ? "taxes" : "taxes"}
+            {bestOption.confidence !== "HIGH" && (
+              <span className="ml-1 italic">({fr ? "estimé" : "estimated"})</span>
+            )}
+          </div>
         </div>
-        <div className="h-1.5 bg-border rounded-full overflow-hidden">
-          <div
-            className={clsx("h-full rounded-full transition-all duration-700", barCls)}
-            style={{ width: `${valuePercent}%` }}
-          />
-        </div>
-      </div>
+      )}
 
       {/* ── Tags ─────────────────────────────────────────────────── */}
       <div className="px-5 py-2.5 flex flex-wrap gap-1.5 border-t border-border">

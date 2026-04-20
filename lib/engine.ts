@@ -49,13 +49,12 @@ export interface FlightResult {
   // ── Cost comparison ────────────────────────────────────────────────────────
   cashTotal: number;
   milesOptions: MilesOption[];
-  bestOwnedOption: MilesOption | null;
-  bestPurchasedOption: MilesOption | null;
+  bestOption: MilesOption | null;         // cheapest miles option (market value)
+  bestOwnedOption: MilesOption | null;    // cheapest if you already have miles
   recommendation: "MILES_WIN" | "MILES_IF_OWNED" | "CASH_WINS";
-  savings: number;
+  savings: number;                        // $ saved vs cash with best miles option
 
-  // ── Sorting + backwards compat ────────────────────────────────────────────
-  value: number;           // cents per 100 miles (owned savings) — used for sorting
+  // ── Extra ─────────────────────────────────────────────────────────────────
   optimization: OptimizerDecision;
 }
 
@@ -359,11 +358,10 @@ function enrich(
     totalPrice,
     cashTotal:           comparison.cashTotal,
     milesOptions:        comparison.milesOptions,
+    bestOption:           comparison.bestOption,
     bestOwnedOption:     comparison.bestOwnedOption,
-    bestPurchasedOption: comparison.bestPurchasedOption,
     recommendation:      comparison.recommendation,
     savings:             comparison.savings,
-    value:               comparison.value,
     optimization,
   };
 
@@ -393,7 +391,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v4:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v5:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
@@ -433,8 +431,8 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn)
   );
 
-  // Sort: best value first
-  results.sort((a, b) => b.value !== a.value ? b.value - a.value : a.totalPrice! - b.totalPrice!);
+  // Sort: biggest savings first, then cheapest cash price
+  results.sort((a, b) => b.savings !== a.savings ? b.savings - a.savings : a.totalPrice! - b.totalPrice!);
 
   // 6. Cache
   await redis.set(cacheKey, results, { ex: 3600 }).catch(() => null);

@@ -1,105 +1,111 @@
 // data/milesPrices.ts
-// Base purchase price per mile per program (cents USD).
-// Update basePriceCents when airline changes standard pricing.
-// Promos override via cron → Redis.
+// Market value per mile per program (cents USD).
+//
+// IMPORTANT: These are MARKET VALUES (economic value of a mile from user perspective),
+// NOT airline purchase prices. This ensures fair cash vs miles comparison.
+//
+// Confidence levels:
+//   HIGH   → well-established program with stable valuations
+//   MEDIUM → program with variable value depending on redemption
+//   LOW    → fallback estimate, less data available
+
+export type Confidence = "HIGH" | "MEDIUM" | "LOW";
 
 export interface MilesPriceRecord {
   program: string;
-  basePriceCents: number;    // e.g. 3.5 = 3.5¢ per mile
-  minPurchase: number;       // minimum miles per transaction
-  maxPurchasePerYear: number;
-  lastUpdated: string;       // ISO date — flag if stale > 90 days
+  valueCents: number;         // market value in cents (e.g. 1.5 = $0.015/mile)
+  confidence: Confidence;
+  lastUpdated: string;        // ISO date — flag if stale > 90 days
 }
 
+// Default fallback: $0.014 per mile (1.4 cents)
+export const DEFAULT_MILE_VALUE_CENTS = 1.4;
+
 export const MILES_PRICES: MilesPriceRecord[] = [
+  // ─── Airline loyalty programs ─────────────────────────────────────────────
   {
     program: "Flying Blue",
-    basePriceCents: 3.5,
-    minPurchase: 2_000,
-    maxPurchasePerYear: 100_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.5,          // Air France/KLM — good sweet spots on promo rewards
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Turkish Miles&Smiles",
-    basePriceCents: 1.8,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 150_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.8,          // Excellent value on Star Alliance awards
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Emirates Skywards",
-    basePriceCents: 3.5,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 200_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.3,          // Good for Emirates metal, lower elsewhere
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Qatar Privilege Club",
-    basePriceCents: 3.0,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 150_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.4,          // Solid value on Oneworld awards
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "British Airways Avios",
-    basePriceCents: 2.5,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 100_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.5,          // Great for short-haul, decent long-haul
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Ethiopian ShebaMiles",
-    basePriceCents: 2.8,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 100_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.6,          // Good value on African routes
+    confidence: "MEDIUM",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Air Canada Aeroplan",
-    basePriceCents: 3.0,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 150_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.5,          // Strong program with good partner availability
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "United MileagePlus",
-    basePriceCents: 3.5,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 150_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.5,          // Variable pricing but solid average value
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
-  // Transferable currencies
+
+  // ─── Transferable currencies ──────────────────────────────────────────────
+  // These reflect the "effective" value when transferred to a partner program.
   {
     program: "Amex MR",
-    basePriceCents: 2.0,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 250_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.6,          // Premium points — many 1:1 transfer partners
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Chase UR",
-    basePriceCents: 1.5,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 250_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.5,          // Flexible — strong transfer partners
+    confidence: "HIGH",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Citi ThankYou",
-    basePriceCents: 1.7,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 200_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.4,          // Fewer partners but still good
+    confidence: "MEDIUM",
+    lastUpdated: "2026-04-20",
   },
   {
     program: "Capital One Miles",
-    basePriceCents: 1.8,
-    minPurchase: 1_000,
-    maxPurchasePerYear: 200_000,
-    lastUpdated: "2026-04-01",
+    valueCents: 1.4,          // Growing partner list
+    confidence: "MEDIUM",
+    lastUpdated: "2026-04-20",
   },
 ];
 
-// Fast lookup map: program name → base price in cents
+// Fast lookup map: program name → market value in cents
 export const MILES_PRICE_MAP: Map<string, number> = new Map(
-  MILES_PRICES.map((r) => [r.program, r.basePriceCents])
+  MILES_PRICES.map((r) => [r.program, r.valueCents])
+);
+
+// Confidence lookup
+export const MILES_CONFIDENCE_MAP: Map<string, Confidence> = new Map(
+  MILES_PRICES.map((r) => [r.program, r.confidence])
 );
