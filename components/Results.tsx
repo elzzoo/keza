@@ -104,7 +104,7 @@ export function Results({ results, loading, lang, onBack }: Props) {
     if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
     if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
     if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
-    else r.sort((a, b) => b.value - a.value);
+    else r.sort((a, b) => b.savings - a.savings);
     return r;
   }, [results, tab, stopFilter, sortBy]);
 

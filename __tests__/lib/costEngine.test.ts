@@ -52,11 +52,11 @@ describe("buildCostOptions", () => {
   });
 
   describe("effective prices from map", () => {
-    it("uses custom price per mile from effectivePrices map", () => {
+    it("uses custom value per mile from effectivePrices map", () => {
       const prices = new Map([["Flying Blue", 2.5]]);
       const { milesOptions } = buildCostOptions(BASE, prices);
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.pricePerMile).toBe(2.5);
+      expect(fb.valuePerMile).toBe(2.5);
     });
   });
 
@@ -87,10 +87,10 @@ describe("buildCostOptions", () => {
     });
   });
 
-  describe("value field", () => {
-    it("is positive when miles are worth using", () => {
-      const { value } = buildCostOptions(BASE, new Map());
-      expect(value).toBeGreaterThanOrEqual(0);
+  describe("savings field", () => {
+    it("is zero or positive", () => {
+      const { savings } = buildCostOptions(BASE, new Map());
+      expect(savings).toBeGreaterThanOrEqual(0);
     });
   });
 
