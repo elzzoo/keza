@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
+import { CardRecommendation } from "./CardRecommendation";
 import clsx from "clsx";
 
 interface Props {
@@ -152,6 +153,9 @@ export function Results({ results, loading, lang, onBack }: Props) {
           </div>
         </div>
       )}
+
+      {/* Card recommendation (transfer savings) */}
+      {results.length > 0 && <CardRecommendation results={results} lang={lang} />}
 
       {/* Recommendation tabs */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none">

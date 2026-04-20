@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       returnDate:   body.returnDate && DATE_RE.test(body.returnDate) ? body.returnDate : undefined,
       tripType:     body.tripType === "roundtrip" ? "roundtrip" : "oneway",
       stops:        body.stops === "direct" ? "direct" : "any",
-      cabin:        ["economy", "business", "first"].includes(body.cabin ?? "") ? body.cabin! as "economy" | "business" | "first" : "economy",
+      cabin:        ["economy", "premium", "business", "first"].includes(body.cabin ?? "") ? body.cabin! as "economy" | "premium" | "business" | "first" : "economy",
       passengers,
       userPrograms: Array.isArray(body.userPrograms) ? body.userPrograms.filter((p): p is string => typeof p === "string").slice(0, 20) : [],
     });

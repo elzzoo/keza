@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import clsx from "clsx";
@@ -9,10 +9,12 @@ interface Props {
   onResults: (r: FlightResult[]) => void;
   onLoading: (l: boolean) => void;
   lang: "fr" | "en";
+  initialFrom?: string;
+  initialTo?: string;
 }
 
 type TripType = "oneway" | "roundtrip";
-type Cabin    = "economy" | "premium" | "business";
+type Cabin    = "economy" | "premium" | "business" | "first";
 
 const today   = new Date().toISOString().split("T")[0]!;
 const addDays = (base: string, n: number) => {
@@ -20,9 +22,9 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
-export function SearchForm({ onResults, onLoading, lang }: Props) {
-  const [from,       setFrom]       = useState("");
-  const [to,         setTo]         = useState("");
+export function SearchForm({ onResults, onLoading, lang, initialFrom, initialTo }: Props) {
+  const [from,       setFrom]       = useState(initialFrom ?? "");
+  const [to,         setTo]         = useState(initialTo ?? "");
   const [tripType,   setTripType]   = useState<TripType>("roundtrip");
   const [depDate,    setDepDate]    = useState(addDays(today, 30));
   const [retDate,    setRetDate]    = useState(addDays(today, 37));
@@ -31,6 +33,10 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
   const [programs,   setPrograms]   = useState("");
   const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
+
+  // React to external route selection (popular routes)
+  useEffect(() => { if (initialFrom) setFrom(initialFrom); }, [initialFrom]);
+  useEffect(() => { if (initialTo) setTo(initialTo); }, [initialTo]);
 
   const canGo = !!from && !!to && from !== to;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
@@ -169,13 +175,16 @@ export function SearchForm({ onResults, onLoading, lang }: Props) {
             </p>
             <div className="flex gap-1.5">
               <button type="button" onClick={() => setCabin("economy")} className={cabinBtn(cabin === "economy")}>
-                {fr ? "Éco" : "Economy"}
+                {fr ? "Éco" : "Eco"}
               </button>
               <button type="button" onClick={() => setCabin("premium")} className={cabinBtn(cabin === "premium")}>
-                Premium
+                Prem
               </button>
               <button type="button" onClick={() => setCabin("business")} className={cabinBtn(cabin === "business")}>
-                Business
+                Biz
+              </button>
+              <button type="button" onClick={() => setCabin("first")} className={cabinBtn(cabin === "first")}>
+                First
               </button>
             </div>
           </div>

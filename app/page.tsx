@@ -16,6 +16,8 @@ export default function HomePage() {
   const [results,    setResults]    = useState<FlightResult[]>([]);
   const [loading,    setLoading]    = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
+  const [prefillTo,   setPrefillTo]   = useState<string | undefined>();
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleResults = useCallback((r: FlightResult[]) => {
@@ -81,7 +83,7 @@ export default function HomePage() {
 
         {/* ── Search form ───────────────────────────────────── */}
         <div className="animate-fade-up">
-          <SearchForm onResults={handleResults} onLoading={setLoading} lang={lang} />
+          <SearchForm onResults={handleResults} onLoading={setLoading} lang={lang} initialFrom={prefillFrom} initialTo={prefillTo} />
         </div>
 
         {/* ── Results ───────────────────────────────────────── */}
@@ -102,7 +104,9 @@ export default function HomePage() {
             {/* Popular routes */}
             <PopularRoutes
               lang={lang}
-              onSelect={(_from, _to) => {
+              onSelect={(routeFrom, routeTo) => {
+                setPrefillFrom(routeFrom);
+                setPrefillTo(routeTo);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
