@@ -38,6 +38,15 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   WB: "RwandAir",
   HC: "Air Senegal",
   KQ: "Kenya Airways",
+
+  // ─── Low-cost carriers (common in Travelpayouts results) ──────────────────
+  VY: "Vueling",           // IAG group (Oneworld adjacent, Avios partner)
+  VF: "Ajet",              // Turkish low-cost subsidiary
+  FR: "Ryanair",
+  W6: "Wizz Air",
+  PC: "Pegasus Airlines",  // Turkish low-cost
+  TO: "Transavia France",  // Air France-KLM group
+  XK: "Corsair",           // flies West Africa from Paris
 };
 
 /** Map a Travelpayouts IATA code to our canonical airline name (or return the code itself). */
