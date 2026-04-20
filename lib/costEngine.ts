@@ -5,6 +5,10 @@ import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
+import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
+import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME, type LoyaltyProgram } from "./globalPrograms";
+import { calculateAcquisitionCost } from "./milesAcquisition";
+import { AIRPORTS } from "@/data/airports";
 import type { Cabin, TripType } from "./engine";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
@@ -212,6 +216,114 @@ export function buildCostOptions(
     milesOptions.push(opt);
   }
 
+  // ── Dynamic global options (for routes/programs not in hardcoded charts) ──
+  // Uses distance-based estimation to suggest ANY program worldwide
+  const fromAirport = AIRPORTS.find(a => a.code === from);
+  const toAirport   = AIRPORTS.find(a => a.code === to);
+
+  if (fromAirport && toAirport) {
+    const cabinMap: Record<Cabin, CabinClass> = {
+      economy: "economy", premium: "premium_economy", business: "business", first: "first"
+    };
+    const dynamicCabin = cabinMap[cabin];
+
+    // Only add dynamic options for programs NOT already covered by hardcoded charts
+    const coveredPrograms = new Set(milesOptions.map(o => o.program));
+
+    for (const prog of GLOBAL_PROGRAMS) {
+      if (coveredPrograms.has(prog.name)) continue;
+
+      // Skip programs where the airline doesn't match alliance of operating airline
+      // (they wouldn't have award space on this airline)
+      const operatingAlliance = ALLIANCES[operatingAirline];
+      if (
+        operatingAirline &&
+        operatingAlliance &&
+        operatingAlliance !== "Independent" &&
+        prog.alliance !== operatingAlliance &&
+        prog.alliance !== "Independent"
+      ) continue;
+
+      const estimate = estimateMilesRequired(
+        prog.name,
+        prog.alliance,
+        fromAirport.lat, fromAirport.lon,
+        toAirport.lat, toAirport.lon,
+        dynamicCabin,
+        tripType,
+        passengers
+      );
+
+      // Compute taxes using tax profile
+      const taxPerPax = prog.taxProfile === "low" ? 50
+        : prog.taxProfile === "medium" ? 150
+        : 350;
+      const taxes = taxPerPax * passengers * (tripType === "roundtrip" ? 2 : 1);
+
+      // Market value of miles
+      const valuePerMile = effectivePrices.get(prog.name) ?? prog.marketValueCents;
+      const milesCost = Math.round((estimate.milesRequired * valuePerMile) / 100 * 100) / 100;
+      const totalMilesCost = Math.round((milesCost + taxes) * 100) / 100;
+      const savings = Math.round((cashTotal - totalMilesCost) * 100) / 100;
+
+      // Only add if it's potentially interesting (not way more expensive than cash)
+      if (totalMilesCost > cashTotal * 1.5) continue;
+
+      milesOptions.push({
+        type: "ALLIANCE",
+        program: prog.name,
+        via: undefined,
+        operatingAirline: prog.airline,
+        milesRequired: estimate.milesRequired,
+        taxes,
+        valuePerMile,
+        milesCost,
+        totalMilesCost,
+        savings,
+        confidence: "LOW",
+        chartSource: "ESTIMATE",
+      });
+    }
+
+    // ── Acquisition options: "Buy miles and use them" ───────────────────────
+    // For the top 3 cheapest programs, check if BUYING miles is still cheaper than cash
+    const sortedForAcquisition = [...milesOptions]
+      .sort((a, b) => a.totalMilesCost - b.totalMilesCost)
+      .slice(0, 5);
+
+    for (const opt of sortedForAcquisition) {
+      const acquisition = calculateAcquisitionCost(opt.program, opt.milesRequired);
+      if (!acquisition.cheapest) continue;
+
+      const totalAcquisitionCost = acquisition.cheapest.costUsd + opt.taxes;
+
+      // Only suggest acquisition if it's cheaper than cash
+      if (totalAcquisitionCost >= cashTotal) continue;
+
+      // Don't duplicate if we already have a better option for this program
+      const existingKey = `${opt.program}::ACQUIRE:${acquisition.cheapest.source}`;
+      const existingForProgram = milesOptions.find(
+        o => o.program === opt.program && o.via === `Achat ${acquisition.cheapest!.source}`
+      );
+      if (existingForProgram && existingForProgram.totalMilesCost <= totalAcquisitionCost) continue;
+
+      milesOptions.push({
+        type: "TRANSFER",
+        program: opt.program,
+        via: `Achat ${acquisition.cheapest.source}`,
+        operatingAirline: opt.operatingAirline,
+        milesRequired: opt.milesRequired,
+        taxes: opt.taxes,
+        valuePerMile: Math.round((acquisition.cheapest.costUsd / opt.milesRequired) * 100 * 100) / 100,
+        milesCost: acquisition.cheapest.costUsd,
+        totalMilesCost: totalAcquisitionCost,
+        savings: Math.round((cashTotal - totalAcquisitionCost) * 100) / 100,
+        confidence: "MEDIUM",
+        chartSource: opt.chartSource,
+      });
+    }
+  }
+
   // ── Deduplicate: keep cheapest option per (program + via) key ─────────────
   const seen = new Map<string, MilesOption>();
   for (const opt of milesOptions) {
@@ -223,7 +335,7 @@ export function buildCostOptions(
   }
   const dedupedOptions = Array.from(seen.values())
     .sort((a, b) => a.totalMilesCost - b.totalMilesCost)  // cheapest first
-    .slice(0, 8);
+    .slice(0, 12);
 
   // ── DECISION: compare REAL TOTAL COSTS ────────────────────────────────────
   // bestOption = cheapest miles scenario

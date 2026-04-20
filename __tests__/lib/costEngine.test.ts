@@ -95,9 +95,9 @@ describe("buildCostOptions", () => {
   });
 
   describe("deduplication", () => {
-    it("does not return more than 8 options", () => {
+    it("does not return more than 12 options", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
-      expect(milesOptions.length).toBeLessThanOrEqual(8);
+      expect(milesOptions.length).toBeLessThanOrEqual(12);
     });
   });
 });
