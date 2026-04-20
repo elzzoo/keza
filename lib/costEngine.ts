@@ -148,29 +148,47 @@ export function buildCostOptions(
   // ── Direct + Alliance options ──────────────────────────────────────────────
   const programs = getProgramsForAirline(operatingAirline);
 
-  for (const { program, type } of programs) {
+  // When the operating airline is unknown or not in any alliance, fall back to
+  // checking ALL programs directly based on route zones. This is common for
+  // month-matrix results where we only have prices but no airline codes.
+  const useZoneFallback = programs.length === 0 && originZone && destZone;
+  const effectivePrograms = useZoneFallback
+    ? Object.entries(PROGRAM_TO_AIRLINE).map(([program, airline]) => ({
+        program,
+        type: "ALLIANCE" as const,          // mark as alliance since we don't know the exact operator
+        inferredAirline: airline,
+      }))
+    : programs.map((p) => ({ ...p, inferredAirline: operatingAirline }));
+
+  for (const entry of effectivePrograms) {
+    const airlineForTaxes = useZoneFallback ? entry.inferredAirline : operatingAirline;
     if (!originZone || !destZone) {
-      const { miles, source } = getMilesRequired(program, "EUROPE", "EUROPE", cabin, tripType, passengers);
-      const taxes = getAwardTaxes(operatingAirline, cabin, passengers);
-      milesOptions.push(buildOption(type, program, undefined, operatingAirline, miles, source, taxes, cashTotal, effectivePrices));
+      const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
+      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
+      milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
       continue;
     }
-    const { miles, source } = getMilesRequired(program, originZone, destZone, cabin, tripType, passengers);
-    const taxes = getAwardTaxes(operatingAirline, cabin, passengers);
-    milesOptions.push(buildOption(type, program, undefined, operatingAirline, miles, source, taxes, cashTotal, effectivePrices));
+    const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
+    milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
   }
 
   // ── Transfer options ──────────────────────────────────────────────────────
-  for (const bonus of TRANSFER_BONUSES) {
-    const canBook = programs.find((p) => p.program === bonus.to);
-    if (!canBook) continue;
+  // When using zone fallback, allow all transfer bonuses that target any program
+  const programNames = new Set(effectivePrograms.map((p) => p.program));
 
+  for (const bonus of TRANSFER_BONUSES) {
+    if (!programNames.has(bonus.to)) continue;
     if (!originZone || !destZone) continue;
+
+    const airlineForTaxes = useZoneFallback
+      ? (PROGRAM_TO_AIRLINE[bonus.to] ?? operatingAirline)
+      : operatingAirline;
 
     const { miles: destMiles, source } = getMilesRequired(bonus.to, originZone, destZone, cabin, tripType, passengers);
     const ratio = getEffectiveRatio(bonus);
     const sourceMiles = Math.ceil(destMiles / ratio);
-    const taxes = getAwardTaxes(operatingAirline, cabin, passengers);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
 
     const promoApplied = bonus.promoRatio
       ? `${bonus.from} bonus ${Math.round((ratio - 1) * 100)}%`
@@ -180,7 +198,7 @@ export function buildCostOptions(
       "TRANSFER",
       bonus.to,
       bonus.from,
-      operatingAirline,
+      airlineForTaxes,
       sourceMiles,
       source,
       taxes,

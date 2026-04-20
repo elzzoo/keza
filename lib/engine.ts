@@ -205,6 +205,40 @@ function rebrandRoute(flights: NormalizedFlight[], from: string, to: string): No
   return flights.map((f) => ({ ...f, from, to }));
 }
 
+/**
+ * Discover airlines that operate a route by querying v3 WITHOUT a date filter.
+ * Returns unique airline names (already mapped via iataToAirline).
+ */
+async function discoverRouteAirlines(
+  attempts: Array<[string, string]>,
+  token: string
+): Promise<string[]> {
+  for (const [o, d] of attempts) {
+    const url = new URL(`${TP_BASE}/aviasales/v3/prices_for_dates`);
+    url.searchParams.set("origin", o.toUpperCase());
+    url.searchParams.set("destination", d.toUpperCase());
+    url.searchParams.set("currency", "usd");
+    url.searchParams.set("sorting", "price");
+    url.searchParams.set("unique", "true");   // one per airline
+    url.searchParams.set("limit", "10");
+    url.searchParams.set("token", token);
+
+    try {
+      const res = await fetch(url.toString(), {
+        next: { revalidate: 86400 },          // cache 24h — airline roster changes slowly
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) continue;
+      const json = (await res.json()) as { data?: Array<{ airline: string }> };
+      if (Array.isArray(json.data) && json.data.length > 0) {
+        const unique = Array.from(new Set(json.data.map((f) => iataToAirline(f.airline))));
+        return unique;
+      }
+    } catch { /* try next attempt pair */ }
+  }
+  return [];
+}
+
 async function fetchFromTravelpayouts(
   from: string,
   to: string,
@@ -228,19 +262,40 @@ async function fetchFromTravelpayouts(
   if (fromMetro && toMetro) attempts.push([fromMetro, toMetro]);
 
   try {
+    // ── Pass 1: v3 with exact month — best data (airline + deep links + price) ──
     for (const [o, d] of attempts) {
       const v3 = await fetchV3(o, d, date, direct, token);
       if (v3.length > 0) return rebrandRoute(v3, from, to);
     }
 
-    // All v3 attempts empty → try month-matrix with the same fallback cascade.
-    // Keeps at least a cash price visible even when airline data is missing.
+    // ── Pass 2: month-matrix for prices, then enrich with airline discovery ──
+    // month-matrix has broader coverage but no airline codes.
+    // We do a separate v3 call WITHOUT a date filter to discover which airlines
+    // fly this route, then attach those airlines to each month-matrix result
+    // so the cost engine can compare cash vs miles.
+    let mmFlights: NormalizedFlight[] = [];
     for (const [o, d] of attempts) {
       const mm = await fetchMonthMatrix(o, d, date, direct, token);
-      if (mm.length > 0) return rebrandRoute(mm, from, to);
+      if (mm.length > 0) {
+        mmFlights = rebrandRoute(mm, from, to);
+        break;
+      }
     }
 
-    return [];
+    if (mmFlights.length === 0) return [];
+
+    // Discover airlines operating this route (any date)
+    const routeAirlines = await discoverRouteAirlines(attempts, token);
+
+    if (routeAirlines.length > 0) {
+      // Assign discovered airlines to each month-matrix flight.
+      // This enables the cost engine to compute miles options.
+      for (const f of mmFlights) {
+        f.airlines = routeAirlines;
+      }
+    }
+
+    return mmFlights;
   } catch (err) {
     console.error("[engine] fetch failed:", err);
     return [];
@@ -338,7 +393,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v2:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v4:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
