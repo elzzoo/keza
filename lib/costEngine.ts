@@ -13,7 +13,7 @@ import type { Cabin, TripType } from "./engine";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
-export type Recommendation = "USE_MILES" | "USE_CASH";
+export type Recommendation = "USE_MILES" | "USE_CASH" | "EQUIVALENT";
 
 export interface FlightInput {
   from: string;
@@ -341,21 +341,31 @@ export function buildCostOptions(
   // bestOption = cheapest miles scenario
   const bestOption = dedupedOptions[0] ?? null;
 
-  // Binary decision: milesCost < cashCost → USE_MILES, else → USE_CASH
+  // Decision: compare REAL TOTAL COSTS with an EQUIVALENT zone (±5%)
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
-  const recommendation: Recommendation =
-    bestMilesCost < cashTotal ? "USE_MILES" : "USE_CASH";
 
   // Savings = absolute difference between cash and best miles cost
   const savings = bestOption
     ? Math.round(Math.abs(cashTotal - bestMilesCost) * 100) / 100
     : 0;
 
+  // If the difference is < 5% of the cash price, it's essentially equivalent
+  const diffPct = cashTotal > 0 ? (savings / cashTotal) * 100 : 0;
+  const recommendation: Recommendation = !bestOption
+    ? "USE_CASH"
+    : diffPct < 5
+      ? "EQUIVALENT"
+      : bestMilesCost < cashTotal
+        ? "USE_MILES"
+        : "USE_CASH";
+
   // Explanation
   const explanation = bestOption
     ? recommendation === "USE_MILES"
       ? `Économisez $${savings} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + $${bestOption.taxes} taxes = $${bestMilesCost} vs $${cashTotal} cash)`
-      : `Le cash est moins cher de $${savings}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
+      : recommendation === "EQUIVALENT"
+        ? `Quasi identique : $${bestMilesCost} en miles vs $${cashTotal} cash (${diffPct.toFixed(0)}% d'écart). Choisissez selon vos préférences.`
+        : `Le cash est moins cher de $${savings}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
     : `Aucune option miles disponible. Payez en cash ($${cashTotal}).`;
 
   return {

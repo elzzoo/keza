@@ -51,7 +51,7 @@ export interface FlightResult {
   cashCost: number;                       // total cash price
   milesCost: number;                      // total cost of best miles option
   savings: number;                        // |cashCost - milesCost|
-  recommendation: "USE_MILES" | "USE_CASH";
+  recommendation: "USE_MILES" | "USE_CASH" | "EQUIVALENT";
   bestOption: MilesOption | null;         // cheapest miles scenario
   milesOptions: MilesOption[];            // all options for detail view
   explanation: string;                    // human-readable reason

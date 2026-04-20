@@ -91,7 +91,7 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
   const [sortBy, setSortBy] = useState<SortBy>("value");
 
   const counts = useMemo(() => ({
-    miles: results.filter(r => r.recommendation === "USE_MILES").length,
+    miles: results.filter(r => r.recommendation === "USE_MILES" || r.recommendation === "EQUIVALENT").length,
     cash:  results.filter(r => r.recommendation === "USE_CASH").length,
   }), [results]);
 
@@ -104,7 +104,7 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
 
   const filtered = useMemo(() => {
     let r = [...results];
-    if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES");
+    if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES" || x.recommendation === "EQUIVALENT");
     if (tab === "cash")  r = r.filter(x => x.recommendation === "USE_CASH");
     if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
     if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);

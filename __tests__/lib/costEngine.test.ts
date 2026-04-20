@@ -63,7 +63,7 @@ describe("buildCostOptions", () => {
   describe("recommendation", () => {
     it("USE_MILES when miles cost is less than cash", () => {
       const { recommendation } = buildCostOptions(BASE, new Map());
-      expect(["USE_MILES", "USE_CASH"]).toContain(recommendation);
+      expect(["USE_MILES", "USE_CASH", "EQUIVALENT"]).toContain(recommendation);
     });
 
     it("USE_CASH when cash price is very low", () => {

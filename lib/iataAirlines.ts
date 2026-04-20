@@ -11,7 +11,7 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   CZ: "China Southern",
   AM: "Aeromexico",
   UX: "Air Europa",
-  AZ: "Alitalia",
+  AZ: "ITA Airways",
 
   // ─── Star Alliance ─────────────────────────────────────────────────────────
   LH: "Lufthansa",
