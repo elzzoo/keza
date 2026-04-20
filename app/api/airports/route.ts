@@ -1,8 +1,24 @@
 import { NextResponse } from "next/server";
-import { AIRPORTS } from "@/data/airports";
+import airportsFull from "@/data/airports-full.json";
 
-// Server-side airport search using the client-side database (410 airports)
-// This covers all major hubs worldwide — sufficient for autocomplete fallback
+interface CompactAirport {
+  c: string;  // IATA code
+  n: string;  // city name
+  co: string; // country
+  i: string;  // ISO2
+  la: number; // latitude
+  lo: number; // longitude
+}
+
+const allAirports = airportsFull as CompactAirport[];
+
+// Country code → flag emoji
+function iso2ToFlag(iso2: string): string {
+  if (!iso2 || iso2.length !== 2) return "\u{1F30D}";
+  return String.fromCodePoint(
+    ...iso2.toUpperCase().split("").map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
+  );
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,16 +28,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ results: [] });
   }
 
-  const results = AIRPORTS
+  // Search by IATA code (exact or prefix), city name, or country
+  const results = allAirports
     .filter(a => {
-      const code = a.code.toLowerCase();
-      const city = a.city.toLowerCase();
-      const cityEn = a.cityEn.toLowerCase();
-      const country = a.country.toLowerCase();
-      const countryEn = a.countryEn.toLowerCase();
-      return code.startsWith(q) || city.includes(q) || cityEn.includes(q) || country.includes(q) || countryEn.includes(q);
+      const code = a.c.toLowerCase();
+      const city = a.n.toLowerCase();
+      const country = a.co.toLowerCase();
+      return code.startsWith(q) || city.includes(q) || country.includes(q);
     })
-    .slice(0, 15);
+    .slice(0, 15)
+    .map(a => ({
+      code: a.c,
+      city: a.n,
+      cityEn: a.n,
+      country: a.co,
+      countryEn: a.co,
+      flag: iso2ToFlag(a.i),
+      iso2: a.i,
+      lat: a.la,
+      lon: a.lo,
+    }));
 
   return NextResponse.json({ results }, {
     headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" },
