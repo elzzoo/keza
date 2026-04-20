@@ -27,6 +27,14 @@ interface Props {
   formatPrice?: (usd: number) => string;
 }
 
+/** Responsive text size — shrinks for long formatted prices (e.g. FCFA) */
+function priceSize(formatted: string): string {
+  const len = formatted.length;
+  if (len > 12) return "text-base";
+  if (len > 8) return "text-lg";
+  return "text-2xl";
+}
+
 export function FlightCard({ flight, lang, formatPrice }: Props) {
   const fr = lang === "fr";
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
@@ -85,7 +93,8 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
         {/* Cash */}
         <div className="px-4 py-3.5 text-center">
           <div className={clsx(
-            "text-2xl font-black tabular-nums",
+            "font-black tabular-nums",
+            priceSize(fmt(cashCost)),
             !isUseMiles ? "text-success" : "text-fg"
           )}>
             {fmt(cashCost)}
@@ -100,7 +109,8 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
           {milesCost > 0 ? (
             <>
               <div className={clsx(
-                "text-2xl font-black tabular-nums",
+                "font-black tabular-nums",
+                priceSize(fmt(milesCost)),
                 isUseMiles ? "text-success" : "text-fg"
               )}>
                 {fmt(milesCost)}

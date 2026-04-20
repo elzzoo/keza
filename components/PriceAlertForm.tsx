@@ -8,6 +8,7 @@ interface Props {
   cabin: string;
   currentPrice: number;
   lang: "fr" | "en";
+  formatPrice?: (usd: number) => string;
 }
 
 const L = {
@@ -39,8 +40,9 @@ const L = {
   },
 };
 
-export function PriceAlertForm({ from, to, cabin, currentPrice, lang }: Props) {
+export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPrice }: Props) {
   const t = L[lang];
+  const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed">("idle");
 
@@ -79,7 +81,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang }: Props) {
         <div>
           <p className="text-sm font-bold text-success">{t.success}</p>
           <p className="text-xs text-muted mt-1">
-            {from} → {to} · {t.target} ${targetPrice}
+            {from} → {to} · {t.target} {fmt(targetPrice)}
           </p>
         </div>
       </div>
@@ -105,7 +107,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang }: Props) {
           {from} → {to}
         </span>
         <span>
-          {t.target} <span className="text-success font-bold">${targetPrice}</span>
+          {t.target} <span className="text-success font-bold">{fmt(targetPrice)}</span>
         </span>
       </div>
 
