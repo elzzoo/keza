@@ -80,8 +80,8 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
         className={clsx(
           "w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all duration-150",
           open
-            ? "border-primary/50 bg-blue-50/40 shadow-sm"
-            : "border-slate-200 bg-white hover:border-primary/30 hover:bg-blue-50/20"
+            ? "border-primary/50 bg-primary/5 shadow-sm"
+            : "border-border bg-surface-2 hover:border-primary/30 hover:bg-primary/5"
         )}
       >
         {selected ? (
@@ -96,16 +96,16 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
             </div>
           </>
         ) : (
-          <span className="text-muted text-sm">
+          <span className="text-muted/60 text-sm">
             {placeholder ?? (lang === "fr" ? "Ex: Paris, CDG, Dakar…" : "Ex: Paris, CDG, Dakar…")}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-white border border-slate-100 rounded-2xl shadow-lg overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-surface border border-border rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
           {/* Search */}
-          <div className="p-2 border-b border-slate-100">
+          <div className="p-2 border-b border-border">
             <div className="relative">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none">
@@ -118,7 +118,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={lang === "fr" ? "Ville, pays ou code IATA…" : "City, country or IATA code…"}
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-fg text-sm placeholder-muted/60 focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="w-full pl-9 pr-3 py-2 bg-surface-2 border border-border rounded-lg text-fg text-sm placeholder-muted/50 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/40"
               />
             </div>
           </div>
@@ -135,7 +135,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
                   key={airport.code}
                   type="button"
                   onClick={() => selectAirport(airport)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition-colors duration-100 text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-2 transition-colors duration-100 text-left"
                 >
                   <span className="text-xl flex-shrink-0">{airport.flag}</span>
                   <div className="min-w-0 flex-1">

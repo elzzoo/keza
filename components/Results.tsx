@@ -21,10 +21,16 @@ const L = {
     savings: "Économie max",
     all: "Tous",
     miles: "Miles",
-    consider: "À considérer",
+    consider: "Si tu as les miles",
     cash: "Cash",
-    empty: "Aucun vol trouvé",
-    emptyDesc: "Essayez d'autres dates ou destinations.",
+    empty: "Aucun vol trouvé pour cette combinaison",
+    emptyDesc: "Nos sources de données couvrent mieux certaines routes. Essayez :",
+    emptyTips: [
+      "Élargir les dates (±7 jours)",
+      "Décocher le filtre \"Direct uniquement\"",
+      "Utiliser DKR (Dakar ville) au lieu de DSS pour les vols long-courriers",
+      "Passer par un hub (CDG, IST, DXB) pour l'Afrique ↔ USA",
+    ],
     back: "← Nouvelle recherche",
     loading: "Recherche en cours…",
   },
@@ -35,10 +41,16 @@ const L = {
     savings: "Max savings",
     all: "All",
     miles: "Miles",
-    consider: "Consider",
+    consider: "If owned",
     cash: "Cash",
-    empty: "No flights found",
-    emptyDesc: "Try different dates or destinations.",
+    empty: "No flights found for this combination",
+    emptyDesc: "Our data sources cover some routes better than others. Try:",
+    emptyTips: [
+      "Broaden the dates (±7 days)",
+      "Uncheck \"Direct only\" filter",
+      "Use DKR (Dakar city) instead of DSS for long-haul",
+      "Route via a hub (CDG, IST, DXB) for Africa ↔ USA",
+    ],
     back: "← New search",
     loading: "Searching…",
   },
@@ -46,7 +58,7 @@ const L = {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+    <div className="bg-surface rounded-2xl border border-border overflow-hidden">
       <div className="skeleton h-10 rounded-none" />
       <div className="p-5 space-y-4">
         <div className="flex justify-between">
@@ -58,7 +70,7 @@ function SkeletonCard() {
           <div className="skeleton h-6 w-24 rounded-lg" />
           <div className="skeleton h-6 w-20 rounded-lg" />
         </div>
-        <div className="h-px bg-slate-100" />
+        <div className="h-px bg-border" />
         <div className="grid grid-cols-2 gap-3">
           <div className="skeleton h-20 rounded-xl" />
           <div className="skeleton h-20 rounded-xl" />
@@ -76,19 +88,19 @@ export function Results({ results, loading, lang, onBack }: Props) {
   const [sortBy, setSortBy] = useState<SortBy>("value");
 
   const counts = useMemo(() => ({
-    miles:   results.filter(r => r.recommendation === "USE MILES").length,
-    consider:results.filter(r => r.recommendation === "CONSIDER").length,
-    cash:    results.filter(r => r.recommendation === "USE CASH").length,
+    miles:    results.filter(r => r.recommendation === "MILES_WIN").length,
+    consider: results.filter(r => r.recommendation === "MILES_IF_OWNED").length,
+    cash:     results.filter(r => r.recommendation === "CASH_WINS").length,
   }), [results]);
 
-  const bestPrice   = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
-  const maxSavings  = results.length ? Math.max(0, ...results.map(r => r.savings ?? 0)) : 0;
+  const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
+  const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
 
   const filtered = useMemo(() => {
     let r = [...results];
-    if (tab === "miles")   r = r.filter(x => x.recommendation === "USE MILES");
-    if (tab === "consider") r = r.filter(x => x.recommendation === "CONSIDER");
-    if (tab === "cash")    r = r.filter(x => x.recommendation === "USE CASH");
+    if (tab === "miles")    r = r.filter(x => x.recommendation === "MILES_WIN");
+    if (tab === "consider") r = r.filter(x => x.recommendation === "MILES_IF_OWNED");
+    if (tab === "cash")     r = r.filter(x => x.recommendation === "CASH_WINS");
     if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
     if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
     if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
@@ -108,6 +120,13 @@ export function Results({ results, loading, lang, onBack }: Props) {
     );
   }
 
+  const tabStyles: Record<string, { active: string; inactive: string }> = {
+    all:     { active: "bg-surface-2 text-fg border-border", inactive: "bg-surface text-muted border-border hover:border-subtle hover:text-fg" },
+    miles:   { active: "bg-primary/15 text-blue-400 border-primary/30", inactive: "bg-surface text-muted border-border hover:border-primary/30 hover:text-blue-400" },
+    consider:{ active: "bg-success/15 text-success border-success/30", inactive: "bg-surface text-muted border-border hover:border-success/30 hover:text-success" },
+    cash:    { active: "bg-warning/15 text-warning border-warning/30", inactive: "bg-surface text-muted border-border hover:border-warning/30 hover:text-warning" },
+  };
+
   return (
     <div className="space-y-4 animate-fade-up">
       {/* Back + header */}
@@ -124,15 +143,15 @@ export function Results({ results, loading, lang, onBack }: Props) {
       {/* Stat tiles */}
       {results.length > 0 && (
         <div className="grid grid-cols-3 gap-2.5">
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center">
+          <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
             <p className="text-xl font-black text-fg">{results.length}</p>
             <p className="text-[11px] text-muted mt-0.5">{lang === "fr" ? "vols trouvés" : "flights found"}</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center">
+          <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
             <p className="text-xl font-black text-warning">${bestPrice.toFixed(0)}</p>
             <p className="text-[11px] text-muted mt-0.5">{t.best}</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3 text-center">
+          <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
             <p className="text-xl font-black text-success">+${maxSavings.toFixed(0)}</p>
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
           </div>
@@ -143,25 +162,20 @@ export function Results({ results, loading, lang, onBack }: Props) {
       <div className="flex gap-2 overflow-x-auto scrollbar-none">
         {(["all", "miles", "consider", "cash"] as const).map(k => {
           const count = k === "all" ? results.length : counts[k as keyof typeof counts];
-          const styles = {
-            all:     tab === k ? "bg-slate-900 text-white border-slate-900" : "bg-white text-muted border-slate-200 hover:border-slate-300",
-            miles:   tab === k ? "bg-blue-600 text-white border-blue-600" : "bg-white text-muted border-slate-200 hover:border-blue-200 hover:text-blue-600",
-            consider:tab === k ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-muted border-slate-200 hover:border-emerald-200 hover:text-emerald-600",
-            cash:    tab === k ? "bg-amber-500 text-white border-amber-500" : "bg-white text-muted border-slate-200 hover:border-amber-200 hover:text-amber-600",
-          };
+          const s = tabStyles[k];
           return (
             <button
               key={k}
               onClick={() => setTab(k)}
               className={clsx(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 whitespace-nowrap",
-                styles[k]
+                tab === k ? s.active : s.inactive
               )}
             >
               {t[k]}
               <span className={clsx(
                 "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
-                tab === k ? "bg-white/20" : "bg-slate-100 text-muted"
+                tab === k ? "bg-white/15" : "bg-surface-2 text-muted"
               )}>{count}</span>
             </button>
           );
@@ -181,10 +195,15 @@ export function Results({ results, loading, lang, onBack }: Props) {
 
       {/* Cards */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card py-16 flex flex-col items-center gap-3">
+        <div className="bg-surface rounded-2xl border border-border py-12 px-6 flex flex-col items-center gap-3 max-w-md mx-auto">
           <span className="text-5xl animate-float">✈️</span>
-          <p className="font-bold text-fg">{t.empty}</p>
-          <p className="text-sm text-muted">{t.emptyDesc}</p>
+          <p className="font-bold text-fg text-center">{t.empty}</p>
+          <p className="text-sm text-muted text-center">{t.emptyDesc}</p>
+          <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
+            {t.emptyTips.map((tip, i) => (
+              <li key={i}>{tip}</li>
+            ))}
+          </ul>
         </div>
       ) : (
         <div className="space-y-3 stagger-children">

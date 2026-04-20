@@ -12,9 +12,9 @@ import { PromoBanner }   from "@/components/PromoBanner";
 import { PopularRoutes } from "@/components/PopularRoutes";
 
 export default function HomePage() {
-  const [lang,    setLang]    = useState<"fr" | "en">("fr");
-  const [results, setResults] = useState<FlightResult[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [lang,       setLang]       = useState<"fr" | "en">("fr");
+  const [results,    setResults]    = useState<FlightResult[]>([]);
+  const [loading,    setLoading]    = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +39,7 @@ export default function HomePage() {
         {!hasSearched && (
           <div className="pt-10 pb-8 text-center space-y-4 animate-fade-up">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-xs font-semibold text-primary">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               {lang === "fr" ? "Comparateur cash vs miles · Données en temps réel" : "Cash vs miles comparator · Real-time data"}
             </div>
@@ -47,7 +47,7 @@ export default function HomePage() {
             {/* Title */}
             <div className="space-y-1">
               <h1 className="text-4xl sm:text-5xl font-black leading-tight">
-                <span className="bg-gradient-to-br from-blue-800 via-primary to-blue-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-br from-blue-300 via-primary to-blue-500 bg-clip-text text-transparent">
                   {lang === "fr" ? "Cash ou miles ?" : "Cash or miles?"}
                 </span>
                 <br />
@@ -103,7 +103,6 @@ export default function HomePage() {
             <PopularRoutes
               lang={lang}
               onSelect={(_from, _to) => {
-                // Selecting a popular route scrolls to form — the user then submits
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
@@ -115,34 +114,46 @@ export default function HomePage() {
             <HowItWorks lang={lang} />
 
             {/* Recommendation legend */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
+            <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
               <p className="section-rule">
                 {lang === "fr" ? "Nos recommandations" : "Our recommendations"}
               </p>
               <div className="space-y-2.5">
                 {[
                   {
-                    band: "bg-miles-band",
-                    label: lang === "fr" ? "UTILISER LES MILES" : "USE MILES",
-                    desc: lang === "fr" ? "La valeur de vos miles est supérieure au prix cash. Rachetez vos points !" : "Your miles value exceeds the cash price. Redeem your points!",
+                    bg: "bg-primary/15",
+                    text: "text-blue-400",
+                    border: "border-primary/30",
+                    label: lang === "fr" ? "MILES GAGNENT" : "MILES WIN",
+                    desc: lang === "fr"
+                      ? "La valeur de vos miles est supérieure au prix cash. Rachetez vos points !"
+                      : "Your miles value exceeds the cash price. Redeem your points!",
                     icon: "✈",
                   },
                   {
-                    band: "bg-consider-band",
-                    label: lang === "fr" ? "À CONSIDÉRER" : "CONSIDER",
-                    desc: lang === "fr" ? "Valeur correcte. Bon choix selon votre programme et vos points disponibles." : "Decent value. Good choice depending on your program and available points.",
+                    bg: "bg-success/10",
+                    text: "text-success",
+                    border: "border-success/25",
+                    label: lang === "fr" ? "SI TU AS LES MILES" : "IF YOU HAVE MILES",
+                    desc: lang === "fr"
+                      ? "Valeur correcte. Bon choix selon votre programme et vos points disponibles."
+                      : "Decent value. Good choice depending on your program and available points.",
                     icon: "◎",
                   },
                   {
-                    band: "bg-cash-band",
-                    label: lang === "fr" ? "PAYER EN CASH" : "USE CASH",
-                    desc: lang === "fr" ? "Le prix cash est plus avantageux. Gardez vos miles pour une meilleure occasion." : "Cash price is more advantageous. Save your miles for a better deal.",
+                    bg: "bg-warning/10",
+                    text: "text-warning",
+                    border: "border-warning/25",
+                    label: lang === "fr" ? "CASH GAGNE" : "CASH WINS",
+                    desc: lang === "fr"
+                      ? "Le prix cash est plus avantageux. Gardez vos miles pour une meilleure occasion."
+                      : "Cash price is more advantageous. Save your miles for a better deal.",
                     icon: "◈",
                   },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3">
-                    <div className={`flex-shrink-0 w-20 px-2 py-1 rounded-lg ${item.band} flex items-center justify-center`}>
-                      <span className="text-white text-[10px] font-black tracking-wide">{item.icon} {item.label.split(" ")[0]}</span>
+                    <div className={`flex-shrink-0 px-2.5 py-1 rounded-lg ${item.bg} border ${item.border} flex items-center justify-center`}>
+                      <span className={`${item.text} text-[10px] font-black tracking-wide whitespace-nowrap`}>{item.icon} {item.label.split(" ")[0]}</span>
                     </div>
                     <p className="text-xs text-muted leading-relaxed flex-1">{item.desc}</p>
                   </div>

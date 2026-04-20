@@ -33,11 +33,11 @@ export function PopularRoutes({ lang, onSelect }: Props) {
           <button
             key={`${r.from}-${r.to}`}
             onClick={() => onSelect(r.from, r.to)}
-            className="flex-shrink-0 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-fg hover:border-primary hover:text-primary hover:bg-blue-50/30 transition-all duration-150 shadow-sm group"
+            className="flex-shrink-0 flex items-center gap-2 bg-surface-2 border border-border rounded-xl px-4 py-2 text-sm text-muted hover:border-primary/40 hover:text-fg hover:bg-primary/5 transition-all duration-150 group"
           >
             <span>{r.fromFlag}</span>
             <span className="font-semibold">{r.from}</span>
-            <span className="text-slate-300 group-hover:text-primary/40">→</span>
+            <span className="text-subtle group-hover:text-primary/60">→</span>
             <span className="font-semibold">{r.to}</span>
             <span>{r.toFlag}</span>
           </button>

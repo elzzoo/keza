@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import fs from "fs";
 import path from "path";
 
+function safeCompare(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a.padEnd(256));
+  const bBuf = Buffer.from(b.padEnd(256));
+  return timingSafeEqual(aBuf, bBuf) && a.length === b.length;
+}
+
 export async function GET(request: Request) {
-  // CRON_SECRET is mandatory — endpoint is locked even without the env var
+  // CRON_SECRET is mandatory — timing-safe comparison to prevent timing attacks
+  const secret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
-  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!secret || !authHeader || !safeCompare(authHeader, `Bearer ${secret}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

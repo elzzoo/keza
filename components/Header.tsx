@@ -26,7 +26,7 @@ export function Header({ lang, onLangChange }: Props) {
   const nav = NAV[lang];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-border">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -34,18 +34,18 @@ export function Header({ lang, onLangChange }: Props) {
             <span className="text-primary">KE</span>
             <span className="text-fg">ZA</span>
           </span>
-          <span className="hidden sm:block text-[11px] text-muted font-medium border-l border-slate-200 pl-2 ml-0.5">
+          <span className="hidden sm:block text-[11px] text-muted font-medium border-l border-border pl-2 ml-0.5">
             {lang === "fr" ? "Cash ou Miles ?" : "Cash or Miles?"}
           </span>
         </a>
 
-        {/* Nav links — desktop */}
+        {/* Nav — desktop */}
         <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
           {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-slate-50 transition-all duration-150 font-medium"
+              className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all duration-150 font-medium"
             >
               {item.label}
             </a>
@@ -54,13 +54,13 @@ export function Header({ lang, onLangChange }: Props) {
 
         <div className="flex items-center gap-2 ml-auto">
           {/* Live badge */}
-          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/20 text-[11px] font-semibold text-success">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/15 text-[11px] font-semibold text-success">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot" />
             Live
           </span>
 
           {/* Lang toggle */}
-          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+          <div className="flex items-center rounded-lg border border-border bg-surface-2 p-0.5">
             {(["fr", "en"] as const).map((l) => (
               <button
                 key={l}
@@ -68,7 +68,7 @@ export function Header({ lang, onLangChange }: Props) {
                 className={clsx(
                   "px-2.5 py-1 rounded-md text-xs font-bold uppercase transition-all duration-150",
                   lang === l
-                    ? "bg-white text-primary shadow-sm border border-slate-200"
+                    ? "bg-primary text-white shadow-sm"
                     : "text-muted hover:text-fg"
                 )}
               >
@@ -79,7 +79,7 @@ export function Header({ lang, onLangChange }: Props) {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-1.5 rounded-lg border border-slate-200 text-muted hover:text-fg hover:bg-slate-50 transition-all"
+            className="md:hidden p-1.5 rounded-lg border border-border text-muted hover:text-fg hover:bg-surface-2 transition-all"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Menu"
           >
@@ -95,13 +95,13 @@ export function Header({ lang, onLangChange }: Props) {
 
       {/* Mobile nav */}
       {menuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 py-2">
+        <div className="md:hidden border-t border-border bg-surface px-4 py-2">
           {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
               onClick={() => setMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-slate-50 transition-all font-medium"
+              className="block px-3 py-2.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all font-medium"
             >
               {item.label}
             </a>

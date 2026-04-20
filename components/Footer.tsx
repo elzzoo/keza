@@ -2,14 +2,14 @@ interface Props { lang: "fr" | "en" }
 
 const LINKS = {
   fr: {
-    product: { title: "Produit", items: [{ label: "Rechercher", href: "#" }, { label: "Meilleurs deals", href: "#deals" }, { label: "Comment ça marche", href: "#how" }, { label: "Calculateur", href: "#calc" }] },
-    programs: { title: "Programmes miles", items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
-    routes: { title: "Routes populaires", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "Abidjan → Paris CDG", href: "#" }, { label: "Lagos → Londres LHR", href: "#" }, { label: "Nairobi → Paris CDG", href: "#" }] },
+    product:  { title: "Produit",           items: [{ label: "Rechercher", href: "#" }, { label: "Meilleurs deals", href: "#deals" }, { label: "Comment ça marche", href: "#how" }, { label: "Calculateur", href: "#calc" }] },
+    programs: { title: "Programmes miles",  items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
+    routes:   { title: "Routes populaires", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "Abidjan → Paris CDG", href: "#" }, { label: "Lagos → Londres LHR", href: "#" }, { label: "Nairobi → Paris CDG", href: "#" }] },
   },
   en: {
-    product: { title: "Product", items: [{ label: "Search", href: "#" }, { label: "Best deals", href: "#deals" }, { label: "How it works", href: "#how" }, { label: "Calculator", href: "#calc" }] },
+    product:  { title: "Product",       items: [{ label: "Search", href: "#" }, { label: "Best deals", href: "#deals" }, { label: "How it works", href: "#how" }, { label: "Calculator", href: "#calc" }] },
     programs: { title: "Miles programs", items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
-    routes: { title: "Popular routes", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "Abidjan → Paris CDG", href: "#" }, { label: "Lagos → London LHR", href: "#" }, { label: "Nairobi → Paris CDG", href: "#" }] },
+    routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris CDG", href: "#" }, { label: "Abidjan → Paris CDG", href: "#" }, { label: "Lagos → London LHR", href: "#" }, { label: "Nairobi → Paris CDG", href: "#" }] },
   },
 };
 
@@ -18,7 +18,7 @@ export function Footer({ lang }: Props) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-slate-100 mt-16">
+    <footer className="bg-surface border-t border-border mt-16">
       <div className="max-w-5xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -40,11 +40,11 @@ export function Footer({ lang }: Props) {
           {/* Links */}
           {[l.product, l.programs, l.routes].map((col) => (
             <div key={col.title}>
-              <h4 className="text-xs font-bold text-fg uppercase tracking-wider mb-3">{col.title}</h4>
+              <h4 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">{col.title}</h4>
               <ul className="space-y-2">
                 {col.items.map((item) => (
                   <li key={item.label}>
-                    <a href={item.href} className="text-sm text-muted hover:text-primary transition-colors duration-150">
+                    <a href={item.href} className="text-sm text-subtle hover:text-fg transition-colors duration-150">
                       {item.label}
                     </a>
                   </li>
@@ -55,7 +55,7 @@ export function Footer({ lang }: Props) {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-subtle">
+        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-subtle">
           <span>© {year} KEZA. {lang === "fr" ? "Tous droits réservés." : "All rights reserved."}</span>
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-muted transition-colors">{lang === "fr" ? "Mentions légales" : "Legal"}</a>
