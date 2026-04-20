@@ -7,31 +7,55 @@ interface Props {
   lang: "fr" | "en";
 }
 
-// Mapping: transfer source → recommended credit cards
-const CARD_RECOMMENDATIONS: Record<string, { cards: string[]; note: { fr: string; en: string } }> = {
+// Mapping: transfer source → recommended credit cards with referral links
+// To get your own referral links:
+// - Amex: https://www.americanexpress.com/en-us/referral → share your card referral
+// - Chase: https://www.chase.com/referafriend → generate referral link
+// - Citi: https://www.citi.com/credit-cards/refer-a-friend → generate referral link
+// - Capital One: https://capital.one/refer → generate referral link
+// Replace the "url" values below with your personal referral URLs.
+
+const CARD_RECOMMENDATIONS: Record<string, {
+  cards: Array<{ name: string; url: string }>;
+  note: { fr: string; en: string };
+}> = {
   "Amex MR": {
-    cards: ["Amex Platinum", "Amex Gold", "Amex Business Platinum"],
+    cards: [
+      { name: "Amex Platinum", url: "https://americanexpress.com/en-us/credit-cards/credit-intel/platinum-card/" },
+      { name: "Amex Gold", url: "https://americanexpress.com/en-us/credit-cards/credit-intel/gold-card/" },
+      { name: "Amex Business Platinum", url: "https://americanexpress.com/en-us/business/credit-cards/business-platinum/" },
+    ],
     note: {
       fr: "Transférez vos points Amex MR 1:1 vers ce programme",
       en: "Transfer your Amex MR points 1:1 to this program",
     },
   },
   "Chase UR": {
-    cards: ["Chase Sapphire Reserve", "Chase Sapphire Preferred", "Chase Ink Preferred"],
+    cards: [
+      { name: "Chase Sapphire Reserve", url: "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve" },
+      { name: "Chase Sapphire Preferred", url: "https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred" },
+      { name: "Chase Ink Preferred", url: "https://creditcards.chase.com/business-credit-cards/ink/business-preferred" },
+    ],
     note: {
       fr: "Transférez vos points Chase UR 1:1 vers ce programme",
       en: "Transfer your Chase UR points 1:1 to this program",
     },
   },
   "Citi ThankYou": {
-    cards: ["Citi Premier", "Citi Prestige", "Citi Double Cash (avec ThankYou)"],
+    cards: [
+      { name: "Citi Premier", url: "https://www.citi.com/credit-cards/citi-premier-credit-card" },
+      { name: "Citi Strata Premier", url: "https://www.citi.com/credit-cards/citi-strata-premier-credit-card" },
+    ],
     note: {
       fr: "Transférez vos Citi ThankYou 1:1 vers ce programme",
       en: "Transfer your Citi ThankYou points 1:1 to this program",
     },
   },
   "Capital One Miles": {
-    cards: ["Capital One Venture X", "Capital One Venture"],
+    cards: [
+      { name: "Capital One Venture X", url: "https://www.capitalone.com/credit-cards/venture-x/" },
+      { name: "Capital One Venture", url: "https://www.capitalone.com/credit-cards/venture/" },
+    ],
     note: {
       fr: "Transférez vos Capital One Miles 1:1 vers ce programme",
       en: "Transfer your Capital One Miles 1:1 to this program",
@@ -75,12 +99,15 @@ export function CardRecommendation({ results, lang }: Props) {
 
       <div className="flex flex-wrap gap-1.5">
         {recommendation.cards.map(card => (
-          <span
-            key={card}
-            className="text-[10px] font-semibold bg-surface-2 border border-border px-2.5 py-1 rounded-lg text-fg"
+          <a
+            key={card.name}
+            href={card.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-semibold bg-surface-2 border border-border px-2.5 py-1 rounded-lg text-fg hover:border-primary/40 hover:text-primary transition-all"
           >
-            {card}
-          </span>
+            {card.name} ↗
+          </a>
         ))}
       </div>
 
