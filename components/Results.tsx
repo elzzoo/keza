@@ -20,9 +20,8 @@ const L = {
     best: "Meilleur prix",
     savings: "Économie max",
     all: "Tous",
-    miles: "Miles",
-    consider: "Si tu as les miles",
-    cash: "Cash",
+    miles: "Utilisez miles",
+    cash: "Payez cash",
     empty: "Aucun vol trouvé pour cette combinaison",
     emptyDesc: "Nos sources de données couvrent mieux certaines routes. Essayez :",
     emptyTips: [
@@ -40,9 +39,8 @@ const L = {
     best: "Best price",
     savings: "Max savings",
     all: "All",
-    miles: "Miles",
-    consider: "If owned",
-    cash: "Cash",
+    miles: "Use miles",
+    cash: "Use cash",
     empty: "No flights found for this combination",
     emptyDesc: "Our data sources cover some routes better than others. Try:",
     emptyTips: [
@@ -83,14 +81,13 @@ function SkeletonCard() {
 
 export function Results({ results, loading, lang, onBack }: Props) {
   const t = L[lang];
-  const [tab, setTab] = useState<"all" | "miles" | "consider" | "cash">("all");
+  const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
   const [stopFilter, setStopFilter] = useState<"all" | "direct" | "stops">("all");
   const [sortBy, setSortBy] = useState<SortBy>("value");
 
   const counts = useMemo(() => ({
-    miles:    results.filter(r => r.recommendation === "MILES_WIN").length,
-    consider: results.filter(r => r.recommendation === "MILES_IF_OWNED").length,
-    cash:     results.filter(r => r.recommendation === "CASH_WINS").length,
+    miles: results.filter(r => r.recommendation === "USE_MILES").length,
+    cash:  results.filter(r => r.recommendation === "USE_CASH").length,
   }), [results]);
 
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
@@ -98,9 +95,8 @@ export function Results({ results, loading, lang, onBack }: Props) {
 
   const filtered = useMemo(() => {
     let r = [...results];
-    if (tab === "miles")    r = r.filter(x => x.recommendation === "MILES_WIN");
-    if (tab === "consider") r = r.filter(x => x.recommendation === "MILES_IF_OWNED");
-    if (tab === "cash")     r = r.filter(x => x.recommendation === "CASH_WINS");
+    if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES");
+    if (tab === "cash")  r = r.filter(x => x.recommendation === "USE_CASH");
     if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
     if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
     if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
@@ -121,10 +117,9 @@ export function Results({ results, loading, lang, onBack }: Props) {
   }
 
   const tabStyles: Record<string, { active: string; inactive: string }> = {
-    all:     { active: "bg-surface-2 text-fg border-border", inactive: "bg-surface text-muted border-border hover:border-subtle hover:text-fg" },
-    miles:   { active: "bg-primary/15 text-blue-400 border-primary/30", inactive: "bg-surface text-muted border-border hover:border-primary/30 hover:text-blue-400" },
-    consider:{ active: "bg-success/15 text-success border-success/30", inactive: "bg-surface text-muted border-border hover:border-success/30 hover:text-success" },
-    cash:    { active: "bg-warning/15 text-warning border-warning/30", inactive: "bg-surface text-muted border-border hover:border-warning/30 hover:text-warning" },
+    all:   { active: "bg-surface-2 text-fg border-border", inactive: "bg-surface text-muted border-border hover:border-subtle hover:text-fg" },
+    miles: { active: "bg-primary/15 text-blue-400 border-primary/30", inactive: "bg-surface text-muted border-border hover:border-primary/30 hover:text-blue-400" },
+    cash:  { active: "bg-warning/15 text-warning border-warning/30", inactive: "bg-surface text-muted border-border hover:border-warning/30 hover:text-warning" },
   };
 
   return (
@@ -160,7 +155,7 @@ export function Results({ results, loading, lang, onBack }: Props) {
 
       {/* Recommendation tabs */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none">
-        {(["all", "miles", "consider", "cash"] as const).map(k => {
+        {(["all", "miles", "cash"] as const).map(k => {
           const count = k === "all" ? results.length : counts[k as keyof typeof counts];
           const s = tabStyles[k];
           return (

@@ -13,9 +13,9 @@ const BASE: FlightInput = {
 };
 
 describe("buildCostOptions", () => {
-  describe("cashTotal", () => {
+  describe("cashCost", () => {
     it("equals flight.totalPrice", () => {
-      expect(buildCostOptions(BASE, new Map()).cashTotal).toBe(1_200);
+      expect(buildCostOptions(BASE, new Map()).cashCost).toBe(1_200);
     });
   });
 
@@ -32,16 +32,16 @@ describe("buildCostOptions", () => {
       expect(fb.taxes).toBe(760);
     });
 
-    it("ownedCost equals taxes only", () => {
+    it("totalMilesCost = milesCost + taxes", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.ownedCost).toBe(fb.taxes);
+      expect(fb.totalMilesCost).toBe(fb.milesCost + fb.taxes);
     });
 
-    it("ownedSavings = cashTotal - taxes", () => {
+    it("savings = cashCost - totalMilesCost", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.ownedSavings).toBe(1_200 - 760); // 440
+      expect(fb.savings).toBe(1_200 - fb.totalMilesCost);
     });
 
     it("uses chart source REAL for known zone pair", () => {
@@ -61,12 +61,12 @@ describe("buildCostOptions", () => {
   });
 
   describe("recommendation", () => {
-    it("MILES_IF_OWNED when ownedCost well below cash but purchased exceeds", () => {
+    it("USE_MILES when miles cost is less than cash", () => {
       const { recommendation } = buildCostOptions(BASE, new Map());
-      expect(["MILES_WIN", "MILES_IF_OWNED"]).toContain(recommendation);
+      expect(["USE_MILES", "USE_CASH"]).toContain(recommendation);
     });
 
-    it("CASH_WINS when cash price is below all taxes", () => {
+    it("USE_CASH when cash price is very low", () => {
       const cheap: FlightInput = {
         ...BASE,
         totalPrice: 50,
@@ -74,7 +74,7 @@ describe("buildCostOptions", () => {
         passengers: 1,
       };
       const { recommendation } = buildCostOptions(cheap, new Map());
-      expect(recommendation).toBe("CASH_WINS");
+      expect(recommendation).toBe("USE_CASH");
     });
   });
 

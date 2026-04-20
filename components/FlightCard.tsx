@@ -6,63 +6,23 @@ import { AIRPORTS as airportsMap } from "@/data/airports";
 
 // ── Recommendation config ────────────────────────────────────────────────────
 const REC = {
-  "MILES_WIN": {
-    labelFr: "MILES GAGNENT",
-    labelEn: "MILES WIN",
+  "USE_MILES": {
+    labelFr: "UTILISEZ VOS MILES",
+    labelEn: "USE MILES",
     cls: "bg-blue-500/15 text-blue-400 border-blue-500/25",
     icon: "✈",
   },
-  "MILES_IF_OWNED": {
-    labelFr: "SI TU AS LES MILES",
-    labelEn: "IF YOU HAVE MILES",
-    cls: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    icon: "◎",
-  },
-  "CASH_WINS": {
-    labelFr: "CASH GAGNE",
-    labelEn: "CASH WINS",
+  "USE_CASH": {
+    labelFr: "PAYEZ EN CASH",
+    labelEn: "USE CASH",
     cls: "bg-warning/10 text-warning border-warning/25",
     icon: "◈",
   },
 } as const;
 
-// ── Why text ─────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
-}
-
-function whyText(flight: FlightResult, lang: "fr" | "en"): string {
-  const fr = lang === "fr";
-  const best = flight.bestOption;
-  const owned = flight.bestOwnedOption;
-  const cash = flight.cashTotal;
-
-  if (flight.recommendation === "MILES_WIN") {
-    if (!best) return fr ? `Miles recommandés pour ce vol.` : `Miles recommended for this flight.`;
-    const save = best.savings.toFixed(0);
-    const miles = formatMiles(best.milesRequired);
-    return fr
-      ? `${miles} miles ${best.program} = ~$${best.totalMilesCost.toFixed(0)} (miles $${best.milesCost.toFixed(0)} + taxes $${best.taxes.toFixed(0)}) vs $${cash.toFixed(0)} cash. Économie : $${save}.`
-      : `${miles} ${best.program} miles = ~$${best.totalMilesCost.toFixed(0)} (miles $${best.milesCost.toFixed(0)} + taxes $${best.taxes.toFixed(0)}) vs $${cash.toFixed(0)} cash. Save $${save}.`;
-  }
-  if (flight.recommendation === "MILES_IF_OWNED") {
-    if (!owned) return fr ? `Si tu as des miles, utilise-les pour ce vol.` : `Use your miles for this flight if you have them.`;
-    const save = (cash - owned.ownedCost).toFixed(0);
-    const miles = formatMiles(owned.milesRequired);
-    return fr
-      ? `Si tu as déjà ${miles} miles ${owned.program}, tu paies juste les taxes (~$${owned.ownedCost.toFixed(0)}). Économie : $${save}.`
-      : `If you already have ${miles} ${owned.program} miles, you pay only taxes (~$${owned.ownedCost.toFixed(0)}). Save $${save}.`;
-  }
-  // CASH_WINS
-  if (best) {
-    const diff = (best.totalMilesCost - cash).toFixed(0);
-    return fr
-      ? `Le cash ($${cash.toFixed(0)}) est moins cher. Miles coûteraient $${best.totalMilesCost.toFixed(0)} (soit $${diff} de plus). Garde tes miles.`
-      : `Cash ($${cash.toFixed(0)}) is cheaper. Miles would cost $${best.totalMilesCost.toFixed(0)} ($${diff} more). Save your miles.`;
-  }
-  return fr
-    ? `Aucune option miles disponible pour ce vol. Payez en cash.`
-    : `No miles option found for this flight. Pay with cash.`;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -81,27 +41,20 @@ interface Props {
 
 export function FlightCard({ flight, lang }: Props) {
   const fr = lang === "fr";
-  const rec = REC[flight.recommendation as keyof typeof REC] ?? REC["CASH_WINS"];
+  const rec = REC[flight.recommendation as keyof typeof REC] ?? REC["USE_CASH"];
   const label = fr ? rec.labelFr : rec.labelEn;
 
-  const total    = flight.totalPrice ?? 0;
-  const savings  = flight.savings;
-  const stops    = flight.stops ?? 0;
-
-  const bestOption = flight.bestOption ?? flight.bestOwnedOption;
-  const milesRequired = bestOption?.milesRequired ?? 0;
-  const milesCost = bestOption?.totalMilesCost ?? 0;
-
-  // Savings bar — shows how much % cheaper miles are vs cash
-  const savingsPercent = total > 0 ? Math.min(100, Math.max(0, (savings / total) * 100)) : 0;
-  const barCls = savings > 50 ? "bg-success" : savings > 0 ? "bg-primary" : "bg-subtle";
+  const cashCost  = flight.cashCost;
+  const milesCost = flight.milesCost;
+  const savings   = flight.savings;
+  const stops     = flight.stops ?? 0;
+  const bestOption = flight.bestOption;
+  const isUseMiles = flight.recommendation === "USE_MILES";
 
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
     .filter((a, i, arr) => arr.indexOf(a) === i)
     .filter(Boolean);
-
-  const why = whyText(flight, lang);
 
   return (
     <div className={clsx(
@@ -143,47 +96,36 @@ export function FlightCard({ flight, lang }: Props) {
       </div>
 
       {/* ── Hero: 3 numbers ──────────────────────────────────────── */}
-      <div className="grid grid-cols-3 divide-x divide-border">
-        {/* Savings */}
-        <div className="px-3 py-4 text-center">
+      {/* ── Hero: Cash vs Miles comparison ─────────────────────── */}
+      <div className="grid grid-cols-2 divide-x divide-border">
+        {/* Cash cost */}
+        <div className="px-4 py-4 text-center">
           <div className={clsx(
             "text-2xl font-black leading-none tabular-nums",
-            savings > 0 ? "text-success" : "text-subtle"
+            !isUseMiles ? "text-success" : "text-fg"
           )}>
-            {savings > 0 ? `+$${savings.toFixed(0)}` : "—"}
+            ${cashCost.toFixed(0)}
           </div>
           <div className="text-[10px] text-muted uppercase tracking-widest mt-1.5 font-bold">
-            {fr ? "Économie" : "Savings"}
-          </div>
-          {savings > 0 && (
-            <div className="text-[10px] text-muted/60 mt-0.5">
-              ~{fcfa(savings)} FCFA
-            </div>
-          )}
-        </div>
-
-        {/* Cash */}
-        <div className="px-3 py-4 text-center">
-          <div className="text-2xl font-black leading-none tabular-nums text-fg">
-            ${total.toFixed(0)}
-          </div>
-          <div className="text-[10px] text-muted uppercase tracking-widest mt-1.5 font-bold">
-            {fr ? "Prix cash" : "Cash price"}
+            {fr ? "Prix cash" : "Cash"}
           </div>
           <div className="text-[10px] text-muted/60 mt-0.5">
-            ~{fcfa(total)} FCFA
+            ~{fcfa(cashCost)} FCFA
           </div>
         </div>
 
-        {/* Miles */}
-        <div className="px-3 py-4 text-center">
-          {milesRequired > 0 ? (
+        {/* Miles cost */}
+        <div className="px-4 py-4 text-center">
+          {milesCost > 0 ? (
             <>
-              <div className="text-2xl font-black leading-none tabular-nums text-fg">
-                {milesRequired >= 1000 ? `${(milesRequired / 1000).toFixed(0)}K` : milesRequired}
+              <div className={clsx(
+                "text-2xl font-black leading-none tabular-nums",
+                isUseMiles ? "text-success" : "text-fg"
+              )}>
+                ${milesCost.toFixed(0)}
               </div>
               <div className="text-[10px] text-muted uppercase tracking-widest mt-1.5 font-bold">
-                {fr ? "pts requis" : "pts needed"}
+                {fr ? "Coût miles" : "Miles cost"}
               </div>
               {bestOption && (
                 <div className="text-[9px] text-muted/60 mt-0.5">{bestOption.program}</div>
@@ -193,37 +135,39 @@ export function FlightCard({ flight, lang }: Props) {
             <>
               <div className="text-2xl font-black leading-none text-subtle">—</div>
               <div className="text-[10px] text-muted uppercase tracking-widest mt-1.5 font-bold">
-                {fr ? "pts requis" : "pts needed"}
+                {fr ? "Coût miles" : "Miles cost"}
               </div>
             </>
           )}
         </div>
       </div>
 
-      {/* ── Miles cost breakdown ─────────────────────────────────── */}
+      {/* ── Savings banner ───────────────────────────────────────── */}
+      {savings > 0 && (
+        <div className={clsx(
+          "px-5 py-3 border-t border-border text-center",
+          isUseMiles ? "bg-blue-500/5" : "bg-warning/5"
+        )}>
+          <span className={clsx(
+            "text-sm font-black",
+            isUseMiles ? "text-blue-400" : "text-warning"
+          )}>
+            {isUseMiles
+              ? (fr ? `Économisez $${savings.toFixed(0)} avec les miles` : `Save $${savings.toFixed(0)} with miles`)
+              : (fr ? `Miles coûtent $${savings.toFixed(0)} de plus` : `Miles cost $${savings.toFixed(0)} more`)
+            }
+          </span>
+        </div>
+      )}
+
+      {/* ── Miles breakdown ──────────────────────────────────────── */}
       {bestOption && (
-        <div className="px-5 py-3 border-t border-border space-y-1.5">
-          <div className="flex justify-between items-center text-[10px]">
-            <span className="text-muted font-medium uppercase tracking-wider">
-              {fr ? "Coût miles" : "Miles cost"}
-            </span>
-            <span className={clsx(
-              "font-bold",
-              savings > 0 ? "text-success" : "text-muted"
-            )}>
-              ${milesCost.toFixed(0)} {savings > 0 ? (fr ? "← moins cher" : "← cheaper") : ""}
-            </span>
-          </div>
-          <div className="h-1.5 bg-border rounded-full overflow-hidden">
-            <div
-              className={clsx("h-full rounded-full transition-all duration-700", barCls)}
-              style={{ width: `${savingsPercent}%` }}
-            />
-          </div>
+        <div className="px-5 py-2.5 border-t border-border">
           <div className="text-[9px] text-muted/70">
             {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢ + ${bestOption.taxes.toFixed(0)} {fr ? "taxes" : "taxes"}
+            {bestOption.via && <span className="ml-1">(via {bestOption.via})</span>}
             {bestOption.confidence !== "HIGH" && (
-              <span className="ml-1 italic">({fr ? "estimé" : "estimated"})</span>
+              <span className="ml-1 italic">({fr ? "estimé" : "est."})</span>
             )}
           </div>
         </div>
@@ -246,12 +190,9 @@ export function FlightCard({ flight, lang }: Props) {
         )}
       </div>
 
-      {/* ── Why ──────────────────────────────────────────────────── */}
+      {/* ── Explanation ────────────────────────────────────────────── */}
       <div className="px-5 py-3.5 border-t border-border">
-        <p className="text-[10px] font-bold text-subtle uppercase tracking-widest mb-1.5">
-          {fr ? "Pourquoi ce choix ?" : "Why this recommendation?"}
-        </p>
-        <p className="text-[12px] text-muted leading-relaxed">{why}</p>
+        <p className="text-[12px] text-muted leading-relaxed">{flight.explanation}</p>
       </div>
 
       {/* ── Booking CTA ──────────────────────────────────────────── */}

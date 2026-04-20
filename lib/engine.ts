@@ -47,14 +47,15 @@ export interface FlightResult {
   bookingLink?: string;    // Travelpayouts deep link (aviasales v3 only)
 
   // ── Cost comparison ────────────────────────────────────────────────────────
-  cashTotal: number;
-  milesOptions: MilesOption[];
-  bestOption: MilesOption | null;         // cheapest miles option (market value)
-  bestOwnedOption: MilesOption | null;    // cheapest if you already have miles
-  recommendation: "MILES_WIN" | "MILES_IF_OWNED" | "CASH_WINS";
-  savings: number;                        // $ saved vs cash with best miles option
+  cashCost: number;                       // total cash price
+  milesCost: number;                      // total cost of best miles option
+  savings: number;                        // |cashCost - milesCost|
+  recommendation: "USE_MILES" | "USE_CASH";
+  bestOption: MilesOption | null;         // cheapest miles scenario
+  milesOptions: MilesOption[];            // all options for detail view
+  explanation: string;                    // human-readable reason
 
-  // ── Extra ─────────────────────────────────────────────────────────────────
+  // ── Extra ──────────────���──────────────────────────────────────────────────
   optimization: OptimizerDecision;
 }
 
@@ -356,12 +357,13 @@ function enrich(
     cabin,
     passengers,
     totalPrice,
-    cashTotal:           comparison.cashTotal,
-    milesOptions:        comparison.milesOptions,
-    bestOption:           comparison.bestOption,
-    bestOwnedOption:     comparison.bestOwnedOption,
-    recommendation:      comparison.recommendation,
+    cashCost:            comparison.cashCost,
+    milesCost:           comparison.milesCost,
     savings:             comparison.savings,
+    recommendation:      comparison.recommendation,
+    bestOption:          comparison.bestOption,
+    milesOptions:        comparison.milesOptions,
+    explanation:         comparison.explanation,
     optimization,
   };
 
@@ -391,7 +393,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v5:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v6:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
