@@ -1,6 +1,5 @@
 import "server-only";
 import { redis } from "./redis";
-import { Resend } from "resend";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -129,7 +128,10 @@ export async function updateAlertAfterCheck(id: string, lastPrice: number, notif
 
 // ─── Send notification email ────────────────────────────────────────────────
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  const { Resend } = require("resend") as { Resend: new (key?: string) => { emails: { send: (params: Record<string, unknown>) => Promise<unknown> } } };
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): Promise<boolean> {
   const drop = Math.round(((alert.basePrice - newPrice) / alert.basePrice) * 100);
@@ -139,6 +141,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
   const searchUrl = `https://keza-taupe.vercel.app/?from=${alert.from}&to=${alert.to}`;
 
   try {
+    const resend = getResend();
     await resend.emails.send({
       from: "KEZA Alerts <onboarding@resend.dev>",
       to: alert.email,
