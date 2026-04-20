@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
+import { PriceCalendar } from "./PriceCalendar";
 import clsx from "clsx";
 
 interface Props {
@@ -36,6 +37,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
   const [programs,   setPrograms]   = useState("");
   const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
+  const [showCalendar, setShowCalendar] = useState<"dep" | "ret" | null>(null);
 
   // React to external route selection (popular routes)
   useEffect(() => { if (initialFrom) setFrom(initialFrom); }, [initialFrom]);
@@ -56,6 +58,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     e.preventDefault();
     if (busy || !canGo) return;
     setError(null); setBusy(true); onLoading(true);
+    setShowCalendar(null); // close calendar on search
     onSearchStart?.({ from, to, date: depDate, cabin, tripType });
     try {
       const res = await fetch("/api/search", {
@@ -75,7 +78,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
       setError(err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error"));
       onResults([]);
     } finally { setBusy(false); onLoading(false); }
-  }, [from, to, depDate, retDate, tripType, cabin, passengers, programs, busy, canGo, onResults, onLoading, lang]);
+  }, [from, to, depDate, retDate, tripType, cabin, passengers, programs, busy, canGo, onResults, onLoading, onSearchStart, lang]);
 
   const fr = lang === "fr";
 
@@ -92,6 +95,9 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
       ? "bg-primary/15 border-primary/30 text-blue-400"
       : "bg-surface-2 border-border text-muted hover:border-subtle hover:text-fg"
   );
+
+  // Can we show calendar? Need both airports
+  const canShowCalendar = !!from && !!to && from !== to;
 
   return (
     <form onSubmit={submit}>
@@ -135,49 +141,124 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
         {/* Dates */}
         <div className={clsx("grid gap-3", tripType === "roundtrip" ? "grid-cols-2" : "grid-cols-1")}>
+          {/* Departure date */}
           <div>
             <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Date aller" : "Departure"}
             </p>
-            <button
-              type="button"
-              onClick={() => (document.getElementById("keza-dep") as HTMLInputElement)?.showPicker?.()}
-              className="w-full flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 hover:bg-primary/5 transition-all"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
-                <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <span className="font-medium">
-                {new Date(depDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
-              </span>
-              <input id="keza-dep" type="date" value={depDate} min={today}
-                onChange={e => onDep(e.target.value)}
-                className="sr-only" tabIndex={-1} />
-            </button>
-          </div>
-          {tripType === "roundtrip" && (
-            <div>
-              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
-                {fr ? "Date retour" : "Return"}
-              </p>
+            <div className="flex gap-1.5">
               <button
                 type="button"
-                onClick={() => (document.getElementById("keza-ret") as HTMLInputElement)?.showPicker?.()}
-                className="w-full flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 hover:bg-primary/5 transition-all"
+                onClick={() => (document.getElementById("keza-dep") as HTMLInputElement)?.showPicker?.()}
+                className="flex-1 flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 hover:bg-primary/5 transition-all"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
                   <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
                 <span className="font-medium">
-                  {new Date(retDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
+                  {new Date(depDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
                 </span>
-                <input id="keza-ret" type="date" value={retDate} min={addDays(depDate, 1)}
-                  onChange={e => setRetDate(e.target.value)}
+                <input id="keza-dep" type="date" value={depDate} min={today}
+                  onChange={e => onDep(e.target.value)}
                   className="sr-only" tabIndex={-1} />
               </button>
+              {/* Calendar toggle */}
+              {canShowCalendar && (
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar(showCalendar === "dep" ? null : "dep")}
+                  title={fr ? "Voir les prix par jour" : "View prices by day"}
+                  className={clsx(
+                    "w-10 flex items-center justify-center rounded-xl border transition-all",
+                    showCalendar === "dep"
+                      ? "bg-primary/15 border-primary/30 text-primary"
+                      : "bg-surface-2 border-border text-muted hover:border-primary/30 hover:text-primary"
+                  )}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <line x1="9" y1="4" x2="9" y2="20" />
+                    <line x1="15" y1="4" x2="15" y2="20" />
+                    <line x1="3" y1="15" x2="21" y2="15" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Return date */}
+          {tripType === "roundtrip" && (
+            <div>
+              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+                {fr ? "Date retour" : "Return"}
+              </p>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => (document.getElementById("keza-ret") as HTMLInputElement)?.showPicker?.()}
+                  className="flex-1 flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 hover:bg-primary/5 transition-all"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span className="font-medium">
+                    {new Date(retDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
+                  </span>
+                  <input id="keza-ret" type="date" value={retDate} min={addDays(depDate, 1)}
+                    onChange={e => setRetDate(e.target.value)}
+                    className="sr-only" tabIndex={-1} />
+                </button>
+                {/* Calendar toggle for return */}
+                {canShowCalendar && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendar(showCalendar === "ret" ? null : "ret")}
+                    title={fr ? "Voir les prix par jour" : "View prices by day"}
+                    className={clsx(
+                      "w-10 flex items-center justify-center rounded-xl border transition-all",
+                      showCalendar === "ret"
+                        ? "bg-primary/15 border-primary/30 text-primary"
+                        : "bg-surface-2 border-border text-muted hover:border-primary/30 hover:text-primary"
+                    )}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4">
+                      <rect x="3" y="4" width="18" height="18" rx="2" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                      <line x1="9" y1="4" x2="9" y2="20" />
+                      <line x1="15" y1="4" x2="15" y2="20" />
+                      <line x1="3" y1="15" x2="21" y2="15" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
+
+        {/* Price Calendar (departure) */}
+        {showCalendar === "dep" && canShowCalendar && (
+          <PriceCalendar
+            from={from}
+            to={to}
+            selectedDate={depDate}
+            onSelectDate={(d) => { onDep(d); setShowCalendar(null); }}
+            lang={lang}
+            cabin={cabin}
+          />
+        )}
+
+        {/* Price Calendar (return) */}
+        {showCalendar === "ret" && canShowCalendar && tripType === "roundtrip" && (
+          <PriceCalendar
+            from={to}
+            to={from}
+            selectedDate={retDate}
+            onSelectDate={(d) => { setRetDate(d); setShowCalendar(null); }}
+            lang={lang}
+            cabin={cabin}
+          />
+        )}
 
         {/* Cabin + Passengers */}
         <div className="flex gap-3">

@@ -303,6 +303,167 @@ async function fetchFromTravelpayouts(
   }
 }
 
+// ─── Calendar / flexible dates ──────────────────────────────────────────────
+
+export interface CalendarDay {
+  date: string;      // YYYY-MM-DD
+  price: number;     // cheapest price USD
+  stops: number;
+  duration?: number;
+}
+
+/**
+ * Fetch price-per-day for an entire month.
+ * Used by the calendar/flexible-dates UI — returns ALL days, not top 15.
+ */
+async function fetchMonthMatrixFull(
+  from: string,
+  to: string,
+  date: string,
+  direct: boolean,
+  token: string
+): Promise<CalendarDay[]> {
+  const [year, month] = date.split("-");
+  const monthParam = `${year}-${month}`;
+
+  const url = new URL(`${TP_BASE}/v2/prices/month-matrix`);
+  url.searchParams.set("origin", from.toUpperCase());
+  url.searchParams.set("destination", to.toUpperCase());
+  url.searchParams.set("month", monthParam);
+  url.searchParams.set("currency", "USD");
+  url.searchParams.set("show_to_affiliates", "true");
+  url.searchParams.set("token", token);
+  if (direct) url.searchParams.set("direct", "true");
+
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 3600 },
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) return [];
+
+  const json = (await res.json()) as {
+    data?: Array<{
+      value: number;
+      number_of_changes: number;
+      duration: number;
+      depart_date: string;
+      actual?: boolean;
+    }>;
+  };
+
+  if (!Array.isArray(json.data) || json.data.length === 0) return [];
+
+  // Keep cheapest per day
+  const byDate = new Map<string, CalendarDay>();
+  for (const f of json.data) {
+    if (f.actual === false) continue;
+    const existing = byDate.get(f.depart_date);
+    if (!existing || f.value < existing.price) {
+      byDate.set(f.depart_date, {
+        date: f.depart_date,
+        price: f.value,
+        stops: f.number_of_changes,
+        duration: f.duration > 0 ? f.duration : undefined,
+      });
+    }
+  }
+
+  return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Also try v3 for calendar — has airline data per day */
+async function fetchV3Calendar(
+  from: string,
+  to: string,
+  date: string,
+  direct: boolean,
+  token: string
+): Promise<CalendarDay[]> {
+  const [year, month] = date.split("-");
+  const monthParam = `${year}-${month}`;
+
+  const url = new URL(`${TP_BASE}/aviasales/v3/prices_for_dates`);
+  url.searchParams.set("origin", from.toUpperCase());
+  url.searchParams.set("destination", to.toUpperCase());
+  url.searchParams.set("departure_at", monthParam);
+  url.searchParams.set("currency", "usd");
+  url.searchParams.set("sorting", "price");
+  url.searchParams.set("unique", "false");
+  url.searchParams.set("limit", "60");
+  url.searchParams.set("token", token);
+  if (direct) url.searchParams.set("direct", "true");
+
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 3600 },
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) return [];
+
+  const json = (await res.json()) as {
+    data?: Array<{
+      price: number;
+      transfers?: number;
+      duration?: number;
+      departure_at?: string;
+    }>;
+  };
+
+  if (!Array.isArray(json.data) || json.data.length === 0) return [];
+
+  const byDate = new Map<string, CalendarDay>();
+  for (const f of json.data) {
+    const day = f.departure_at?.slice(0, 10) ?? "";
+    if (!day) continue;
+    const existing = byDate.get(day);
+    if (!existing || f.price < existing.price) {
+      byDate.set(day, {
+        date: day,
+        price: f.price,
+        stops: f.transfers ?? 0,
+        duration: f.duration && f.duration > 0 ? f.duration : undefined,
+      });
+    }
+  }
+
+  return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * Public: fetch calendar prices for a route + month.
+ * Tries v3 first (better data), falls back to month-matrix.
+ */
+export async function fetchCalendarPrices(
+  from: string,
+  to: string,
+  date: string
+): Promise<CalendarDay[]> {
+  const token = process.env.TRAVELPAYOUTS_TOKEN;
+  if (!token || token === "xxx") return [];
+
+  const fromMetro = metroFor(from);
+  const toMetro   = metroFor(to);
+  const attempts: Array<[string, string]> = [[from, to]];
+  if (fromMetro) attempts.push([fromMetro, to]);
+  if (toMetro)   attempts.push([from, toMetro]);
+  if (fromMetro && toMetro) attempts.push([fromMetro, toMetro]);
+
+  // Try v3 first
+  for (const [o, d] of attempts) {
+    const v3 = await fetchV3Calendar(o, d, date, false, token);
+    if (v3.length > 0) return v3;
+  }
+
+  // Fallback to month-matrix
+  for (const [o, d] of attempts) {
+    const mm = await fetchMonthMatrixFull(o, d, date, false, token);
+    if (mm.length > 0) return mm;
+  }
+
+  return [];
+}
+
 // ─── Filter by stops preference ──────────────────────────────────────────────
 
 function filterByStops(flights: NormalizedFlight[], stops: Stops): NormalizedFlight[] {
