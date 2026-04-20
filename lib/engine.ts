@@ -570,14 +570,50 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   });
 
   // 2. Fetch outbound flights
+  //    When stops=any, also try a direct-only fetch to catch nonstops that the
+  //    main query sometimes misses (Travelpayouts may rank them lower than
+  //    connections priced cheaper). Merge & dedupe by airline+stops.
   const rawOutbound = await fetchFromTravelpayouts(from, to, date, directOnly);
-  const outbound    = filterByStops(rawOutbound, stops);
+
+  if (!directOnly && rawOutbound.every(f => (f.stops ?? 0) > 0)) {
+    // No direct flights in the default fetch — try explicit direct search
+    const directFlights = await fetchFromTravelpayouts(from, to, date, true);
+    if (directFlights.length > 0) {
+      // Prepend direct flights (they're more valuable to the user)
+      const existingKeys = new Set(rawOutbound.map(f => `${f.airlines.join(",")}:${f.stops}`));
+      for (const df of directFlights) {
+        const key = `${df.airlines.join(",")}:${df.stops}`;
+        if (!existingKeys.has(key)) {
+          rawOutbound.unshift(df);
+          existingKeys.add(key);
+        }
+      }
+    }
+  }
+
+  const outbound = filterByStops(rawOutbound, stops);
 
   // 3. Fetch return flights (Option A — two separate calls)
   let returnFlights: NormalizedFlight[] = [];
   if (tripType === "roundtrip" && returnDate) {
     const rawReturn = await fetchFromTravelpayouts(to, from, returnDate, directOnly);
-    returnFlights   = filterByStops(rawReturn, stops);
+
+    // Same direct-flight recovery for return leg
+    if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
+      const directReturn = await fetchFromTravelpayouts(to, from, returnDate, true);
+      if (directReturn.length > 0) {
+        const existingKeys = new Set(rawReturn.map(f => `${f.airlines.join(",")}:${f.stops}`));
+        for (const df of directReturn) {
+          const key = `${df.airlines.join(",")}:${df.stops}`;
+          if (!existingKeys.has(key)) {
+            rawReturn.unshift(df);
+            existingKeys.add(key);
+          }
+        }
+      }
+    }
+
+    returnFlights = filterByStops(rawReturn, stops);
   }
 
   // 4. Apply promotions

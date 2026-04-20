@@ -98,6 +98,10 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
 
+  // Check if there are any direct flights
+  const hasDirectFlights = results.some(r => (r.stops ?? 0) === 0);
+  const allWithStops = results.length > 0 && !hasDirectFlights;
+
   const filtered = useMemo(() => {
     let r = [...results];
     if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES");
@@ -154,6 +158,25 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
             <p className={`font-black text-success ${fmt(maxSavings).length > 10 ? "text-sm" : "text-xl"}`}>+{fmt(maxSavings)}</p>
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
+          </div>
+        </div>
+      )}
+
+      {/* No direct flights info banner */}
+      {allWithStops && (
+        <div className="bg-surface rounded-xl border border-border/50 px-4 py-3 flex items-start gap-3">
+          <span className="text-base mt-0.5">ℹ️</span>
+          <div>
+            <p className="text-xs font-semibold text-fg">
+              {lang === "fr"
+                ? "Aucun vol direct trouvé dans nos sources de données"
+                : "No nonstop flights found in our data sources"}
+            </p>
+            <p className="text-[11px] text-muted mt-1 leading-relaxed">
+              {lang === "fr"
+                ? "Des vols directs existent peut-être sur cette route. Notre moteur compare les prix avec escale ci-dessous. Vérifiez aussi sur le site de la compagnie pour les vols directs."
+                : "Nonstop flights may exist on this route. Our engine compares connecting fares below. Check the airline's website directly for nonstop options."}
+            </p>
           </div>
         </div>
       )}
