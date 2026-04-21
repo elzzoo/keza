@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { redis } from "@/lib/redis";
 import { sortDeals, type RawDeal } from "@/lib/dealsEngine";
-import { DEALS_KEY } from "@/app/api/deals/route";
+import { DEALS_KEY } from "@/lib/redisKeys";
 
 const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
 

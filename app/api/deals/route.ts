@@ -1,12 +1,11 @@
 // app/api/deals/route.ts
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
+import { DEALS_KEY } from "@/lib/redisKeys";
 import type { LiveDeal } from "@/lib/dealsEngine";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-export const DEALS_KEY = "keza:deals:live";
 
 // Fallback statique si le cron n'a pas encore tourné
 const FALLBACK_DEALS: LiveDeal[] = [
