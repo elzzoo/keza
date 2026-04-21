@@ -17,12 +17,14 @@ const NAV = {
   fr: [
     { label: "Comment ça marche", href: "/#how" },
     { label: "Calculateur", href: "/calculateur" },
+    { label: "Carte", href: "/carte" },
     { label: "Programmes", href: "/programmes" },
     { label: "Pour les entreprises", href: "/entreprises" },
   ],
   en: [
     { label: "How it works", href: "/#how" },
     { label: "Calculator", href: "/calculateur" },
+    { label: "Map", href: "/carte" },
     { label: "Programs", href: "/programmes" },
     { label: "For Business", href: "/entreprises" },
   ],

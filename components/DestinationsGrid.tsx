@@ -97,7 +97,7 @@ export function DestinationsGrid({ lang, onSelect, fromIata }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-black text-fg">{t.title}</h2>
-        <span className="text-xs text-primary font-semibold cursor-pointer">{t.seeAll}</span>
+        <a href="/carte" className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors">{t.seeAll}</a>
       </div>
 
       {/* Filters */}
