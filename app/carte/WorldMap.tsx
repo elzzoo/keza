@@ -56,7 +56,6 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
 
 const L = {
   fr: {
-    subtitle: "Clique sur une destination pour voir les prix",
     searchBtn: "Rechercher ce vol →",
     cash: "Cash",
     miles: "miles",
@@ -64,7 +63,6 @@ const L = {
     close: "✕",
   },
   en: {
-    subtitle: "Click a destination to see prices",
     searchBtn: "Search this flight →",
     cash: "Cash",
     miles: "miles",
@@ -100,6 +98,7 @@ export function WorldMap({ destinations, lang }: Props) {
           <button
             key={f.key}
             onClick={() => setRegionFilter(f.key)}
+            aria-pressed={regionFilter === f.key}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
               regionFilter === f.key
                 ? "bg-primary/15 border-primary/35 text-blue-400"
@@ -179,6 +178,7 @@ export function WorldMap({ destinations, lang }: Props) {
           >
             <button
               onClick={() => setSelected(null)}
+              aria-label={lang === "fr" ? "Fermer" : "Close"}
               className="absolute top-3 right-3 text-muted hover:text-fg text-xs"
             >
               {t.close}
@@ -244,6 +244,7 @@ export function WorldMap({ destinations, lang }: Props) {
             </div>
             <button
               onClick={() => setSelected(null)}
+              aria-label={lang === "fr" ? "Fermer" : "Close"}
               className="text-muted hover:text-fg text-sm px-2"
             >
               {t.close}
