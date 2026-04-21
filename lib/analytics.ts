@@ -117,3 +117,8 @@ export function trackDealClick(params: { from: string; to: string; program: stri
 export function trackDestinationClick(params: { city: string; iata: string }) {
   track("Destination Click", { city: params.city, iata: params.iata });
 }
+
+/** User clicks a program in ProgramsWidget or ProgramsTable */
+export function trackProgramClick(params: { id: string; name: string }) {
+  track("Program Click", { program_id: params.id, program_name: params.name });
+}
