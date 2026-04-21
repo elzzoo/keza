@@ -10,6 +10,9 @@ import { Results }       from "@/components/Results";
 import { HowItWorks }    from "@/components/HowItWorks";
 import { PromoBanner }   from "@/components/PromoBanner";
 import { PopularRoutes } from "@/components/PopularRoutes";
+import { DealsStrip }              from "@/components/DealsStrip";
+import { DestinationsGrid }        from "@/components/DestinationsGrid";
+import { MilesCalculatorWidget }   from "@/components/MilesCalculatorWidget";
 import { RecentSearches } from "@/components/RecentSearches";
 import { ShareButton }   from "@/components/ShareButton";
 import { MultiDateCompare } from "@/components/MultiDateCompare";
@@ -100,6 +103,18 @@ export default function HomePage() {
     <div className="min-h-screen bg-bg flex flex-col">
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
+
+      {/* -- Deals du moment -- */}
+      {!hasSearched && (
+        <DealsStrip
+          lang={lang}
+          onDealClick={(from, to) => {
+            setPrefillFrom(from);
+            setPrefillTo(to);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      )}
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
 
@@ -229,19 +244,18 @@ export default function HomePage() {
               />
             )}
 
-            {/* Popular routes */}
+            {/* Destinations à explorer */}
             <div id="routes" />
-            <PopularRoutes
+            <DestinationsGrid
               lang={lang}
-              onSelect={(routeFrom, routeTo) => {
-                trackPopularRoute(routeFrom, routeTo);
-                setPrefillFrom(routeFrom);
-                setPrefillTo(routeTo);
+              onSelect={(iata, city) => {
+                setPrefillTo(iata);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              routes={geoRoutes}
-              title={lang === "fr" ? geoLabel.fr : geoLabel.en}
             />
+
+            {/* Calculateur de valeur miles */}
+            <MilesCalculatorWidget lang={lang} />
 
             {/* Promo banner */}
             <PromoBanner lang={lang} />
