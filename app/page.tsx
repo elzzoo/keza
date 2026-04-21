@@ -13,6 +13,7 @@ import { PopularRoutes } from "@/components/PopularRoutes";
 import { DealsStrip }              from "@/components/DealsStrip";
 import { DestinationsGrid }        from "@/components/DestinationsGrid";
 import { MilesCalculatorWidget }   from "@/components/MilesCalculatorWidget";
+import { ProgramsWidget }          from "@/components/ProgramsWidget";
 import { RecentSearches } from "@/components/RecentSearches";
 import { ShareButton }   from "@/components/ShareButton";
 import { MultiDateCompare } from "@/components/MultiDateCompare";
@@ -258,9 +259,10 @@ export default function HomePage() {
                   }}
                 />
               </div>
-              {/* Calculateur (takes 1/3 on desktop, full width on mobile) */}
-              <div className="lg:col-span-1 lg:sticky lg:top-20">
+              {/* Calculateur + Programmes (takes 1/3 on desktop, full width on mobile) */}
+              <div className="lg:col-span-1 lg:sticky lg:top-20 space-y-4">
                 <MilesCalculatorWidget lang={lang} />
+                <ProgramsWidget lang={lang} />
               </div>
             </div>
 
