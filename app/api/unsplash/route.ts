@@ -39,8 +39,8 @@ export async function GET(request: Request) {
 
     const data = await res.json();
     const result = {
-      url: data.urls?.regular as string,
-      credit: `Photo by ${data.user?.name} on Unsplash`,
+      url: (data.urls?.regular as string | undefined) ?? null,
+      credit: `Photo by ${data.user?.name ?? "unknown"} on Unsplash`,
     };
 
     // 3. Cache in Redis
