@@ -31,7 +31,7 @@ export default function ProgrammesPage() {
               Programmes miles
             </span>
             <br />
-            <span className="text-fg">Quel vaut vraiment le coup ?</span>
+            <span className="text-fg">Quel programme vaut vraiment le coup ?</span>
           </h1>
           <p className="text-sm text-muted mt-3 max-w-xl">
             33 programmes analysés — airlines, hôtels, cartes de transfert. Score KEZA calculé sur la valeur du mile, les partenaires disponibles et la flexibilité d&apos;utilisation.

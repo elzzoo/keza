@@ -161,6 +161,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     name: "Mileage Plan",
     company: "Alaska Airlines",
     type: "airline",
+    alliance: "oneworld",
     regions: ["americas", "asia", "oceania"],
     cpmCents: 1.8,
     transferPartners: ["amex"],
