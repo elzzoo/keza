@@ -118,7 +118,7 @@ export function DestinationsGrid({ lang, onSelect, fromIata }: Props) {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {visible.map((dest) => (
           <DestinationCard key={dest.iata} dest={dest} lang={lang} onSelect={onSelect} />
         ))}

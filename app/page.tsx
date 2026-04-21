@@ -106,21 +106,23 @@ export default function HomePage() {
 
       {/* -- Deals du moment -- */}
       {!hasSearched && (
-        <DealsStrip
-          lang={lang}
-          onDealClick={(from, to) => {
-            setPrefillFrom(from);
-            setPrefillTo(to);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        />
+        <div className="max-w-5xl mx-auto w-full px-4 sm:px-6">
+          <DealsStrip
+            lang={lang}
+            onDealClick={(from, to) => {
+              setPrefillFrom(from);
+              setPrefillTo(to);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+        </div>
       )}
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pb-12">
 
         {/* -- Hero ------------------------------------------------- */}
         {!hasSearched && (
-          <div className="pt-10 pb-8 text-center space-y-4 animate-fade-up">
+          <div className="pt-10 pb-8 text-center space-y-4 animate-fade-up max-w-2xl mx-auto">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -163,7 +165,7 @@ export default function HomePage() {
         )}
 
         {/* -- Search form ------------------------------------------ */}
-        <div className="animate-fade-up">
+        <div className="animate-fade-up max-w-2xl mx-auto">
           <SearchForm
             onResults={handleResults}
             onLoading={setLoading}
@@ -229,7 +231,7 @@ export default function HomePage() {
 
         {/* -- Homepage content (hidden during results) ------------- */}
         {!hasSearched && (
-          <div className="mt-8 space-y-6 animate-fade-up">
+          <div className="mt-8 space-y-8 animate-fade-up">
             {/* Recent searches (from profile) */}
             {profile && profile.recentSearches.length > 0 && (
               <RecentSearches
@@ -244,18 +246,23 @@ export default function HomePage() {
               />
             )}
 
-            {/* Destinations à explorer */}
-            <div id="routes" />
-            <DestinationsGrid
-              lang={lang}
-              onSelect={(iata, city) => {
-                setPrefillTo(iata);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-
-            {/* Calculateur de valeur miles */}
-            <MilesCalculatorWidget lang={lang} />
+            {/* Destinations + Calculateur — side by side on desktop */}
+            <div id="routes" className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              {/* Destinations (takes 2/3 on desktop) */}
+              <div className="lg:col-span-2">
+                <DestinationsGrid
+                  lang={lang}
+                  onSelect={(iata, city) => {
+                    setPrefillTo(iata);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              </div>
+              {/* Calculateur (takes 1/3 on desktop, full width on mobile) */}
+              <div className="lg:col-span-1 lg:sticky lg:top-20">
+                <MilesCalculatorWidget lang={lang} />
+              </div>
+            </div>
 
             {/* Promo banner */}
             <PromoBanner lang={lang} />
