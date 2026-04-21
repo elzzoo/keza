@@ -35,6 +35,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: `${BASE_URL}/calculateur`,
+      lastModified: now,
+      priority: 0.8,
+    },
+    {
       url: `${BASE_URL}/entreprises`,
       lastModified: now,
       changeFrequency: "weekly",

@@ -16,12 +16,12 @@ interface Props {
 const NAV = {
   fr: [
     { label: "Comment ça marche", href: "/#how" },
-    { label: "Routes populaires", href: "/#routes" },
+    { label: "Calculateur", href: "/calculateur" },
     { label: "Pour les entreprises", href: "/entreprises" },
   ],
   en: [
     { label: "How it works", href: "/#how" },
-    { label: "Popular routes", href: "/#routes" },
+    { label: "Calculator", href: "/calculateur" },
     { label: "For Business", href: "/entreprises" },
   ],
 };
