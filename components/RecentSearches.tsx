@@ -32,7 +32,7 @@ export function RecentSearches({ searches, lang, onSelect }: Props) {
           <button
             key={`${s.from}-${s.to}-${i}`}
             onClick={() => onSelect(s.from, s.to)}
-            className="flex-shrink-0 bg-surface-2 border border-border rounded-xl px-4 py-2.5 hover:border-primary/40 hover:bg-primary/5 transition-all duration-150 group text-left"
+            className="flex-shrink-0 bg-surface-2 border border-border rounded-xl px-4 py-2.5 hover:border-primary/40 hover:bg-primary/5 transition-all duration-150 group text-left press-effect"
           >
             <div className="flex items-center gap-2 text-sm">
               <span className="font-bold text-fg">{s.from}</span>

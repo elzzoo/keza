@@ -17,6 +17,8 @@ interface Props {
   onSelectDate: (date: string) => void;
   lang: "fr" | "en";
   cabin: string;
+  /** Format a USD amount into user's chosen currency */
+  formatPrice?: (usd: number) => string;
 }
 
 const CABIN_MULT: Record<string, number> = {
@@ -42,8 +44,9 @@ function firstDayOfWeek(year: number, month: number): number {
   return d === 0 ? 6 : d - 1; // Monday = 0
 }
 
-export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabin }: Props) {
+export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabin, formatPrice: formatPriceProp }: Props) {
   const fr = lang === "fr";
+  const fmt = formatPriceProp ?? ((usd: number) => `$${Math.round(usd)}`);
   const weekdays = fr ? WEEKDAYS_FR : WEEKDAYS_EN;
   const monthNames = fr ? MONTHS_FR : MONTHS_EN;
   const mult = CABIN_MULT[cabin] ?? 1;
@@ -157,7 +160,7 @@ export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabi
           </p>
           {!loading && prices.length > 0 && (
             <p className="text-[10px] text-muted">
-              {fr ? "à partir de" : "from"} <span className="font-bold text-emerald-400">${minPrice}</span>
+              {fr ? "à partir de" : "from"} <span className="font-bold text-emerald-400">{fmt(minPrice)}</span>
             </p>
           )}
         </div>
@@ -229,7 +232,7 @@ export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabi
                       ? "bg-emerald-500/25 text-emerald-400"
                       : priceColor(entry.price).split(" ").slice(0, 2).join(" ")
                   )}>
-                    ${entry.price}
+                    {fmt(entry.price)}
                   </span>
                 )}
                 {isCheapest && (

@@ -14,24 +14,23 @@ const config: Config = {
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       colors: {
-        // ── Dark palette ───────────────────────────────
-        bg:              "#0B1120",   // page background (deep navy)
-        surface:         "#131C31",   // cards, form panel
-        "surface-2":     "#1A2540",   // inputs, tags, elevated
-        border:          "#1E2D48",   // all borders
-        fg:              "#F1F5F9",   // primary text
-        muted:           "#64748B",   // secondary text
-        subtle:          "#334155",   // dividers, tertiary
-        primary:         "#3B82F6",
+        bg:              "rgb(var(--bg) / <alpha-value>)",
+        surface:         "rgb(var(--surface) / <alpha-value>)",
+        "surface-2":     "rgb(var(--surface-2) / <alpha-value>)",
+        border:          "rgb(var(--border) / <alpha-value>)",
+        fg:              "rgb(var(--fg) / <alpha-value>)",
+        muted:           "rgb(var(--muted) / <alpha-value>)",
+        subtle:          "rgb(var(--subtle) / <alpha-value>)",
+        primary:         "rgb(var(--primary) / <alpha-value>)",
         "primary-hover": "#2563EB",
         "primary-dim":   "rgba(59,130,246,0.15)",
-        success:         "#34D399",   // GREEN — savings only
+        success:         "#34D399",
         warning:         "#F59E0B",
         danger:          "#EF4444",
       },
       boxShadow: {
-        card:        "0 2px 12px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.04)",
-        "card-hover":"0 8px 32px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06)",
+        card:        "var(--shadow-card)",
+        "card-hover":"var(--shadow-card-hover)",
         blue:        "0 8px 32px rgba(59,130,246,.30)",
         "blue-sm":   "0 4px 16px rgba(59,130,246,.20)",
         glow:        "0 0 24px rgba(59,130,246,.15)",

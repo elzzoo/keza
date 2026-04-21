@@ -11,10 +11,15 @@ import { HowItWorks }    from "@/components/HowItWorks";
 import { PromoBanner }   from "@/components/PromoBanner";
 import { PopularRoutes } from "@/components/PopularRoutes";
 import { RecentSearches } from "@/components/RecentSearches";
+import { ShareButton }   from "@/components/ShareButton";
+import { MultiDateCompare } from "@/components/MultiDateCompare";
+import { PushNotifBanner } from "@/components/PushNotifBanner";
+import { ErrorBoundary }  from "@/components/ErrorBoundary";
 import { useProfile }    from "@/hooks/useProfile";
 import { useCurrency }   from "@/hooks/useCurrency";
 import { useGeo }        from "@/hooks/useGeo";
 import { getRoutesForCountry, getRegionLabel } from "@/lib/geoRoutes";
+import { trackPopularRoute, trackRecentSearch } from "@/lib/analytics";
 
 export default function HomePage() {
   const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
@@ -30,6 +35,7 @@ export default function HomePage() {
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo,   setPrefillTo]   = useState<string | undefined>();
   const [lastSearch, setLastSearch]   = useState<{from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"} | null>(null);
+  const [sharedParams, setSharedParams] = useState<{date?:string;cabin?:"economy"|"premium"|"business"|"first";tripType?:"oneway"|"roundtrip";pax?:number} | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Restore language from profile
@@ -38,6 +44,28 @@ export default function HomePage() {
       setLang(profile.lang);
     }
   }, [isLoaded, profile?.lang]);
+
+  // Read URL search params on mount to pre-fill shared search
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlFrom = params.get("from");
+    const urlTo = params.get("to");
+    if (urlFrom) setPrefillFrom(urlFrom);
+    if (urlTo) setPrefillTo(urlTo);
+    // Store extra params so SearchForm can be pre-filled via lastSearch
+    const urlDate = params.get("date");
+    const urlCabin = params.get("cabin");
+    const urlTripType = params.get("tripType");
+    const urlPax = params.get("pax");
+    if (urlDate || urlCabin || urlTripType || urlPax) {
+      setSharedParams({
+        date: urlDate ?? undefined,
+        cabin: urlCabin as "economy" | "premium" | "business" | "first" | undefined,
+        tripType: (urlTripType as "oneway" | "roundtrip") ?? undefined,
+        pax: urlPax ? parseInt(urlPax, 10) : undefined,
+      });
+    }
+  }, []);
 
   const handleLangChange = useCallback((newLang: "fr" | "en") => {
     setLang(newLang);
@@ -129,21 +157,58 @@ export default function HomePage() {
             initialFrom={prefillFrom}
             initialTo={prefillTo}
             savedPrograms={profile?.programs}
-            savedCabin={profile?.cabin}
+            savedCabin={sharedParams?.cabin ?? profile?.cabin}
+            formatPrice={formatPrice}
+            initialDate={sharedParams?.date}
+            initialTripType={sharedParams?.tripType}
+            initialPax={sharedParams?.pax}
           />
         </div>
 
         {/* -- Results ---------------------------------------------- */}
         {(hasSearched || loading) && (
           <div ref={resultsRef} className="mt-6">
-            <Results
-              results={results}
-              loading={loading}
-              lang={lang}
-              onBack={handleBack}
-              searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
-              formatPrice={formatPrice}
-            />
+            {hasSearched && !loading && lastSearch && (
+              <div className="flex justify-end mb-3">
+                <ShareButton
+                  lang={lang}
+                  searchParams={{
+                    from: lastSearch.from,
+                    to: lastSearch.to,
+                    date: lastSearch.date,
+                    cabin: lastSearch.cabin,
+                    tripType: lastSearch.tripType,
+                    pax: 1,
+                  }}
+                />
+              </div>
+            )}
+            <ErrorBoundary lang={lang}>
+              <Results
+                results={results}
+                loading={loading}
+                lang={lang}
+                onBack={handleBack}
+                searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
+                formatPrice={formatPrice}
+              />
+            </ErrorBoundary>
+            {hasSearched && !loading && results.length > 0 && lastSearch && (
+              <div className="mt-4">
+                <ErrorBoundary lang={lang}>
+                  <MultiDateCompare
+                    searchParams={{
+                      from: lastSearch.from,
+                      to: lastSearch.to,
+                      cabin: lastSearch.cabin,
+                      tripType: lastSearch.tripType,
+                    }}
+                    lang={lang}
+                    formatPrice={formatPrice}
+                  />
+                </ErrorBoundary>
+              </div>
+            )}
           </div>
         )}
 
@@ -156,6 +221,7 @@ export default function HomePage() {
                 searches={profile.recentSearches}
                 lang={lang}
                 onSelect={(from, to) => {
+                  trackRecentSearch(from, to);
                   setPrefillFrom(from);
                   setPrefillTo(to);
                   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -164,9 +230,11 @@ export default function HomePage() {
             )}
 
             {/* Popular routes */}
+            <div id="routes" />
             <PopularRoutes
               lang={lang}
               onSelect={(routeFrom, routeTo) => {
+                trackPopularRoute(routeFrom, routeTo);
                 setPrefillFrom(routeFrom);
                 setPrefillTo(routeTo);
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -183,9 +251,9 @@ export default function HomePage() {
 
             {/* Recommendation legend */}
             <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
-              <p className="section-rule">
+              <h2 className="section-rule">
                 {lang === "fr" ? "Nos recommandations" : "Our recommendations"}
-              </p>
+              </h2>
               <div className="space-y-2.5">
                 {[
                   {
@@ -230,6 +298,11 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        {/* -- Push notification banner -------------------------------- */}
+        <div className="mt-6">
+          <PushNotifBanner lang={lang} />
+        </div>
       </main>
 
       {!hasSearched && <Footer lang={lang} />}

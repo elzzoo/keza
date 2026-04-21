@@ -37,7 +37,7 @@ export function PopularRoutes({ lang, onSelect, routes, title }: Props) {
           <button
             key={`${r.from}-${r.to}`}
             onClick={() => onSelect(r.from, r.to)}
-            className="flex-shrink-0 flex items-center gap-2 bg-surface-2 border border-border rounded-xl px-4 py-2 text-sm text-muted hover:border-primary/40 hover:text-fg hover:bg-primary/5 transition-all duration-150 group relative"
+            className="flex-shrink-0 flex items-center gap-2 bg-surface-2 border border-border rounded-xl px-4 py-2 text-sm text-muted hover:border-primary/40 hover:text-fg hover:bg-primary/5 transition-all duration-150 group relative press-effect"
           >
             {r.tag && (
               <span className="absolute -top-2 right-2 text-[8px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">

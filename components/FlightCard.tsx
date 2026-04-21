@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
+import { trackBookClick } from "@/lib/analytics";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
@@ -12,6 +13,13 @@ function formatMiles(n: number): string {
 function city(code: string, lang: "fr" | "en") {
   const a = airportsMap.find(x => x.code === code);
   return a ? (lang === "fr" ? a.city : a.cityEn) : code;
+}
+
+function formatDuration(minutes: number, lang: "fr" | "en"): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (lang === "fr") return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
 // Type labels
@@ -50,6 +58,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
   const milesCost  = flight.milesCost;
   const savings    = flight.savings;
   const stops      = flight.stops ?? 0;
+  const duration   = flight.duration;
   const bestOption = flight.bestOption;
   const isUseMiles = flight.recommendation === "USE_MILES";
   const isEquivalent = flight.recommendation === "EQUIVALENT";
@@ -65,8 +74,8 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
 
   return (
     <div className={clsx(
-      "bg-surface rounded-2xl border overflow-hidden",
-      "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover",
+      "bg-surface rounded-2xl border overflow-hidden hover-lift",
+      "transition-all duration-200 hover:shadow-card-hover",
       isUseMiles ? "border-blue-500/30" : isEquivalent ? "border-emerald-500/30" : "border-border"
     )}>
 
@@ -92,11 +101,22 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
             {fr ? "Pas d'option miles disponible" : "No miles option available"}
           </div>
         )}
-        <div className="text-[11px] text-muted mt-1">
-          {city(flight.from, lang)} \u2192 {city(flight.to, lang)}
-          {" \u00b7 "}
-          {stops === 0 ? "Direct" : `${stops} ${fr ? "escale" : "stop"}${stops > 1 ? "s" : ""}`}
-          {flight.tripType === "roundtrip" && (fr ? " \u00b7 A/R" : " \u00b7 Round trip")}
+        <div className="text-[11px] text-muted mt-1 flex items-center justify-center gap-1.5 flex-wrap">
+          <span>{city(flight.from, lang)} → {city(flight.to, lang)}</span>
+          <span className="text-subtle">·</span>
+          <span>{stops === 0 ? (fr ? "Direct" : "Nonstop") : `${stops} ${fr ? "escale" : "stop"}${stops > 1 ? "s" : ""}`}</span>
+          {duration && duration > 0 && (
+            <>
+              <span className="text-subtle">·</span>
+              <span>{formatDuration(duration, lang)}</span>
+            </>
+          )}
+          {flight.tripType === "roundtrip" && (
+            <>
+              <span className="text-subtle">·</span>
+              <span>{fr ? "A/R" : "Round trip"}</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -192,21 +212,34 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
 
       {/* Booking CTA */}
       {flight.bookingLink && (
-        <a
-          href={flight.bookingLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={clsx(
-            "block px-5 py-3 text-center text-[12px] font-bold border-t border-border transition-colors uppercase tracking-widest",
-            isUseMiles
-              ? "text-blue-400 bg-blue-500/5 hover:bg-blue-500/10"
-              : isEquivalent
-                ? "text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
-                : "text-warning bg-warning/5 hover:bg-warning/10"
-          )}
-        >
-          {fr ? "R\u00e9server ce vol \u2192" : "Book this flight \u2192"}
-        </a>
+        <div className="px-4 pb-4 pt-2 border-t border-border">
+          <a
+            href={flight.bookingLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackBookClick({
+              from: flight.from,
+              to: flight.to,
+              cabin: flight.cabin,
+              recommendation: flight.recommendation ?? "NONE",
+              savings: flight.savings,
+              airline: airlines[0],
+            })}
+            className={clsx(
+              "flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-[13px] font-bold transition-all hover-lift",
+              isUseMiles
+                ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/30"
+                : isEquivalent
+                  ? "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30"
+                  : "bg-warning/10 text-warning hover:bg-warning/20 border border-warning/25"
+            )}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+            {fr ? "Voir & réserver ce vol" : "View & book this flight"}
+          </a>
+        </div>
       )}
     </div>
   );

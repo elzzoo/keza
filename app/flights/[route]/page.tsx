@@ -24,10 +24,24 @@ function parseRoute(route: string): { from: string; to: string } | null {
 // ─── Static generation for popular routes ───────────────────────────────────
 
 const POPULAR_ROUTES = [
-  "DSS-CDG", "ABJ-CDG", "LOS-LHR", "CMN-JFK", "NBO-CDG", "ACC-LHR",
-  "JFK-LHR", "CDG-NRT", "LAX-BKK", "SIN-SYD", "NBO-DXB", "DSS-IST",
-  "JNB-LHR", "CAI-CDG", "ADD-DXB", "LOS-ATL", "CMN-CDG", "ABJ-IST",
-  "DXB-LHR", "CDG-JFK", "LHR-NRT", "SFO-NRT", "LAX-CDG", "MIA-BOG",
+  // Africa ↔ Europe
+  "DSS-CDG", "ABJ-CDG", "LOS-LHR", "CMN-CDG", "NBO-CDG", "ACC-LHR",
+  "JNB-LHR", "CAI-CDG", "ADD-DXB", "DSS-IST", "ABJ-IST", "CMN-JFK",
+  "LOS-ATL", "NBO-DXB",
+  // North America ↔ Europe
+  "JFK-LHR", "CDG-JFK", "LAX-CDG", "JFK-AMS", "ORD-LHR", "BOS-LHR",
+  "MIA-MAD",
+  // North America ↔ Asia
+  "JFK-NRT", "LAX-NRT", "SFO-NRT", "LAX-BKK", "LAX-SIN", "YYZ-LHR",
+  // Europe ↔ Asia
+  "LHR-SIN", "CDG-NRT", "LHR-DXB", "LHR-BKK", "CDG-BKK", "FRA-SIN",
+  "LHR-HKG",
+  // Middle East hub routes
+  "DXB-LHR", "DXB-JFK", "DOH-LHR", "DOH-JFK", "IST-JFK",
+  // Asia-Pacific
+  "SIN-SYD", "SIN-NRT", "HKG-LHR", "SYD-LHR",
+  // Latin America
+  "MIA-BOG", "GRU-LHR", "GRU-CDG", "EZE-MAD", "SCL-MIA", "BOG-MAD",
 ];
 
 export async function generateStaticParams() {
@@ -112,6 +126,15 @@ export default async function RoutePage({ params }: Props) {
     }
   }
 
+  // Try to import routeMeta — may not exist yet (created by a separate agent)
+  let routeMeta = undefined;
+  try {
+    const { getRouteMeta } = await import("@/data/routeMeta");
+    routeMeta = getRouteMeta(parsed.from, parsed.to);
+  } catch {
+    // routeMeta.ts not yet available — page renders without it
+  }
+
   // Schema.org FAQ structured data
   const faqSchema = {
     "@context": "https://schema.org",
@@ -167,6 +190,7 @@ export default async function RoutePage({ params }: Props) {
         cheapestDate={cheapest?.date ?? null}
         priceCount={allPrices.length}
         relatedRoutes={relatedRoutes}
+        routeMeta={routeMeta}
       />
     </>
   );

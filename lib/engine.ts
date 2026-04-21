@@ -482,7 +482,8 @@ function enrich(
   userPrograms: string[],
   tripType: TripType,
   effectivePrices: Map<string, number>,
-  returnFlight?: NormalizedFlight
+  returnFlight?: NormalizedFlight,
+  searchDate?: string,
 ): FlightResult {
   const multiplier = CABIN_MULTIPLIER[cabin];
 
@@ -535,7 +536,13 @@ function enrich(
     result.returnAirlines = returnFlight?.airlines;
   }
 
-  if (f.bookingLink) result.bookingLink = f.bookingLink;
+  if (f.bookingLink) {
+    result.bookingLink = f.bookingLink;
+  } else if (searchDate && f.from && f.to) {
+    // Fallback: Aviasales search link when no deep link from Travelpayouts v3
+    const dateCompact = searchDate.replace(/-/g, "");
+    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${dateCompact}${f.to}${passengers ?? 1}?marker=${TP_MARKER}`;
+  }
 
   return result;
 }
@@ -617,7 +624,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   }
 
   // 4. Apply promotions
-  const promotions     = loadPromotions();
+  const promotions     = await loadPromotions();
   const withPromos     = applyPromotions(outbound, promotions);
   const returnWithPromos = returnFlights.length
     ? applyPromotions(returnFlights, promotions)
@@ -629,7 +636,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     : undefined;
 
   const results: FlightResult[] = withPromos.map((f) =>
-    enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn)
+    enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn, date)
   );
 
   // Sort: biggest savings first, then cheapest cash price

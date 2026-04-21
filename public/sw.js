@@ -20,6 +20,55 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Push notifications
+self.addEventListener("push", (event) => {
+  let data = { title: "KEZA", body: "Price drop alert!", url: "/" };
+  if (event.data) {
+    try {
+      data = { ...data, ...event.data.json() };
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: "/icons/icon-192.svg",
+    badge: "/icons/icon-192.svg",
+    tag: "keza-price-alert",
+    renotify: true,
+    data: { url: data.url || "/" },
+    actions: [
+      { action: "open", title: "Voir / View" },
+      { action: "dismiss", title: "Fermer / Dismiss" },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+// Notification click handler
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  if (event.action === "dismiss") return;
+
+  const url = event.notification.data?.url || "/";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      // Focus existing tab if available
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // Otherwise open new window
+      return clients.openWindow(url);
+    })
+  );
+});
+
 // Fetch strategy
 self.addEventListener("fetch", (event) => {
   const { request } = event;

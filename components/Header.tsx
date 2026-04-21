@@ -3,6 +3,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { CurrencyPicker } from "./CurrencyPicker";
+import { ThemeToggle } from "./ThemeToggle";
 import type { CurrencyCode } from "@/lib/currency";
 
 interface Props {
@@ -14,14 +15,14 @@ interface Props {
 
 const NAV = {
   fr: [
-    { label: "Meilleurs deals", href: "#deals" },
-    { label: "Comment ça marche", href: "#how" },
-    { label: "Calculateur", href: "#calc" },
+    { label: "Comment ça marche", href: "/#how" },
+    { label: "Routes populaires", href: "/#routes" },
+    { label: "Pour les entreprises", href: "/entreprises" },
   ],
   en: [
-    { label: "Best deals", href: "#deals" },
-    { label: "How it works", href: "#how" },
-    { label: "Calculator", href: "#calc" },
+    { label: "How it works", href: "/#how" },
+    { label: "Popular routes", href: "/#routes" },
+    { label: "For Business", href: "/entreprises" },
   ],
 };
 
@@ -67,6 +68,9 @@ export function Header({ lang, onLangChange, currency, onCurrencyChange }: Props
           {currency && onCurrencyChange && (
             <CurrencyPicker currency={currency} onCurrencyChange={onCurrencyChange} />
           )}
+
+          {/* Theme toggle */}
+          <ThemeToggle />
 
           {/* Lang toggle */}
           <div className="flex items-center rounded-lg border border-border bg-surface-2 p-0.5">

@@ -17,9 +17,9 @@ export function HowItWorks({ lang }: Props) {
   const steps = STEPS[lang];
   return (
     <section id="how" className="bg-surface rounded-2xl border border-border p-6">
-      <p className="section-rule mb-5">
+      <h2 className="section-rule mb-5">
         {lang === "fr" ? "Comment ça fonctionne" : "How it works"}
-      </p>
+      </h2>
       <div className="grid grid-cols-3 gap-4 relative">
         {/* Arrow connectors */}
         <div className="absolute top-4 left-1/3 w-1/3 flex items-center justify-center pointer-events-none">

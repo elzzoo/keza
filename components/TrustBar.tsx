@@ -23,7 +23,7 @@ export function TrustBar({ lang }: Props) {
         {items.map((item, i) => (
           <div key={i} className="flex items-center">
             <div className="flex items-center gap-2 px-5 py-1">
-              <span className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-sm flex-shrink-0">
+              <span className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-sm flex-shrink-0" aria-hidden="true">
                 {item.icon}
               </span>
               <span className="text-sm text-muted">

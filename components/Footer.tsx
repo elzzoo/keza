@@ -3,12 +3,12 @@ interface Props { lang: "fr" | "en" }
 const LINKS = {
   fr: {
     product:  { title: "Produit",           items: [{ label: "Rechercher", href: "#" }, { label: "Meilleurs deals", href: "#deals" }, { label: "Comment ça marche", href: "#how" }, { label: "Calculateur", href: "#calc" }] },
-    programs: { title: "Programmes miles",  items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
+    programs: { title: "Programmes miles",  items: [{ label: "Flying Blue (Air France)", href: "https://www.flyingblue.com" }, { label: "Miles&Smiles (Turkish)", href: "https://www.turkishairlines.com/fr-fr/miles-smiles/" }, { label: "LifeMiles (Avianca)", href: "https://www.lifemiles.com" }, { label: "Aeroplan (Air Canada)", href: "https://www.aircanada.com/aeroplan" }] },
     routes:   { title: "Routes populaires", items: [{ label: "Dakar → Paris", href: "/flights/DSS-CDG" }, { label: "New York → Londres", href: "/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/flights/CDG-NRT" }, { label: "Lagos → Londres", href: "/flights/LOS-LHR" }] },
   },
   en: {
     product:  { title: "Product",       items: [{ label: "Search", href: "#" }, { label: "Best deals", href: "#deals" }, { label: "How it works", href: "#how" }, { label: "Calculator", href: "#calc" }] },
-    programs: { title: "Miles programs", items: [{ label: "Flying Blue (Air France)", href: "#" }, { label: "Miles&Smiles (Turkish)", href: "#" }, { label: "LifeMiles (Avianca)", href: "#" }, { label: "Aeroplan (Air Canada)", href: "#" }] },
+    programs: { title: "Miles programs", items: [{ label: "Flying Blue (Air France)", href: "https://www.flyingblue.com" }, { label: "Miles&Smiles (Turkish)", href: "https://www.turkishairlines.com/en-int/miles-smiles/" }, { label: "LifeMiles (Avianca)", href: "https://www.lifemiles.com" }, { label: "Aeroplan (Air Canada)", href: "https://www.aircanada.com/aeroplan" }] },
     routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris", href: "/flights/DSS-CDG" }, { label: "New York → London", href: "/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/flights/CDG-NRT" }, { label: "Lagos → London", href: "/flights/LOS-LHR" }] },
   },
 };
@@ -58,8 +58,9 @@ export function Footer({ lang }: Props) {
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-subtle">
           <span>© {year} KEZA. {lang === "fr" ? "Tous droits réservés." : "All rights reserved."}</span>
           <div className="flex items-center gap-4">
-            <a href="#" className="hover:text-muted transition-colors">{lang === "fr" ? "Mentions légales" : "Legal"}</a>
-            <a href="#" className="hover:text-muted transition-colors">{lang === "fr" ? "Confidentialité" : "Privacy"}</a>
+            <a href="/mentions-legales" className="hover:text-muted transition-colors">{lang === "fr" ? "Mentions légales" : "Legal"}</a>
+            <a href="/confidentialite" className="hover:text-muted transition-colors">{lang === "fr" ? "Confidentialité" : "Privacy"}</a>
+            <a href="/entreprises" className="hover:text-muted transition-colors font-semibold text-primary/70 hover:text-primary">{lang === "fr" ? "Pour les entreprises" : "For Business"}</a>
           </div>
         </div>
       </div>

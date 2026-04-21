@@ -1,14 +1,17 @@
-import fs from "fs";
-import path from "path";
 import { parseJsonPromos, type Promotion } from "./parsers";
+import { redis } from "@/lib/redis";
 
-export function loadPromotions(): Promotion[] {
+export const PROMOS_KEY = "keza:promotions";
+// 35-day TTL — cron refreshes every 30 days, giving a 5-day safety window
+export const PROMOS_TTL_SECONDS = 35 * 24 * 60 * 60;
+
+export async function loadPromotions(): Promise<Promotion[]> {
   try {
-    const filePath = path.join(process.cwd(), "data", "promotions.json");
-    const raw = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown[];
+    const raw = await redis.get<unknown[]>(PROMOS_KEY);
+    if (!raw || !Array.isArray(raw)) return [];
     return parseJsonPromos(raw);
   } catch {
-    console.error("[promotions] failed to load promotions.json, returning empty");
+    console.error("[promotions] failed to load from Redis, returning empty");
     return [];
   }
 }

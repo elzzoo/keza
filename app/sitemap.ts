@@ -4,10 +4,24 @@ const BASE_URL = "https://keza-taupe.vercel.app";
 
 // Popular routes that get static pages
 const ROUTES = [
-  "DSS-CDG", "ABJ-CDG", "LOS-LHR", "CMN-JFK", "NBO-CDG", "ACC-LHR",
-  "JFK-LHR", "CDG-NRT", "LAX-BKK", "SIN-SYD", "NBO-DXB", "DSS-IST",
-  "JNB-LHR", "CAI-CDG", "ADD-DXB", "LOS-ATL", "CMN-CDG", "ABJ-IST",
-  "DXB-LHR", "CDG-JFK", "LHR-NRT", "SFO-NRT", "LAX-CDG", "MIA-BOG",
+  // Africa ↔ Europe
+  "DSS-CDG", "ABJ-CDG", "LOS-LHR", "CMN-CDG", "NBO-CDG", "ACC-LHR",
+  "JNB-LHR", "CAI-CDG", "ADD-DXB", "DSS-IST", "ABJ-IST", "CMN-JFK",
+  "LOS-ATL", "NBO-DXB",
+  // North America ↔ Europe
+  "JFK-LHR", "CDG-JFK", "LAX-CDG", "JFK-AMS", "ORD-LHR", "BOS-LHR",
+  "MIA-MAD",
+  // North America ↔ Asia
+  "JFK-NRT", "LAX-NRT", "SFO-NRT", "LAX-BKK", "LAX-SIN", "YYZ-LHR",
+  // Europe ↔ Asia
+  "LHR-SIN", "CDG-NRT", "LHR-DXB", "LHR-BKK", "CDG-BKK", "FRA-SIN",
+  "LHR-HKG",
+  // Middle East hub routes
+  "DXB-LHR", "DXB-JFK", "DOH-LHR", "DOH-JFK", "IST-JFK",
+  // Asia-Pacific
+  "SIN-SYD", "SIN-NRT", "HKG-LHR", "SYD-LHR",
+  // Latin America
+  "MIA-BOG", "GRU-LHR", "GRU-CDG", "EZE-MAD", "SCL-MIA", "BOG-MAD",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -19,6 +33,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "daily",
       priority: 1.0,
+    },
+    {
+      url: `${BASE_URL}/entreprises`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
   ];
 

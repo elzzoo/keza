@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import { PriceCalendar } from "./PriceCalendar";
+import { trackSearch } from "@/lib/analytics";
 import clsx from "clsx";
 
 interface Props {
@@ -15,6 +16,12 @@ interface Props {
   initialTo?: string;
   savedPrograms?: string[];
   savedCabin?: "economy" | "premium" | "business" | "first";
+  /** Format a USD amount into user's chosen currency */
+  formatPrice?: (usd: number) => string;
+  /** Pre-fill from shared URL */
+  initialDate?: string;
+  initialTripType?: "oneway" | "roundtrip";
+  initialPax?: number;
 }
 
 type TripType = "oneway" | "roundtrip";
@@ -26,14 +33,14 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
-export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin }: Props) {
+export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, formatPrice, initialDate, initialTripType, initialPax }: Props) {
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");
-  const [tripType,   setTripType]   = useState<TripType>("roundtrip");
-  const [depDate,    setDepDate]    = useState(addDays(today, 30));
-  const [retDate,    setRetDate]    = useState(addDays(today, 37));
+  const [tripType,   setTripType]   = useState<TripType>(initialTripType ?? "roundtrip");
+  const [depDate,    setDepDate]    = useState(initialDate ?? addDays(today, 30));
+  const [retDate,    setRetDate]    = useState(initialDate ? addDays(initialDate, 7) : addDays(today, 37));
   const [cabin,      setCabin]      = useState<Cabin>("economy");
-  const [passengers, setPassengers] = useState(1);
+  const [passengers, setPassengers] = useState(initialPax ?? 1);
   const [programs,   setPrograms]   = useState("");
   const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
@@ -60,6 +67,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     setError(null); setBusy(true); onLoading(true);
     setShowCalendar(null); // close calendar on search
     onSearchStart?.({ from, to, date: depDate, cabin, tripType });
+    trackSearch({ from, to, cabin, tripType, pax: passengers });
     try {
       const res = await fetch("/api/search", {
         method: "POST",
@@ -245,6 +253,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             onSelectDate={(d) => { onDep(d); setShowCalendar(null); }}
             lang={lang}
             cabin={cabin}
+            formatPrice={formatPrice}
           />
         )}
 
@@ -257,6 +266,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             onSelectDate={(d) => { setRetDate(d); setShowCalendar(null); }}
             lang={lang}
             cabin={cabin}
+            formatPrice={formatPrice}
           />
         )}
 
@@ -268,16 +278,16 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             </p>
             <div className="flex gap-1.5">
               <button type="button" onClick={() => setCabin("economy")} className={cabinBtn(cabin === "economy")}>
-                {fr ? "Éco" : "Eco"}
+                {fr ? "Éco" : "Economy"}
               </button>
               <button type="button" onClick={() => setCabin("premium")} className={cabinBtn(cabin === "premium")}>
-                Prem
+                {fr ? "Prem+" : "Prem+"}
               </button>
               <button type="button" onClick={() => setCabin("business")} className={cabinBtn(cabin === "business")}>
-                Biz
+                {fr ? "Affaires" : "Business"}
               </button>
               <button type="button" onClick={() => setCabin("first")} className={cabinBtn(cabin === "first")}>
-                First
+                {fr ? "1ère" : "First"}
               </button>
             </div>
           </div>

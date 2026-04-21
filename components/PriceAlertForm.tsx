@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackAlertCreated } from "@/lib/analytics";
 
 interface Props {
   from: string;
@@ -62,6 +63,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
 
       if (res.status === 201) {
         setStatus("success");
+        trackAlertCreated({ from, to, cabin, currentPrice });
       } else if (res.status === 409) {
         setStatus("duplicate");
       } else if (res.status === 429) {

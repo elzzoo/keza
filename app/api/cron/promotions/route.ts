@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import fs from "fs";
-import path from "path";
+import { redis } from "@/lib/redis";
+import { PROMOS_KEY, PROMOS_TTL_SECONDS } from "@/lib/promotions/engine";
 
 function safeCompare(a: string, b: string): boolean {
   const aBuf = Buffer.from(a.padEnd(256));
@@ -36,8 +36,7 @@ export async function GET(request: Request) {
       { airline: "Royal Air Maroc",  discount: 0.12, validUntil },
     ];
 
-    const outPath = path.join(process.cwd(), "data", "promotions.json");
-    fs.writeFileSync(outPath, JSON.stringify(promos, null, 2));
+    await redis.set(PROMOS_KEY, promos, { ex: PROMOS_TTL_SECONDS });
 
     return NextResponse.json({ ok: true, count: promos.length });
   } catch (err) {
