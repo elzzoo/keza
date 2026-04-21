@@ -41,7 +41,7 @@ export function classifyDeal(ratioCpp: number): DealRecommendation {
 export function enrichDeal(raw: RawDeal): LiveDeal {
   const ratio          = computeDealRatio(raw.cashPrice, raw.milesRequired);
   const recommendation = classifyDeal(ratio);
-  const multiplier     = `×${(ratio / 1.0).toFixed(1)}`;
+  const multiplier     = `×${ratio.toFixed(1)}`;
   return { ...raw, ratio, recommendation, multiplier };
 }
 
