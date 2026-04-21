@@ -117,7 +117,7 @@ export function WorldMap({ destinations, lang }: Props) {
         onClick={handleMapClick}
       >
         <ComposableMap
-          projection="naturalEarth1"
+          projection="geoNaturalEarth1"
           style={{ width: "100%", height: "100%" }}
           projectionConfig={{ scale: 140, center: [20, 10] }}
         >
