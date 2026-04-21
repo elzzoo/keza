@@ -1,5 +1,6 @@
 // app/programmes/page.tsx
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ProgramsTable } from "./ProgramsTable";
 
 export const metadata: Metadata = {
@@ -19,9 +20,9 @@ export default function ProgrammesPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Back link */}
-        <a href="/" className="text-xs text-muted hover:text-fg transition-colors">
+        <Link href="/" className="text-xs text-muted hover:text-fg transition-colors">
           ← Retour
-        </a>
+        </Link>
 
         {/* Hero */}
         <div className="mt-6 mb-8">
