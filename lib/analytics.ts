@@ -107,3 +107,13 @@ export function trackRecentSearch(from: string, to: string) {
     route: `${from}-${to}`,
   });
 }
+
+/** User clicks a deal in the DealsStrip */
+export function trackDealClick(params: { from: string; to: string; program: string }) {
+  track("Deal Click", { from: params.from, to: params.to, route: `${params.from}-${params.to}`, program: params.program });
+}
+
+/** User clicks a destination in a deals component */
+export function trackDestinationClick(params: { city: string; iata: string }) {
+  track("Destination Click", { city: params.city, iata: params.iata });
+}
