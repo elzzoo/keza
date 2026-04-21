@@ -18,7 +18,7 @@ export interface LoyaltyProgram {
   score: number;           // 0–100, KEZA score
 }
 
-// Sorted by score descending
+// Sorted by score descending. Ties are ordered editorially (insertion order).
 export const PROGRAMS: LoyaltyProgram[] = [
   // ── Transfer Cards (highest flexibility) ──────────────────────────────────
   {
@@ -69,7 +69,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     regions: ["americas", "europe", "africa"],
     cpmCents: 1.7,
     transferPartners: [],
-    bestUse: "Transfer to Air Canada, Turkish, Flying Blue",
+    bestUse: "Transfer to Aeroplan, Turkish, Flying Blue",
     bestUseFr: "Transfert vers Aeroplan, Turkish, Flying Blue",
     flag: "🇺🇸",
     score: 84,
@@ -93,7 +93,6 @@ export const PROGRAMS: LoyaltyProgram[] = [
     name: "Flying Club",
     company: "Virgin Atlantic",
     type: "airline",
-    alliance: undefined,
     regions: ["europe", "americas", "asia", "africa"],
     cpmCents: 1.8,
     transferPartners: ["amex", "chase", "capital-one", "citi"],
@@ -162,7 +161,6 @@ export const PROGRAMS: LoyaltyProgram[] = [
     name: "Mileage Plan",
     company: "Alaska Airlines",
     type: "airline",
-    alliance: undefined,
     regions: ["americas", "asia", "oceania"],
     cpmCents: 1.8,
     transferPartners: ["amex"],
@@ -288,7 +286,6 @@ export const PROGRAMS: LoyaltyProgram[] = [
     name: "Frequent Flyer",
     company: "Qantas",
     type: "airline",
-    alliance: undefined,
     regions: ["oceania", "asia", "americas", "europe"],
     cpmCents: 1.4,
     transferPartners: ["amex"],
@@ -302,7 +299,6 @@ export const PROGRAMS: LoyaltyProgram[] = [
     name: "Etihad Guest",
     company: "Etihad Airways",
     type: "airline",
-    alliance: undefined,
     regions: ["middle-east", "europe", "africa", "asia", "americas"],
     cpmCents: 1.2,
     transferPartners: ["amex", "citi"],
@@ -372,7 +368,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     type: "hotel",
     regions: ["europe", "africa", "asia", "middle-east"],
     cpmCents: 0.4,
-    transferPartners: [],
+    transferPartners: [], // no card transfer partners
     bestUse: "Sofitel, Novotel, Mercure properties",
     bestUseFr: "Propriétés Sofitel, Novotel, Mercure",
     flag: "🇫🇷",
@@ -425,7 +421,6 @@ export const PROGRAMS: LoyaltyProgram[] = [
     name: "Emirates Skywards",
     company: "Emirates",
     type: "airline",
-    alliance: undefined,
     regions: ["middle-east", "europe", "africa", "asia", "americas"],
     cpmCents: 0.9,
     transferPartners: ["amex", "citi"],

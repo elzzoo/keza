@@ -16,6 +16,7 @@ describe("PROGRAMS data integrity", () => {
       expect(typeof p.cpmCents).toBe("number");
       expect(Array.isArray(p.transferPartners)).toBe(true);
       expect(p.bestUse).toBeTruthy();
+      expect(p.bestUseFr).toBeTruthy();
       expect(p.flag).toBeTruthy();
       expect(typeof p.score).toBe("number");
     });
