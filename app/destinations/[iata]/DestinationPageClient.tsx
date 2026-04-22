@@ -11,6 +11,7 @@ import { DESTINATIONS } from "@/data/destinations";
 import type { DealRecommendation } from "@/lib/dealsEngine";
 import type { DestinationPriceHistory } from "@/lib/priceHistory";
 import type { FlightResult } from "@/lib/engine";
+import { PriceAlertForm } from "@/components/PriceAlertForm";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -298,6 +299,19 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
             initialTo={dest.iata}
           />
         </div>
+
+        {/* Price alert */}
+        {!hasSearched && (
+          <div className="mt-4">
+            <PriceAlertForm
+              from="DSS"
+              to={dest.iata}
+              cabin="economy"
+              currentPrice={dest.cashEstimateUsd}
+              lang={lang}
+            />
+          </div>
+        )}
 
         {/* Results */}
         {(hasSearched || loading) && (
