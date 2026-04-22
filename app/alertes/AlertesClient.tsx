@@ -41,6 +41,7 @@ export function AlertesClient() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const fr = lang === "fr";
 
   const cabinLabels = fr ? CABIN_LABELS_FR : CABIN_LABELS_EN;
@@ -48,13 +49,16 @@ export function AlertesClient() {
   async function handleFetch(e: React.FormEvent) {
     e.preventDefault();
     if (!email || loading) return;
+    const normalizedEmail = email.trim().toLowerCase();
     setLoading(true);
     setFetchError(false);
     setAlerts(null);
     try {
-      const res = await fetch(`/api/alerts?email=${encodeURIComponent(email)}`);
-      const data = await res.json();
-      setAlerts((data.alerts as PriceAlert[]).filter((a) => a.active));
+      const res = await fetch(`/api/alerts?email=${encodeURIComponent(normalizedEmail)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: { alerts: PriceAlert[] } = await res.json();
+      if (!Array.isArray(data.alerts)) throw new Error("Unexpected payload");
+      setAlerts(data.alerts.filter((a) => a.active));
     } catch {
       setFetchError(true);
     } finally {
@@ -66,9 +70,12 @@ export function AlertesClient() {
     if (deletingId) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/alerts?id=${id}`, { method: "DELETE" });
+      setDeleteError(null);
+      const res = await fetch(`/api/alerts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
       if (res.ok) {
         setAlerts((prev) => prev?.filter((a) => a.id !== id) ?? null);
+      } else {
+        setDeleteError(fr ? "Erreur lors de la suppression." : "Deletion failed.");
       }
     } finally {
       setDeletingId(null);
@@ -107,7 +114,7 @@ export function AlertesClient() {
           />
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !email.trim()}
             className="bg-primary hover:bg-primary/90 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all disabled:opacity-50 whitespace-nowrap"
           >
             {loading
@@ -129,8 +136,8 @@ export function AlertesClient() {
             <div className="text-center py-12 space-y-3">
               <p className="text-muted text-sm">
                 {fr
-                  ? `Aucune alerte active pour ${email}.`
-                  : `No active alerts for ${email}.`}
+                  ? `Aucune alerte active pour ${email.trim().toLowerCase()}.`
+                  : `No active alerts for ${email.trim().toLowerCase()}.`}
               </p>
               <Link
                 href="/"
@@ -144,6 +151,9 @@ export function AlertesClient() {
               <p className="text-xs text-muted mb-2">
                 {alerts.length} {fr ? "alerte(s) active(s)" : "active alert(s)"}
               </p>
+              {deleteError && (
+                <p className="text-xs text-red-400 mb-2">{deleteError}</p>
+              )}
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
@@ -172,7 +182,9 @@ export function AlertesClient() {
                   <button
                     onClick={() => handleDelete(alert.id)}
                     disabled={deletingId === alert.id}
-                    aria-label={fr ? "Supprimer l'alerte" : "Delete alert"}
+                    aria-label={fr
+                      ? `Supprimer l'alerte ${alert.from} → ${alert.to}`
+                      : `Delete alert ${alert.from} → ${alert.to}`}
                     className="flex-shrink-0 text-muted hover:text-red-400 transition-colors text-lg disabled:opacity-40 pt-0.5"
                   >
                     {deletingId === alert.id ? "…" : "✕"}
