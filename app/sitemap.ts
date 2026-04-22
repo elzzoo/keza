@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { DESTINATIONS } from "@/data/destinations";
 
 const BASE_URL = "https://keza-taupe.vercel.app";
 
@@ -71,6 +72,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${BASE_URL}/flights/${route}`,
       lastModified: now,
       changeFrequency: "daily",
+      priority: 0.8,
+    });
+  }
+
+  // Destination pages
+  for (const dest of DESTINATIONS) {
+    pages.push({
+      url: `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
       priority: 0.8,
     });
   }

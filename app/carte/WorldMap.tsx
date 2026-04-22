@@ -56,14 +56,14 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
 
 const L = {
   fr: {
-    searchBtn: "Rechercher ce vol →",
+    searchBtn: "Voir la destination →",
     cash: "Cash",
     miles: "miles",
     cpm: "¢/mile",
     close: "✕",
   },
   en: {
-    searchBtn: "Search this flight →",
+    searchBtn: "View destination →",
     cash: "Cash",
     miles: "miles",
     cpm: "¢/mile",
@@ -219,7 +219,7 @@ export function WorldMap({ destinations, lang }: Props) {
               </div>
             </div>
             <a
-              href={`/?to=${selected.iata}`}
+              href={`/destinations/${selected.iata.toLowerCase()}`}
               className="block w-full text-center bg-primary text-white text-xs font-bold py-2 rounded-xl hover:bg-primary/90 transition-colors"
             >
               {t.searchBtn}
@@ -278,7 +278,7 @@ export function WorldMap({ destinations, lang }: Props) {
             </div>
           </div>
           <a
-            href={`/?to=${selected.iata}`}
+            href={`/destinations/${selected.iata.toLowerCase()}`}
             className="block w-full text-center bg-primary text-white text-xs font-bold py-2.5 rounded-xl hover:bg-primary/90 transition-colors"
           >
             {t.searchBtn}
