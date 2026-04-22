@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dest = DESTINATIONS.find(
     (d) => d.iata.toLowerCase() === params.iata.toLowerCase()
   );
-  if (!dest) return { title: "Destination not found — KEZA" };
+  if (!dest) notFound();
 
   const title = `Vols Dakar → ${dest.city} — Cash ou Miles ? | KEZA`;
   const description = `Vols depuis Dakar (DSS) vers ${dest.city} (${dest.iata}). KEZA calcule si tes miles valent plus que le prix cash — estimation instantanée + recherche live.`;
@@ -31,10 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
-      url: `${BASE_URL}/destinations/${dest.iata}`,
+      url: `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`,
     },
     alternates: {
-      canonical: `${BASE_URL}/destinations/${dest.iata}`,
+      canonical: `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`,
     },
   };
 }
@@ -54,7 +54,6 @@ export default function DestinationPage({ params }: Props) {
     "@type": "TouristDestination",
     name: dest.city,
     description: `Vols depuis Dakar vers ${dest.city} — comparaison cash vs miles KEZA`,
-    touristType: "Voyageur miles",
   };
 
   return (

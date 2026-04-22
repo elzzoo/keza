@@ -3,8 +3,10 @@ import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices } from "@/lib/priceHistory";
 
 describe("destinations static generation logic", () => {
-  it("DESTINATIONS contient exactement 20 destinations", () => {
-    expect(DESTINATIONS).toHaveLength(20);
+  it("tous les IATA de DESTINATIONS sont uniques", () => {
+    const iatas = DESTINATIONS.map((d) => d.iata);
+    const unique = new Set(iatas);
+    expect(unique.size).toBe(iatas.length);
   });
 
   it("chaque destination produit un iata lowercase de 3 caractères", () => {
@@ -36,5 +38,10 @@ describe("destinations static generation logic", () => {
       expect(history.bestMonths.length).toBeGreaterThan(0);
       expect(history.worstMonths.length).toBeGreaterThan(0);
     }
+  });
+
+  it("un iata inconnu ne produit aucune destination", () => {
+    const dest = DESTINATIONS.find((d) => d.iata.toLowerCase() === "xxx");
+    expect(dest).toBeUndefined();
   });
 });
