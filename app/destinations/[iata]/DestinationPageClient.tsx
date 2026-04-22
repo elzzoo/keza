@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -63,7 +63,7 @@ export function buildSparklinePoints(history: DestinationPriceHistory) {
   const area =
     `M ${points[0].x},75 ` +
     points.map((p) => `L ${p.x},${p.y}`).join(" ") +
-    ` L ${points[11].x},75 Z`;
+    ` L ${points[points.length - 1].x},75 Z`;
 
   return { points, polyline, area, minP, maxP };
 }
@@ -81,7 +81,10 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
   const color = REC_COLORS[recommendation];
 
   // Sparkline
-  const { points, polyline, area, minP, maxP } = buildSparklinePoints(history);
+  const { points, polyline, area, minP, maxP } = useMemo(
+    () => buildSparklinePoints(history),
+    [history]
+  );
   const minIdx = points.findIndex((p) => p.price === minP);
   const maxIdx = points.findIndex((p) => p.price === maxP);
 
@@ -90,14 +93,16 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
   const worstLabels = history.worstMonths.map((i) => history.monthlyPrices[i].monthLabel);
 
   // KEZA note — cheapest month
-  const cheapestMonth = history.monthlyPrices.reduce((min, m) =>
-    m.price < min.price ? m : min
+  const cheapestMonth = useMemo(
+    () => history.monthlyPrices.reduce((min, m) => m.price < min.price ? m : min),
+    [history]
   );
 
   // Related destinations — same region, max 4
-  const related = DESTINATIONS
-    .filter((d) => d.iata !== dest.iata && d.region === dest.region)
-    .slice(0, 4);
+  const related = useMemo(
+    () => DESTINATIONS.filter((d) => d.iata !== dest.iata && d.region === dest.region).slice(0, 4),
+    [dest.iata, dest.region]
+  );
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -109,7 +114,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
           <Link href="/" className="hover:text-fg transition-colors">KEZA</Link>
           <span className="mx-1.5">/</span>
           <Link href="/carte" className="hover:text-fg transition-colors">
-            {fr ? "Destinations" : "Destinations"}
+            {"Destinations"}
           </Link>
           <span className="mx-1.5">/</span>
           <span className="text-fg">{dest.city}</span>
@@ -176,6 +181,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
           </h2>
 
           <svg
+            role="img"
             viewBox="0 0 400 90"
             className="w-full"
             aria-label={fr ? "Graphique de saisonnalité" : "Seasonality chart"}
@@ -197,6 +203,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
               stroke={color}
               strokeWidth="1.5"
               strokeLinejoin="round"
+              strokeLinecap="round"
             />
 
             {/* Data points */}
@@ -246,7 +253,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
             {/* Max price label */}
             <text
               x={points[maxIdx].x}
-              y={points[maxIdx].y - 6}
+              y={Math.max(points[maxIdx].y - 6, 8)}
               textAnchor="middle"
               fontSize="8"
               fill="#ef4444"
