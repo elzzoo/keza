@@ -1,5 +1,4 @@
 import { buildComparisonData } from "@/app/comparer/ComparateurClient";
-import { DESTINATIONS } from "@/data/destinations";
 
 describe("buildComparisonData", () => {
   it("retourne un tableau vide pour une liste vide", () => {
