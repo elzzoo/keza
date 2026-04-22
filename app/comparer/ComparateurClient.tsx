@@ -61,6 +61,10 @@ export function ComparateurClient() {
   function updateSlot(slot: "a" | "b" | "c", iata: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (iata) {
+      // Clear any other slot that already holds this IATA to prevent duplicates
+      (["a", "b", "c"] as const)
+        .filter((s) => s !== slot)
+        .forEach((s) => { if (params.get(s) === iata.toUpperCase()) params.delete(s); });
       params.set(slot, iata.toUpperCase());
     } else {
       params.delete(slot);
@@ -107,7 +111,7 @@ export function ComparateurClient() {
                 value={val}
                 onChange={(e) => updateSlot(slot, e.target.value)}
                 className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-sm text-fg"
-                aria-label={fr ? `Destination ${i + 1}` : `Destination ${i + 1}`}
+                aria-label={`Destination ${i + 1}`}
               >
                 <option value="">—</option>
                 {DESTINATIONS.map((d) => (
