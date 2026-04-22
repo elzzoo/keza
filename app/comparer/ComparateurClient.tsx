@@ -88,7 +88,7 @@ export function ComparateurClient() {
     <div className="min-h-screen bg-bg flex flex-col">
       <Header lang={lang} onLangChange={setLang} />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 pb-12">
         {/* Hero */}
         <div className="pt-8 pb-6">
           <h1 className="text-2xl sm:text-3xl font-black text-fg mb-2">
@@ -102,7 +102,7 @@ export function ComparateurClient() {
         </div>
 
         {/* Dropdowns */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
           {(["a", "b", "c"] as const).map((slot, i) => {
             const val = [slotA, slotB, slotC][i];
             return (
@@ -183,7 +183,8 @@ export function ComparateurClient() {
 
             {/* Comparison table */}
             <div className="bg-surface border border-border rounded-2xl overflow-hidden">
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wide font-semibold w-1/4" />
@@ -229,6 +230,7 @@ export function ComparateurClient() {
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </>
         )}

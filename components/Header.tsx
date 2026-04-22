@@ -124,7 +124,7 @@ export function Header({ lang, onLangChange, currency, onCurrencyChange }: Props
               key={item.href}
               href={item.href}
               onClick={() => setMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all font-medium"
+              className="block px-3 py-3 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all font-medium"
             >
               {item.label}
             </a>
