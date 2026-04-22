@@ -63,3 +63,22 @@ export async function GET(req: NextRequest) {
   const alerts = await getAlertsByEmail(email);
   return NextResponse.json({ alerts });
 }
+
+// DELETE /api/alerts?id=xxx — deactivate an alert
+export async function DELETE(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Missing id param" }, { status: 400 });
+  }
+  try {
+    const { deactivateAlert } = await import("@/lib/alerts");
+    const ok = await deactivateAlert(id);
+    if (!ok) {
+      return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (err) {
+    console.error("[api/alerts] DELETE error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
