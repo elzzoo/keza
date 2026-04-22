@@ -185,51 +185,51 @@ export function ComparateurClient() {
             <div className="bg-surface border border-border rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[400px]">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wide font-semibold w-1/4" />
-                    {selected.map(({ dest }) => (
-                      <th
-                        key={dest.iata}
-                        className="text-center px-4 py-3 font-black text-fg text-xs"
-                      >
-                        {dest.flag} {dest.city}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-border">
-                    <td className="px-4 py-3 text-xs text-muted">Cash</td>
-                    {selected.map(({ dest }) => (
-                      <td key={dest.iata} className="px-4 py-3 text-center font-bold text-fg">
-                        ${dest.cashEstimateUsd}
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left px-4 py-3 text-xs text-muted uppercase tracking-wide font-semibold w-1/4" />
+                      {selected.map(({ dest }) => (
+                        <th
+                          key={dest.iata}
+                          className="text-center px-4 py-3 font-black text-fg text-xs"
+                        >
+                          {dest.flag} {dest.city}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border">
+                      <td className="px-4 py-3 text-xs text-muted">Cash</td>
+                      {selected.map(({ dest }) => (
+                        <td key={dest.iata} className="px-4 py-3 text-center font-bold text-fg">
+                          ${dest.cashEstimateUsd}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-b border-border">
+                      <td className="px-4 py-3 text-xs text-muted">Miles</td>
+                      {selected.map(({ dest }) => (
+                        <td key={dest.iata} className="px-4 py-3 text-center font-bold text-fg">
+                          {(dest.milesEstimate / 1000).toFixed(0)}k
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 text-xs text-muted">
+                        {fr ? "Meilleurs mois" : "Best months"}
                       </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-border">
-                    <td className="px-4 py-3 text-xs text-muted">Miles</td>
-                    {selected.map(({ dest }) => (
-                      <td key={dest.iata} className="px-4 py-3 text-center font-bold text-fg">
-                        {(dest.milesEstimate / 1000).toFixed(0)}k
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 text-xs text-muted">
-                      {fr ? "Meilleurs mois" : "Best months"}
-                    </td>
-                    {selected.map(({ dest, bestLabels }) => (
-                      <td
-                        key={dest.iata}
-                        className="px-4 py-3 text-center text-xs text-success"
-                      >
-                        {bestLabels.join(" · ")}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+                      {selected.map(({ dest, bestLabels }) => (
+                        <td
+                          key={dest.iata}
+                          className="px-4 py-3 text-center text-xs text-success"
+                        >
+                          {bestLabels.join(" · ")}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </>
