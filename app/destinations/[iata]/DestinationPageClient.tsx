@@ -175,6 +175,16 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
           </div>
         </div>
 
+        {/* Compare CTA */}
+        <div className="mb-6">
+          <Link
+            href={`/comparer?a=${dest.iata}`}
+            className="inline-flex items-center gap-2 text-sm text-muted hover:text-fg border border-border hover:border-primary/40 rounded-xl px-4 py-2.5 transition-all hover:bg-primary/5"
+          >
+            📊 {fr ? "Comparer avec d'autres destinations →" : "Compare with other destinations →"}
+          </Link>
+        </div>
+
         {/* Sparkline */}
         <div className="bg-surface border border-border rounded-2xl p-4 mb-4">
           <h2 className="text-sm font-bold text-fg uppercase tracking-wide mb-3">
