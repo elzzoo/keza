@@ -114,8 +114,8 @@ export function ogBottomBar(leftText: string): React.ReactElement {
         position: "relative",
       }}
     >
-      <span style={{ color: "#4b5563", fontSize: 13 }}>{leftText}</span>
-      <span style={{ color: "#374151", fontSize: 13 }}>keza.app</span>
+      <span style={{ color: "#6b7280", fontSize: 13 }}>{leftText}</span>
+      <span style={{ color: "#9ca3af", fontSize: 13 }}>keza.app</span>
     </div>
   );
 }
