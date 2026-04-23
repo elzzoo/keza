@@ -1,7 +1,3 @@
-// app/opengraph-image.tsx
-// og:image pour la home page (keza.app).
-// Convention Next.js 14 : ce fichier auto-wire l'og:image du segment racine.
-
 import { ImageResponse } from "next/og";
 import {
   ogWrapper,
@@ -19,31 +15,27 @@ export default async function Image() {
   return new ImageResponse(
     ogWrapper(
       <>
-        {ogTopBar("Comparateur de vols")}
+        {ogTopBar("Carte des destinations")}
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            position: "relative",
-          }}
+          style={{ display: "flex", flexDirection: "column", position: "relative" }}
         >
           <span
             style={{
               color: "#ffffff",
-              fontSize: 68,
+              fontSize: 64,
               fontWeight: 900,
               lineHeight: 1.1,
               letterSpacing: "-2px",
               marginBottom: 16,
             }}
           >
-            Cash ou Miles ?
+            Explore le monde
           </span>
           <span style={{ color: "#a5b4fc", fontSize: 22 }}>
-            Compare le vrai coût de chaque vol depuis Dakar
+            20 destinations depuis Dakar — miles ou cash ?
           </span>
         </div>
-        {ogBottomBar("20 destinations · mise à jour mensuelle")}
+        {ogBottomBar("keza.app/carte")}
       </>
     ),
     { width: OG_WIDTH, height: OG_HEIGHT }

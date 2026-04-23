@@ -48,12 +48,28 @@ export default function DestinationPage({ params }: Props) {
   const cpm = computeDealRatio(dest.cashEstimateUsd, dest.milesEstimate);
   const recommendation = classifyDeal(cpm);
   const history = getMonthlyPrices(dest);
+  const priceEur = Math.round(dest.cashEstimateUsd * 0.92);
 
   const schema = {
     "@context": "https://schema.org",
-    "@type": "TouristDestination",
-    name: dest.city,
-    description: `Vols depuis Dakar vers ${dest.city} — comparaison cash vs miles KEZA`,
+    "@type": "TravelAction",
+    name: `Vol Dakar \u2192 ${dest.city} \u2014 Cash ou Miles ?`,
+    description: `Comparer le prix cash (~${priceEur}\u20ac) versus ${dest.milesEstimate.toLocaleString("fr-FR")} miles pour un vol Dakar (DSS) \u2192 ${dest.city} (${dest.iata}).`,
+    fromLocation: {
+      "@type": "Airport",
+      name: "A\u00e9roport International Blaise Diagne",
+      iataCode: "DSS",
+    },
+    toLocation: {
+      "@type": "Airport",
+      name: dest.city,
+      iataCode: dest.iata,
+    },
+    offers: {
+      "@type": "Offer",
+      price: priceEur,
+      priceCurrency: "EUR",
+    },
   };
 
   return (
