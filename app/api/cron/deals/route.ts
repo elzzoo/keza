@@ -6,6 +6,7 @@ import { sortDeals, type RawDeal } from "@/lib/dealsEngine";
 import { DEALS_KEY } from "@/lib/redisKeys";
 
 const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
+const LAST_CRON_KEY = "keza:admin:last_cron_at";
 
 function safeCompare(a: string, b: string): boolean {
   const aBuf = Buffer.from(a.padEnd(256));
@@ -47,7 +48,12 @@ async function fetchBestPrice(from: string, to: string, token: string): Promise<
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const auth   = request.headers.get("authorization");
-  if (!secret || !auth || !safeCompare(auth, `Bearer ${secret}`)) {
+  const url    = new URL(request.url);
+  const paramSecret = url.searchParams.get("secret");
+  const authorized =
+    secret &&
+    (safeCompare(auth ?? "", `Bearer ${secret}`) || safeCompare(paramSecret ?? "", secret));
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -70,7 +76,10 @@ export async function GET(request: Request) {
   }
 
   const deals = sortDeals(enriched).slice(0, 8);
-  await redis.set(DEALS_KEY, deals, { ex: DEALS_TTL });
+  await Promise.all([
+    redis.set(DEALS_KEY, deals, { ex: DEALS_TTL }),
+    redis.set(LAST_CRON_KEY, new Date().toISOString(), { ex: 30 * 24 * 3600 }),
+  ]);
 
   return NextResponse.json({ ok: true, count: deals.length });
 }
