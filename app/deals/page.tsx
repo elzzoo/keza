@@ -6,6 +6,7 @@ import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import { sortDeals } from "@/lib/dealsEngine";
 import type { LiveDeal, RawDeal } from "@/lib/dealsEngine";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const revalidate = 3600; // Re-fetch every hour
 
@@ -50,13 +51,13 @@ export default async function DealsPage() {
     "@type": "ItemList",
     name: "Deals cash vs miles du moment",
     description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
-    url: "https://keza-taupe.vercel.app/deals",
+    url: `${SITE_URL}/deals`,
     numberOfItems: Math.min(deals.length, 10),
     itemListElement: deals.slice(0, 10).map((deal, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired} miles`,
-      url: `https://keza-taupe.vercel.app/?from=${deal.from}&to=${deal.to}`,
+      url: `${SITE_URL}/?from=${deal.from}&to=${deal.to}`,
     })),
   };
 

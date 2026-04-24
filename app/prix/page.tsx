@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
 import { PriceChart } from "./PriceChart";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Meilleur moment pour voyager | KEZA",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     title: "Meilleur moment pour voyager | KEZA",
     description:
       "20 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
-    url: "https://keza-taupe.vercel.app/prix",
+    url: `${SITE_URL}/prix`,
   },
 };
 

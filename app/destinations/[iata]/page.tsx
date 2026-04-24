@@ -9,7 +9,7 @@ interface Props {
   params: { iata: string };
 }
 
-const BASE_URL = "https://keza-taupe.vercel.app";
+import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 
 export async function generateStaticParams() {
   return DESTINATIONS.map((d) => ({ iata: d.iata.toLowerCase() }));

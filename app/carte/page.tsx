@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { WorldMap, type DestinationWithRec } from "./WorldMap";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Carte des destinations miles | KEZA",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Carte des destinations miles | KEZA",
     description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA : miles gagnent, cash gagne.",
-    url: "https://keza-taupe.vercel.app/carte",
+    url: `${SITE_URL}/carte`,
   },
 };
 

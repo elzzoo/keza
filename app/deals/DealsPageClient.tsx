@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { LiveDeal, DealRecommendation } from "@/lib/dealsEngine";
 import { trackDealsFilter, trackDealShare } from "@/lib/analytics";
+import { SITE_URL } from "@/lib/siteConfig";
 
 type Filter = "all" | DealRecommendation;
 
@@ -24,7 +25,7 @@ function ShareDealButton({ deal }: { deal: LiveDeal }) {
   const [state, setState] = useState<"idle" | "copied" | "shared">("idle");
 
   const handleShare = async () => {
-    const url = `https://keza-taupe.vercel.app/?from=${deal.from}&to=${deal.to}&utm_source=share&utm_medium=deal`;
+    const url = `${SITE_URL}/?from=${deal.from}&to=${deal.to}&utm_source=share&utm_medium=deal`;
     const text = `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via KEZA`;
 
     trackDealShare({ from: deal.from, to: deal.to, program: deal.program });

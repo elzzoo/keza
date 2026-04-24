@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { DESTINATIONS } from "@/data/destinations";
-
-const BASE_URL = "https://keza-taupe.vercel.app";
+import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 
 // Popular routes that get static pages
 const ROUTES = [

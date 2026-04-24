@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deactivateAlert } from "@/lib/alerts";
+import { SITE_URL } from "@/lib/siteConfig";
 
 // GET /api/alerts/unsubscribe?id=alt_xxx — deactivate an alert (from email link)
 export async function GET(req: NextRequest) {
@@ -50,7 +51,7 @@ function html(message: string, success: boolean): string {
     <div class="logo"><span>KE</span><span>ZA</span></div>
     <div class="icon">${success ? "✅" : "⚠️"}</div>
     <p>${message}</p>
-    <a href="https://keza-taupe.vercel.app/">← Back to KEZA</a>
+    <a href="${SITE_URL}/">← Back to KEZA</a>
   </div>
 </body>
 </html>`;

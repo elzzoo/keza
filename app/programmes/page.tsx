@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ProgramsTable } from "./ProgramsTable";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Meilleurs programmes miles & points 2026 | KEZA",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Meilleurs programmes miles & points 2026 | KEZA",
     description: "Classement KEZA des 33 meilleurs programmes de fidélité — valeur du mile, partenaires, meilleur usage.",
-    url: "https://keza-taupe.vercel.app/programmes",
+    url: `${SITE_URL}/programmes`,
   },
 };
 
