@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -31,7 +31,7 @@ jobs:
 
   # ── E2E tests (Playwright) ───────────────────────────────────────────────────
   # Runs only on pushes to main, after unit tests pass.
-  # Tests against the production deployment — verifies what's actually live.
+  # Waits for Vercel to finish deploying the current commit before running tests.
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -50,6 +50,23 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
+
+      - name: Wait for Vercel deployment
+        run: |
+          COMMIT_SHA="${{ github.sha }}"
+          echo "Waiting for deployment of commit $COMMIT_SHA..."
+          for i in $(seq 1 24); do
+            deployed_sha=$(curl -sf https://keza-taupe.vercel.app/api/version \
+              | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
+            echo "Attempt $i/24: deployed=$deployed_sha"
+            if [ "$deployed_sha" = "$COMMIT_SHA" ]; then
+              echo "✅ Correct version is live after $((i * 15))s"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "❌ Timeout: deployment did not go live within 6 minutes"
+          exit 1
 
       - name: Run Playwright E2E tests
         run: npm run test:e2e
@@ -63,3 +80,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+          if-no-files-found: ignore
