@@ -3,14 +3,13 @@ import { Inter } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import "./globals.css";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
 });
-
-const SITE_URL = "https://keza-taupe.vercel.app";
 
 export const metadata: Metadata = {
   title: "KEZA — Cash ou Miles ?",

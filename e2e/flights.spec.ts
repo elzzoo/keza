@@ -3,8 +3,8 @@ import { test, expect } from "@playwright/test";
 test.describe("/flights/[route] page", () => {
   test("loads with route heading", async ({ page }) => {
     await page.goto("/flights/DSS-CDG");
-    // Should contain the route code in the title or heading
-    await expect(page).toHaveTitle(/DSS|CDG|Dakar|Paris/i);
+    // generateMetadata produces a deterministic title with city names
+    await expect(page).toHaveTitle("Flights Dakar to Paris — Cash or Miles? | KEZA");
   });
 
   test("shows search form pre-filled with route", async ({ page }) => {
@@ -27,5 +27,20 @@ test.describe("/flights/[route] page", () => {
     // PriceAlertForm renders an email input
     const emailInput = page.getByPlaceholder(/email/i).first();
     await expect(emailInput).toBeVisible();
+  });
+
+  test("page title contains origin and destination city names", async ({ page }) => {
+    await page.goto("/flights/DSS-CDG");
+    // generateMetadata builds "Flights Dakar to Paris — Cash or Miles? | KEZA"
+    await expect(page).toHaveTitle("Flights Dakar to Paris — Cash or Miles? | KEZA");
+  });
+
+  test("page contains FAQPage JSON-LD structured data", async ({ page }) => {
+    await page.goto("/flights/DSS-CDG");
+    // FAQPage schema should be embedded as a JSON-LD script
+    const faqScript = page.locator('script[type="application/ld+json"]').filter({
+      hasText: "FAQPage",
+    });
+    await expect(faqScript).toHaveCount(1);
   });
 });

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AIRPORTS, airportsMap } from "@/data/airports";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { RoutePageClient } from "./RoutePageClient";
+import { SITE_URL } from "@/lib/siteConfig";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -69,10 +70,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
-      url: `https://keza-taupe.vercel.app/flights/${params.route}`,
+      url: `${SITE_URL}/flights/${params.route}`,
     },
     alternates: {
-      canonical: `https://keza-taupe.vercel.app/flights/${params.route.toUpperCase()}`,
+      canonical: `${SITE_URL}/flights/${params.route.toUpperCase()}`,
     },
   };
 }
@@ -135,6 +136,32 @@ export default async function RoutePage({ params }: Props) {
     // routeMeta.ts not yet available — page renders without it
   }
 
+  // Schema.org BreadcrumbList structured data
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "KEZA",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Vols",
+        item: `${SITE_URL}/flights`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: `${fromCity} → ${toCity}`,
+        item: `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+      },
+    ],
+  };
+
   // Schema.org FAQ structured data
   const faqSchema = {
     "@context": "https://schema.org",
@@ -172,6 +199,10 @@ export default async function RoutePage({ params }: Props) {
   return (
     <>
       {/* JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
