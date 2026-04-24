@@ -11,10 +11,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Lint + type check ────────────────────────────────────────────────────────
+  lint:
+    name: Lint & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx next lint
+
   # ── Unit tests (Jest) ────────────────────────────────────────────────────────
   unit:
     name: Unit tests
     runs-on: ubuntu-latest
+    needs: lint
     steps:
       - uses: actions/checkout@v4
 

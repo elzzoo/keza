@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PROGRAMS, type LoyaltyProgram, type ProgramType, type Alliance } from "@/data/programs";
+import { PROGRAMS, type ProgramType, type Alliance } from "@/data/programs";
 import { trackProgramClick } from "@/lib/analytics";
 
 type SortKey = "score" | "cpmCents";

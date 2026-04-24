@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllActiveRoutes, getAlertsByRoute, type PriceAlert } from "@/lib/alerts";
 import { redis } from "@/lib/redis";
+import { Resend } from "resend";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -150,7 +151,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const { Resend } = require("resend") as { Resend: new (key?: string) => { emails: { send: (p: Record<string, unknown>) => Promise<unknown> } } };
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   let sent = 0;

@@ -6,7 +6,7 @@ import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type C
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
-import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME, type LoyaltyProgram } from "./globalPrograms";
+import { GLOBAL_PROGRAMS } from "./globalPrograms";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
 import type { Cabin, TripType } from "./engine";
@@ -301,7 +301,6 @@ export function buildCostOptions(
       if (totalAcquisitionCost >= cashTotal) continue;
 
       // Don't duplicate if we already have a better option for this program
-      const existingKey = `${opt.program}::ACQUIRE:${acquisition.cheapest.source}`;
       const existingForProgram = milesOptions.find(
         o => o.program === opt.program && o.via === `Achat ${acquisition.cheapest!.source}`
       );

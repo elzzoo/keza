@@ -1,5 +1,6 @@
 import "server-only";
 import { redis } from "./redis";
+import { Resend } from "resend";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -151,7 +152,6 @@ const CABIN_LABELS: Record<PriceAlert["cabin"], string> = {
 };
 
 function getResend() {
-  const { Resend } = require("resend") as { Resend: new (key?: string) => { emails: { send: (params: Record<string, unknown>) => Promise<unknown> } } };
   return new Resend(process.env.RESEND_API_KEY);
 }
 

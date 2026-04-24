@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AIRPORTS, airportsMap } from "@/data/airports";
+import { airportsMap } from "@/data/airports";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { RoutePageClient } from "./RoutePageClient";
 import { SITE_URL } from "@/lib/siteConfig";

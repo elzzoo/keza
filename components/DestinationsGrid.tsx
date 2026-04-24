@@ -87,7 +87,7 @@ function DestinationCard({
   );
 }
 
-export function DestinationsGrid({ lang, onSelect, fromIata }: Props) {
+export function DestinationsGrid({ lang, onSelect }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const t = L[lang];
 

@@ -15,9 +15,7 @@ import { ShareButton }   from "@/components/ShareButton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProfile }    from "@/hooks/useProfile";
 import { useCurrency }   from "@/hooks/useCurrency";
-import { useGeo }        from "@/hooks/useGeo";
-import { getRoutesForCountry, getRegionLabel } from "@/lib/geoRoutes";
-import { trackPopularRoute, trackRecentSearch } from "@/lib/analytics";
+import { trackRecentSearch } from "@/lib/analytics";
 
 // Below-the-fold — lazy loaded to reduce initial JS bundle
 const MultiDateCompare    = dynamic(() => import("@/components/MultiDateCompare").then(m => m.MultiDateCompare), { ssr: false });
@@ -30,9 +28,6 @@ const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").
 export default function HomePage() {
   const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
   const { currency, setCurrency, formatPrice } = useCurrency();
-  const country = useGeo();
-  const geoRoutes = getRoutesForCountry(country);
-  const geoLabel = getRegionLabel(country);
 
   const [lang,       setLang]       = useState<"fr" | "en">("fr");
   const [results,    setResults]    = useState<FlightResult[]>([]);
@@ -255,7 +250,7 @@ export default function HomePage() {
               <div className="lg:col-span-2">
                 <DestinationsGrid
                   lang={lang}
-                  onSelect={(iata, city) => {
+                  onSelect={(iata) => {
                     setPrefillTo(iata);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}

@@ -105,10 +105,6 @@ export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabi
     return "bg-orange-500/15 text-orange-400 border-orange-500/25";
   }
 
-  function cheapestLabel(price: number): string {
-    return price === minPrice ? (fr ? "★ Meilleur" : "★ Best") : "";
-  }
-
   // Navigation
   const today = new Date().toISOString().split("T")[0]!;
   const todayMonth = today.slice(0, 7);
