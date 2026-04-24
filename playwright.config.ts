@@ -2,6 +2,13 @@ import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 
+// When running against a Vercel preview URL, pass the bypass secret so
+// Playwright is not blocked by Vercel's deployment authentication gate.
+const bypassSecret = process.env.VERCEL_BYPASS_SECRET;
+const extraHTTPHeaders = bypassSecret
+  ? { "x-vercel-protection-bypass": bypassSecret }
+  : undefined;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -15,6 +22,7 @@ export default defineConfig({
     trace: "on-first-retry",
     actionTimeout: 20_000,
     navigationTimeout: 30_000,
+    ...(extraHTTPHeaders ? { extraHTTPHeaders } : {}),
   },
   projects: [
     {
