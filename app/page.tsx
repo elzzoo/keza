@@ -1,29 +1,31 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import type { FlightResult } from "@/lib/engine";
 import { Header }        from "@/components/Header";
 import { Footer }        from "@/components/Footer";
 import { TrustBar }      from "@/components/TrustBar";
 import { SearchForm }    from "@/components/SearchForm";
 import { Results }       from "@/components/Results";
-import { HowItWorks }    from "@/components/HowItWorks";
-import { PromoBanner }   from "@/components/PromoBanner";
-import { PopularRoutes } from "@/components/PopularRoutes";
-import { DealsStrip }              from "@/components/DealsStrip";
-import { DestinationsGrid }        from "@/components/DestinationsGrid";
-import { MilesCalculatorWidget }   from "@/components/MilesCalculatorWidget";
-import { ProgramsWidget }          from "@/components/ProgramsWidget";
+import { DealsStrip }    from "@/components/DealsStrip";
+import { DestinationsGrid } from "@/components/DestinationsGrid";
 import { RecentSearches } from "@/components/RecentSearches";
 import { ShareButton }   from "@/components/ShareButton";
-import { MultiDateCompare } from "@/components/MultiDateCompare";
-import { PushNotifBanner } from "@/components/PushNotifBanner";
-import { ErrorBoundary }  from "@/components/ErrorBoundary";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProfile }    from "@/hooks/useProfile";
 import { useCurrency }   from "@/hooks/useCurrency";
 import { useGeo }        from "@/hooks/useGeo";
 import { getRoutesForCountry, getRegionLabel } from "@/lib/geoRoutes";
 import { trackPopularRoute, trackRecentSearch } from "@/lib/analytics";
+
+// Below-the-fold — lazy loaded to reduce initial JS bundle
+const MultiDateCompare    = dynamic(() => import("@/components/MultiDateCompare").then(m => m.MultiDateCompare), { ssr: false });
+const PushNotifBanner     = dynamic(() => import("@/components/PushNotifBanner").then(m => m.PushNotifBanner), { ssr: false });
+const HowItWorks          = dynamic(() => import("@/components/HowItWorks").then(m => m.HowItWorks), { ssr: false });
+const PromoBanner         = dynamic(() => import("@/components/PromoBanner").then(m => m.PromoBanner), { ssr: false });
+const MilesCalculatorWidget = dynamic(() => import("@/components/MilesCalculatorWidget").then(m => m.MilesCalculatorWidget), { ssr: false });
+const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").then(m => m.ProgramsWidget), { ssr: false });
 
 export default function HomePage() {
   const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
