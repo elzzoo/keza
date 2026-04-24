@@ -10,7 +10,7 @@ test.describe("/deals page", () => {
 
   test("shows filter tabs", async ({ page }) => {
     await page.goto("/deals");
-    await expect(page.getByRole("button", { name: /tous/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /tous/i }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /miles gagnent/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /cash gagne/i })).toBeVisible();
   });

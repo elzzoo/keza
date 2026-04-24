@@ -9,17 +9,23 @@ test.describe("Homepage", () => {
   test("search form is visible", async ({ page }) => {
     await page.goto("/");
     // Search form inputs are buttons with airport placeholder text
-    await expect(page.getByRole("button", { name: /Ex: Paris, CDG|departure|from/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Ex: Paris, CDG|departure|from/i }).first()
+    ).toBeVisible();
   });
 
   test("deals strip is visible", async ({ page }) => {
     await page.goto("/");
-    // The live deals strip has a pulsing dot and "Deals du moment" label
-    await expect(page.getByText(/deals du moment|live deals/i).first()).toBeVisible();
+    // DealsStrip is lazy-loaded client-side — wait for hydration
+    await page.waitForLoadState("networkidle");
+    await expect(
+      page.getByText(/deals du moment|live deals/i).first()
+    ).toBeVisible();
   });
 
   test("DealsStrip 'Voir tous' links to /deals", async ({ page }) => {
     await page.goto("/");
+    await page.waitForLoadState("networkidle");
     const link = page.getByRole("link", { name: /voir tous|see all/i });
     await expect(link).toHaveAttribute("href", "/deals");
   });
