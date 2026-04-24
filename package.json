@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@upstash/redis": "^1.37.0",
@@ -23,6 +24,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.39",
     "@types/react": "^18",
