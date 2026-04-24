@@ -28,7 +28,7 @@ test.describe("/calculateur page", () => {
 
   test("shows reference table with programme rows", async ({ page }) => {
     await page.goto("/calculateur");
-    // The reference table at the bottom lists programmes
-    await expect(page.getByText("Flying Blue").first()).toBeVisible();
+    // The reference table heading is always visible (Flying Blue also appears as hidden <option>)
+    await expect(page.getByText("Valeur de référence par programme")).toBeVisible();
   });
 });

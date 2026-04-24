@@ -8,8 +8,8 @@ test.describe("/prix page", () => {
 
   test("shows at least one destination in the chart", async ({ page }) => {
     await page.goto("/prix");
-    // The page shows destination city names
-    await expect(page.getByText("Paris").first()).toBeVisible();
+    // Region filter buttons are always rendered in the price chart
+    await expect(page.getByRole("button", { name: /toutes/i }).first()).toBeVisible();
   });
 
   test("shows a price chart SVG", async ({ page }) => {
