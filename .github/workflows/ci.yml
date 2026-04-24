@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Run Jest
-        run: npm test -- --no-coverage --passWithNoTests
+        run: npx jest --passWithNoTests
 
   # ── E2E tests (Playwright) ───────────────────────────────────────────────────
   # Runs only on pushes to main, after unit tests pass.
