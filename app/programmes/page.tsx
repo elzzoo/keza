@@ -25,7 +25,7 @@ export default function ProgrammesPage() {
         </Link>
 
         {/* Hero */}
-        <div className="mt-6 mb-8">
+        <div className="mt-6 mb-8 animate-fade-up">
           <h1 className="text-3xl sm:text-4xl font-black leading-tight">
             <span className="bg-gradient-to-br from-blue-300 via-primary to-blue-500 bg-clip-text text-transparent">
               Programmes miles

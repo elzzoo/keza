@@ -108,7 +108,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
   return (
     <div>
       {/* Type Filters */}
-      <div className="flex gap-2 flex-wrap mb-3">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1 mb-3">
         {(["all", "airline", "hotel", "transfer"] as const).map((key) => {
           const label = key === "all" ? t.filterAll : key === "airline" ? t.filterAirline : key === "hotel" ? t.filterHotel : t.filterTransfer;
           return (

@@ -126,11 +126,32 @@ export function ComparateurClient() {
 
         {/* Empty state */}
         {selected.length === 0 && (
-          <p className="text-muted text-sm text-center py-12">
-            {fr
-              ? "Choisis au moins une destination pour commencer"
-              : "Choose at least one destination to start"}
-          </p>
+          <div className="flex flex-col items-center gap-5 py-16 animate-fade-up">
+            <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center text-2xl">
+              🗺️
+            </div>
+            <div className="text-center max-w-xs">
+              <p className="font-semibold text-fg">
+                {fr ? "Choisissez vos destinations" : "Select your destinations"}
+              </p>
+              <p className="text-sm text-muted mt-1">
+                {fr
+                  ? "Sélectionnez 1 à 3 destinations ci-dessus pour comparer cash vs miles côte à côte."
+                  : "Select 1–3 destinations above to compare cash vs miles side by side."}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 w-full max-w-xs">
+              {(fr
+                ? ["Choisissez une destination dans le menu A", "Ajoutez B (et C) pour comparer", "Voyez instantanément : cash ou miles gagne"]
+                : ["Pick a destination in slot A", "Add B (and C) to compare", "See instantly: cash or miles wins"]
+              ).map((step, i) => (
+                <div key={i} className="flex items-start gap-2.5 text-sm text-muted bg-surface border border-border rounded-xl px-4 py-2.5">
+                  <span className="text-primary font-bold tabular-nums">{i + 1}.</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Hero badges + table */}

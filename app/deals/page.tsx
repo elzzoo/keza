@@ -70,7 +70,7 @@ export default async function DealsPage() {
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
         {/* Hero */}
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-up">
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             <span className="text-xs font-bold text-muted uppercase tracking-wider">Live</span>

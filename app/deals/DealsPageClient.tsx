@@ -152,13 +152,14 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
 
   return (
     <div>
-      {/* Filter tabs */}
-      <div className="flex gap-2 flex-wrap mb-6">
+      {/* Filter tabs — horizontal scroll on mobile */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-6 -mx-1 px-1">
         {filters.map((f) => (
           <button
             key={f}
             onClick={() => { setFilter(f); if (f !== filter) trackDealsFilter(f); }}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors border ${
+            aria-pressed={filter === f}
+            className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-colors border ${
               filter === f
                 ? "bg-primary text-white border-primary"
                 : "bg-surface text-muted border-border hover:border-primary/40"
@@ -176,9 +177,29 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <p className="text-muted text-sm text-center py-12">Aucun deal dans cette catégorie.</p>
+        <div className="flex flex-col items-center gap-4 py-16 animate-fade-up">
+          <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center text-2xl">
+            🔍
+          </div>
+          <div className="text-center">
+            <p className="font-semibold text-fg">Aucun deal dans cette catégorie</p>
+            <p className="text-sm text-muted mt-1">
+              {filter === "USE_MILES"
+                ? "Les miles ne gagnent sur aucune route pour l'instant."
+                : filter === "USE_CASH"
+                ? "Le cash n'est pas optimal sur ces routes actuellement."
+                : "Aucun deal neutre disponible."}
+            </p>
+          </div>
+          <button
+            onClick={() => setFilter("all")}
+            className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-muted hover:text-fg hover:border-primary/40 transition-colors"
+          >
+            ← Voir tous les deals
+          </button>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
           {filtered.map((deal) => (
             <DealCard key={`${deal.from}-${deal.to}-${deal.program}`} deal={deal} />
           ))}

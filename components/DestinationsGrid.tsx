@@ -38,13 +38,16 @@ function DestinationCard({
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const t = L[lang];
 
+  const [photoLoading, setPhotoLoading] = useState(true);
+
   useEffect(() => {
     fetch(`/api/unsplash?query=${encodeURIComponent(dest.unsplashQuery)}`)
       .then((r) => r.json())
       .then((data: { url?: string | null }) => {
         if (data.url) setPhotoUrl(data.url);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setPhotoLoading(false));
   }, [dest.unsplashQuery]);
 
   const bg = photoUrl
@@ -60,6 +63,10 @@ function DestinationCard({
       className="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer w-full text-left"
       style={{ backgroundImage: bg, backgroundSize: "cover", backgroundPosition: "center" }}
     >
+      {/* Photo shimmer while loading */}
+      {photoLoading && (
+        <div className="absolute inset-0 skeleton" />
+      )}
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-200" />
       {/* Content */}
