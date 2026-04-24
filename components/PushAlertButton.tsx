@@ -55,7 +55,7 @@ export function PushAlertButton({ lang = "fr" }: Props) {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as ArrayBuffer,
       });
 
       const json = sub.toJSON() as { keys?: { p256dh?: string; auth?: string } };
@@ -132,5 +132,6 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+  // atob throws on invalid base64 — caller's try/catch handles it
+  return Uint8Array.from(Array.from(rawData, (c) => c.charCodeAt(0)));
 }
