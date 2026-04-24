@@ -11,16 +11,38 @@
   "orientation": "portrait-primary",
   "icons": [
     {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/icons/icon-192.svg",
-      "sizes": "192x192",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.svg",
-      "sizes": "512x512",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mes alertes",
+      "short_name": "Alertes",
+      "description": "Gérer mes alertes prix",
+      "url": "/alertes",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Comparer destinations",
+      "short_name": "Comparer",
+      "description": "Comparer 3 destinations côte-à-côte",
+      "url": "/comparer",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "any" }]
     }
   ],
   "categories": ["travel", "finance"],

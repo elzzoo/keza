@@ -1,5 +1,5 @@
 /// KEZA Service Worker — offline-first for static assets, network-first for API
-const CACHE_NAME = "keza-v1";
+const CACHE_NAME = "keza-v2";
 const STATIC_ASSETS = ["/", "/manifest.json", "/icons/icon-192.svg", "/icons/icon-512.svg"];
 
 // Install: pre-cache shell
