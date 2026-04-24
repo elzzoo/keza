@@ -5,6 +5,7 @@ import {
   updateAlertAfterCheck,
   sendPriceDropEmail,
 } from "@/lib/alerts";
+import { sendPushToAll } from "@/lib/push";
 import { fetchCalendarPrices } from "@/lib/engine";
 
 // Vercel cron header check
@@ -91,6 +92,15 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       errors.push(`${routeKey}: ${(err as Error).message}`);
     }
+  }
+
+  // Fire-and-forget push notification if any email was sent this run
+  if (notified > 0) {
+    sendPushToAll({
+      title: "KEZA — Baisse de prix ✈",
+      body: `${notified} baisse${notified > 1 ? "s" : ""} de prix détectée${notified > 1 ? "s" : ""}`,
+      url: "/alertes",
+    }).catch((err: unknown) => console.error("[cron/alerts] push failed:", err));
   }
 
   return NextResponse.json({

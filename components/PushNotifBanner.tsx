@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 const STORAGE_KEY = "keza_push_enabled";
 const DISMISSED_KEY = "keza_push_dismissed";
 
-// Replace with your real VAPID public key
-const VAPID_PUBLIC_KEY = "YOUR_VAPID_PUBLIC_KEY_HERE";
+// Read VAPID public key from env (set NEXT_PUBLIC_VAPID_PUBLIC_KEY in Vercel).
+// If not set, the banner will not appear.
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -24,8 +25,9 @@ export function PushNotifBanner({ lang }: { lang: "fr" | "en" }) {
   const [subscribing, setSubscribing] = useState(false);
 
   useEffect(() => {
-    // Only show if browser supports push, not already enabled, and not dismissed
     if (typeof window === "undefined") return;
+    // Hide if VAPID key not configured
+    if (!VAPID_PUBLIC_KEY) return;
     if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
     if (Notification.permission === "granted" && localStorage.getItem(STORAGE_KEY) === "true") return;
     if (Notification.permission === "denied") return;
@@ -49,8 +51,19 @@ export function PushNotifBanner({ lang }: { lang: "fr" | "en" }) {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as unknown as BufferSource,
       });
 
-      // TODO: Send subscription to your backend
-      console.log("[KEZA] Push subscription:", JSON.stringify(subscription));
+      // Send subscription to backend
+      const raw = subscription.toJSON();
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          endpoint: raw.endpoint,
+          keys: {
+            p256dh: raw.keys?.p256dh ?? "",
+            auth: raw.keys?.auth ?? "",
+          },
+        }),
+      });
 
       localStorage.setItem(STORAGE_KEY, "true");
       setVisible(false);
