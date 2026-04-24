@@ -135,6 +135,7 @@ jobs:
         run: npm run test:e2e
         env:
           BASE_URL: ${{ steps.preview.outputs.url }}
+          VERCEL_BYPASS_SECRET: ${{ secrets.VERCEL_BYPASS_SECRET }}
 
       - name: Run Playwright E2E tests (main → production)
         if: github.event_name == 'push'
