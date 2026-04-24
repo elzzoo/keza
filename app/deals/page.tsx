@@ -36,8 +36,8 @@ async function getDeals(): Promise<LiveDeal[]> {
     if (cached && Array.isArray(cached) && cached.length > 0) {
       return cached;
     }
-  } catch {
-    // Redis unavailable — use fallback
+  } catch (e) {
+    console.error("[deals] Redis unavailable, using fallback:", e);
   }
   return sortDeals(FALLBACK_DEALS);
 }

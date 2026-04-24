@@ -111,7 +111,7 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((deal) => (
-            <DealCard key={`${deal.from}-${deal.to}`} deal={deal} />
+            <DealCard key={`${deal.from}-${deal.to}-${deal.program}`} deal={deal} />
           ))}
         </div>
       )}
