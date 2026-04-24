@@ -138,6 +138,10 @@ const FROM_EMAIL =
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
+function withUtm(url: string, source: string, campaign: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}utm_source=${source}&utm_medium=email&utm_campaign=${campaign}`;
+}
+
 // Cabin display names used in confirmation emails.
 const CABIN_LABELS: Record<PriceAlert["cabin"], string> = {
   economy: "Économique",
@@ -156,7 +160,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
   const savings = Math.round(alert.basePrice - newPrice);
 
   const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${alert.id}`;
-  const searchUrl = `${BASE_URL}/?from=${alert.from}&to=${alert.to}`;
+  const searchUrl = withUtm(`${BASE_URL}/?from=${alert.from}&to=${alert.to}`, "keza", "price-drop");
 
   try {
     const resend = getResend();
@@ -206,7 +210,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
 
 /** Send a confirmation email when a price alert is created. Fire-and-forget — caller should not await if it doesn't need to block. */
 export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boolean> {
-  const manageUrl = `${BASE_URL}/alertes`;
+  const manageUrl = withUtm(`${BASE_URL}/alertes`, "keza", "confirmation");
   const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${alert.id}`;
 
   try {

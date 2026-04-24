@@ -10,6 +10,10 @@ const FROM_EMAIL =
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
+function withUtm(url: string, source: string, campaign: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}utm_source=${source}&utm_medium=email&utm_campaign=${campaign}`;
+}
+
 const CABIN_LABELS: Record<PriceAlert["cabin"], string> = {
   economy: "Économique",
   premium: "Premium Éco",
@@ -44,7 +48,7 @@ function bookingUrl(from: string, to: string): string {
 // ─── Email template ──────────────────────────────────────────────────────────
 
 function buildDigestHtml(email: string, alerts: PriceAlert[]): string {
-  const manageUrl = `${BASE_URL}/alertes`;
+  const manageUrl = withUtm(`${BASE_URL}/alertes`, "keza", "weekly-digest");
 
   const alertRows = alerts
     .map((alert) => {
@@ -83,7 +87,7 @@ function buildDigestHtml(email: string, alerts: PriceAlert[]): string {
               : `${pct}% vers l'objectif · ref. $${alert.basePrice}`}
           </p>
 
-          <a href="${bookingUrl(alert.from, alert.to)}"
+          <a href="${withUtm(bookingUrl(alert.from, alert.to), "keza", "weekly-digest")}"
              style="display:inline-block;background:#1e3a5f;color:#94a3b8;text-decoration:none;padding:8px 14px;border-radius:8px;font-size:12px;border:1px solid #2d4a6f;">
             Rechercher ce vol →
           </a>

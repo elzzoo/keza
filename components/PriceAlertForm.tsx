@@ -64,6 +64,10 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       if (res.status === 201) {
         setStatus("success");
         trackAlertCreated({ from, to, cabin, currentPrice });
+        // Remember email so /alertes can pre-fill it
+        try {
+          localStorage.setItem("keza:alertes:email", email.trim().toLowerCase());
+        } catch { /* localStorage unavailable (SSR/private browsing) */ }
       } else if (res.status === 409) {
         setStatus("duplicate");
       } else if (res.status === 429) {

@@ -122,3 +122,18 @@ export function trackDestinationClick(params: { city: string; iata: string }) {
 export function trackProgramClick(params: { id: string; name: string }) {
   track("Program Click", { program_id: params.id, program_name: params.name });
 }
+
+/** User deletes a price alert from /alertes */
+export function trackAlertDeleted(params: { from: string; to: string; cabin: string }) {
+  track("Alert Deleted", {
+    from: params.from,
+    to: params.to,
+    route: `${params.from}-${params.to}`,
+    cabin: params.cabin,
+  });
+}
+
+/** User changes the filter tab on /deals */
+export function trackDealsFilter(filter: string) {
+  track("Deals Filter", { filter });
+}

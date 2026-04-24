@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { LiveDeal, DealRecommendation } from "@/lib/dealsEngine";
+import { trackDealsFilter } from "@/lib/analytics";
 
 type Filter = "all" | DealRecommendation;
 
@@ -88,7 +89,7 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
         {filters.map((f) => (
           <button
             key={f}
-            onClick={() => setFilter(f)}
+            onClick={() => { setFilter(f); if (f !== filter) trackDealsFilter(f); }}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors border ${
               filter === f
                 ? "bg-primary text-white border-primary"

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import type { PriceAlert } from "@/lib/alerts";
+import { trackAlertDeleted } from "@/lib/analytics";
 
 // ─── Email localStorage key ───────────────────────────────────────────────────
 
@@ -94,11 +95,15 @@ export function AlertesClient() {
 
   async function handleDelete(id: string) {
     if (deletingId) return;
+    const alertToDelete = alerts?.find((a) => a.id === id);
     setDeletingId(id);
     try {
       setDeleteError(null);
       const res = await fetch(`/api/alerts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
       if (res.ok) {
+        if (alertToDelete) {
+          trackAlertDeleted({ from: alertToDelete.from, to: alertToDelete.to, cabin: alertToDelete.cabin });
+        }
         setAlerts((prev) => {
           const next = prev?.filter((a) => a.id !== id) ?? null;
           if (next !== null && next.length === 0) {
