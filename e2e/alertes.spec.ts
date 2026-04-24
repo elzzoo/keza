@@ -34,6 +34,15 @@ test.describe("/alertes page", () => {
     });
   });
 
+  test("push alert button is rendered on the page", async ({ page }) => {
+    await page.goto("/alertes");
+    // PushAlertButton renders one of: subscribe button, confirmed state, or blocked message
+    const pushUI = page.getByText(
+      /activer les alertes push|enable push alerts|alertes push activées|push alerts enabled|bloquées|blocked/i
+    );
+    await expect(pushUI).toBeVisible({ timeout: 5000 });
+  });
+
   test("localStorage email is pre-filled on mount", async ({ page }) => {
     // Pre-seed localStorage before the page loads
     await page.goto("/alertes");

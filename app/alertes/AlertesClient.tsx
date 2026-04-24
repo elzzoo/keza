@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import type { PriceAlert } from "@/lib/alerts";
 import { trackAlertDeleted } from "@/lib/analytics";
+import { PushAlertButton } from "@/components/PushAlertButton";
 
 // ─── Email localStorage key ───────────────────────────────────────────────────
 
@@ -139,8 +140,11 @@ export function AlertesClient() {
           </p>
         </div>
 
+        {/* Push notifications opt-in */}
+        <PushAlertButton lang={lang} />
+
         {/* Email form */}
-        <form onSubmit={handleFetch} className="flex gap-2 mb-8">
+        <form onSubmit={handleFetch} className="flex gap-2 mt-4 mb-8">
           <input
             type="email"
             required
