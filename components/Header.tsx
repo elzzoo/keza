@@ -8,7 +8,7 @@ import type { CurrencyCode } from "@/lib/currency";
 
 interface Props {
   lang: "fr" | "en";
-  onLangChange: (l: "fr" | "en") => void;
+  onLangChange?: (l: "fr" | "en") => void;
   currency?: CurrencyCode;
   onCurrencyChange?: (code: CurrencyCode) => void;
 }
@@ -36,7 +36,7 @@ const NAV = {
   ],
 };
 
-export function Header({ lang, onLangChange, currency, onCurrencyChange }: Props) {
+export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChange }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = NAV[lang];
 
