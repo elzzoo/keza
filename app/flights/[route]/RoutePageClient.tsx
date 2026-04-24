@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SearchForm } from "@/components/SearchForm";
 import { Results } from "@/components/Results";
+import { PriceAlertForm } from "@/components/PriceAlertForm";
 import type { FlightResult } from "@/lib/engine";
 import { airportsMap } from "@/data/airports";
 
@@ -396,6 +397,20 @@ export function RoutePageClient({
                   </li>
                 )}
               </ul>
+            </div>
+
+            {/* ── Price alert ── */}
+            <div>
+              <h2 className="section-rule mb-4">
+                {fr ? "Suivre ce vol" : "Track this flight"}
+              </h2>
+              <PriceAlertForm
+                from={from}
+                to={to}
+                cabin="economy"
+                currentPrice={cheapestPrice ?? 500}
+                lang={lang}
+              />
             </div>
 
             {/* ── Related routes ── */}
