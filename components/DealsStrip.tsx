@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { trackDealClick } from "@/lib/analytics";
 import type { LiveDeal } from "@/lib/dealsEngine";
 
@@ -41,7 +42,9 @@ export function DealsStrip({ lang, onDealClick }: Props) {
             {t.title}
           </span>
         </div>
-        <span className="text-xs text-subtle">{t.all}</span>
+        <Link href="/deals" className="text-xs text-subtle hover:text-primary transition-colors">
+            {t.all}
+          </Link>
       </div>
 
       {/* Skeleton */}
