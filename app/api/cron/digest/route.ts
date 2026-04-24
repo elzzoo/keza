@@ -124,10 +124,13 @@ function buildDigestHtml(email: string, alerts: PriceAlert[]): string {
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  if (process.env.CRON_SECRET && !isVercelCron(req)) {
+  if (!process.env.CRON_SECRET) {
+    console.warn("[digest] CRON_SECRET not set — endpoint is unprotected");
+  } else if (!isVercelCron(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
   const routes = await getAllActiveRoutes();
   const alertsByEmail = new Map<string, PriceAlert[]>();
 
@@ -150,7 +153,7 @@ export async function GET(req: NextRequest) {
   let skipped = 0;
   const errors: string[] = [];
 
-  for (const [email, alerts] of Array.from(alertsByEmail.entries())) {
+  for (const [email, alerts] of Array.from(alertsByEmail)) {
     const lastSent = await redis.get(DIGEST_LAST_KEY(email));
     if (lastSent) { skipped++; continue; }
 
@@ -176,4 +179,11 @@ export async function GET(req: NextRequest) {
     errors: errors.length > 0 ? errors : undefined,
     ts: new Date().toISOString(),
   });
+  } catch (err) {
+    console.error("[digest] fatal error:", err);
+    return NextResponse.json(
+      { ok: false, error: (err as Error).message },
+      { status: 500 }
+    );
+  }
 }
