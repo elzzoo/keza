@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { LiveDeal, DealRecommendation } from "@/lib/dealsEngine";
-import { trackDealsFilter } from "@/lib/analytics";
+import { trackDealsFilter, trackDealShare } from "@/lib/analytics";
 
 type Filter = "all" | DealRecommendation;
 
@@ -19,6 +19,71 @@ const RECOMMENDATION_COLORS: Record<DealRecommendation, { badge: string; border:
   USE_CASH:  { badge: "bg-amber-500/15 text-amber-400 border-amber-500/25", border: "border-amber-500/20" },
   NEUTRAL:   { badge: "bg-slate-500/15 text-slate-400 border-slate-500/25", border: "border-slate-500/20" },
 };
+
+function ShareDealButton({ deal }: { deal: LiveDeal }) {
+  const [state, setState] = useState<"idle" | "copied" | "shared">("idle");
+
+  const handleShare = async () => {
+    const url = `https://keza-taupe.vercel.app/?from=${deal.from}&to=${deal.to}&utm_source=share&utm_medium=deal`;
+    const text = `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via KEZA`;
+
+    trackDealShare({ from: deal.from, to: deal.to, program: deal.program });
+
+    // Web Share API on mobile
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: `KEZA — ${deal.from} → ${deal.to}`, text, url });
+        setState("shared");
+        setTimeout(() => setState("idle"), 2000);
+        return;
+      } catch {
+        // User cancelled — fall through to clipboard
+      }
+    }
+
+    // Clipboard fallback
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setState("copied");
+    setTimeout(() => setState("idle"), 2000);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleShare}
+      className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border transition-all ${
+        state !== "idle"
+          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+          : "bg-surface-2 border-border text-subtle hover:text-fg hover:border-primary/40"
+      }`}
+      aria-label={`Partager le deal ${deal.from} → ${deal.to}`}
+    >
+      {state === "copied" ? (
+        <><span>✓</span><span>Copié !</span></>
+      ) : state === "shared" ? (
+        <><span>✓</span><span>Partagé !</span></>
+      ) : (
+        <>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span>Partager</span>
+        </>
+      )}
+    </button>
+  );
+}
 
 function DealCard({ deal }: { deal: LiveDeal }) {
   const colors = RECOMMENDATION_COLORS[deal.recommendation];
@@ -62,13 +127,16 @@ function DealCard({ deal }: { deal: LiveDeal }) {
         <span className="font-bold text-fg">{deal.ratio.toFixed(2)} ¢/mile</span>
       </div>
 
-      {/* CTA */}
-      <Link
-        href={searchUrl}
-        className="block text-center bg-primary/10 hover:bg-primary/20 text-blue-400 border border-primary/20 rounded-xl py-2.5 text-sm font-semibold transition-colors"
-      >
-        Analyser ce vol →
-      </Link>
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        <Link
+          href={searchUrl}
+          className="flex-1 block text-center bg-primary/10 hover:bg-primary/20 text-blue-400 border border-primary/20 rounded-xl py-2.5 text-sm font-semibold transition-colors"
+        >
+          Analyser →
+        </Link>
+        <ShareDealButton deal={deal} />
+      </div>
     </div>
   );
 }

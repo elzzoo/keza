@@ -137,3 +137,13 @@ export function trackAlertDeleted(params: { from: string; to: string; cabin: str
 export function trackDealsFilter(filter: string) {
   track("Deals Filter", { filter });
 }
+
+/** User shares a deal from /deals */
+export function trackDealShare(params: { from: string; to: string; program: string }) {
+  track("Deal Share", {
+    from: params.from,
+    to: params.to,
+    route: `${params.from}-${params.to}`,
+    program: params.program,
+  });
+}

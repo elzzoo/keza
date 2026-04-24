@@ -45,8 +45,27 @@ async function getDeals(): Promise<LiveDeal[]> {
 export default async function DealsPage() {
   const deals = await getDeals();
 
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Deals cash vs miles du moment",
+    description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
+    url: "https://keza-taupe.vercel.app/deals",
+    numberOfItems: deals.length,
+    itemListElement: deals.slice(0, 10).map((deal, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired} miles`,
+      url: `https://keza-taupe.vercel.app/?from=${deal.from}&to=${deal.to}`,
+    })),
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
       <Header lang="fr" />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">

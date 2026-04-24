@@ -58,6 +58,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="antialiased">
+        {/* WebSite structured data — enables Google sitelinks search box */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "KEZA",
+              url: SITE_URL,
+              description: "Comparez cash vs miles sur chaque vol — trouvez la meilleure option en 1 clic.",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: `${SITE_URL}/?from={from}&to={to}`,
+                },
+                "query-input": "required name=from",
+              },
+            }),
+          }}
+        />
         {children}
         <SpeedInsights />
         <Script
