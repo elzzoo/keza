@@ -244,7 +244,23 @@ export default async function AdminPage({ searchParams }: Props) {
               >
                 ▶ Recalibrer miles
               </a>
+              <a
+                href={`/api/push/test?secret=${params.secret}`}
+                className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-purple-700 hover:bg-purple-100"
+              >
+                🔔 Test push (GET)
+              </a>
             </div>
+            {/* VAPID status note */}
+            {stats.pushSubscriptions > 0 && (
+              <p className="mt-3 text-xs text-gray-400">
+                Pour envoyer un push test, POST sur{" "}
+                <code className="font-mono bg-gray-100 px-1 rounded">
+                  /api/push/test?secret=…
+                </code>{" "}
+                depuis curl ou le bouton ci-dessus (GET = statut seulement).
+              </p>
+            )}
           </>
         )}
       </div>
