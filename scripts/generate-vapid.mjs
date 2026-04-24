@@ -1,6 +1,7 @@
 // scripts/generate-vapid.mjs
 // Usage: node scripts/generate-vapid.mjs
-import { generateVAPIDKeys } from "web-push";
+import pkg from "web-push";
+const { generateVAPIDKeys } = pkg;
 
 const keys = generateVAPIDKeys();
 
