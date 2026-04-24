@@ -134,6 +134,18 @@ export async function updateAlertAfterCheck(id: string, lastPrice: number, notif
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL ?? "KEZA Alerts <onboarding@resend.dev>";
 
+// Base URL for links in emails. Vercel sets NEXT_PUBLIC_APP_URL automatically on preview deployments.
+const BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+
+// Cabin display names used in confirmation emails.
+const CABIN_LABELS: Record<PriceAlert["cabin"], string> = {
+  economy: "Économique",
+  premium: "Premium Éco",
+  business: "Business",
+  first: "Première",
+};
+
 function getResend() {
   const { Resend } = require("resend") as { Resend: new (key?: string) => { emails: { send: (params: Record<string, unknown>) => Promise<unknown> } } };
   return new Resend(process.env.RESEND_API_KEY);
@@ -143,8 +155,8 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
   const drop = Math.round(((alert.basePrice - newPrice) / alert.basePrice) * 100);
   const savings = Math.round(alert.basePrice - newPrice);
 
-  const unsubUrl = `https://keza-taupe.vercel.app/api/alerts/unsubscribe?id=${alert.id}`;
-  const searchUrl = `https://keza-taupe.vercel.app/?from=${alert.from}&to=${alert.to}`;
+  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${alert.id}`;
+  const searchUrl = `${BASE_URL}/?from=${alert.from}&to=${alert.to}`;
 
   try {
     const resend = getResend();
@@ -194,15 +206,8 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
 
 /** Send a confirmation email when a price alert is created. Fire-and-forget — caller should not await if it doesn't need to block. */
 export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boolean> {
-  const manageUrl = `https://keza-taupe.vercel.app/alertes`;
-  const unsubUrl  = `https://keza-taupe.vercel.app/api/alerts/unsubscribe?id=${alert.id}`;
-
-  const cabinLabel: Record<PriceAlert["cabin"], string> = {
-    economy:  "Économique",
-    premium:  "Premium Éco",
-    business: "Business",
-    first:    "Première",
-  };
+  const manageUrl = `${BASE_URL}/alertes`;
+  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${alert.id}`;
 
   try {
     const resend = getResend();
@@ -224,7 +229,7 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
 
             <div style="background:#1a1a2e;border-radius:12px;padding:20px;margin-bottom:16px;">
               <p style="margin:0;font-size:14px;color:#94a3b8;letter-spacing:0.05em;">
-                ${alert.from} → ${alert.to} · ${cabinLabel[alert.cabin]}
+                ${alert.from} → ${alert.to} · ${CABIN_LABELS[alert.cabin]}
               </p>
               <p style="margin:10px 0 0;font-size:15px;color:#e2e8f0;">
                 On t'écrit dès que le prix descend sous
