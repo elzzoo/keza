@@ -83,7 +83,10 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
-          COMMIT_SHA: ${{ github.sha }}
+          # On pull_request events github.sha is the merge commit SHA, not the
+          # branch HEAD. Vercel tags the preview with the real HEAD SHA, so we
+          # must use event.pull_request.head.sha to match.
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           echo "Looking for Vercel preview for SHA: $COMMIT_SHA"
           for i in $(seq 1 40); do
