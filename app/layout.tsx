@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   "@type": "EntryPoint",
                   urlTemplate: `${SITE_URL}/?from={from}&to={to}`,
                 },
-                "query-input": "required name=from",
+                "query-input": ["required name=from", "required name=to"],
               },
             }),
           }}
