@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -58,7 +58,7 @@ export function AlertesClient() {
 
   const cabinLabels = fr ? CABIN_LABELS_FR : CABIN_LABELS_EN;
 
-  async function fetchAlerts(emailArg: string) {
+  const fetchAlerts = useCallback(async (emailArg: string) => {
     const normalizedEmail = emailArg.trim().toLowerCase();
     setLoading(true);
     setFetchError(false);
@@ -75,7 +75,7 @@ export function AlertesClient() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []); // setters from useState are stable — no deps needed
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -84,7 +84,7 @@ export function AlertesClient() {
       setEmail(saved);
       fetchAlerts(saved);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchAlerts]);
 
   async function handleFetch(e: React.FormEvent) {
     e.preventDefault();
