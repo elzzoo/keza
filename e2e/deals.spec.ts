@@ -17,8 +17,8 @@ test.describe("/deals page", () => {
 
   test("shows at least one deal card (fallback data)", async ({ page }) => {
     await page.goto("/deals");
-    // Each deal card has an "Analyser ce vol" link
-    const cards = page.getByRole("link", { name: /analyser ce vol/i });
+    // Each deal card has an "Analyser →" link
+    const cards = page.getByRole("link", { name: /analyser/i });
     await expect(cards.first()).toBeVisible();
   });
 

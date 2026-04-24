@@ -37,10 +37,12 @@ test.describe("/flights/[route] page", () => {
 
   test("page contains FAQPage JSON-LD structured data", async ({ page }) => {
     await page.goto("/flights/DSS-CDG");
-    // FAQPage schema should be embedded as a JSON-LD script
-    const faqScript = page.locator('script[type="application/ld+json"]').filter({
-      hasText: "FAQPage",
-    });
-    await expect(faqScript).toHaveCount(1);
+    // FAQPage schema is embedded as a JSON-LD script — use evaluate to read script text content
+    const hasFaq = await page.evaluate(() =>
+      [...document.querySelectorAll('script[type="application/ld+json"]')].some(
+        (s) => (s.textContent ?? "").includes("FAQPage")
+      )
+    );
+    expect(hasFaq).toBe(true);
   });
 });
