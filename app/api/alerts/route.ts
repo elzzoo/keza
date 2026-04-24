@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAlert, getAlertsByEmail } from "@/lib/alerts";
+import { createAlert, getAlertsByEmail, sendAlertConfirmationEmail } from "@/lib/alerts";
 
 // POST /api/alerts — create a new price alert
 export async function POST(req: NextRequest) {
@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
       cabin: cabin || "economy",
       currentPrice: Number(currentPrice),
     });
+
+    // Fire-and-forget: confirmation email — do not await, must not block the response
+    sendAlertConfirmationEmail(alert).catch(console.error);
 
     return NextResponse.json({ ok: true, alert }, { status: 201 });
   } catch (err) {
