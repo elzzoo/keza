@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import type { PriceAlert } from "@/lib/alerts";
+
+// ─── Email localStorage key ───────────────────────────────────────────────────
+
+const EMAIL_STORAGE_KEY = "keza:alertes:email";
 
 // ─── Cabin labels ─────────────────────────────────────────────────────────────
 
@@ -32,6 +36,14 @@ function formatDate(iso: string, lang: "fr" | "en"): string {
   });
 }
 
+function progressPct(alert: PriceAlert): number {
+  const current = alert.lastPrice ?? alert.basePrice;
+  const range = alert.basePrice - alert.targetPrice;
+  if (range <= 0) return 100;
+  const drop = alert.basePrice - current;
+  return Math.min(100, Math.max(0, Math.round((drop / range) * 100)));
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function AlertesClient() {
@@ -46,10 +58,8 @@ export function AlertesClient() {
 
   const cabinLabels = fr ? CABIN_LABELS_FR : CABIN_LABELS_EN;
 
-  async function handleFetch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email || loading) return;
-    const normalizedEmail = email.trim().toLowerCase();
+  async function fetchAlerts(emailArg: string) {
+    const normalizedEmail = emailArg.trim().toLowerCase();
     setLoading(true);
     setFetchError(false);
     setAlerts(null);
@@ -59,11 +69,27 @@ export function AlertesClient() {
       const data: { alerts: PriceAlert[] } = await res.json();
       if (!Array.isArray(data.alerts)) throw new Error("Unexpected payload");
       setAlerts(data.alerts.filter((a) => a.active));
+      localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
     } catch {
       setFetchError(true);
     } finally {
       setLoading(false);
     }
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(EMAIL_STORAGE_KEY);
+    if (saved) {
+      setEmail(saved);
+      fetchAlerts(saved);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleFetch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || loading) return;
+    await fetchAlerts(email.trim().toLowerCase());
   }
 
   async function handleDelete(id: string) {
@@ -73,7 +99,13 @@ export function AlertesClient() {
       setDeleteError(null);
       const res = await fetch(`/api/alerts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
       if (res.ok) {
-        setAlerts((prev) => prev?.filter((a) => a.id !== id) ?? null);
+        setAlerts((prev) => {
+          const next = prev?.filter((a) => a.id !== id) ?? null;
+          if (next !== null && next.length === 0) {
+            localStorage.removeItem(EMAIL_STORAGE_KEY);
+          }
+          return next;
+        });
       } else {
         setDeleteError(fr ? "Erreur lors de la suppression." : "Deletion failed.");
       }
@@ -145,6 +177,9 @@ export function AlertesClient() {
               >
                 {fr ? "Rechercher un vol →" : "Search a flight →"}
               </Link>
+              <Link href="/deals" className="inline-block text-sm text-muted hover:text-primary hover:underline">
+                {fr ? "Voir les deals du moment →" : "Browse current deals →"}
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">
@@ -159,7 +194,7 @@ export function AlertesClient() {
                   key={alert.id}
                   className="bg-surface border border-border rounded-2xl p-4 flex items-start justify-between gap-4"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-fg text-sm">
                         {alert.from} → {alert.to}
@@ -178,6 +213,32 @@ export function AlertesClient() {
                       {fr ? "Créée le" : "Created"}{" "}
                       {formatDate(alert.createdAt, lang)}
                     </p>
+                    {/* Progress towards target */}
+                    <div className="mt-2">
+                      {alert.lastPrice !== undefined && (
+                        <p className="text-xs text-subtle mb-1">
+                          {fr ? "Prix actuel :" : "Current price:"}{" "}
+                          <span className={`font-bold ${alert.lastPrice <= alert.targetPrice ? "text-success" : "text-fg"}`}>
+                            ${alert.lastPrice}
+                          </span>
+                          {alert.lastPrice <= alert.targetPrice && (
+                            <span className="ml-1 text-success text-[10px]">{fr ? "🎉 Seuil atteint" : "🎉 Target reached"}</span>
+                          )}
+                        </p>
+                      )}
+                      <div className="w-full bg-[#0a0a0f] rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="h-1.5 rounded-full transition-all"
+                          style={{
+                            width: `${progressPct(alert)}%`,
+                            background: progressPct(alert) >= 80 ? "#10b981" : progressPct(alert) >= 50 ? "#f59e0b" : "#3b82f6",
+                          }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-subtle mt-0.5">
+                        {progressPct(alert)}% {fr ? "vers l'objectif" : "to target"} · ref. ${alert.basePrice}
+                      </p>
+                    </div>
                   </div>
                   <button
                     onClick={() => handleDelete(alert.id)}
