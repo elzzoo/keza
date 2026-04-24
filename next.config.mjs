@@ -3,6 +3,7 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   experimental: {
     serverActions: { allowedOrigins: ["localhost:3000"] },
+    serverExternalPackages: ["web-push"],
   },
 };
 

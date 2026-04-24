@@ -1,5 +1,6 @@
 import "server-only";
 import { redis } from "./redis";
+import webpush from "web-push";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -17,18 +18,13 @@ const PUSH_SUBS_KEY = "keza:push:subscriptions";
 
 // ─── VAPID setup ────────────────────────────────────────────────────────────
 
-function getWebPush() {
-  const webpush = require("web-push") as typeof import("web-push");
+function setupVapid(): boolean {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
   const email = process.env.VAPID_EMAIL ?? "mailto:contact@keza.app";
-
-  if (!publicKey || !privateKey) {
-    throw new Error("[push] VAPID keys not configured — set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY");
-  }
-
+  if (!publicKey || !privateKey) return false;
   webpush.setVapidDetails(email, publicKey, privateKey);
-  return webpush;
+  return true;
 }
 
 // ─── Subscription storage ───────────────────────────────────────────────────
@@ -78,13 +74,8 @@ export async function sendPushToAll(payload: PushPayload): Promise<number> {
   const subs = await getPushSubscriptions();
   if (subs.length === 0) return 0;
 
-  let webpush: ReturnType<typeof getWebPush>;
-  try {
-    webpush = getWebPush();
-  } catch {
-    // VAPID keys not configured — skip silently
-    return 0;
-  }
+  const configured = setupVapid();
+  if (!configured) return 0;
 
   let sent = 0;
   for (const sub of subs) {
@@ -99,8 +90,9 @@ export async function sendPushToAll(payload: PushPayload): Promise<number> {
       const status = (err as { statusCode?: number }).statusCode;
       if (status === 410 || status === 404) {
         await removePushSubscription(sub.endpoint).catch(() => {});
+      } else {
+        console.error("[push] sendNotification failed:", (err as Error).message);
       }
-      console.error("[push] sendNotification failed:", (err as Error).message);
     }
   }
 

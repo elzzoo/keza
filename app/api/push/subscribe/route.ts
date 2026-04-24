@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { savePushSubscription, type PushSubscriptionRecord } from "@/lib/push";
+import { redis } from "@/lib/redis";
+
+const PUSH_SUBS_KEY = "keza:push:subscriptions";
+const MAX_SUBSCRIPTIONS = 10_000;
 
 // POST /api/push/subscribe — save a Web Push subscription from the browser
 export async function POST(req: NextRequest) {
@@ -14,6 +18,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Invalid subscription object" },
         { status: 400 }
+      );
+    }
+
+    // Guard against Redis set pollution
+    const count = await redis.scard(PUSH_SUBS_KEY);
+    if (count >= MAX_SUBSCRIPTIONS) {
+      return NextResponse.json(
+        { error: "Subscription limit reached" },
+        { status: 503 }
       );
     }
 
