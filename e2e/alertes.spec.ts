@@ -8,49 +8,37 @@ test.describe("/alertes page", () => {
     );
   });
 
-  test("email form is visible", async ({ page }) => {
+  test("email form is visible with correct button", async ({ page }) => {
     await page.goto("/alertes");
     await expect(page.getByPlaceholder(/email/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /voir mes alertes|view my alerts/i })).toBeVisible();
+    // Button sends a magic link — text is "Recevoir le lien" (FR) or "Send link" (EN)
+    await expect(
+      page.getByRole("button", { name: /recevoir le lien|send link/i })
+    ).toBeVisible();
   });
 
-  test("submitting with mocked API shows empty state", async ({ page }) => {
-    // Mock the alerts API to return an empty array
-    await page.route("/api/alerts*", (route) => {
+  test("submitting email shows success notice", async ({ page }) => {
+    // Mock the manage-link API to avoid actually sending emails
+    await page.route("/api/alerts/manage-link*", (route) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ alerts: [] }),
+        body: JSON.stringify({ ok: true }),
       });
     });
 
     await page.goto("/alertes");
     await page.getByPlaceholder(/email/i).fill("test@example.com");
-    await page.getByRole("button", { name: /voir mes alertes|view my alerts/i }).click();
+    await page.getByRole("button", { name: /recevoir le lien|send link/i }).click();
 
-    // Should show empty state message
-    await expect(page.getByText(/aucune alerte active|no active alerts/i)).toBeVisible({
-      timeout: 5000,
-    });
+    // Should show a success notice after submission
+    await expect(
+      page.getByText(/lien de gestion vient d'être envoyé|management link has been sent/i)
+    ).toBeVisible({ timeout: 5000 });
   });
 
-  test("push alert button is rendered on the page", async ({ page }) => {
-    await page.goto("/alertes");
-    // PushAlertButton renders one of: subscribe button, confirmed state, or blocked message
-    const pushUI = page.getByText(
-      /activer les alertes push|enable push alerts|alertes push activées|push alerts enabled|bloquées|blocked/i
-    );
-    await expect(pushUI).toBeVisible({ timeout: 5000 });
-  });
-
-  test("localStorage email is pre-filled on mount", async ({ page }) => {
-    // Pre-seed localStorage before the page loads
-    await page.goto("/alertes");
-    await page.evaluate(() => {
-      localStorage.setItem("keza:alertes:email", "saved@example.com");
-    });
-
-    // Mock the API call that will be triggered automatically
+  test("localStorage email+token pre-fills and fetches alerts", async ({ page }) => {
+    // Mock the alerts API to return an empty list
     await page.route("/api/alerts*", (route) => {
       route.fulfill({
         status: 200,
@@ -59,9 +47,24 @@ test.describe("/alertes page", () => {
       });
     });
 
-    // Reload page — should auto-fill email and trigger fetch
+    await page.goto("/alertes");
+    // Seed both email AND token — page only auto-fetches when both are present
+    await page.evaluate(() => {
+      localStorage.setItem("keza:alertes:email", "saved@example.com");
+      localStorage.setItem("keza:alertes:token", "fake-token-for-test");
+    });
+
     await page.reload();
-    const input = page.getByPlaceholder(/email/i);
-    await expect(input).toHaveValue("saved@example.com");
+
+    // Email input should be pre-filled
+    await expect(page.getByPlaceholder(/email/i)).toHaveValue("saved@example.com");
+  });
+
+  test("push alert button is rendered on the page", async ({ page }) => {
+    await page.goto("/alertes");
+    const pushUI = page.getByText(
+      /activer les alertes push|enable push alerts|alertes push activées|push alerts enabled|bloquées|blocked/i
+    );
+    await expect(pushUI).toBeVisible({ timeout: 5000 });
   });
 });
