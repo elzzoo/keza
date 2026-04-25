@@ -11,7 +11,7 @@ import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
-import { recordDailyPrice } from "@/lib/priceHistory";
+import { recordDailyPrice } from "@/lib/priceHistoryRedis";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
@@ -70,6 +70,12 @@ export async function GET(req: NextRequest) {
 
         // Check if price dropped below target
         if (adjustedPrice < alert.targetPrice) {
+          // Skip daily/weekly alerts — they are handled by /api/cron/digest
+          if (alert.notifFrequency !== "instant") {
+            await updateAlertAfterCheck(alert.id, adjustedPrice, false);
+            continue;
+          }
+
           // Rate limit: max 1 email per alert per 24h
           if (alert.lastCheckedAt) {
             const lastCheck = new Date(alert.lastCheckedAt).getTime();
