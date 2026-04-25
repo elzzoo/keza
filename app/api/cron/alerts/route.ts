@@ -5,9 +5,12 @@ import {
   updateAlertAfterCheck,
   sendPriceDropEmail,
 } from "@/lib/alerts";
-import { sendPushToAll } from "@/lib/push";
+import { sendPushToEmail } from "@/lib/push";
+import { createManageAlertsToken } from "@/lib/alertTokens";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
 // GET /api/cron/alerts — check prices and send drop notifications
 export async function GET(req: NextRequest) {
@@ -79,7 +82,16 @@ export async function GET(req: NextRequest) {
 
           const sent = await sendPriceDropEmail(alert, adjustedPrice);
           await updateAlertAfterCheck(alert.id, adjustedPrice, sent);
-          if (sent) notified++;
+          if (sent) {
+            notified++;
+            // Fire targeted push for this specific alert
+            const manageToken = createManageAlertsToken(alert.email);
+            sendPushToEmail(alert.email, {
+              title: `✈ Prix atteint — ${alert.from} → ${alert.to}`,
+              body: `$${adjustedPrice} — votre cible de $${alert.targetPrice} est atteinte !`,
+              url: `${BASE_URL}/alertes?email=${encodeURIComponent(alert.email)}&token=${encodeURIComponent(manageToken ?? "")}`,
+            }).catch((err: unknown) => console.error("[cron/alerts] push failed:", err));
+          }
         } else {
           await updateAlertAfterCheck(alert.id, adjustedPrice, false);
         }
@@ -87,15 +99,6 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       errors.push(`${routeKey}: ${(err as Error).message}`);
     }
-  }
-
-  // Fire-and-forget push notification if any email was sent this run
-  if (notified > 0) {
-    sendPushToAll({
-      title: "KEZA — Baisse de prix ✈",
-      body: `${notified} baisse${notified > 1 ? "s" : ""} de prix détectée${notified > 1 ? "s" : ""}`,
-      url: "/alertes",
-    }).catch((err: unknown) => console.error("[cron/alerts] push failed:", err));
   }
 
   return NextResponse.json({
