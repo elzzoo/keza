@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 
 interface Props {
   error: Error & { digest?: string };
@@ -10,8 +11,7 @@ interface Props {
 
 export default function GlobalError({ error, reset }: Props) {
   useEffect(() => {
-    // Log to console — swap for Sentry or similar if needed
-    console.error("[KEZA] Unhandled error:", error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (

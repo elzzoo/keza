@@ -8,6 +8,7 @@ import {
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail, isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
+import { logError } from "@/lib/logger";
 
 // POST /api/alerts — create a new price alert
 export async function POST(req: NextRequest) {
@@ -71,11 +72,11 @@ export async function POST(req: NextRequest) {
     });
 
     // Fire-and-forget: confirmation email — do not await, must not block the response
-    sendAlertConfirmationEmail(alert).catch(console.error);
+    sendAlertConfirmationEmail(alert).catch((e) => logError("[api/alerts] confirmation email", e));
 
     return NextResponse.json({ ok: true, alert }, { status: 201 });
   } catch (err) {
-    console.error("[api/alerts] POST error:", err);
+    logError("[api/alerts] POST", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -134,7 +135,7 @@ export async function DELETE(req: NextRequest) {
     }
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
-    console.error("[api/alerts] DELETE error:", err);
+    logError("[api/alerts] DELETE", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

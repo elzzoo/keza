@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { searchEngine, type SearchParams } from "@/lib/engine";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 /* ── input validation ── */
 const IATA_RE = /^[A-Z]{3}$/;
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ results, count: results.length, forexRate });
   } catch (err) {
-    console.error("[api/search] error:", err instanceof Error ? err.message : "Unknown error");
+    logError("[api/search]", err);
     return NextResponse.json(
       { error: "Search failed", results: [] },
       { status: 500 }

@@ -4,6 +4,7 @@ import { redis } from "@/lib/redis";
 import { Resend } from "resend";
 import { hasCronSecret } from "@/lib/auth";
 import { createManageAlertsToken } from "@/lib/alertTokens";
+import { logError } from "@/lib/logger";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -183,7 +184,7 @@ export async function GET(req: NextRequest) {
     ts: new Date().toISOString(),
   });
   } catch (err) {
-    console.error("[digest] fatal error:", err);
+    logError("[cron/digest] fatal", err);
     return NextResponse.json(
       { ok: false, error: (err as Error).message },
       { status: 500 }
