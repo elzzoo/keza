@@ -121,6 +121,13 @@ export async function deactivateAlert(id: string): Promise<boolean> {
   if (!alert) return false;
   alert.active = false;
   await redis.set(ALERT_KEY(id), alert, { ex: 7 * 86400 }); // Keep 7 more days then expire
+
+  // Remove route from active-routes Set if no active alerts remain on it
+  const remaining = await getAlertsByRoute(alert.from, alert.to);
+  if (remaining.length === 0) {
+    await redis.srem(ALL_ROUTES_KEY, `${alert.from}:${alert.to}`);
+  }
+
   return true;
 }
 
