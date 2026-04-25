@@ -5,6 +5,8 @@ import {
   createManageAlertsToken,
   createUnsubscribeAlertToken,
 } from "@/lib/alertTokens";
+import { SITE_URL } from "@/lib/siteConfig";
+import { airportsMap } from "@/data/airports";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -440,6 +442,164 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
     return true;
   } catch (err) {
     console.error("[alerts] confirmation email failed:", err);
+    return false;
+  }
+}
+
+export async function sendOnboardingJ3Email(
+  alert: PriceAlert,
+  currentPrice: number | null
+): Promise<boolean> {
+  const manageToken = createManageAlertsToken(alert.email);
+  const manageUrl = withUtm(
+    `${SITE_URL}/alertes?email=${encodeURIComponent(alert.email)}&token=${encodeURIComponent(manageToken ?? "")}`,
+    "keza",
+    "onboarding-j3"
+  );
+  const ctaUrl = withUtm(`${SITE_URL}/flights/${alert.from}-${alert.to}`, "keza", "onboarding-j3");
+
+  const fromCity = airportsMap[alert.from]?.city ?? alert.from;
+  const toCity = airportsMap[alert.to]?.city ?? alert.to;
+
+  const belowTarget = currentPrice !== null && currentPrice <= alert.targetPrice;
+  const priceColor = belowTarget ? "#10b981" : "#94a3b8";
+  const priceBlock =
+    currentPrice !== null
+      ? `
+        <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">Prix le plus bas actuellement</p>
+          <p style="margin:8px 0 0;font-size:32px;font-weight:900;color:${priceColor};">$${currentPrice}</p>
+          <p style="margin:4px 0 0;font-size:11px;color:#64748b;">Cible : $${alert.targetPrice}</p>
+        </div>
+      `
+      : `
+        <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;">
+          <p style="margin:0;font-size:13px;color:#64748b;">Aucun prix disponible pour le moment — on continue de surveiller.</p>
+        </div>
+      `;
+
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: alert.email,
+      subject: `✈ Mise à jour KEZA — ta route ${alert.from} → ${alert.to}`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Suivi de route</p>
+          </div>
+
+          <div style="padding:24px;">
+            <p style="margin:0 0 16px;font-size:15px;color:#e2e8f0;font-weight:600;">
+              3 jours sous surveillance 👀
+            </p>
+
+            <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px;">
+              <p style="margin:0;font-size:14px;color:#94a3b8;letter-spacing:0.05em;">
+                ${fromCity} → ${toCity}
+              </p>
+              <p style="margin:4px 0 0;font-size:12px;color:#475569;">
+                ${alert.from} → ${alert.to} · ${CABIN_LABELS[alert.cabin]}
+              </p>
+            </div>
+
+            ${priceBlock}
+
+            <p style="margin:0 0 16px;font-size:13px;color:#94a3b8;line-height:1.6;">
+              KEZA surveille les prix en continu — on t'alertera dès qu'une baisse se présente.
+            </p>
+
+            <a href="${ctaUrl}"
+               style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;margin-bottom:8px;">
+              Voir les offres maintenant →
+            </a>
+
+            <a href="${manageUrl}"
+               style="display:block;text-align:center;background:#1e3a5f;color:#94a3b8;text-decoration:none;padding:12px;border-radius:12px;font-size:13px;border:1px solid #2d4a6f;">
+              Gérer mes alertes →
+            </a>
+          </div>
+
+          <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
+            <p style="margin:0;font-size:10px;color:#334155;">
+              Tu reçois cet email car tu as une alerte active sur KEZA.
+            </p>
+          </div>
+          <img src="${emailOpenPixelUrl("onboarding-j3", alert.email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[alerts] onboarding j3 email failed:", err);
+    return false;
+  }
+}
+
+export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean> {
+  const manageToken = createManageAlertsToken(alert.email);
+  const manageUrl = withUtm(
+    `${SITE_URL}/alertes?email=${encodeURIComponent(alert.email)}&token=${encodeURIComponent(manageToken ?? "")}`,
+    "keza",
+    "onboarding-j7"
+  );
+  const shareUrl = withUtm(SITE_URL, "keza", "onboarding-j7-share");
+  const proUrl = withUtm(`${SITE_URL}/pro`, "keza", "onboarding-j7-pro");
+
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: alert.email,
+      subject: `🎯 KEZA — invite un ami et débloquez des avantages`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">1 semaine ensemble</p>
+          </div>
+
+          <div style="padding:24px;">
+            <p style="margin:0 0 16px;font-size:15px;color:#e2e8f0;font-weight:600;">
+              Ta route est surveillée depuis 7 jours 🎯
+            </p>
+
+            <p style="margin:0 0 20px;font-size:14px;color:#94a3b8;line-height:1.7;">
+              Partage KEZA avec un ami qui voyage aussi — et accède en avant-première à
+              <strong style="color:#e2e8f0;">KEZA Pro</strong>
+              (alertes illimitées, digest personnalisé).
+            </p>
+
+            <a href="${shareUrl}"
+               style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;margin-bottom:8px;">
+              Partager KEZA →
+            </a>
+
+            <a href="${proUrl}"
+               style="display:block;text-align:center;background:#1e3a5f;color:#94a3b8;text-decoration:none;padding:12px;border-radius:12px;font-size:13px;border:1px solid #2d4a6f;margin-bottom:8px;">
+              Découvrir KEZA Pro →
+            </a>
+
+            <a href="${manageUrl}"
+               style="display:block;text-align:center;background:transparent;color:#475569;text-decoration:none;padding:10px;border-radius:12px;font-size:12px;">
+              Gérer mes alertes →
+            </a>
+          </div>
+
+          <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
+            <p style="margin:0;font-size:10px;color:#334155;">
+              Tu reçois cet email car tu as une alerte active sur KEZA.
+            </p>
+          </div>
+          <img src="${emailOpenPixelUrl("onboarding-j7", alert.email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[alerts] onboarding j7 email failed:", err);
     return false;
   }
 }
