@@ -28,7 +28,11 @@ const nextConfig = {
   experimental: {
     serverActions: { allowedOrigins: ["localhost:3000"] },
     serverComponentsExternalPackages: ["web-push"],
+    // Tree-shake large packages — only import what's used
+    optimizePackageImports: ["lucide-react", "@heroicons/react", "date-fns"],
   },
+  // Compress responses
+  compress: true,
   async headers() {
     return [
       {

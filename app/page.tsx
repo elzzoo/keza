@@ -8,9 +8,11 @@ import { Footer }        from "@/components/Footer";
 import { TrustBar }      from "@/components/TrustBar";
 import { SearchForm }    from "@/components/SearchForm";
 import { Results }       from "@/components/Results";
-import { DealsStrip }    from "@/components/DealsStrip";
-import { DestinationsGrid } from "@/components/DestinationsGrid";
 import { RecentSearches } from "@/components/RecentSearches";
+
+// Below-the-fold homepage components — lazy loaded
+const DealsStrip       = dynamic(() => import("@/components/DealsStrip").then(m => m.DealsStrip), { ssr: false });
+const DestinationsGrid = dynamic(() => import("@/components/DestinationsGrid").then(m => m.DestinationsGrid), { ssr: false });
 import { ShareButton }   from "@/components/ShareButton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProfile }    from "@/hooks/useProfile";

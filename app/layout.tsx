@@ -9,6 +9,8 @@ const inter = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-inter",
   display: "swap",
+  preload: true,
+  fallback: ["system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -50,6 +52,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://plausible.io" />
+        <link rel="preconnect" href="https://api.keza.app" />
+        <link rel="dns-prefetch" href="https://helpful-chicken-97678.upstash.io" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("keza_theme");if(!t)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
