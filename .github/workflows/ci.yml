@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── Lint + type check ────────────────────────────────────────────────────────
   lint:
@@ -53,7 +56,8 @@ jobs:
 
   # ── E2E tests (Playwright) ───────────────────────────────────────────────────
   # Runs only on pushes to main, after unit tests pass.
-  # Waits for Vercel to finish deploying the current commit before running.
+  # Waits for Vercel to be healthy before running — soft-fails the SHA check
+  # so rapid successive merges don't cause false E2E failures.
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
@@ -77,19 +81,29 @@ jobs:
         env:
           COMMIT_SHA: ${{ github.sha }}
         run: |
-          echo "Waiting for deployment of commit $COMMIT_SHA..."
+          echo "Waiting for a healthy Vercel deployment (target: $COMMIT_SHA)..."
           for i in $(seq 1 24); do
             deployed_sha=$(curl -sf https://keza-taupe.vercel.app/api/version \
               | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
             echo "Attempt $i/24: deployed=$deployed_sha"
             if [ "$deployed_sha" = "$COMMIT_SHA" ]; then
-              echo "✅ Correct version is live after $((i * 15))s"
+              echo "✅ Exact commit is live after $((i * 15))s"
               exit 0
+            fi
+            if [ -n "$deployed_sha" ]; then
+              # Site is live with a different SHA — Vercel may have skipped this
+              # commit (fast successive pushes). Record a warning and continue.
+              LIVE_SHA="$deployed_sha"
             fi
             sleep 15
           done
-          echo "❌ Timeout: deployment did not go live within 6 minutes"
-          exit 1
+          if [ -n "$LIVE_SHA" ]; then
+            echo "⚠️  Timeout: target SHA not deployed (Vercel likely skipped it)."
+            echo "    Running E2E against deployed SHA: $LIVE_SHA"
+          else
+            echo "❌ Timeout: Vercel did not respond within 6 minutes"
+            exit 1
+          fi
 
       - name: Run Playwright E2E tests
         run: npm run test:e2e
