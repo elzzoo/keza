@@ -3,13 +3,11 @@
 import { useState, useMemo } from "react";
 import type { MilesPriceRecord } from "@/data/milesPrices";
 
-export function CalculateurClient({ programs, forexRate = 605 }: { programs: MilesPriceRecord[]; forexRate?: number }) {
+export function CalculateurClient({ programs }: { programs: MilesPriceRecord[]; forexRate?: number }) {
   const [miles, setMiles] = useState(50000);
   const [idx, setIdx]     = useState(0);
   const program           = programs[idx];
   const valueUsd          = useMemo(() => Math.round(miles * program.valueCents / 100), [miles, program]);
-  const valueEur          = useMemo(() => Math.round(valueUsd * 0.92), [valueUsd]);
-  const valueFcfa         = useMemo(() => Math.round(valueUsd * forexRate), [valueUsd, forexRate]);
 
   return (
     <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
