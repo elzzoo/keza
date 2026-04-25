@@ -5,6 +5,12 @@ import { fetchCalendarPrices } from "@/lib/engine";
 import { RoutePageClient } from "./RoutePageClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
+// ─── ISR Revalidation ───────────────────────────────────────────────────────
+// Revalidate every 6 hours — prices refresh without full rebuild
+export const revalidate = 21600;
+// Allow rendering unknown routes on-demand (not in generateStaticParams)
+export const dynamicParams = true;
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -73,6 +79,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     alternates: {
       canonical: `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+      languages: {
+        'fr': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+        'en': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+        'x-default': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+      },
     },
   };
 }

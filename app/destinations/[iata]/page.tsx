@@ -11,6 +11,12 @@ interface Props {
 
 import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 
+// ─── ISR Revalidation ───────────────────────────────────────────────────────
+// Revalidate every 24 hours — destination data changes less often
+export const revalidate = 86400;
+// Allow rendering unknown routes on-demand (not in generateStaticParams)
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   return DESTINATIONS.map((d) => ({ iata: d.iata.toLowerCase() }));
 }
