@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET — count waitlist size (for admin)
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const count = await redis.zcard(WAITLIST_KEY);
     return NextResponse.json({ count });
