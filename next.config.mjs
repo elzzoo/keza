@@ -45,9 +45,13 @@ export default withSentryConfig(nextConfig, {
   // Source maps are uploaded automatically on build.
   silent: true, // suppress "Creating release" logs
 
-  // Disable the Sentry webpack plugin if DSN is not set (local dev without Sentry)
-  disableServerWebpackPlugin: !process.env.SENTRY_DSN,
-  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+  // Disable the Sentry webpack plugin (source-map upload) unless both DSN *and*
+  // SENTRY_AUTH_TOKEN are present. Without the auth token the upload would fail
+  // the build; error tracking still works fine without source maps.
+  disableServerWebpackPlugin:
+    !process.env.SENTRY_DSN || !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin:
+    !process.env.NEXT_PUBLIC_SENTRY_DSN || !process.env.SENTRY_AUTH_TOKEN,
 
   // Tree-shake Sentry logger statements to keep bundle small
   hideSourceMaps: true,
