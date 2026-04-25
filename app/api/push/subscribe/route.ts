@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { savePushSubscription, type PushSubscriptionRecord } from "@/lib/push";
-import { redis } from "@/lib/redis";
+import { savePushSubscriptionForEmail, type PushSubscriptionRecord } from "@/lib/push";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidHttpsUrl } from "@/lib/validate";
+import { verifyManageAlertsToken } from "@/lib/alertTokens";
 
-const PUSH_SUBS_KEY = "keza:push:subscriptions";
-const MAX_SUBSCRIPTIONS = 10_000;
-
-// POST /api/push/subscribe — save a Web Push subscription from the browser
+// POST /api/push/subscribe — save a Web Push subscription linked to a user email
 export async function POST(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
     namespace: "api:push-subscribe:post",
@@ -19,10 +16,32 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    // Support { subscription: { endpoint, keys }, email, token }
+    const subscription = body?.subscription ?? body;
+    const email: unknown = body?.email;
+    const token: unknown = body?.token;
+
+    // Validate email
+    if (typeof email !== "string" || !email.includes("@")) {
+      return NextResponse.json(
+        { error: "Invalid email" },
+        { status: 400 }
+      );
+    }
+
+    // Validate token
+    if (!verifyManageAlertsToken(email, typeof token === "string" ? token : null)) {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      );
+    }
+
+    // Validate subscription shape
     if (
-      typeof body?.endpoint !== "string" ||
-      typeof body?.keys?.p256dh !== "string" ||
-      typeof body?.keys?.auth !== "string"
+      typeof subscription?.endpoint !== "string" ||
+      typeof subscription?.keys?.p256dh !== "string" ||
+      typeof subscription?.keys?.auth !== "string"
     ) {
       return NextResponse.json(
         { error: "Invalid subscription object" },
@@ -30,31 +49,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!isValidHttpsUrl(body.endpoint)) {
+    if (!isValidHttpsUrl(subscription.endpoint)) {
       return NextResponse.json(
         { error: "endpoint must be a valid HTTPS URL" },
         { status: 400 }
       );
     }
 
-    // Guard against Redis set pollution
-    const count = await redis.scard(PUSH_SUBS_KEY);
-    if (count >= MAX_SUBSCRIPTIONS) {
-      return NextResponse.json(
-        { error: "Subscription limit reached" },
-        { status: 503 }
-      );
-    }
-
     const sub: PushSubscriptionRecord = {
-      endpoint: body.endpoint,
+      endpoint: subscription.endpoint,
       keys: {
-        p256dh: body.keys.p256dh,
-        auth: body.keys.auth,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
       },
     };
 
-    await savePushSubscription(sub);
+    await savePushSubscriptionForEmail(email, sub);
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {
     console.error("[api/push/subscribe] POST error:", err);
