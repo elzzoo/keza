@@ -3,8 +3,8 @@ import { test, expect } from "@playwright/test";
 test.describe("/flights/[route] page", () => {
   test("loads with route heading", async ({ page }) => {
     await page.goto("/flights/DSS-CDG");
-    // generateMetadata produces a deterministic title with city names
-    await expect(page).toHaveTitle("Flights Dakar to Paris CDG — Cash or Miles? | KEZA");
+    // /flights/[route] is the French route — title uses French wording
+    await expect(page).toHaveTitle("Vols Dakar → Paris CDG — Cash ou Miles ? | KEZA");
   });
 
   test("shows search form pre-filled with route", async ({ page }) => {
@@ -31,8 +31,8 @@ test.describe("/flights/[route] page", () => {
 
   test("page title contains origin and destination city names", async ({ page }) => {
     await page.goto("/flights/DSS-CDG");
-    // generateMetadata builds "Flights Dakar to Paris CDG — Cash or Miles? | KEZA"
-    await expect(page).toHaveTitle("Flights Dakar to Paris CDG — Cash or Miles? | KEZA");
+    // /flights/[route] = FR route; EN route is /en/flights/[route]
+    await expect(page).toHaveTitle("Vols Dakar → Paris CDG — Cash ou Miles ? | KEZA");
   });
 
   test("page contains FAQPage JSON-LD structured data", async ({ page }) => {
