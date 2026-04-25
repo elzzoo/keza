@@ -10,6 +10,7 @@ import { createManageAlertsToken } from "@/lib/alertTokens";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
+import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
@@ -93,6 +94,15 @@ export async function GET(req: NextRequest) {
               cabin: alert.cabin,
               price_usd: adjustedPrice,
             }).catch(() => {});
+            // Discord ops notification
+            notifyAlertTriggered({
+              from: alert.from,
+              to: alert.to,
+              cabin: alert.cabin,
+              adjustedPrice,
+              targetPrice: alert.targetPrice,
+              email: alert.email,
+            }).catch(() => {});
             // Fire targeted push for this specific alert
             const manageToken = createManageAlertsToken(alert.email);
             sendPushToEmail(alert.email, {
@@ -109,6 +119,9 @@ export async function GET(req: NextRequest) {
       errors.push(`${routeKey}: ${(err as Error).message}`);
     }
   }
+
+  // Discord summary (fire-and-forget)
+  notifyCronSummary({ routes: routes.length, checked, notified, errors }).catch(() => {});
 
   return NextResponse.json({
     ok: true,
