@@ -3,8 +3,6 @@ import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
 
-export const runtime = "edge";
-
 const POPULAR_ROUTES = [
   "DSS-CDG",
   "ABJ-CDG",
