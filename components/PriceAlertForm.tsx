@@ -59,7 +59,10 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       const res = await fetch("/api/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, from, to, cabin, currentPrice }),
+        body: JSON.stringify({
+          email, from, to, cabin, currentPrice,
+          ref: sessionStorage.getItem("keza_ref") ?? undefined,
+        }),
       });
 
       if (res.status === 201) {

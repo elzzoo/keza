@@ -9,6 +9,7 @@ import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail, isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
 import { isProUser } from "@/lib/lemonsqueezy";
+import { getReferralCredits, processReferralConversion } from "@/lib/referral";
 import { logError } from "@/lib/logger";
 
 // POST /api/alerts — create a new price alert
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, from, to, cabin, currentPrice } = body;
+    const { email, from, to, cabin, currentPrice, ref } = body;
 
     if (!email || !from || !to || !currentPrice) {
       return NextResponse.json(
@@ -46,16 +47,20 @@ export async function POST(req: NextRequest) {
 
     const FREE_ALERT_LIMIT = 3;
 
-    // Freemium gate: max 3 active alerts on free plan (Pro users skip this check)
-    const existing = await getAlertsByEmail(email);
+    // Freemium gate: max (3 + referral credits) active alerts on free plan (Pro skips)
+    const [existing, isPro, referralCredits] = await Promise.all([
+      getAlertsByEmail(email),
+      isProUser(email),
+      getReferralCredits(email),
+    ]);
     const activeExisting = existing.filter((a) => a.active);
-    const isPro = await isProUser(email);
-    if (!isPro && activeExisting.length >= FREE_ALERT_LIMIT) {
+    const effectiveLimit = FREE_ALERT_LIMIT + referralCredits;
+    if (!isPro && activeExisting.length >= effectiveLimit) {
       return NextResponse.json(
         {
-          error: `Limite gratuite atteinte (${FREE_ALERT_LIMIT} alertes maximum). Passez en Pro pour des alertes illimitées.`,
+          error: `Limite atteinte (${effectiveLimit} alertes maximum). Parrainez des amis ou passez en Pro pour débloquer plus d'alertes.`,
           code: "FREE_LIMIT_REACHED",
-          limit: FREE_ALERT_LIMIT,
+          limit: effectiveLimit,
           current: activeExisting.length,
         },
         { status: 429 }
@@ -83,6 +88,12 @@ export async function POST(req: NextRequest) {
 
     // Fire-and-forget: confirmation email — do not await, must not block the response
     sendAlertConfirmationEmail(alert).catch((e) => logError("[api/alerts] confirmation email", e));
+
+    // Fire-and-forget: process referral conversion if ref code provided
+    if (ref && typeof ref === "string" && existing.length === 0) {
+      // Only credit on first alert creation (existing was empty before this alert)
+      processReferralConversion(email, ref).catch(() => {});
+    }
 
     return NextResponse.json({ ok: true, alert }, { status: 201 });
   } catch (err) {

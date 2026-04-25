@@ -45,13 +45,22 @@ export default function HomePage() {
     }
   }, [isLoaded, profile?.lang]);
 
-  // Read URL search params on mount to pre-fill shared search
+  // Read URL search params on mount to pre-fill shared search + store referral code
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlFrom = params.get("from");
     const urlTo = params.get("to");
     if (urlFrom) setPrefillFrom(urlFrom);
     if (urlTo) setPrefillTo(urlTo);
+    // Store referral code in sessionStorage for use at alert creation
+    const ref = params.get("ref");
+    if (ref) {
+      sessionStorage.setItem("keza_ref", ref);
+      // Clean ref from URL without reload
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete("ref");
+      window.history.replaceState({}, "", clean.toString());
+    }
     // Store extra params so SearchForm can be pre-filled via lastSearch
     const urlDate = params.get("date");
     const urlCabin = params.get("cabin");

@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import type { PriceAlert } from "@/lib/alerts";
 import { trackAlertDeleted } from "@/lib/analytics";
 import { PushAlertButton } from "@/components/PushAlertButton";
+import { ReferralCard } from "@/components/ReferralCard";
 
 // ─── Email localStorage key ───────────────────────────────────────────────────
 
@@ -314,6 +315,13 @@ export function AlertesClient() {
               ))}
             </div>
           )
+        )}
+
+        {/* Referral card — shown when alerts are loaded */}
+        {alerts !== null && email && manageToken && (
+          <div className="mt-6">
+            <ReferralCard email={email} token={manageToken} lang={lang} />
+          </div>
         )}
       </main>
 
