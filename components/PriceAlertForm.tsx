@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { trackAlertCreated } from "@/lib/analytics";
 
 interface Props {
@@ -161,12 +162,9 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
               ? "Rejoignez la liste d'attente Pro pour des alertes illimitées, notifications multi-devices et historique de prix."
               : "Join the Pro waitlist for unlimited alerts, multi-device notifications and price history."}
           </p>
-          <a
-            href={`mailto:contact@keza-app.com?subject=Liste+d%27attente+Pro+KEZA&body=Email%3A+${encodeURIComponent(email)}`}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors"
-          >
-            Rejoindre la liste d&apos;attente →
-          </a>
+          <Link href="/pro" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">
+            Rejoindre la liste d&apos;attente Pro →
+          </Link>
         </div>
       )}
     </form>
