@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPriceHistory, computePriceTrend } from "@/lib/priceHistory";
+import { getPriceHistory, computePriceTrend } from "@/lib/priceHistoryRedis";
 import { isValidIata } from "@/lib/validate";
 
 // GET /api/price-history?from=DSS&to=CDG&days=30
