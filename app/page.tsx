@@ -19,7 +19,6 @@ import { trackRecentSearch } from "@/lib/analytics";
 
 // Below-the-fold — lazy loaded to reduce initial JS bundle
 const MultiDateCompare    = dynamic(() => import("@/components/MultiDateCompare").then(m => m.MultiDateCompare), { ssr: false });
-const PushNotifBanner     = dynamic(() => import("@/components/PushNotifBanner").then(m => m.PushNotifBanner), { ssr: false });
 const HowItWorks          = dynamic(() => import("@/components/HowItWorks").then(m => m.HowItWorks), { ssr: false });
 const PromoBanner         = dynamic(() => import("@/components/PromoBanner").then(m => m.PromoBanner), { ssr: false });
 const MilesCalculatorWidget = dynamic(() => import("@/components/MilesCalculatorWidget").then(m => m.MilesCalculatorWidget), { ssr: false });
@@ -324,10 +323,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* -- Push notification banner -------------------------------- */}
-        <div className="mt-6">
-          <PushNotifBanner lang={lang} />
-        </div>
       </main>
 
       {!hasSearched && <Footer lang={lang} />}
