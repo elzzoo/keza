@@ -39,6 +39,7 @@ interface Props {
   priceCount: number;
   relatedRoutes: string[];
   routeMeta?: RouteMeta;
+  defaultLang?: "fr" | "en";
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -59,9 +60,9 @@ function formatMiles(miles: number): string {
 export function RoutePageClient({
   from, to, fromCity, fromCityFr, toCity, toCityFr,
   fromFlag, toFlag, cheapestPrice, cheapestDate, priceCount,
-  relatedRoutes, routeMeta,
+  relatedRoutes, routeMeta, defaultLang,
 }: Props) {
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+  const [lang, setLang] = useState<"fr" | "en">(defaultLang ?? "fr");
   const [results, setResults] = useState<FlightResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);

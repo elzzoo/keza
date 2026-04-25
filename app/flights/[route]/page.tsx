@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `${SITE_URL}/flights/${params.route.toUpperCase()}`,
       languages: {
         'fr': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
-        'en': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+        'en': `${SITE_URL}/en/flights/${params.route.toUpperCase()}`,
         'x-default': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
       },
     },
@@ -232,6 +232,7 @@ export default async function RoutePage({ params }: Props) {
         priceCount={allPrices.length}
         relatedRoutes={relatedRoutes}
         routeMeta={routeMeta}
+        defaultLang="fr"
       />
     </>
   );

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Regex: /flights/word-word or /flights/word word
-const CITY_SLUG_RE = /^\/flights\/([a-z][a-z0-9\-]+)-([a-z][a-z0-9\-]+)$/i;
+// Regex: /flights/word-word or /en/flights/word-word
+const CITY_SLUG_RE = /^\/(en\/)?flights\/([a-z][a-z0-9\-]+)-([a-z][a-z0-9\-]+)$/i;
 // IATA route pattern (already resolved) — skip
-const IATA_RE = /^\/flights\/[A-Z]{3}-[A-Z]{3}$/;
+const IATA_RE = /^\/(en\/)?flights\/[A-Z]{3}-[A-Z]{3}$/;
 
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -14,7 +14,7 @@ export function middleware(req: NextRequest) {
   const match = path.match(CITY_SLUG_RE);
   if (!match) return NextResponse.next();
 
-  const [, rawFrom, rawTo] = match;
+  const [, enPrefix, rawFrom, rawTo] = match;
 
   // Resolve city slugs to IATA — we do this server-side via a lookup
   // The full lookup lives in lib/cityToIata.ts but middleware can't import
@@ -47,10 +47,11 @@ export function middleware(req: NextRequest) {
 
   if (!fromIata || !toIata || fromIata === toIata) return NextResponse.next();
 
-  const redirectUrl = new URL(`/flights/${fromIata}-${toIata}`, req.url);
+  const prefix = enPrefix ? "/en" : "";
+  const redirectUrl = new URL(`${prefix}/flights/${fromIata}-${toIata}`, req.url);
   return NextResponse.redirect(redirectUrl, { status: 301 });
 }
 
 export const config = {
-  matcher: ["/flights/:path*"],
+  matcher: ["/flights/:path*", "/en/flights/:path*"],
 };

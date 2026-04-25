@@ -99,6 +99,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
+  // EN route pages
+  for (const route of ROUTES) {
+    pages.push({
+      url: `${BASE_URL}/en/flights/${route}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.75,
+    });
+  }
+
   // City-slug SEO URLs for long-tail search traffic
   const CITY_SLUG_ROUTES = [
     ["paris", "dakar"],
