@@ -68,7 +68,12 @@ export async function GET(req: NextRequest) {
               ].filter((p) => typeof p === "number" && p > 0);
 
               if (allPrices.length > 0) {
-                currentPrice = Math.min(...allPrices);
+                const cheapest = Math.min(...allPrices);
+                const cabinMultiplier =
+                  alert.cabin === "first" ? 6.5 :
+                  alert.cabin === "business" ? 4.0 :
+                  alert.cabin === "premium" ? 1.8 : 1.0;
+                currentPrice = Math.round(cheapest * cabinMultiplier);
               }
             } catch {
               // proceed with null price
