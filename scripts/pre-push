@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
-# Pre-push hook — bloque tout push sur main si les checks échouent.
+# Pre-push hook — bloque tout push de code sur main si les checks échouent.
 # Installé automatiquement par `npm install` via le script prepare.
+# Ne tourne PAS sur les suppressions de branches (git push --delete).
 
 branch=$(git symbolic-ref HEAD 2>/dev/null | sed 's|refs/heads/||')
 
+# Uniquement sur main
 if [ "$branch" != "main" ]; then
   exit 0
 fi
+
+# Lire stdin : format "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# Pour git push --delete, local-ref est vide → on skip
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ -z "$local_ref" ]; then
+    exit 0  # suppression de branche, pas un push de code
+  fi
+done
 
 echo ""
 echo "⚡ Checks pre-push sur main..."
