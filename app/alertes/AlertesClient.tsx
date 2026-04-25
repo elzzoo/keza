@@ -8,6 +8,8 @@ import type { PriceAlert } from "@/lib/alerts";
 import { trackAlertDeleted } from "@/lib/analytics";
 import { PushAlertButton } from "@/components/PushAlertButton";
 import { ReferralCard } from "@/components/ReferralCard";
+import { MilesValueScore } from "@/components/MilesValueScore";
+import { useProfile } from "@/hooks/useProfile";
 
 // ─── Email localStorage key ───────────────────────────────────────────────────
 
@@ -51,6 +53,7 @@ function progressPct(alert: PriceAlert): number {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function AlertesClient() {
+  const { profile } = useProfile();
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [email, setEmail] = useState("");
   const [alerts, setAlerts] = useState<PriceAlert[] | null>(null);
@@ -317,9 +320,10 @@ export function AlertesClient() {
           )
         )}
 
-        {/* Referral card — shown when alerts are loaded */}
+        {/* Miles value score + Referral card — shown when alerts are loaded */}
         {alerts !== null && email && manageToken && (
-          <div className="mt-6">
+          <div className="mt-6 space-y-4">
+            <MilesValueScore savedPrograms={profile?.programs} lang={lang} />
             <ReferralCard email={email} token={manageToken} lang={lang} />
           </div>
         )}
