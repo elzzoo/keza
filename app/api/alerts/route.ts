@@ -7,6 +7,7 @@ import {
 } from "@/lib/alerts";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { isValidEmail, isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
 
 // POST /api/alerts — create a new price alert
 export async function POST(req: NextRequest) {
@@ -28,9 +29,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate email format
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    }
+    if (!isValidIata(from) || !isValidIata(to)) {
+      return NextResponse.json({ error: "from and to must be valid 3-letter IATA codes" }, { status: 400 });
+    }
+    if (cabin && !isValidCabin(cabin)) {
+      return NextResponse.json({ error: "cabin must be economy, premium, business, or first" }, { status: 400 });
+    }
+    if (!isValidPrice(currentPrice)) {
+      return NextResponse.json({ error: "currentPrice must be a positive number up to 50000" }, { status: 400 });
     }
 
     // Limit: max 10 active alerts per email

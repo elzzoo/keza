@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { isValidEmail } from "@/lib/validate";
 
 interface ContactPayload {
   name: string;
@@ -24,6 +25,16 @@ export async function POST(request: Request) {
     // Basic validation
     if (!body.name || !body.company || !body.email || !body.teamSize) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    if (!isValidEmail(body.email)) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    }
+    if (body.name.length > 100 || body.company.length > 100) {
+      return NextResponse.json({ error: "name and company must be under 100 characters" }, { status: 400 });
+    }
+    if (body.message && body.message.length > 2000) {
+      return NextResponse.json({ error: "message must be under 2000 characters" }, { status: 400 });
     }
 
     const entry = {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { savePushSubscription, type PushSubscriptionRecord } from "@/lib/push";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { isValidHttpsUrl } from "@/lib/validate";
 
 const PUSH_SUBS_KEY = "keza:push:subscriptions";
 const MAX_SUBSCRIPTIONS = 10_000;
@@ -25,6 +26,13 @@ export async function POST(req: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "Invalid subscription object" },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidHttpsUrl(body.endpoint)) {
+      return NextResponse.json(
+        { error: "endpoint must be a valid HTTPS URL" },
         { status: 400 }
       );
     }
