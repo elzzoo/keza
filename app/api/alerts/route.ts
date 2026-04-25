@@ -43,11 +43,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "currentPrice must be a positive number up to 50000" }, { status: 400 });
     }
 
-    // Limit: max 10 active alerts per email
+    const FREE_ALERT_LIMIT = 3;
+
+    // Freemium gate: max 3 active alerts on free plan
     const existing = await getAlertsByEmail(email);
-    if (existing.length >= 10) {
+    const activeExisting = existing.filter((a) => a.active);
+    if (activeExisting.length >= FREE_ALERT_LIMIT) {
       return NextResponse.json(
-        { error: "Maximum 10 active alerts per email" },
+        {
+          error: `Limite gratuite atteinte (${FREE_ALERT_LIMIT} alertes maximum). Passez en Pro pour des alertes illimitées.`,
+          code: "FREE_LIMIT_REACHED",
+          limit: FREE_ALERT_LIMIT,
+          current: activeExisting.length,
+        },
         { status: 429 }
       );
     }

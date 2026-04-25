@@ -21,7 +21,7 @@ const L = {
     sending: "Création…",
     success: "Alerte créée ! Vous recevrez un email quand le prix baisse.",
     duplicate: "Alerte déjà active pour cette route.",
-    maxed: "Limite de 10 alertes atteinte.",
+    maxed: "Limite d'alertes atteinte.",
     error: "Erreur, réessayez.",
     route: "Route",
     target: "Alerte si prix <",
@@ -34,7 +34,7 @@ const L = {
     sending: "Creating…",
     success: "Alert created! We'll email you when the price drops.",
     duplicate: "Alert already active for this route.",
-    maxed: "Maximum 10 alerts reached.",
+    maxed: "Maximum alerts reached.",
     error: "Error, please retry.",
     route: "Route",
     target: "Alert if price <",
@@ -45,7 +45,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed" | "limitReached">("idle");
 
   const targetPrice = Math.round(currentPrice * 0.9);
 
@@ -71,7 +71,12 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       } else if (res.status === 409) {
         setStatus("duplicate");
       } else if (res.status === 429) {
-        setStatus("maxed");
+        const data = await res.json().catch(() => ({}));
+        if (data.code === "FREE_LIMIT_REACHED") {
+          setStatus("limitReached");
+        } else {
+          setStatus("maxed");
+        }
       } else {
         setStatus("error");
       }
@@ -145,6 +150,24 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       )}
       {status === "error" && (
         <p className="text-xs text-red-400">{t.error}</p>
+      )}
+      {status === "limitReached" && (
+        <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+          <p className="text-sm font-semibold text-amber-400">
+            🔒 Limite gratuite atteinte — 3 alertes max
+          </p>
+          <p className="text-xs text-muted mt-1">
+            {lang === "fr"
+              ? "Rejoignez la liste d'attente Pro pour des alertes illimitées, notifications multi-devices et historique de prix."
+              : "Join the Pro waitlist for unlimited alerts, multi-device notifications and price history."}
+          </p>
+          <a
+            href={`mailto:contact@keza-app.com?subject=Liste+d%27attente+Pro+KEZA&body=Email%3A+${encodeURIComponent(email)}`}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            Rejoindre la liste d'attente →
+          </a>
+        </div>
       )}
     </form>
   );
