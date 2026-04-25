@@ -44,7 +44,17 @@ export function CalculateurClient({ programs, forexRate = 605 }: { programs: Mil
       <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 text-center">
         <p className="text-xs text-muted mb-1">{miles.toLocaleString()} {program.program} miles valent environ</p>
         <p className="text-4xl font-black text-primary">${valueUsd}</p>
-        <p className="text-sm text-muted mt-1">≈ {valueEur} € · {valueFcfa.toLocaleString("fr-FR")} FCFA</p>
+        <div className="flex flex-wrap justify-center gap-2 mt-2">
+          {[
+            { code: "XOF", symbol: "FCFA", rate: 605 },
+            { code: "EUR", symbol: "€", rate: 0.92 },
+            { code: "GBP", symbol: "£", rate: 0.79 },
+          ].map(({ code, symbol, rate }) => (
+            <span key={code} className="text-xs text-muted bg-surface-2 border border-border px-2 py-1 rounded-lg">
+              {code} <span className="text-fg font-semibold">{code === "XOF" ? Math.round(valueUsd * rate).toLocaleString("fr-FR") : (valueUsd * rate).toFixed(0)}{" "}{symbol}</span>
+            </span>
+          ))}
+        </div>
         <p className="text-xs text-muted mt-3">Basé sur {program.valueCents.toFixed(1)}¢ / mile · Confiance : {program.confidence}</p>
       </div>
     </div>

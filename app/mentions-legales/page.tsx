@@ -29,6 +29,9 @@ export default function MentionsLegales() {
               KEZA est un service en ligne de comparaison de prix de vols (cash vs miles).
             </p>
             <p className="mt-2">
+              Éditeur : KEZA Inc. (en cours d&apos;immatriculation, Delaware, États-Unis)
+            </p>
+            <p className="mt-2">
               Contact : <a href="mailto:contact@keza.app" className="text-primary hover:underline">contact@keza.app</a>
             </p>
           </section>
@@ -36,7 +39,17 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Hébergement</h2>
             <p>
-              Le site est hébergé par Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.
+              Hébergement : Vercel Inc., 340 Pine Street, Suite 900, San Francisco, CA 94104, États-Unis.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-fg mb-3">Protection des données (RGPD)</h2>
+            <p>
+              Conformément au Règlement Général sur la Protection des Données (RGPD), les utilisateurs
+              disposent d&apos;un droit d&apos;accès, de rectification et de suppression de leurs données
+              personnelles. Pour exercer ces droits, contactez-nous à{" "}
+              <a href="mailto:privacy@keza.app" className="text-primary hover:underline">privacy@keza.app</a>.
             </p>
           </section>
 
@@ -80,8 +93,10 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Droit applicable</h2>
             <p>
-              Les présentes mentions légales sont soumises au droit français. Tout litige relatif à
-              l&apos;utilisation du site sera soumis à la compétence des tribunaux compétents.
+              Les présentes mentions légales sont soumises au droit de l&apos;État du Delaware, États-Unis.
+              Tout litige relatif à l&apos;utilisation du site sera soumis à la compétence des juridictions
+              compétentes. Les utilisateurs situés dans l&apos;Union européenne bénéficient des protections
+              prévues par le RGPD.
             </p>
           </section>
         </div>

@@ -49,25 +49,25 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
             <span className="text-primary">KE</span>
             <span className="text-fg">ZA</span>
           </span>
-          <span className="hidden sm:block text-[11px] text-muted font-medium border-l border-border pl-2 ml-0.5">
+          <span className="hidden sm:block text-[11px] text-muted font-medium border-l border-border pl-2 ml-0.5 min-w-0 overflow-hidden">
             {lang === "fr" ? "Cash ou Miles ?" : "Cash or Miles?"}
           </span>
         </a>
 
         {/* Nav — desktop */}
-        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center overflow-hidden">
           {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all duration-150 font-medium"
+              className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all duration-150 font-medium whitespace-nowrap"
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2 ml-auto flex-shrink-0">
           {/* Live badge — cash prices are live; miles values are estimates */}
           <span
             title="Prix cash en temps réel · Valeurs miles : estimations de marché"

@@ -1,7 +1,7 @@
 // app/prix/PriceChart.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Destination, Region } from "@/data/destinations";
 import type { DestinationPriceHistory, MonthlyPrice } from "@/lib/priceHistory";
 import type { DealRecommendation } from "@/lib/dealsEngine";
@@ -81,6 +81,7 @@ export function PriceChart({ histories, destinations, lang }: Props) {
   // Default: Africa → first Africa destination (CMN = Casablanca)
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("africa");
   const [selectedIata, setSelectedIata] = useState<string>("CMN");
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState<number | null>(null);
 
   const filteredDests = useMemo(
     () =>
@@ -94,7 +95,13 @@ export function PriceChart({ histories, destinations, lang }: Props) {
     setRegionFilter(key);
     const first = key === "all" ? destinations[0] : destinations.find((d) => d.region === key);
     if (first) setSelectedIata(first.iata);
+    setSelectedMonthIdx(null);
   };
+
+  // Reset selected month when destination changes
+  useEffect(() => {
+    setSelectedMonthIdx(null);
+  }, [selectedIata]);
 
   const selectedDest = destinations.find((d) => d.iata === selectedIata) ?? destinations[0];
   const history = histories.find((h) => h.iata === selectedIata) ?? histories[0];
@@ -103,6 +110,7 @@ export function PriceChart({ histories, destinations, lang }: Props) {
   const bestMonthLabels = bestMonths.map((i) => monthlyPrices[i].monthLabel);
   const worstMonthLabels = worstMonths.map((i) => monthlyPrices[i].monthLabel);
   const cheapestMonth = monthlyPrices[bestMonths[0] ?? 0];
+  const displayMonth = selectedMonthIdx !== null ? monthlyPrices[selectedMonthIdx] : cheapestMonth;
   const chartColor = REC_COLORS[cheapestMonth.recommendation];
 
   const { polylinePoints, areaPath, dots, minPrice, maxPrice, minIdx, maxIdx } =
@@ -165,6 +173,11 @@ export function PriceChart({ histories, destinations, lang }: Props) {
           </div>
         </div>
 
+        {/* Hint text */}
+        <p className="text-[11px] text-muted mb-1">
+          {lang === "fr" ? "Clique sur un mois pour voir sa recommandation" : "Click a month to see its recommendation"}
+        </p>
+
         {/* Sparkline SVG */}
         <div className="relative">
           <svg
@@ -198,9 +211,11 @@ export function PriceChart({ histories, destinations, lang }: Props) {
                 key={i}
                 cx={dot.x}
                 cy={dot.y}
-                r={dot.isBest || dot.isWorst ? 4 : 2.5}
+                r={selectedMonthIdx === i ? 6 : dot.isBest || dot.isWorst ? 4 : 2.5}
                 fill={dot.isBest ? "#10b981" : dot.isWorst ? "#ef4444" : chartColor}
-                opacity={dot.isBest || dot.isWorst ? 1 : 0.6}
+                opacity={1}
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelectedMonthIdx(i)}
               />
             ))}
 
@@ -263,23 +278,29 @@ export function PriceChart({ histories, destinations, lang }: Props) {
         <div
           className="mt-3 rounded-xl px-4 py-3 text-xs"
           style={{
-            backgroundColor: `${REC_COLORS[cheapestMonth.recommendation]}15`,
-            border: `1px solid ${REC_COLORS[cheapestMonth.recommendation]}30`,
+            backgroundColor: `${REC_COLORS[displayMonth.recommendation]}15`,
+            border: `1px solid ${REC_COLORS[displayMonth.recommendation]}30`,
           }}
         >
           <span className="mr-1">💡</span>
+          <span className="font-bold text-muted mr-1">
+            {selectedMonthIdx !== null
+              ? displayMonth.monthLabel
+              : (lang === "fr" ? "Meilleur mois" : "Best month")}
+            {" "}—
+          </span>
           <span className="text-muted">
             En{" "}
-            <strong style={{ color: REC_COLORS[cheapestMonth.recommendation] }}>
-              {cheapestMonth.monthLabel}
+            <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+              {displayMonth.monthLabel}
             </strong>
             , tes miles valent{" "}
-            <strong style={{ color: REC_COLORS[cheapestMonth.recommendation] }}>
-              {cheapestMonth.cpm.toFixed(1)}¢/mile
+            <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+              {displayMonth.cpm.toFixed(1)}¢/mile
             </strong>{" "}
             →{" "}
-            <strong style={{ color: REC_COLORS[cheapestMonth.recommendation] }}>
-              {recLabels[cheapestMonth.recommendation]}
+            <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+              {recLabels[displayMonth.recommendation]}
             </strong>
           </span>
         </div>

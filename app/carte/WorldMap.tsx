@@ -170,63 +170,30 @@ export function WorldMap({ destinations, lang }: Props) {
           })}
         </ComposableMap>
 
-        {/* Tooltip — desktop (absolute) */}
-        {selected && (
-          <div
-            className="hidden sm:block absolute top-4 right-4 bg-surface border border-border rounded-2xl p-4 w-64 shadow-xl z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelected(null)}
-              aria-label={lang === "fr" ? "Fermer" : "Close"}
-              className="absolute top-3 right-3 text-muted hover:text-fg text-xs"
-            >
-              {t.close}
-            </button>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">{selected.flag}</span>
+      </div>
+
+      {/* Popup — desktop (below map) */}
+      {selected && (
+        <div className="hidden sm:block mt-3 bg-surface border border-border rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{selected.flag}</span>
               <div>
                 <div className="font-black text-fg text-sm">{selected.city}</div>
                 <div className="text-[11px] text-muted">{selected.country}</div>
               </div>
             </div>
-            <div
-              className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black mb-3"
-              style={{
-                backgroundColor: `${REC_COLORS[selected.recommendation]}22`,
-                color: REC_COLORS[selected.recommendation],
-                border: `1px solid ${REC_COLORS[selected.recommendation]}44`,
-              }}
-            >
-              {recLabels[selected.recommendation]}
-            </div>
-            <div className="flex gap-3 mb-3 text-xs">
-              <div>
-                <div className="text-muted">{t.cash}</div>
-                <div className="font-bold text-fg">${selected.cashEstimateUsd}</div>
-              </div>
-              <div>
-                <div className="text-muted">{t.miles}</div>
-                <div className="font-bold text-fg">
-                  {(selected.milesEstimate / 1000).toFixed(0)}k
-                </div>
-              </div>
-              <div>
-                <div className="text-muted">CPM</div>
-                <div className="font-bold text-fg">
-                  {selected.cpm.toFixed(1)}{t.cpm}
-                </div>
-              </div>
-            </div>
-            <a
-              href={`/destinations/${selected.iata.toLowerCase()}`}
-              className="block w-full text-center bg-primary text-white text-xs font-bold py-2 rounded-xl hover:bg-primary/90 transition-colors"
-            >
-              {t.searchBtn}
-            </a>
+            <button onClick={() => setSelected(null)} className="text-muted hover:text-fg text-xs px-2 py-1 rounded-lg hover:bg-surface-2">✕</button>
           </div>
-        )}
-      </div>
+          <div className="flex gap-4 mt-3 text-xs">
+            <div><div className="text-muted">{t.cash}</div><div className="font-bold text-fg">${selected.cashEstimateUsd}</div></div>
+            <div><div className="text-muted">{t.miles}</div><div className="font-bold text-fg">{(selected.milesEstimate / 1000).toFixed(0)}k</div></div>
+            <div><div className="text-muted">CPM</div><div className="font-bold text-fg">{selected.cpm.toFixed(1)}{t.cpm}</div></div>
+            <div className="ml-auto self-center inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black" style={{ backgroundColor: `${REC_COLORS[selected.recommendation]}22`, color: REC_COLORS[selected.recommendation], border: `1px solid ${REC_COLORS[selected.recommendation]}44` }}>{recLabels[selected.recommendation]}</div>
+          </div>
+          <a href={`/destinations/${selected.iata.toLowerCase()}`} className="block w-full text-center bg-primary text-white text-xs font-bold py-2 rounded-xl hover:bg-primary/90 transition-colors mt-3">{t.searchBtn}</a>
+        </div>
+      )}
 
       {/* Tooltip — mobile (fixed bottom) */}
       {selected && (
@@ -285,6 +252,11 @@ export function WorldMap({ destinations, lang }: Props) {
           </a>
         </div>
       )}
+
+      {/* Hint text */}
+      <p className="text-[11px] text-muted mt-2">
+        {lang === "fr" ? "Clique sur un point pour voir les prix cash & miles" : "Click a point to see cash & miles prices"}
+      </p>
 
       {/* Legend */}
       <div className="flex items-center gap-4 mt-3 flex-wrap">
