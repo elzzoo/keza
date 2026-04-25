@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { SearchForm } from "@/components/SearchForm";
 import { Results } from "@/components/Results";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
+import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import type { FlightResult } from "@/lib/engine";
 import { airportsMap } from "@/data/airports";
 
@@ -401,6 +402,9 @@ export function RoutePageClient({
             </div>
 
             {/* ── Price alert ── */}
+            {/* ── Price history chart ── */}
+            <PriceHistoryChart from={from} to={to} lang={lang} />
+
             <div>
               <h2 className="section-rule mb-4">
                 {fr ? "Suivre ce vol" : "Track this flight"}

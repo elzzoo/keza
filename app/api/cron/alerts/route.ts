@@ -11,6 +11,7 @@ import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
+import { recordDailyPrice } from "@/lib/priceHistory";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
@@ -49,6 +50,9 @@ export async function GET(req: NextRequest) {
       if (allPrices.length === 0) continue;
 
       const cheapest = Math.min(...allPrices);
+
+      // Record daily price for history (fire-and-forget)
+      recordDailyPrice(from, to, cheapest).catch(() => {});
 
       // Check all alerts for this route
       const alerts = await getAlertsByRoute(from, to);
