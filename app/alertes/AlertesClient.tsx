@@ -32,6 +32,65 @@ const CABIN_LABELS_EN: Record<string, string> = {
   first: "First",
 };
 
+// ─── Frequency badge + selector ───────────────────────────────────────────────
+
+function FrequencyBadge({ freq }: { freq?: string }) {
+  if (freq === "daily") return <span title="Daily digest" style={{ color: "#3b82f6" }}>📅</span>;
+  if (freq === "weekly") return <span title="Weekly digest" style={{ color: "#f59e0b" }}>📆</span>;
+  return <span title="Instant" style={{ color: "#10b981" }}>⚡</span>;
+}
+
+function FrequencySelector({
+  alertId,
+  current,
+  token,
+  onChange,
+}: {
+  alertId: string;
+  current: string;
+  token: string;
+  onChange: (freq: "instant" | "daily" | "weekly") => void;
+}) {
+  const [updating, setUpdating] = useState(false);
+
+  async function handleChange(freq: "instant" | "daily" | "weekly") {
+    if (updating || freq === current) return;
+    setUpdating(true);
+    try {
+      const res = await fetch("/api/alerts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: alertId, notifFrequency: freq, token }),
+      });
+      if (res.ok) onChange(freq);
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  return (
+    <div className="flex gap-1 mt-2">
+      {(["instant", "daily", "weekly"] as const).map((f) => (
+        <button
+          key={f}
+          type="button"
+          disabled={updating}
+          onClick={() => handleChange(f)}
+          className={`px-2 py-0.5 rounded-lg text-[10px] font-medium border transition-colors disabled:opacity-40 ${
+            current === f
+              ? "bg-primary/20 border-primary/50 text-primary"
+              : "bg-surface border-border text-subtle hover:border-primary/30"
+          }`}
+        >
+          {f === "instant" ? "⚡" : f === "daily" ? "📅" : "📆"}
+          {" "}
+          {f === "instant" ? "Instant" : f === "daily" ? "Daily" : "Weekly"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string, lang: "fr" | "en"): string {
@@ -63,6 +122,7 @@ export function AlertesClient() {
   const [notice, setNotice] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [alertFreqs, setAlertFreqs] = useState<Record<string, "instant" | "daily" | "weekly">>({});
   const fr = lang === "fr";
 
   const cabinLabels = fr ? CABIN_LABELS_FR : CABIN_LABELS_EN;
@@ -259,14 +319,21 @@ export function AlertesClient() {
                   className="bg-surface border border-border rounded-2xl p-4 flex items-start justify-between gap-4"
                 >
                   <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono font-bold text-fg text-sm">
                         {alert.from} → {alert.to}
                       </span>
                       <span className="text-[11px] text-muted bg-surface-2 px-2 py-0.5 rounded-lg">
                         {cabinLabels[alert.cabin] ?? alert.cabin}
                       </span>
+                      <FrequencyBadge freq={alertFreqs[alert.id] ?? alert.notifFrequency} />
                     </div>
+                    <FrequencySelector
+                      alertId={alert.id}
+                      current={alertFreqs[alert.id] ?? alert.notifFrequency ?? "instant"}
+                      token={manageToken}
+                      onChange={(freq) => setAlertFreqs((prev) => ({ ...prev, [alert.id]: freq }))}
+                    />
                     <p className="text-xs text-muted">
                       {fr ? "Alerte si prix <" : "Alert if price <"}{" "}
                       <span className="text-success font-bold">

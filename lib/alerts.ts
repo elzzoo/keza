@@ -26,6 +26,8 @@ export interface PriceAlert {
   /** Number of notifications sent */
   notifCount: number;
   active: boolean;
+  /** How often to notify. "instant" = as soon as price drops (max 1/24h). "daily" = daily digest. "weekly" = weekly digest. */
+  notifFrequency: "instant" | "daily" | "weekly";
 }
 
 // ─── Redis keys ─────────────────────────────────────────────────────────────
@@ -78,6 +80,7 @@ export async function createAlert(params: {
   to: string;
   cabin: string;
   currentPrice: number;
+  notifFrequency?: "instant" | "daily" | "weekly";
 }): Promise<PriceAlert> {
   const id = generateId();
   const alert: PriceAlert = {
@@ -91,6 +94,7 @@ export async function createAlert(params: {
     createdAt: new Date().toISOString(),
     notifCount: 0,
     active: true,
+    notifFrequency: params.notifFrequency ?? "instant",
   };
 
   await redis.set(ALERT_KEY(id), alert, { ex: INDEX_TTL });
@@ -130,6 +134,41 @@ export async function getAlertsByRoute(from: string, to: string): Promise<PriceA
 export async function getAllActiveRoutes(): Promise<string[]> {
   const routes = await redis.smembers(ALL_ROUTES_KEY);
   return routes;
+}
+
+// ─── Update alert frequency ─────────────────────────────────────────────────
+
+export async function updateAlertFrequency(
+  id: string,
+  frequency: "instant" | "daily" | "weekly"
+): Promise<boolean> {
+  const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
+  if (!alert) return false;
+  alert.notifFrequency = frequency;
+  await redis.set(ALERT_KEY(id), alert, { ex: INDEX_TTL });
+  return true;
+}
+
+// ─── Get all active alerts grouped by email ─────────────────────────────────
+
+export async function getAllActiveAlertsByEmail(): Promise<Map<string, PriceAlert[]>> {
+  const routes = await redis.smembers(ALL_ROUTES_KEY);
+  const byEmail = new Map<string, PriceAlert[]>();
+
+  for (const routeKey of routes) {
+    const [from, to] = (routeKey as string).split(":");
+    if (!from || !to) continue;
+    const ids = await getIdsFromIndex(ALERTS_BY_ROUTE(from, to));
+    for (const id of ids) {
+      const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
+      if (!alert || !alert.active) continue;
+      const existing = byEmail.get(alert.email) ?? [];
+      existing.push(alert);
+      byEmail.set(alert.email, existing);
+    }
+  }
+
+  return byEmail;
 }
 
 // ─── Deactivate alert ───────────────────────────────────────────────────────
@@ -194,6 +233,96 @@ const CABIN_LABELS: Record<PriceAlert["cabin"], string> = {
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
+}
+
+export async function sendDigestEmail(
+  email: string,
+  items: Array<{ alert: PriceAlert; currentPrice: number }>
+): Promise<boolean> {
+  if (items.length === 0) return false;
+
+  const manageToken = createManageAlertsToken(email);
+  const manageUrl = withUtm(
+    `${BASE_URL}/alertes?email=${encodeURIComponent(email)}&token=${encodeURIComponent(manageToken ?? "")}`,
+    "keza",
+    "digest"
+  );
+
+  const firstItem = items[0];
+  const ctaUrl = withUtm(
+    `${BASE_URL}/?from=${firstItem.alert.from}&to=${firstItem.alert.to}`,
+    "keza",
+    "digest"
+  );
+
+  const rows = items
+    .map(({ alert, currentPrice }) => {
+      const belowTarget = currentPrice <= alert.targetPrice;
+      const priceColor = belowTarget ? "#10b981" : "#94a3b8";
+      return `
+      <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p style="margin:0;font-size:14px;font-weight:700;color:#e2e8f0;">${alert.from} → ${alert.to}</p>
+            <p style="margin:2px 0 0;font-size:11px;color:#64748b;">${CABIN_LABELS[alert.cabin]}</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="margin:0;font-size:18px;font-weight:900;color:${priceColor};">$${currentPrice}</p>
+            <p style="margin:0;font-size:10px;color:#64748b;">cible : $${alert.targetPrice}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
+
+  const subject = `✈ Récap KEZA — ${items.length} route${items.length > 1 ? "s" : ""} surveillée${items.length > 1 ? "s" : ""}`;
+
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Récap alertes</p>
+          </div>
+
+          <div style="padding:24px;">
+            <p style="margin:0 0 20px;font-size:15px;color:#e2e8f0;font-weight:600;">
+              Tes alertes actives ✈
+            </p>
+
+            ${rows}
+
+            <a href="${ctaUrl}"
+               style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;margin-top:8px;">
+              Voir les offres →
+            </a>
+
+            <a href="${manageUrl}"
+               style="display:block;text-align:center;background:#1e3a5f;color:#94a3b8;text-decoration:none;padding:12px;border-radius:12px;font-size:13px;border:1px solid #2d4a6f;margin-top:8px;">
+              Gérer mes alertes →
+            </a>
+          </div>
+
+          <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
+            <p style="margin:0;font-size:10px;color:#334155;">
+              Tu reçois cet email car tu as des alertes actives sur KEZA.
+            </p>
+          </div>
+          <img src="${emailOpenPixelUrl("digest", email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[alerts] digest email failed:", err);
+    return false;
+  }
 }
 
 export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): Promise<boolean> {

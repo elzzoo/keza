@@ -4,6 +4,7 @@ import {
   getAlertById,
   getAlertsByEmail,
   sendAlertConfirmationEmail,
+  updateAlertFrequency,
 } from "@/lib/alerts";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
@@ -23,7 +24,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, from, to, cabin, currentPrice, ref } = body;
+    const { email, from, to, cabin, currentPrice, ref, notifFrequency } = body;
+    const freq = (["instant", "daily", "weekly"] as const).includes(notifFrequency) ? notifFrequency as "instant" | "daily" | "weekly" : "instant";
 
     if (!email || !from || !to || !currentPrice) {
       return NextResponse.json(
@@ -84,6 +86,7 @@ export async function POST(req: NextRequest) {
       to,
       cabin: cabin || "economy",
       currentPrice: Number(currentPrice),
+      notifFrequency: freq,
     });
 
     // Fire-and-forget: confirmation email — do not await, must not block the response
@@ -121,6 +124,54 @@ export async function GET(req: NextRequest) {
   }
   const alerts = await getAlertsByEmail(email);
   return NextResponse.json({ alerts });
+}
+
+// PATCH /api/alerts — update notification frequency for an alert
+export async function PATCH(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:alerts:patch",
+    limit: 20,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
+  try {
+    const body = await req.json();
+    const { id, notifFrequency, token } = body;
+
+    if (!id || !notifFrequency || !token) {
+      return NextResponse.json(
+        { error: "Missing required fields: id, notifFrequency, token" },
+        { status: 400 }
+      );
+    }
+
+    if (!(["instant", "daily", "weekly"] as const).includes(notifFrequency)) {
+      return NextResponse.json(
+        { error: "notifFrequency must be instant, daily, or weekly" },
+        { status: 400 }
+      );
+    }
+
+    const alert = await getAlertById(id);
+    if (!alert) {
+      return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    }
+
+    if (!verifyManageAlertsToken(alert.email, token)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ok = await updateAlertFrequency(id, notifFrequency as "instant" | "daily" | "weekly");
+    if (!ok) {
+      return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    logError("[api/alerts] PATCH", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 // DELETE /api/alerts?id=xxx&email=xxx&token=xxx — deactivate an alert for a verified email

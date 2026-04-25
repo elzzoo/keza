@@ -47,6 +47,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed" | "limitReached">("idle");
+  const [frequency, setFrequency] = useState<"instant" | "daily" | "weekly">("instant");
 
   const targetPrice = Math.round(currentPrice * 0.9);
 
@@ -62,6 +63,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         body: JSON.stringify({
           email, from, to, cabin, currentPrice,
           ref: sessionStorage.getItem("keza_ref") ?? undefined,
+          notifFrequency: frequency,
         }),
       });
 
@@ -124,6 +126,40 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         <span>
           {t.target} <span className="text-success font-bold">{fmt(targetPrice)}</span>
         </span>
+      </div>
+
+      {/* Frequency */}
+      <div>
+        <label className="block text-xs text-muted mb-1.5">
+          {lang === "fr" ? "Fréquence de notification" : "Notification frequency"}
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {(["instant", "daily", "weekly"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFrequency(f)}
+              className={`py-2 rounded-xl text-xs font-medium border transition-colors ${
+                frequency === f
+                  ? "bg-accent border-accent text-white"
+                  : "bg-surface border-border text-muted hover:border-accent/50"
+              }`}
+            >
+              {f === "instant"
+                ? lang === "fr" ? "Immédiat" : "Instant"
+                : f === "daily"
+                ? lang === "fr" ? "Quotidien" : "Daily"
+                : lang === "fr" ? "Hebdo" : "Weekly"}
+            </button>
+          ))}
+        </div>
+        <p className="text-[11px] text-muted mt-1">
+          {frequency === "instant"
+            ? lang === "fr" ? "Dès qu'une baisse est détectée" : "As soon as a drop is detected"
+            : frequency === "daily"
+            ? lang === "fr" ? "Un récap quotidien si prix bas" : "Daily recap when prices are low"
+            : lang === "fr" ? "Un récap chaque lundi" : "A recap every Monday"}
+        </p>
       </div>
 
       {/* Email input + submit */}
