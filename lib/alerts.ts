@@ -176,6 +176,10 @@ const FROM_EMAIL =
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
+function emailOpenPixelUrl(type: string, email: string): string {
+  return `${BASE_URL}/api/track/open?type=${encodeURIComponent(type)}&email=${encodeURIComponent(email)}`;
+}
+
 function withUtm(url: string, source: string, campaign: string): string {
   return `${url}${url.includes("?") ? "&" : "?"}utm_source=${source}&utm_medium=email&utm_campaign=${campaign}`;
 }
@@ -236,6 +240,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
           <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
             <a href="${unsubUrl}" style="color:#475569;font-size:11px;text-decoration:underline;">Unsubscribe from this alert</a>
           </div>
+          <img src="${emailOpenPixelUrl("price-drop", alert.email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
         </div>
       `,
     });
@@ -299,6 +304,7 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
               Se désabonner de cette alerte
             </a>
           </div>
+          <img src="${emailOpenPixelUrl("confirmation", alert.email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
         </div>
       `,
     });

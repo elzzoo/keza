@@ -124,6 +124,7 @@ function buildDigestHtml(email: string, alerts: PriceAlert[]): string {
           Tu reçois cet email car tu as des alertes actives sur KEZA.
         </p>
       </div>
+      <img src="${BASE_URL}/api/track/open?type=digest&email=${encodeURIComponent(email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
     </div>
   `;
 }
