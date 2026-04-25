@@ -1,11 +1,12 @@
 // __tests__/api/push-subscribe.test.ts
-// Tests for POST /api/push/subscribe
+const mockSaveForEmail = jest.fn();
+const mockVerify = jest.fn();
 
 jest.mock("@/lib/push", () => ({
-  savePushSubscription: jest.fn(),
+  savePushSubscriptionForEmail: (...args: unknown[]) => mockSaveForEmail(...args),
 }));
-jest.mock("@/lib/redis", () => ({
-  redis: { scard: jest.fn().mockResolvedValue(0) },
+jest.mock("@/lib/alertTokens", () => ({
+  verifyManageAlertsToken: (...args: unknown[]) => mockVerify(...args),
 }));
 jest.mock("@/lib/ratelimit", () => ({
   rateLimitResponse: jest.fn().mockResolvedValue(null),
@@ -13,9 +14,13 @@ jest.mock("@/lib/ratelimit", () => ({
 
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/push/subscribe/route";
-import { savePushSubscription } from "@/lib/push";
 
-const mockSave = savePushSubscription as jest.MockedFunction<typeof savePushSubscription>;
+const VALID_SUB = {
+  endpoint: "https://push.example.com/sub/a",
+  keys: { p256dh: "key-p256dh", auth: "key-auth" },
+};
+const VALID_EMAIL = "user@example.com";
+const VALID_TOKEN = "valid-token";
 
 function makeRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/push/subscribe", {
@@ -28,41 +33,37 @@ function makeRequest(body: unknown): NextRequest {
 beforeEach(() => jest.clearAllMocks());
 
 describe("POST /api/push/subscribe", () => {
-  it("returns 400 when body is empty object", async () => {
-    const res = await POST(makeRequest({}));
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toBeDefined();
+  it("returns 401 when token is missing", async () => {
+    mockVerify.mockReturnValue(false);
+    const res = await POST(makeRequest({ subscription: VALID_SUB, email: VALID_EMAIL }));
+    expect(res.status).toBe(401);
   });
 
-  it("returns 400 when endpoint is missing", async () => {
-    const res = await POST(makeRequest({ keys: { p256dh: "k", auth: "a" } }));
-    expect(res.status).toBe(400);
+  it("returns 401 when token is invalid", async () => {
+    mockVerify.mockReturnValue(false);
+    const res = await POST(makeRequest({ subscription: VALID_SUB, email: VALID_EMAIL, token: "bad-token" }));
+    expect(res.status).toBe(401);
   });
 
-  it("returns 400 when keys are missing", async () => {
-    const res = await POST(makeRequest({ endpoint: "https://push.example.com/sub" }));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 400 when p256dh key is missing", async () => {
-    const res = await POST(
-      makeRequest({ endpoint: "https://push.example.com/sub", keys: { auth: "a" } })
-    );
+  it("returns 400 when email is missing", async () => {
+    mockVerify.mockReturnValue(true);
+    const res = await POST(makeRequest({ subscription: VALID_SUB, token: VALID_TOKEN }));
     expect(res.status).toBe(400);
   });
 
-  it("returns 201 and calls savePushSubscription for valid body", async () => {
-    mockSave.mockResolvedValue(undefined);
-    const res = await POST(
-      makeRequest({
-        endpoint: "https://push.example.com/sub",
-        keys: { p256dh: "key-p256dh", auth: "key-auth" },
-      })
-    );
+  it("returns 400 when subscription endpoint is missing", async () => {
+    mockVerify.mockReturnValue(true);
+    const res = await POST(makeRequest({ subscription: { keys: VALID_SUB.keys }, email: VALID_EMAIL, token: VALID_TOKEN }));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 201 and saves subscription for valid request", async () => {
+    mockVerify.mockReturnValue(true);
+    mockSaveForEmail.mockResolvedValue(undefined);
+    const res = await POST(makeRequest({ subscription: VALID_SUB, email: VALID_EMAIL, token: VALID_TOKEN }));
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.ok).toBe(true);
-    expect(mockSave).toHaveBeenCalledTimes(1);
+    expect(mockSaveForEmail).toHaveBeenCalledTimes(1);
   });
 });

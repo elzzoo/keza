@@ -5,6 +5,7 @@ const mockSadd = jest.fn();
 const mockSmembers = jest.fn();
 const mockSrem = jest.fn();
 const mockScard = jest.fn();
+const mockExpire = jest.fn();
 
 jest.mock("@/lib/redis", () => ({
   redis: {
@@ -12,6 +13,7 @@ jest.mock("@/lib/redis", () => ({
     smembers: (...args: unknown[]) => mockSmembers(...args),
     srem: (...args: unknown[]) => mockSrem(...args),
     scard: (...args: unknown[]) => mockScard(...args),
+    expire: (...args: unknown[]) => mockExpire(...args),
   },
 }));
 
@@ -19,6 +21,9 @@ import {
   savePushSubscription,
   getPushSubscriptions,
   removePushSubscription,
+  savePushSubscriptionForEmail,
+  getPushSubscriptionsForEmail,
+  removePushSubscriptionForEmail,
   type PushSubscriptionRecord,
 } from "@/lib/push";
 
@@ -87,6 +92,60 @@ describe("removePushSubscription", () => {
   it("does nothing when endpoint is not found", async () => {
     mockSmembers.mockResolvedValue([JSON.stringify(SUB_B)]);
     await removePushSubscription("https://unknown.endpoint");
+    expect(mockSrem).not.toHaveBeenCalled();
+  });
+});
+
+describe("savePushSubscriptionForEmail", () => {
+  it("calls redis.sadd with per-email key and serialised subscription", async () => {
+    mockSadd.mockResolvedValue(1);
+    mockExpire.mockResolvedValue(1);
+    await savePushSubscriptionForEmail("User@Example.com", SUB_A);
+    expect(mockSadd).toHaveBeenCalledWith(
+      "keza:push:subs:user@example.com",
+      JSON.stringify(SUB_A)
+    );
+    expect(mockExpire).toHaveBeenCalledWith(
+      "keza:push:subs:user@example.com",
+      90 * 24 * 60 * 60
+    );
+  });
+});
+
+describe("getPushSubscriptionsForEmail", () => {
+  it("returns empty array when set is empty", async () => {
+    mockSmembers.mockResolvedValue([]);
+    const result = await getPushSubscriptionsForEmail("user@example.com");
+    expect(result).toEqual([]);
+  });
+
+  it("parses and returns valid subscriptions", async () => {
+    mockSmembers.mockResolvedValue([JSON.stringify(SUB_A), JSON.stringify(SUB_B)]);
+    const result = await getPushSubscriptionsForEmail("user@example.com");
+    expect(result).toHaveLength(2);
+  });
+
+  it("skips malformed entries", async () => {
+    mockSmembers.mockResolvedValue(["{bad", JSON.stringify(SUB_A)]);
+    const result = await getPushSubscriptionsForEmail("user@example.com");
+    expect(result).toHaveLength(1);
+  });
+});
+
+describe("removePushSubscriptionForEmail", () => {
+  it("removes matching subscription for email", async () => {
+    mockSmembers.mockResolvedValue([JSON.stringify(SUB_A), JSON.stringify(SUB_B)]);
+    mockSrem.mockResolvedValue(1);
+    await removePushSubscriptionForEmail("user@example.com", SUB_A.endpoint);
+    expect(mockSrem).toHaveBeenCalledWith(
+      "keza:push:subs:user@example.com",
+      JSON.stringify(SUB_A)
+    );
+  });
+
+  it("does nothing when endpoint not found", async () => {
+    mockSmembers.mockResolvedValue([JSON.stringify(SUB_B)]);
+    await removePushSubscriptionForEmail("user@example.com", "https://not.found");
     expect(mockSrem).not.toHaveBeenCalled();
   });
 });
