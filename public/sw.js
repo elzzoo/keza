@@ -1,6 +1,6 @@
 /// KEZA Service Worker — offline-first for static assets, network-first for API
-const CACHE_NAME = "keza-v2";
-const STATIC_ASSETS = ["/", "/manifest.json", "/icons/icon-192.svg", "/icons/icon-512.svg"];
+const CACHE_NAME = "keza-v3";
+const STATIC_ASSETS = ["/", "/manifest.json"];
 
 // Install: pre-cache shell
 self.addEventListener("install", (event) => {
@@ -33,8 +33,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body,
-    icon: "/icons/icon-192.svg",
-    badge: "/icons/icon-192.svg",
+    icon: "/api/icons/192",
+    badge: "/api/icons/192",
     tag: "keza-price-alert",
     renotify: true,
     data: { url: data.url || "/" },
