@@ -9,6 +9,7 @@ import { sendPushToEmail } from "@/lib/push";
 import { createManageAlertsToken } from "@/lib/alertTokens";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
+import { trackServerEvent } from "@/lib/analytics";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
@@ -84,6 +85,14 @@ export async function GET(req: NextRequest) {
           await updateAlertAfterCheck(alert.id, adjustedPrice, sent);
           if (sent) {
             notified++;
+            // Track alert triggered (server-side analytics)
+            trackServerEvent("Alert Triggered", {
+              from: alert.from,
+              to: alert.to,
+              route: `${alert.from}-${alert.to}`,
+              cabin: alert.cabin,
+              price_usd: adjustedPrice,
+            }).catch(() => {});
             // Fire targeted push for this specific alert
             const manageToken = createManageAlertsToken(alert.email);
             sendPushToEmail(alert.email, {

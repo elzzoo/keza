@@ -147,3 +147,34 @@ export function trackDealShare(params: { from: string; to: string; program: stri
     program: params.program,
   });
 }
+
+/**
+ * Server-side Plausible event — for cron jobs and API routes.
+ * Docs: https://plausible.io/docs/events-api
+ * Fire-and-forget — never await in hot paths.
+ */
+export async function trackServerEvent(
+  event: string,
+  props?: Record<string, string | number | boolean>,
+  url?: string
+): Promise<void> {
+  const domain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? process.env.NEXT_PUBLIC_SITE_URL?.replace("https://", "") ?? "keza-taupe.vercel.app";
+  try {
+    await fetch("https://plausible.io/api/event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "KEZA-Server/1.0",
+        "X-Forwarded-For": "127.0.0.1",
+      },
+      body: JSON.stringify({
+        name: event,
+        url: url ?? `https://${domain}/api/cron/alerts`,
+        domain,
+        props: props ?? {},
+      }),
+    });
+  } catch {
+    // Never crash the app because of analytics
+  }
+}

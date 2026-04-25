@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { hasCronSecret } from "@/lib/auth";
 import { createManageAlertsToken } from "@/lib/alertTokens";
 import { logError } from "@/lib/logger";
+import { trackServerEvent } from "@/lib/analytics";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -171,6 +172,7 @@ export async function GET(req: NextRequest) {
       });
       await redis.set(DIGEST_LAST_KEY(email), "1", { ex: DIGEST_COOLDOWN_SEC });
       sent++;
+      trackServerEvent("Digest Sent", { email_count: 1 }).catch(() => {});
     } catch (err) {
       errors.push(`${email}: ${(err as Error).message}`);
     }
