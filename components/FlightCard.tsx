@@ -1,9 +1,11 @@
 "use client";
 
 import clsx from "clsx";
+import { useState, useEffect } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
+import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
@@ -53,6 +55,10 @@ function priceSize(formatted: string): string {
 export function FlightCard({ flight, lang, formatPrice }: Props) {
   const fr = lang === "fr";
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
+  const [variant, setVariant] = useState<"A" | "B">("A");
+  useEffect(() => {
+    setVariant(getOrAssignVariant());
+  }, []);
 
   const cashCost   = flight.cashCost;
   const milesCost  = flight.milesCost;
@@ -224,6 +230,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
               recommendation: flight.recommendation ?? "NONE",
               savings: flight.savings,
               airline: airlines[0],
+              variant,
             })}
             className={clsx(
               "flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-[13px] font-bold transition-all hover-lift",
@@ -237,7 +244,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-            {fr ? "Voir & réserver ce vol" : "View & book this flight"}
+            {fr ? CTA_COPY[variant].fr : CTA_COPY[variant].en}
           </a>
         </div>
       )}

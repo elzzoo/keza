@@ -36,6 +36,7 @@ export function trackBookClick(params: {
   recommendation: string;
   savings: number;
   airline?: string;
+  variant?: string;
 }) {
   track("Book Click", {
     from: params.from,
@@ -45,6 +46,7 @@ export function trackBookClick(params: {
     recommendation: params.recommendation,
     savings_usd: Math.round(params.savings),
     airline: params.airline ?? "unknown",
+    ab_variant: params.variant ?? "A",
   });
 }
 
