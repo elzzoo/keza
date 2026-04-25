@@ -188,7 +188,7 @@ export function AlertesClient() {
         </div>
 
         {/* Push notifications opt-in */}
-        <PushAlertButton lang={lang} />
+        <PushAlertButton lang={lang} email={email} token={manageToken} />
 
         {/* Email form */}
         <form onSubmit={handleFetch} className="flex gap-2 mt-4 mb-8">
