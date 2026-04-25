@@ -3,6 +3,8 @@ import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import type { PriceAlert } from "@/lib/alerts";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Admin — KEZA", robots: "noindex" };
 export const dynamic = "force-dynamic";
@@ -85,7 +87,7 @@ function LoginForm() {
         <p className="mt-1 text-sm text-gray-500">
           Accès restreint. Entrez le secret admin.
         </p>
-        <form method="GET" className="mt-6 space-y-4">
+        <form method="POST" action="/api/admin/session" className="mt-6 space-y-4">
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Secret</span>
             <input
@@ -110,16 +112,11 @@ function LoginForm() {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-interface Props {
-  searchParams: Promise<{ secret?: string }>;
-}
+export default async function AdminPage() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
 
-export default async function AdminPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const cronSecret = process.env.CRON_SECRET;
-
-  // Guard: no secret configured or wrong secret
-  if (!cronSecret || params.secret !== cronSecret) {
+  if (!verifyAdminSessionToken(sessionToken)) {
     return <LoginForm />;
   }
 
@@ -158,9 +155,19 @@ export default async function AdminPage({ searchParams }: Props) {
               {stats ? formatDate(stats.fetchedAt) : "—"}
             </p>
           </div>
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-            KEZA
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+              KEZA
+            </span>
+            <form method="POST" action="/api/admin/session?_method=DELETE">
+              <button
+                type="submit"
+                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-100"
+              >
+                Déconnexion
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Error state */}
@@ -226,39 +233,18 @@ export default async function AdminPage({ searchParams }: Props) {
 
             {/* Quick links */}
             <div className="mt-6 flex flex-wrap gap-2 text-xs">
-              <a
-                href={`/api/cron/deals?secret=${params.secret}`}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-gray-600 hover:bg-gray-50"
-              >
-                ▶ Lancer cron deals
-              </a>
-              <a
-                href={`/api/cron/alerts?secret=${params.secret}`}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-gray-600 hover:bg-gray-50"
-              >
-                ▶ Lancer cron alertes
-              </a>
-              <a
-                href={`/api/cron/miles-prices?secret=${params.secret}`}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-gray-600 hover:bg-gray-50"
-              >
-                ▶ Recalibrer miles
-              </a>
-              <a
-                href={`/api/push/test?secret=${params.secret}`}
-                className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-purple-700 hover:bg-purple-100"
-              >
-                🔔 Test push (GET)
-              </a>
+              <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700">
+                Actions cron désactivées depuis le navigateur: utiliser Authorization: Bearer CRON_SECRET.
+              </span>
             </div>
             {/* VAPID status note */}
             {stats.pushSubscriptions > 0 && (
               <p className="mt-3 text-xs text-gray-400">
                 Pour envoyer un push test, POST sur{" "}
                 <code className="font-mono bg-gray-100 px-1 rounded">
-                  /api/push/test?secret=…
+                  /api/push/test
                 </code>{" "}
-                depuis curl ou le bouton ci-dessus (GET = statut seulement).
+                avec le header Authorization: Bearer CRON_SECRET.
               </p>
             )}
           </>

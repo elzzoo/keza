@@ -14,13 +14,17 @@ const SECURITY_HEADERS = [
   },
   // Cross-Origin policies for SharedArrayBuffer safety
   { key: "X-DNS-Prefetch-Control", value: "on" },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
 ];
 
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   experimental: {
     serverActions: { allowedOrigins: ["localhost:3000"] },
-    serverExternalPackages: ["web-push"],
+    serverComponentsExternalPackages: ["web-push"],
   },
   async headers() {
     return [

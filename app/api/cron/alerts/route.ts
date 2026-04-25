@@ -7,16 +7,11 @@ import {
 } from "@/lib/alerts";
 import { sendPushToAll } from "@/lib/push";
 import { fetchCalendarPrices } from "@/lib/engine";
-
-// Vercel cron header check
-function isVercelCron(req: NextRequest): boolean {
-  return req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
-}
+import { hasCronSecret } from "@/lib/auth";
 
 // GET /api/cron/alerts — check prices and send drop notifications
 export async function GET(req: NextRequest) {
-  // In production, verify cron secret
-  if (process.env.CRON_SECRET && !isVercelCron(req)) {
+  if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -37,13 +32,13 @@ export async function GET(req: NextRequest) {
       const month2 = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
 
       const [prices1, prices2] = await Promise.all([
-        fetchCalendarPrices(from, to, month1).catch(() => ({})),
-        fetchCalendarPrices(from, to, month2).catch(() => ({})),
+        fetchCalendarPrices(from, to, month1).catch(() => []),
+        fetchCalendarPrices(from, to, month2).catch(() => []),
       ]);
 
       const allPrices = [
-        ...Object.values(prices1 as Record<string, number>),
-        ...Object.values(prices2 as Record<string, number>),
+        ...prices1.map((day) => day.price),
+        ...prices2.map((day) => day.price),
       ].filter((p) => typeof p === "number" && p > 0);
 
       if (allPrices.length === 0) continue;

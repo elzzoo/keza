@@ -11,6 +11,7 @@ import { PushAlertButton } from "@/components/PushAlertButton";
 // ─── Email localStorage key ───────────────────────────────────────────────────
 
 const EMAIL_STORAGE_KEY = "keza:alertes:email";
+const TOKEN_STORAGE_KEY = "keza:alertes:token";
 
 // ─── Cabin labels ─────────────────────────────────────────────────────────────
 
@@ -52,26 +53,33 @@ export function AlertesClient() {
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [email, setEmail] = useState("");
   const [alerts, setAlerts] = useState<PriceAlert[] | null>(null);
+  const [manageToken, setManageToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const fr = lang === "fr";
 
   const cabinLabels = fr ? CABIN_LABELS_FR : CABIN_LABELS_EN;
 
-  const fetchAlerts = useCallback(async (emailArg: string) => {
+  const fetchAlerts = useCallback(async (emailArg: string, tokenArg: string) => {
     const normalizedEmail = emailArg.trim().toLowerCase();
+    if (!normalizedEmail || !tokenArg) return;
     setLoading(true);
     setFetchError(false);
+    setNotice(null);
     setAlerts(null);
     try {
-      const res = await fetch(`/api/alerts?email=${encodeURIComponent(normalizedEmail)}`);
+      const res = await fetch(
+        `/api/alerts?email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(tokenArg)}`
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: { alerts: PriceAlert[] } = await res.json();
       if (!Array.isArray(data.alerts)) throw new Error("Unexpected payload");
       setAlerts(data.alerts.filter((a) => a.active));
       localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
+      localStorage.setItem(TOKEN_STORAGE_KEY, tokenArg);
     } catch {
       setFetchError(true);
     } finally {
@@ -81,17 +89,50 @@ export function AlertesClient() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const urlEmail = params.get("email");
+    const urlToken = params.get("token");
+    if (urlEmail && urlToken) {
+      const normalizedEmail = urlEmail.trim().toLowerCase();
+      setEmail(normalizedEmail);
+      setManageToken(urlToken);
+      fetchAlerts(normalizedEmail, urlToken);
+      return;
+    }
+
     const saved = localStorage.getItem(EMAIL_STORAGE_KEY);
-    if (saved) {
+    const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (saved && savedToken) {
       setEmail(saved);
-      fetchAlerts(saved);
+      setManageToken(savedToken);
+      fetchAlerts(saved, savedToken);
     }
   }, [fetchAlerts]);
 
   async function handleFetch(e: React.FormEvent) {
     e.preventDefault();
     if (!email || loading) return;
-    await fetchAlerts(email.trim().toLowerCase());
+    const normalizedEmail = email.trim().toLowerCase();
+    setLoading(true);
+    setFetchError(false);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/alerts/manage-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setAlerts(null);
+      setNotice(fr
+        ? "Si des alertes existent pour cet email, un lien de gestion vient d'être envoyé."
+        : "If alerts exist for this email, a management link has been sent.");
+      localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
+    } catch {
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -100,7 +141,11 @@ export function AlertesClient() {
     setDeletingId(id);
     try {
       setDeleteError(null);
-      const res = await fetch(`/api/alerts?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const normalizedEmail = email.trim().toLowerCase();
+      const res = await fetch(
+        `/api/alerts?id=${encodeURIComponent(id)}&email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(manageToken)}`,
+        { method: "DELETE" }
+      );
       if (res.ok) {
         if (alertToDelete) {
           trackAlertDeleted({ from: alertToDelete.from, to: alertToDelete.to, cabin: alertToDelete.cabin });
@@ -109,6 +154,8 @@ export function AlertesClient() {
           const next = prev?.filter((a) => a.id !== id) ?? null;
           if (next !== null && next.length === 0) {
             localStorage.removeItem(EMAIL_STORAGE_KEY);
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            setManageToken("");
           }
           return next;
         });
@@ -135,8 +182,8 @@ export function AlertesClient() {
           </div>
           <p className="text-sm text-muted">
             {fr
-              ? "Entre ton email pour voir et gérer tes alertes actives."
-              : "Enter your email to view and manage your active alerts."}
+              ? "Entre ton email pour recevoir un lien sécurisé de gestion."
+              : "Enter your email to receive a secure management link."}
           </p>
         </div>
 
@@ -160,9 +207,13 @@ export function AlertesClient() {
           >
             {loading
               ? fr ? "Chargement…" : "Loading…"
-              : fr ? "Voir mes alertes →" : "View my alerts →"}
+              : fr ? "Recevoir le lien →" : "Send link →"}
           </button>
         </form>
+
+        {notice && (
+          <p className="text-sm text-success mb-4">{notice}</p>
+        )}
 
         {/* Error */}
         {fetchError && (

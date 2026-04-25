@@ -1,6 +1,10 @@
 import "server-only";
 import { redis } from "./redis";
 import { Resend } from "resend";
+import {
+  createManageAlertsToken,
+  createUnsubscribeAlertToken,
+} from "@/lib/alertTokens";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -91,6 +95,10 @@ export async function getAlertsByEmail(email: string): Promise<PriceAlert[]> {
   return alerts;
 }
 
+export async function getAlertById(id: string): Promise<PriceAlert | null> {
+  return await redis.get<PriceAlert>(ALERT_KEY(id));
+}
+
 export async function getAlertsByRoute(from: string, to: string): Promise<PriceAlert[]> {
   const ids = await redis.get<string[]>(ALERTS_BY_ROUTE(from, to)) ?? [];
   const alerts: PriceAlert[] = [];
@@ -159,7 +167,8 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
   const drop = Math.round(((alert.basePrice - newPrice) / alert.basePrice) * 100);
   const savings = Math.round(alert.basePrice - newPrice);
 
-  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${alert.id}`;
+  const unsubToken = createUnsubscribeAlertToken(alert.id);
+  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${encodeURIComponent(alert.id)}&token=${encodeURIComponent(unsubToken ?? "")}`;
   const searchUrl = withUtm(`${BASE_URL}/?from=${alert.from}&to=${alert.to}`, "keza", "price-drop");
 
   try {
@@ -210,8 +219,14 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
 
 /** Send a confirmation email when a price alert is created. Fire-and-forget — caller should not await if it doesn't need to block. */
 export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boolean> {
-  const manageUrl = withUtm(`${BASE_URL}/alertes`, "keza", "confirmation");
-  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${alert.id}`;
+  const manageToken = createManageAlertsToken(alert.email);
+  const unsubToken = createUnsubscribeAlertToken(alert.id);
+  const manageUrl = withUtm(
+    `${BASE_URL}/alertes?email=${encodeURIComponent(alert.email)}&token=${encodeURIComponent(manageToken ?? "")}`,
+    "keza",
+    "confirmation"
+  );
+  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${encodeURIComponent(alert.id)}&token=${encodeURIComponent(unsubToken ?? "")}`;
 
   try {
     const resend = getResend();
@@ -261,6 +276,51 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
     return true;
   } catch (err) {
     console.error("[alerts] confirmation email failed:", err);
+    return false;
+  }
+}
+
+export async function sendManageAlertsEmail(email: string, alerts: PriceAlert[]): Promise<boolean> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const manageToken = createManageAlertsToken(normalizedEmail);
+  if (!manageToken) return false;
+
+  const manageUrl = withUtm(
+    `${BASE_URL}/alertes?email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(manageToken)}`,
+    "keza",
+    "manage-alerts"
+  );
+
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: normalizedEmail,
+      subject: `Gérer tes alertes prix | KEZA`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Gestion des alertes</p>
+          </div>
+          <div style="padding:24px;">
+            <p style="margin:0 0 16px;font-size:15px;color:#e2e8f0;font-weight:600;">
+              Accède à tes ${alerts.length} alerte${alerts.length > 1 ? "s" : ""} active${alerts.length > 1 ? "s" : ""}
+            </p>
+            <a href="${manageUrl}"
+               style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;">
+              Gérer mes alertes
+            </a>
+            <p style="margin:16px 0 0;font-size:11px;color:#64748b;text-align:center;">
+              Ce lien expire dans 7 jours.
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[alerts] manage email failed:", err);
     return false;
   }
 }

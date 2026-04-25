@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllActiveRoutes, getAlertsByRoute, type PriceAlert } from "@/lib/alerts";
 import { redis } from "@/lib/redis";
 import { Resend } from "resend";
+import { hasCronSecret } from "@/lib/auth";
+import { createManageAlertsToken } from "@/lib/alertTokens";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -25,12 +27,6 @@ const CABIN_LABELS: Record<PriceAlert["cabin"], string> = {
 const DIGEST_LAST_KEY = (email: string) => `keza:digest:last:${email.toLowerCase()}`;
 const DIGEST_COOLDOWN_SEC = 6 * 24 * 60 * 60; // 6 days
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
-
-function isVercelCron(req: NextRequest): boolean {
-  return req.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
-}
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function progressPct(alert: PriceAlert): number {
@@ -49,7 +45,12 @@ function bookingUrl(from: string, to: string): string {
 // ─── Email template ──────────────────────────────────────────────────────────
 
 function buildDigestHtml(email: string, alerts: PriceAlert[]): string {
-  const manageUrl = withUtm(`${BASE_URL}/alertes`, "keza", "weekly-digest");
+  const manageToken = createManageAlertsToken(email);
+  const manageUrl = withUtm(
+    `${BASE_URL}/alertes?email=${encodeURIComponent(email.toLowerCase())}&token=${encodeURIComponent(manageToken ?? "")}`,
+    "keza",
+    "weekly-digest"
+  );
 
   const alertRows = alerts
     .map((alert) => {
@@ -129,9 +130,7 @@ function buildDigestHtml(email: string, alerts: PriceAlert[]): string {
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  if (!process.env.CRON_SECRET) {
-    console.warn("[digest] CRON_SECRET not set — endpoint is unprotected");
-  } else if (!isVercelCron(req)) {
+  if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAlert, getAlertsByEmail, sendAlertConfirmationEmail } from "@/lib/alerts";
+import {
+  createAlert,
+  getAlertById,
+  getAlertsByEmail,
+  sendAlertConfirmationEmail,
+} from "@/lib/alerts";
+import { verifyManageAlertsToken } from "@/lib/alertTokens";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // POST /api/alerts — create a new price alert
 export async function POST(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:alerts:post",
+    limit: 5,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const { email, from, to, cabin, currentPrice } = body;
@@ -57,24 +71,54 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/alerts?email=xxx — list active alerts for an email
+// GET /api/alerts?email=xxx&token=xxx — list active alerts for a verified email
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:alerts:get",
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const email = req.nextUrl.searchParams.get("email");
+  const token = req.nextUrl.searchParams.get("token");
   if (!email) {
     return NextResponse.json({ error: "Missing email param" }, { status: 400 });
+  }
+  if (!verifyManageAlertsToken(email, token)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const alerts = await getAlertsByEmail(email);
   return NextResponse.json({ alerts });
 }
 
-// DELETE /api/alerts?id=xxx — deactivate an alert
+// DELETE /api/alerts?id=xxx&email=xxx&token=xxx — deactivate an alert for a verified email
 export async function DELETE(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:alerts:delete",
+    limit: 20,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   const id = req.nextUrl.searchParams.get("id");
+  const email = req.nextUrl.searchParams.get("email");
+  const token = req.nextUrl.searchParams.get("token");
   if (!id) {
     return NextResponse.json({ error: "Missing id param" }, { status: 400 });
   }
+  if (!email) {
+    return NextResponse.json({ error: "Missing email param" }, { status: 400 });
+  }
+  if (!verifyManageAlertsToken(email, token)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { deactivateAlert } = await import("@/lib/alerts");
+    const alert = await getAlertById(id);
+    if (!alert || alert.email !== email.trim().toLowerCase()) {
+      return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    }
     const ok = await deactivateAlert(id);
     if (!ok) {
       return NextResponse.json({ error: "Alert not found" }, { status: 404 });

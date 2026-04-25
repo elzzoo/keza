@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deactivateAlert } from "@/lib/alerts";
 import { SITE_URL } from "@/lib/siteConfig";
+import { verifyUnsubscribeAlertToken } from "@/lib/alertTokens";
 
 // GET /api/alerts/unsubscribe?id=alt_xxx — deactivate an alert (from email link)
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
+  const token = req.nextUrl.searchParams.get("token");
 
-  if (!id) {
-    return new NextResponse(html("Missing alert ID", false), {
+  if (!id || !token) {
+    return new NextResponse(html("Missing alert token", false), {
       status: 400,
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
+  if (!verifyUnsubscribeAlertToken(id, token)) {
+    return new NextResponse(html("Invalid or expired unsubscribe link.", false), {
+      status: 401,
       headers: { "Content-Type": "text/html" },
     });
   }

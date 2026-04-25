@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
 import { redis } from "@/lib/redis";
+import { hasAdminSecret } from "@/lib/auth";
 
 // ── Admin endpoint to update miles values dynamically ────────────────────────
 // POST /api/admin/update-data
@@ -12,12 +12,6 @@ import { redis } from "@/lib/redis";
 // first, falling back to static values in milesPrices.ts.
 //
 // This allows updating mile valuations without redeploying the app.
-
-function safeCompare(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a.padEnd(256));
-  const bBuf = Buffer.from(b.padEnd(256));
-  return timingSafeEqual(aBuf, bBuf) && a.length === b.length;
-}
 
 const VALID_PROGRAMS = [
   "Flying Blue",
@@ -38,9 +32,7 @@ const TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export async function POST(request: Request): Promise<NextResponse> {
   // Auth check
-  const secret = process.env.ADMIN_SECRET ?? process.env.CRON_SECRET;
-  const authHeader = request.headers.get("Authorization");
-  if (!secret || !authHeader || !safeCompare(authHeader, `Bearer ${secret}`)) {
+  if (!hasAdminSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
@@ -92,9 +84,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
 // GET: show current effective prices (static + overrides)
 export async function GET(request: Request): Promise<NextResponse> {
-  const secret = process.env.ADMIN_SECRET ?? process.env.CRON_SECRET;
-  const authHeader = request.headers.get("Authorization");
-  if (!secret || !authHeader || !safeCompare(authHeader, `Bearer ${secret}`)) {
+  if (!hasAdminSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

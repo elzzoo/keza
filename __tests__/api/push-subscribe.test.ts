@@ -7,6 +7,9 @@ jest.mock("@/lib/push", () => ({
 jest.mock("@/lib/redis", () => ({
   redis: { scard: jest.fn().mockResolvedValue(0) },
 }));
+jest.mock("@/lib/ratelimit", () => ({
+  rateLimitResponse: jest.fn().mockResolvedValue(null),
+}));
 
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/push/subscribe/route";

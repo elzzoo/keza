@@ -1,18 +1,12 @@
 // app/api/cron/deals/route.ts
 import { NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
 import { redis } from "@/lib/redis";
 import { sortDeals, type RawDeal } from "@/lib/dealsEngine";
 import { DEALS_KEY } from "@/lib/redisKeys";
+import { hasCronSecret } from "@/lib/auth";
 
 const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
 const LAST_CRON_KEY = "keza:admin:last_cron_at";
-
-function safeCompare(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a.padEnd(256));
-  const bBuf = Buffer.from(b.padEnd(256));
-  return timingSafeEqual(aBuf, bBuf) && a.length === b.length;
-}
 
 // Routes populaires mondiales avec miles estimés (economy, aller simple)
 const ROUTES_TO_CHECK: RawDeal[] = [
@@ -46,14 +40,7 @@ async function fetchBestPrice(from: string, to: string, token: string): Promise<
 }
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  const auth   = request.headers.get("authorization");
-  const url    = new URL(request.url);
-  const paramSecret = url.searchParams.get("secret");
-  const authorized =
-    secret &&
-    (safeCompare(auth ?? "", `Bearer ${secret}`) || safeCompare(paramSecret ?? "", secret));
-  if (!authorized) {
+  if (!hasCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

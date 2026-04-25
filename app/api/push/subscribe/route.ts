@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { savePushSubscription, type PushSubscriptionRecord } from "@/lib/push";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 const PUSH_SUBS_KEY = "keza:push:subscriptions";
 const MAX_SUBSCRIPTIONS = 10_000;
 
 // POST /api/push/subscribe — save a Web Push subscription from the browser
 export async function POST(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:push-subscribe:post",
+    limit: 20,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   try {
     const body = await req.json();
 

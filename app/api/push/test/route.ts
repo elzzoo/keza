@@ -1,30 +1,14 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
 import { getPushSubscriptions, sendPushToAll } from "@/lib/push";
-
-// ─── Auth ────────────────────────────────────────────────────────────────────
-
-function safeCompare(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a.padEnd(256));
-  const bBuf = Buffer.from(b.padEnd(256));
-  return timingSafeEqual(aBuf, bBuf) && a.length === b.length;
-}
-
-function isAuthorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const auth = req.headers.get("authorization") ?? "";
-  const param = new URL(req.url).searchParams.get("secret") ?? "";
-  return safeCompare(auth, `Bearer ${secret}`) || safeCompare(param, secret);
-}
+import { hasCronSecret } from "@/lib/auth";
 
 // ─── POST /api/push/test ─────────────────────────────────────────────────────
 // Send a test push notification to all stored subscribers.
 // Protected by CRON_SECRET — call from the admin dashboard.
 
 export async function POST(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -54,7 +38,7 @@ export async function POST(req: NextRequest) {
 // ─── GET /api/push/test — status check ──────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

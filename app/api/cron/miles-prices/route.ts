@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
 import { redis } from "@/lib/redis";
 import { MILES_PRICE_MAP } from "@/data/milesPrices";
 import { recalibrate, getForexRate } from "@/lib/autoCalibrate";
+import { hasCronSecret } from "@/lib/auth";
 
 // ─── Daily cron job: fully automatic data refresh ────────────────────────────
 // Runs every day at 03:00 UTC (configured in vercel.json)
@@ -14,17 +14,9 @@ import { recalibrate, getForexRate } from "@/lib/autoCalibrate";
 // 3. SYNC static baselines to Redis (fallback if no observations yet)
 // 4. REPORT what changed
 
-function safeCompare(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a.padEnd(256));
-  const bBuf = Buffer.from(b.padEnd(256));
-  return timingSafeEqual(aBuf, bBuf) && a.length === b.length;
-}
-
 export async function GET(request: Request): Promise<NextResponse> {
   // Verify CRON_SECRET (Vercel cron sends this automatically)
-  const secret = process.env.CRON_SECRET;
-  const authHeader = request.headers.get("Authorization");
-  if (!secret || !authHeader || !safeCompare(authHeader, `Bearer ${secret}`)) {
+  if (!hasCronSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

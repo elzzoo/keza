@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 interface ContactPayload {
   name: string;
@@ -10,6 +11,13 @@ interface ContactPayload {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:contact:post",
+    limit: 5,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   try {
     const body = (await request.json()) as ContactPayload;
 

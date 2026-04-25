@@ -1,32 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchEngine, type SearchParams } from "@/lib/engine";
 import { getForexRate } from "@/lib/autoCalibrate";
-
-/* ── rate limiter: sliding window per IP ── */
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 15;           // max requests per window
-const ipHits = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipHits.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipHits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  entry.count++;
-  return entry.count > RATE_LIMIT_MAX;
-}
-
-// Cleanup stale entries every 5 minutes to prevent memory leak
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    ipHits.forEach((entry, ip) => {
-      if (now > entry.resetAt) ipHits.delete(ip);
-    });
-  }, 5 * 60_000);
-}
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 /* ── input validation ── */
 const IATA_RE = /^[A-Z]{3}$/;
@@ -39,17 +14,12 @@ function sanitizeCode(raw: unknown): string | null {
 }
 
 export async function POST(request: Request) {
-  /* rate limit by IP */
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: "Too many requests — please wait a moment" },
-      { status: 429 }
-    );
-  }
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:search:post",
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
 
   try {
     const body = await request.json() as Partial<SearchParams>;
