@@ -39,6 +39,7 @@ describe("DELETE /api/alerts", () => {
       targetPrice: 450,
       createdAt: "2026-04-01T00:00:00.000Z",
       notifCount: 0,
+      notifFrequency: "instant" as const,
       active: true,
     });
   });
