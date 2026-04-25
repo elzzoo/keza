@@ -68,10 +68,13 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
         </nav>
 
         <div className="flex items-center gap-2 ml-auto">
-          {/* Live badge */}
-          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/15 text-[11px] font-semibold text-success">
+          {/* Live badge — cash prices are live; miles values are estimates */}
+          <span
+            title="Prix cash en temps réel · Valeurs miles : estimations de marché"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/15 text-[11px] font-semibold text-success cursor-help"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot" />
-            Live
+            Prix Live
           </span>
 
           {/* Currency picker */}

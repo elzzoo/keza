@@ -57,12 +57,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const fromAirport = airportsMap[parsed.from];
   const toAirport = airportsMap[parsed.to];
-  const fromCity = fromAirport?.cityEn ?? parsed.from;
-  const toCity = toAirport?.cityEn ?? parsed.to;
+  const fromCityFrMeta = fromAirport?.city ?? fromAirport?.cityEn ?? parsed.from;
+  const toCityFrMeta = toAirport?.city ?? toAirport?.cityEn ?? parsed.to;
 
-  const title = `Flights ${fromCity} to ${toCity} — Cash or Miles? | KEZA`;
-  const description = `Compare cash vs miles prices for ${fromCity} (${parsed.from}) to ${toCity} (${parsed.to}). Find the cheapest way to book — pay cash, use miles, or transfer points. Updated daily.`;
-
+  const title = `Vols ${fromCityFrMeta} → ${toCityFrMeta} — Cash ou Miles ? | KEZA`;
+  const description = `Comparez le prix cash et le coût en miles pour ${fromCityFrMeta} (${parsed.from}) → ${toCityFrMeta} (${parsed.to}). Trouvez la façon la moins chère de réserver. Mis à jour chaque jour.`;
   return {
     title,
     description,

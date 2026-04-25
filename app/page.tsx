@@ -124,7 +124,7 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              {lang === "fr" ? "Comparateur cash vs miles · Données en temps réel" : "Cash vs miles comparator · Real-time data"}
+              {lang === "fr" ? "Comparateur cash vs miles · Prix cash en temps réel" : "Cash vs miles comparator · Live cash prices"}
             </div>
 
             {/* Title */}
@@ -140,8 +140,13 @@ export default function HomePage() {
               </h1>
               <p className="text-base text-muted max-w-lg mx-auto leading-relaxed">
                 {lang === "fr"
-                  ? "Comparez le vrai coût de chaque option — cash, miles ou transfert — sur chaque vol, partout dans le monde."
-                  : "Compare the real cost of every option — cash, miles or transfer — on any flight, anywhere in the world."}
+                  ? "KEZA calcule en secondes si payer en cash ou utiliser tes miles est moins cher — en tenant compte des taxes, de la valeur réelle du mile et de 46 programmes de fidélité."
+                  : "KEZA instantly calculates whether paying cash or redeeming miles is cheaper — factoring in taxes, real mile value, and 46 loyalty programs."}
+              </p>
+              <p className="text-sm text-muted/70 max-w-md mx-auto">
+                {lang === "fr"
+                  ? "Saisis ton vol ci-dessous et KEZA te dit quelle option choisir."
+                  : "Enter your flight below and KEZA tells you which option to pick."}
               </p>
             </div>
           </div>

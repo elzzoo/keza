@@ -1,3 +1,6 @@
+// @ts-check
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 
 const SECURITY_HEADERS = [
@@ -37,4 +40,16 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Sentry organization and project are read from SENTRY_ORG and SENTRY_PROJECT env vars.
+  // Source maps are uploaded automatically on build.
+  silent: true, // suppress "Creating release" logs
+
+  // Disable the Sentry webpack plugin if DSN is not set (local dev without Sentry)
+  disableServerWebpackPlugin: !process.env.SENTRY_DSN,
+  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
+
+  // Tree-shake Sentry logger statements to keep bundle small
+  hideSourceMaps: true,
+  widenClientFileUpload: false,
+});

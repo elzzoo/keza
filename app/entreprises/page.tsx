@@ -33,8 +33,8 @@ const T = {
     /* Metrics */
     m1Value: "180 $",
     m1Label: "d'économies moyennes par vol",
-    m2Value: "12",
-    m2Label: "entreprises embarquées",
+    m2Value: "46",
+    m2Label: "programmes comparés",
     m3Value: "7 900+",
     m3Label: "routes analysées",
 
@@ -101,9 +101,9 @@ const T = {
     pricingLink: "#contact",
 
     /* Social proof */
-    spTitle: "12 entreprises font déjà confiance à KEZA",
-    spSub: "De la startup au grand groupe, sur 4 continents.",
-    spLogos: "Rejoignez les premières entreprises pionnières.",
+    spTitle: "Partenariat fondateur — places limitées",
+    spSub: "Accès prioritaire, tarif préférentiel et co-construction du produit.",
+    spLogos: "Contactez-nous pour faire partie des premières entreprises à bénéficier de KEZA.",
 
     /* Contact */
     contactTitle: "Discutons de votre projet",
@@ -127,8 +127,8 @@ const T = {
     /* Metrics */
     m1Value: "$180",
     m1Label: "average savings per flight",
-    m2Value: "12",
-    m2Label: "companies onboarded",
+    m2Value: "46",
+    m2Label: "programs compared",
     m3Value: "7,900+",
     m3Label: "routes analyzed",
 
@@ -195,9 +195,9 @@ const T = {
     pricingLink: "#contact",
 
     /* Social proof */
-    spTitle: "12 companies already trust KEZA",
-    spSub: "From startups to enterprise, across 4 continents.",
-    spLogos: "Be among the first companies to join.",
+    spTitle: "Founding partner — limited spots",
+    spSub: "Priority access, preferential pricing, and co-built features.",
+    spLogos: "Contact us to be among the first companies to use KEZA.",
 
     /* Contact */
     contactTitle: "Let's talk about your needs",

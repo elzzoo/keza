@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MILES_PRICES } from "@/data/milesPrices";
+import { getForexRate } from "@/lib/autoCalibrate";
 import { CalculateurClient } from "./CalculateurClient";
 
 export const metadata: Metadata = {
@@ -7,7 +8,8 @@ export const metadata: Metadata = {
   description: "Combien valent vos miles Flying Blue, Aeroplan, LifeMiles en euros ? Calculateur instantané par programme de fidélité.",
 };
 
-export default function CalculateurPage() {
+export default async function CalculateurPage() {
+  const forexRate = await getForexRate().catch(() => 605);
   return (
     <div className="min-h-screen bg-bg">
       <div className="max-w-2xl mx-auto px-4 py-12">
@@ -21,7 +23,7 @@ export default function CalculateurPage() {
           </p>
         </div>
 
-        <CalculateurClient programs={MILES_PRICES} />
+        <CalculateurClient programs={MILES_PRICES} forexRate={forexRate} />
 
         <div className="mt-10 bg-surface border border-border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border">

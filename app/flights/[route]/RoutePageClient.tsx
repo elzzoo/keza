@@ -61,7 +61,7 @@ export function RoutePageClient({
   fromFlag, toFlag, cheapestPrice, cheapestDate, priceCount,
   relatedRoutes, routeMeta,
 }: Props) {
-  const [lang, setLang] = useState<"fr" | "en">("en");
+  const [lang, setLang] = useState<"fr" | "en">("fr");
   const [results, setResults] = useState<FlightResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
