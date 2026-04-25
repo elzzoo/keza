@@ -165,7 +165,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
             href={`mailto:contact@keza-app.com?subject=Liste+d%27attente+Pro+KEZA&body=Email%3A+${encodeURIComponent(email)}`}
             className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors"
           >
-            Rejoindre la liste d'attente →
+            Rejoindre la liste d&apos;attente →
           </a>
         </div>
       )}
