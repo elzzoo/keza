@@ -8,6 +8,7 @@ import {
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail, isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
+import { isProUser } from "@/lib/lemonsqueezy";
 import { logError } from "@/lib/logger";
 
 // POST /api/alerts — create a new price alert
@@ -45,10 +46,11 @@ export async function POST(req: NextRequest) {
 
     const FREE_ALERT_LIMIT = 3;
 
-    // Freemium gate: max 3 active alerts on free plan
+    // Freemium gate: max 3 active alerts on free plan (Pro users skip this check)
     const existing = await getAlertsByEmail(email);
     const activeExisting = existing.filter((a) => a.active);
-    if (activeExisting.length >= FREE_ALERT_LIMIT) {
+    const isPro = await isProUser(email);
+    if (!isPro && activeExisting.length >= FREE_ALERT_LIMIT) {
       return NextResponse.json(
         {
           error: `Limite gratuite atteinte (${FREE_ALERT_LIMIT} alertes maximum). Passez en Pro pour des alertes illimitées.`,

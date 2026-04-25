@@ -12,32 +12,61 @@ const FEATURES = [
   { icon: "✈️", title: "Alertes multi-passagers", desc: "Prix pour 2, 3 ou 4 passagers directement dans l'alerte." },
 ];
 
-export function ProClient() {
+export function ProClient({ upgraded }: { upgraded?: boolean }) {
   const [lang] = useState<"fr" | "en">("fr");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [position, setPosition] = useState<number | null>(null);
+  const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "loading">("idle");
+  const [checkoutError, setCheckoutError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleCheckout(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim() || status === "loading") return;
-    setStatus("loading");
+    if (!email.trim() || checkoutStatus === "loading") return;
+    setCheckoutStatus("loading");
+    setCheckoutError("");
     try {
-      const res = await fetch("/api/pro/waitlist", {
+      const res = await fetch("/api/pro/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setStatus("success");
-        setPosition(data.position);
+      const data = await res.json() as { url?: string; error?: string };
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+      } else if (res.status === 503) {
+        setCheckoutError("Le paiement arrive bientôt — merci de ta patience !");
+        setCheckoutStatus("idle");
       } else {
-        setStatus("error");
+        setCheckoutError(data.error ?? "Une erreur est survenue.");
+        setCheckoutStatus("idle");
       }
     } catch {
-      setStatus("error");
+      setCheckoutError("Erreur réseau. Réessaie.");
+      setCheckoutStatus("idle");
     }
+  }
+
+  if (upgraded) {
+    return (
+      <div className="min-h-screen bg-bg flex flex-col">
+        <Header lang={lang} onLangChange={() => {}} />
+        <main className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <p className="text-5xl mb-4">🎉</p>
+            <h1 className="text-2xl font-black text-fg mb-2">Bienvenue dans KEZA Pro !</h1>
+            <p className="text-sm text-muted mb-6">
+              Tes alertes illimitées sont maintenant actives. Crée ta première alerte dès maintenant.
+            </p>
+            <Link
+              href="/alertes"
+              className="inline-block rounded-lg bg-primary text-white text-sm font-bold px-6 py-3 hover:bg-primary/90 transition-colors"
+            >
+              Gérer mes alertes →
+            </Link>
+          </div>
+        </main>
+        <Footer lang={lang} />
+      </div>
+    );
   }
 
   return (
@@ -48,7 +77,7 @@ export function ProClient() {
         <div className="pt-12 pb-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-400 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            Bientôt disponible
+            9$ / mois
           </div>
           <h1 className="text-4xl font-black text-fg mb-3">
             <span className="text-primary">KEZA</span> Pro
@@ -69,59 +98,45 @@ export function ProClient() {
           ))}
         </div>
 
-        {/* Waitlist form */}
+        {/* Checkout form */}
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
-          {status === "success" ? (
-            <div className="text-center py-4">
-              <p className="text-2xl mb-2">🎉</p>
-              <p className="font-semibold text-fg">Tu es sur la liste !</p>
-              {position && (
-                <p className="text-sm text-muted mt-1">
-                  Position #{position} — on te contacte en priorité.
-                </p>
-              )}
-              <Link href="/" className="mt-4 inline-block text-xs text-primary hover:underline">
-                Retourner sur KEZA →
-              </Link>
-            </div>
-          ) : (
-            <>
-              <p className="font-semibold text-fg mb-1">Rejoindre la liste d&apos;attente</p>
-              <p className="text-xs text-muted mb-4">
-                Accès prioritaire + tarif early-bird. Gratuit de s&apos;inscrire.
-              </p>
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ton@email.com"
-                  className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-primary"
-                />
-                <button
-                  type="submit"
-                  disabled={status === "loading" || !email.trim()}
-                  className="rounded-lg bg-amber-500 text-black text-sm font-bold px-4 py-2 hover:bg-amber-400 transition-colors disabled:opacity-50"
-                >
-                  {status === "loading" ? "…" : "S'inscrire"}
-                </button>
-              </form>
-              {status === "error" && (
-                <p className="mt-2 text-xs text-red-400">Une erreur est survenue. Réessaie.</p>
-              )}
-            </>
+          <p className="font-semibold text-fg mb-1">Passer en Pro — 9$ / mois</p>
+          <p className="text-xs text-muted mb-4">
+            Annulable à tout moment. Paiement sécurisé via Lemon Squeezy.
+          </p>
+          <form onSubmit={handleCheckout} className="flex gap-2">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ton@email.com"
+              className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-primary"
+            />
+            <button
+              type="submit"
+              disabled={checkoutStatus === "loading" || !email.trim()}
+              className="rounded-lg bg-amber-500 text-black text-sm font-bold px-4 py-2 hover:bg-amber-400 transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              {checkoutStatus === "loading" ? "…" : "Payer 9$ →"}
+            </button>
+          </form>
+          {checkoutError && (
+            <p className="mt-2 text-xs text-amber-400">{checkoutError}</p>
           )}
+          <p className="mt-3 text-xs text-muted/60 text-center">
+            Tu seras redirigé vers Lemon Squeezy pour finaliser le paiement.
+          </p>
         </div>
 
-        {/* Comparison */}
+        {/* Comparison table */}
         <div className="mt-8 rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">Fonctionnalité</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">Gratuit</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-amber-400 uppercase tracking-wider">Pro</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-amber-400 uppercase tracking-wider">Pro 9$/mois</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -141,6 +156,13 @@ export function ProClient() {
             </tbody>
           </table>
         </div>
+
+        <p className="mt-6 text-center text-xs text-muted/60">
+          Question ?{" "}
+          <a href="mailto:hello@keza.app" className="underline hover:text-muted">
+            hello@keza.app
+          </a>
+        </p>
       </main>
       <Footer lang={lang} />
     </div>
