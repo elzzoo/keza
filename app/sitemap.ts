@@ -93,6 +93,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
+  // City-slug SEO URLs for long-tail search traffic
+  const CITY_SLUG_ROUTES = [
+    ["paris", "dakar"],
+    ["dakar", "paris"],
+    ["london", "lagos"],
+    ["paris", "abidjan"],
+    ["paris", "casablanca"],
+    ["london", "nairobi"],
+    ["london", "johannesburg"],
+    ["paris", "new-york"],
+    ["new-york", "london"],
+    ["dubai", "london"],
+    ["istanbul", "london"],
+    ["paris", "tokyo"],
+    ["london", "dubai"],
+    ["london", "singapore"],
+    ["new-york", "paris"],
+  ];
+
+  for (const [from, to] of CITY_SLUG_ROUTES) {
+    pages.push({
+      url: `${BASE_URL}/flights/${from}-${to}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.75,
+    });
+  }
+
   // Destination pages
   for (const dest of DESTINATIONS) {
     pages.push({
