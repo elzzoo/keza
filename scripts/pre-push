@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Pre-push hook — bloque tout push sur main si les checks échouent.
+# Installé automatiquement par `npm install` via le script prepare.
+
+branch=$(git symbolic-ref HEAD 2>/dev/null | sed 's|refs/heads/||')
+
+if [ "$branch" != "main" ]; then
+  exit 0
+fi
+
+echo ""
+echo "⚡ Checks pre-push sur main..."
+echo ""
+
+echo "▶ TypeScript..."
+npx tsc --noEmit || { echo ""; echo "❌ TypeScript échoué — push bloqué."; exit 1; }
+echo "✅ TypeScript OK"
+echo ""
+
+echo "▶ ESLint..."
+npx next lint || { echo ""; echo "❌ ESLint échoué — push bloqué."; exit 1; }
+echo "✅ ESLint OK"
+echo ""
+
+echo "▶ Tests unitaires..."
+npx jest --passWithNoTests || { echo ""; echo "❌ Tests échoués — push bloqué."; exit 1; }
+echo "✅ Tests OK"
+echo ""
+
+echo "🟢 Tout est vert — push autorisé."
+echo ""
