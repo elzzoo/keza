@@ -40,6 +40,30 @@ async function fetchStats() {
     }
   }
 
+  // Email opens — last 7 days
+  const today = new Date();
+  const emailOpensByDay: Array<{ date: string; confirmation: number; priceDrop: number; digest: number }> = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayData = await redis.hgetall(`keza:email:opens:${dateStr}`) as Record<string, string> | null;
+    emailOpensByDay.push({
+      date: dateStr,
+      confirmation: parseInt(dayData?.confirmation ?? "0"),
+      priceDrop: parseInt(dayData?.["price-drop"] ?? "0"),
+      digest: parseInt(dayData?.digest ?? "0"),
+    });
+  }
+  const totalEmailOpens = emailOpensByDay.reduce((s, d) => s + d.confirmation + d.priceDrop + d.digest, 0);
+
+  // Estimated revenue: affiliate bookings × avg commission
+  // We can't track actual bookings without server-side affiliate API
+  // Estimate: total Book Click events × 3% conversion × $18 avg commission
+  // Store in Redis when we have better data — for now use a placeholder
+  const estimatedBookings = Math.round(activeAlerts * 0.1); // 10% of alerts convert to booking
+  const estimatedRevenue = estimatedBookings * 18; // $18 avg affiliate commission
+
   return {
     activeAlerts,
     activeRoutes: routes.length,
@@ -48,6 +72,13 @@ async function fetchStats() {
     dealsTtlSeconds: dealsTtl > 0 ? dealsTtl : 0,
     lastCronAt: lastCronRaw ?? null,
     fetchedAt: new Date().toISOString(),
+    emailOpensByDay,
+    totalEmailOpens,
+    totalConfirmationOpens: emailOpensByDay.reduce((s, d) => s + d.confirmation, 0),
+    totalPriceDropOpens: emailOpensByDay.reduce((s, d) => s + d.priceDrop, 0),
+    totalDigestOpens: emailOpensByDay.reduce((s, d) => s + d.digest, 0),
+    estimatedRevenue,
+    estimatedBookings,
   };
 }
 
@@ -188,9 +219,9 @@ export default async function AdminPage() {
                 color="blue"
               />
               <StatCard
-                label="Push abonnés"
+                label="Push legacy"
                 value={stats.pushSubscriptions}
-                sub="navigateurs enregistrés"
+                sub="clé globale dépréciée"
                 color="purple"
               />
               <StatCard
@@ -205,6 +236,54 @@ export default async function AdminPage() {
                 sub={formatDate(stats.lastCronAt)}
                 color={stats.lastCronAt ? "green" : "amber"}
               />
+            </div>
+
+            {/* Email engagement */}
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                Email Engagement — 7 derniers jours
+              </h2>
+              <div className="grid grid-cols-3 gap-4">
+                <StatCard
+                  label="Confirmations ouvertes"
+                  value={stats.totalConfirmationOpens}
+                  sub="emails de création d'alerte"
+                  color="blue"
+                />
+                <StatCard
+                  label="Alertes prix ouvertes"
+                  value={stats.totalPriceDropOpens}
+                  sub="notifications de baisse"
+                  color="green"
+                />
+                <StatCard
+                  label="Digests ouverts"
+                  value={stats.totalDigestOpens}
+                  sub="récaps hebdos"
+                  color="purple"
+                />
+              </div>
+            </div>
+
+            {/* Revenue estimate */}
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                Revenu Estimé (Affiliation)
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard
+                  label="Réservations estimées"
+                  value={stats.estimatedBookings}
+                  sub="10% des alertes actives"
+                  color="amber"
+                />
+                <StatCard
+                  label="Revenu estimé"
+                  value={`$${stats.estimatedRevenue}`}
+                  sub="à $18 de commission moy."
+                  color="green"
+                />
+              </div>
             </div>
 
             {/* Details table */}
