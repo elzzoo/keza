@@ -1,14 +1,19 @@
 // lib/priceHistory.ts
-// Two responsibilities:
-// 1. Pure functions for seasonal price estimation (no API, no Redis) — used by /comparer, /destinations
-// 2. Redis-backed daily price recording + retrieval — built by cron, consumed by /flights/[route]
+// Pure functions — no API calls, no Redis. Testable in isolation.
+// Used by client components (/comparer, /destinations).
+// Redis-backed functions live in lib/priceHistoryRedis.ts (server-only).
 
 import { DESTINATIONS, type Destination } from "@/data/destinations";
+
+// ── Shared types (also used by priceHistoryRedis.ts) ─────────────────────────
+export interface PricePoint {
+  date: string;  // YYYY-MM-DD
+  price: number;
+}
+export type PriceTrend = "up" | "down" | "stable" | "unknown";
+// ─────────────────────────────────────────────────────────────────────────────
 import { REGIONAL_SEASONALITY } from "@/data/seasonality";
 import { computeDealRatio, classifyDeal, type DealRecommendation } from "@/lib/dealsEngine";
-import { redis } from "@/lib/redis";
-
-// ── Section 1: Pure seasonal price history ───────────────────────────────────
 
 export interface MonthlyPrice {
   month: number;           // 0-11 (0 = January)
@@ -67,74 +72,4 @@ export function getMonthlyPrices(dest: Destination): DestinationPriceHistory {
 
 export function getAllDestinationPriceHistories(): DestinationPriceHistory[] {
   return DESTINATIONS.map(getMonthlyPrices);
-}
-
-// ── Section 2: Redis daily price history per route ───────────────────────────
-
-const HISTORY_KEY = (from: string, to: string) =>
-  `keza:price:history:${from.toUpperCase()}:${to.toUpperCase()}`;
-const HISTORY_TTL = 90 * 24 * 60 * 60; // 90 days
-
-/**
- * Record the cheapest price for a route today.
- * Called from the cron/alerts route to build history automatically.
- */
-export async function recordDailyPrice(
-  from: string,
-  to: string,
-  price: number
-): Promise<void> {
-  try {
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const key = HISTORY_KEY(from, to);
-    await redis.hset(key, { [today]: Math.round(price) });
-    await redis.expire(key, HISTORY_TTL);
-  } catch {
-    // Never crash because of history recording
-  }
-}
-
-export interface PricePoint {
-  date: string;  // YYYY-MM-DD
-  price: number;
-}
-
-/**
- * Returns up to `days` days of price history for a route, sorted by date asc.
- */
-export async function getPriceHistory(
-  from: string,
-  to: string,
-  days = 30
-): Promise<PricePoint[]> {
-  try {
-    const key = HISTORY_KEY(from, to);
-    const raw = await redis.hgetall(key);
-    if (!raw) return [];
-
-    const points: PricePoint[] = Object.entries(raw)
-      .map(([date, price]) => ({ date, price: parseInt(String(price), 10) }))
-      .filter((p) => !isNaN(p.price))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-days);
-
-    return points;
-  } catch {
-    return [];
-  }
-}
-
-export type PriceTrend = "up" | "down" | "stable" | "unknown";
-
-/**
- * Compare last price vs 7-day-ago price to determine trend.
- */
-export function computePriceTrend(history: PricePoint[]): PriceTrend {
-  if (history.length < 2) return "unknown";
-  const latest = history[history.length - 1].price;
-  const weekAgo = history[Math.max(0, history.length - 8)].price;
-  const delta = ((latest - weekAgo) / weekAgo) * 100;
-  if (delta > 5) return "up";
-  if (delta < -5) return "down";
-  return "stable";
 }
