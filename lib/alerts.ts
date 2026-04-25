@@ -41,6 +41,35 @@ function generateId(): string {
   return `alt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// ─── Index helpers (atomic SET ops) ─────────────────────────────────────────
+
+const INDEX_TTL = 90 * 86400;
+
+// Reads IDs from a Redis SET index. If the key was written in the old JSON-array
+// format (pre-D2), migrates it transparently to a SET on first access.
+async function getIdsFromIndex(key: string): Promise<string[]> {
+  const members = await redis.smembers(key).catch(async () => {
+    // WRONGTYPE error: key is an old JSON string — migrate to SET
+    const ids = (await redis.get<string[]>(key)) ?? [];
+    if (ids.length > 0) {
+      await redis.del(key);
+      await redis.sadd(key, ids[0], ...ids.slice(1));
+      await redis.expire(key, INDEX_TTL);
+    }
+    return ids;
+  });
+  return members as string[];
+}
+
+async function addToIndex(key: string, id: string): Promise<void> {
+  await redis.sadd(key, id);
+  await redis.expire(key, INDEX_TTL); // refresh TTL on every write
+}
+
+async function removeFromIndex(key: string, id: string): Promise<void> {
+  await redis.srem(key, id);
+}
+
 // ─── Create alert ───────────────────────────────────────────────────────────
 
 export async function createAlert(params: {
@@ -58,26 +87,15 @@ export async function createAlert(params: {
     to: params.to.toUpperCase(),
     cabin: (params.cabin as PriceAlert["cabin"]) || "economy",
     basePrice: params.currentPrice,
-    targetPrice: Math.round(params.currentPrice * 0.9), // Alert when 10%+ drop
+    targetPrice: Math.round(params.currentPrice * 0.9),
     createdAt: new Date().toISOString(),
     notifCount: 0,
     active: true,
   };
 
-  // Store alert data
-  await redis.set(ALERT_KEY(id), alert, { ex: 90 * 86400 }); // 90 days TTL
-
-  // Index by email
-  const emailAlerts = await redis.get<string[]>(ALERTS_BY_EMAIL(alert.email)) ?? [];
-  emailAlerts.push(id);
-  await redis.set(ALERTS_BY_EMAIL(alert.email), emailAlerts, { ex: 90 * 86400 });
-
-  // Index by route
-  const routeAlerts = await redis.get<string[]>(ALERTS_BY_ROUTE(alert.from, alert.to)) ?? [];
-  routeAlerts.push(id);
-  await redis.set(ALERTS_BY_ROUTE(alert.from, alert.to), routeAlerts, { ex: 90 * 86400 });
-
-  // Track active routes
+  await redis.set(ALERT_KEY(id), alert, { ex: INDEX_TTL });
+  await addToIndex(ALERTS_BY_EMAIL(alert.email), id);
+  await addToIndex(ALERTS_BY_ROUTE(alert.from, alert.to), id);
   await redis.sadd(ALL_ROUTES_KEY, `${alert.from}:${alert.to}`);
 
   return alert;
@@ -86,7 +104,7 @@ export async function createAlert(params: {
 // ─── Get alerts ─────────────────────────────────────────────────────────────
 
 export async function getAlertsByEmail(email: string): Promise<PriceAlert[]> {
-  const ids = await redis.get<string[]>(ALERTS_BY_EMAIL(email.toLowerCase())) ?? [];
+  const ids = await getIdsFromIndex(ALERTS_BY_EMAIL(email.toLowerCase()));
   const alerts: PriceAlert[] = [];
   for (const id of ids) {
     const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
@@ -100,7 +118,7 @@ export async function getAlertById(id: string): Promise<PriceAlert | null> {
 }
 
 export async function getAlertsByRoute(from: string, to: string): Promise<PriceAlert[]> {
-  const ids = await redis.get<string[]>(ALERTS_BY_ROUTE(from, to)) ?? [];
+  const ids = await getIdsFromIndex(ALERTS_BY_ROUTE(from, to));
   const alerts: PriceAlert[] = [];
   for (const id of ids) {
     const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
@@ -120,7 +138,11 @@ export async function deactivateAlert(id: string): Promise<boolean> {
   const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
   if (!alert) return false;
   alert.active = false;
-  await redis.set(ALERT_KEY(id), alert, { ex: 7 * 86400 }); // Keep 7 more days then expire
+  await redis.set(ALERT_KEY(id), alert, { ex: 7 * 86400 });
+
+  // Remove from email and route indexes atomically
+  await removeFromIndex(ALERTS_BY_EMAIL(alert.email), id);
+  await removeFromIndex(ALERTS_BY_ROUTE(alert.from, alert.to), id);
 
   // Remove route from active-routes Set if no active alerts remain on it
   const remaining = await getAlertsByRoute(alert.from, alert.to);
