@@ -172,35 +172,51 @@ export default async function RoutePage({ params }: Props) {
     ],
   };
 
-  // Schema.org FAQ structured data
+  // Schema.org FAQ structured data — enriched with routeMeta when available
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
       {
         "@type": "Question",
-        name: `Should I use miles or cash for ${fromCity} to ${toCity}?`,
+        name: `Vaut-il mieux payer en cash ou en miles pour ${fromCityFr} → ${toCityFr} ?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `It depends on the program and dates. KEZA compares all options — cash price, miles redemption, and bank point transfers — to find the cheapest way to book ${fromCity} to ${toCity}. Use our search to get a personalized recommendation.`,
+          text: `Cela dépend du programme et des dates. KEZA compare toutes les options — prix cash, rachat de miles${routeMeta ? ` (meilleurs programmes : ${routeMeta.bestPrograms.join(", ")})` : ""}, et transferts de points bancaires — pour trouver la solution la moins chère.`,
         },
       },
       {
         "@type": "Question",
-        name: `What is the cheapest month to fly ${fromCity} to ${toCity}?`,
+        name: `Quelle est la meilleure période pour voler ${fromCityFr} → ${toCityFr} ?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: cheapest
-            ? `Based on current data, prices start from $${cheapest.price} around ${cheapest.date}. Use KEZA's price calendar to find the best dates.`
-            : `Prices vary by season. Use KEZA's price calendar to compare daily prices and find the cheapest dates.`,
+          text: routeMeta
+            ? routeMeta.seasonTip.fr
+            : cheapest
+            ? `D'après les données actuelles, les prix commencent à $${cheapest.price} autour du ${cheapest.date}. Utilisez le calendrier de prix KEZA pour trouver les meilleures dates.`
+            : `Les prix varient selon la saison. Utilisez le calendrier KEZA pour comparer les prix journaliers.`,
         },
       },
       {
         "@type": "Question",
-        name: `Which miles programs can I use for ${fromCity} to ${toCity}?`,
+        name: `Combien de miles faut-il pour voler ${fromCityFr} → ${toCityFr} ?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `KEZA compares 46 loyalty programs including Flying Blue, Miles&Smiles, Emirates Skywards, British Airways Avios, and more. We also check if transferring bank points (Amex MR, Chase UR, Citi ThankYou) would be cheaper.`,
+          text: routeMeta
+            ? `En classe économique, comptez environ ${routeMeta.milesToEconomy.toLocaleString("fr-FR")} miles, et ${routeMeta.milesToBusiness.toLocaleString("fr-FR")} miles en business. Les meilleurs programmes sur cette route sont ${routeMeta.bestPrograms.join(", ")}.`
+            : `Les besoins en miles varient selon le programme et les disponibilités. KEZA vérifie les 46 programmes de fidélité en temps réel pour trouver le meilleur rachat.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Y a-t-il des vols directs entre ${fromCityFr} et ${toCityFr} ?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: routeMeta
+            ? routeMeta.isNonstop
+              ? `Oui, des vols sans escale sont disponibles entre ${fromCityFr} et ${toCityFr} avec ${routeMeta.airlines.join(", ")}.`
+              : `Il n'y a pas de vol direct sur cette route. La plupart des correspondances passent par ${routeMeta.hub ?? "un hub majeur"}. Les compagnies opérant cette route incluent ${routeMeta.airlines.join(", ")}.`
+            : `Consultez la recherche KEZA pour les options de vol actuelles entre ${fromCityFr} et ${toCityFr}.`,
         },
       },
     ],

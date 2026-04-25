@@ -78,6 +78,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
+        {/* Organization structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "KEZA",
+              url: SITE_URL,
+              logo: `${SITE_URL}/icon-192.png`,
+              description: "Comparateur cash vs miles pour les vols internationaux. KEZA calcule en temps réel si payer en cash ou utiliser ses miles est moins cher.",
+              sameAs: [],
+              contactPoint: {
+                "@type": "ContactPoint",
+                email: "hello@keza.app",
+                contactType: "customer support",
+                availableLanguage: ["French", "English"],
+              },
+            }),
+          }}
+        />
         {children}
         <SpeedInsights />
         <Script

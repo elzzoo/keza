@@ -113,22 +113,99 @@ export default async function EnRoutePage({ params }: Props) {
     routeMeta = getRouteMeta(parsed.from, parsed.to);
   } catch { /* no routeMeta */ }
 
+  // ── JSON-LD ──────────────────────────────────────────────────────────────
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "KEZA", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Flights", item: `${SITE_URL}/en/flights` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: `${fromCity} → ${toCity}`,
+        item: `${SITE_URL}/en/flights/${params.route.toUpperCase()}`,
+      },
+    ],
+  };
+
+  const faqItems = [
+    {
+      "@type": "Question",
+      name: `Should I use miles or cash for ${fromCity} to ${toCity}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `It depends on the program and dates. KEZA compares all options — cash price, miles redemption${routeMeta ? ` (top programs: ${routeMeta.bestPrograms.join(", ")})` : ""}, and bank point transfers — to find the cheapest way to book ${fromCity} to ${toCity}.`,
+      },
+    },
+    {
+      "@type": "Question",
+      name: `What is the cheapest time to fly ${fromCity} to ${toCity}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: routeMeta
+          ? routeMeta.seasonTip.en
+          : cheapest
+          ? `Based on current data, prices start from $${cheapest.price} around ${cheapest.date}. Use KEZA's price calendar to find the best dates.`
+          : `Prices vary by season. Use KEZA's price calendar to compare daily prices and find the cheapest dates.`,
+      },
+    },
+    {
+      "@type": "Question",
+      name: `How many miles do I need for ${fromCity} to ${toCity}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: routeMeta
+          ? `Economy class typically requires around ${routeMeta.milesToEconomy.toLocaleString("en-US")} miles, and business class around ${routeMeta.milesToBusiness.toLocaleString("en-US")} miles. The best programs for this route are ${routeMeta.bestPrograms.join(", ")}.`
+          : `Miles requirements vary by program and availability. KEZA checks all 46 loyalty programs in real time to find the best redemption for your dates.`,
+      },
+    },
+    {
+      "@type": "Question",
+      name: `Is there a nonstop flight from ${fromCity} to ${toCity}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: routeMeta
+          ? routeMeta.isNonstop
+            ? `Yes, nonstop flights are available between ${fromCity} and ${toCity} with ${routeMeta.airlines.join(", ")}.`
+            : `There are no direct nonstop flights on this route. Most connections go through ${routeMeta.hub ?? "a major hub"}. Airlines operating this route include ${routeMeta.airlines.join(", ")}.`
+          : `Check KEZA's search for current flight options and availability between ${fromCity} and ${toCity}.`,
+      },
+    },
+  ];
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems,
+  };
+
   return (
-    <RoutePageClient
-      from={parsed.from}
-      to={parsed.to}
-      fromCity={fromCity}
-      fromCityFr={fromCityFr}
-      toCity={toCity}
-      toCityFr={toCityFr}
-      fromFlag={fromFlag}
-      toFlag={toFlag}
-      cheapestPrice={cheapest?.price ?? null}
-      cheapestDate={cheapest?.date ?? null}
-      priceCount={allPrices.length}
-      relatedRoutes={relatedRoutes}
-      routeMeta={routeMeta}
-      defaultLang="en"
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <RoutePageClient
+        from={parsed.from}
+        to={parsed.to}
+        fromCity={fromCity}
+        fromCityFr={fromCityFr}
+        toCity={toCity}
+        toCityFr={toCityFr}
+        fromFlag={fromFlag}
+        toFlag={toFlag}
+        cheapestPrice={cheapest?.price ?? null}
+        cheapestDate={cheapest?.date ?? null}
+        priceCount={allPrices.length}
+        relatedRoutes={relatedRoutes}
+        routeMeta={routeMeta}
+        defaultLang="en"
+      />
+    </>
   );
 }
