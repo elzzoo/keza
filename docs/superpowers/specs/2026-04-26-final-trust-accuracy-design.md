@@ -69,17 +69,34 @@ Update `getAwardTaxes` signature: accept optional `originZone?: string` and `des
 
 #### B1a. `displayMessage` as primary headline (replaces current banner)
 
-The engine already computes a rich message per result:
-- `"🔥 Tu économises $120 avec les miles"` → USE_MILES
-- `"❌ Les miles coûtent $80 de plus que le cash"` → USE_CASH  
-- `"💵 Cash légèrement moins cher — conserve tes miles"` → USE_CASH near-equal
-- `"💵 Payez en cash — aucune option miles disponible"` → no miles
+The engine computes a contextual message per result. **Update `lib/costEngine.ts` displayMessage logic** to show positive savings framing for both cases:
 
-Replace the current multi-branch JSX in the DECISION BANNER with a single line rendering `flight.displayMessage` as the primary large text. Color it based on `recommendation`:
+- USE_MILES → `"🔥 Tu économises $X avec les miles"` (unchanged)
+- USE_CASH + miles more expensive (`signedSavings < 0`): **change from** `"❌ Les miles coûtent $X de plus"` **to** `"💵 Cash moins cher — économise $X"` where `$X = savings`
+- USE_CASH near-equal (`signedSavings >= 0` but USE_CASH): `"💵 Cash légèrement avantageux — conserve tes miles"` (unchanged)
+- No miles available: `"💵 Payez en cash — aucune option miles disponible"` (unchanged)
+
+This ensures both USE_MILES and USE_CASH cases show a positive framing (savings, not losses), avoiding bias toward either option.
+
+In `FlightCard.tsx`, replace the current multi-branch JSX in the DECISION BANNER with a single line rendering `flight.displayMessage` as the primary large text. Color:
 - USE_MILES → `text-blue-400`
-- USE_CASH → `text-warning` (amber)
+- USE_CASH → `text-amber-400` (warning)
 
-Remove the `fr ? ... : ...` i18n on this element — the emoji carries the emotion and the amount is a number. The French is acceptable pre-launch.
+Remove the `fr ? ... : ...` i18n branch on this element — emoji + dollar amount is language-neutral. French text is acceptable pre-launch.
+
+#### B1b-extra. Program context line
+
+Directly under the `displayMessage` headline, add a single line:
+
+```
+via Flying Blue (direct)
+```
+
+Rendered as: `bestOption ? \`via ${bestOption.program} (${TYPE_LABEL[lang][bestOption.type].toLowerCase()})\` : ""`
+
+Styled: `text-[11px] text-muted mt-0.5`
+
+Only shown when `bestOption` exists.
 
 #### B1b. Confidence badge moved to top
 
