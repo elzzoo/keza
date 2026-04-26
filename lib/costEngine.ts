@@ -5,7 +5,7 @@ import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
-import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
+import { estimateMilesRequired, type CabinClass, type ZoneKey } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS } from "./globalPrograms";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
@@ -251,7 +251,9 @@ export function buildCostOptions(
         toAirport.lat, toAirport.lon,
         dynamicCabin,
         tripType,
-        passengers
+        passengers,
+        originZone as ZoneKey ?? undefined,
+        destZone as ZoneKey ?? undefined,
       );
 
       // Compute taxes using tax profile

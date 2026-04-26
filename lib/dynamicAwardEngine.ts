@@ -84,6 +84,91 @@ export const MIN_MILES_ONEWAY: Record<CabinClass, number> = {
 };
 
 // ---------------------------------------------------------------------------
+// Zone-pair economy caps (one-way, per pax)
+// Prevents distance × rate from overestimating long-haul routes.
+// Values are conservative upper bounds derived from real award charts.
+// ---------------------------------------------------------------------------
+
+export type ZoneKey =
+  | "EUROPE" | "NORTH_AMERICA" | "ASIA" | "MIDDLE_EAST"
+  | "SOUTH_AMERICA" | "AFRICA_WEST" | "AFRICA_NORTH" | "AFRICA_EAST" | "AFRICA_SOUTH";
+
+/**
+ * Maximum economy miles (one-way, 1 pax) for a given origin→destination zone pair.
+ * When the distance-based estimate exceeds this, it is clamped to this cap.
+ * Symmetric: if A→B is not found, B→A is tried as fallback.
+ */
+const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, number>>>> = {
+  EUROPE: {
+    ASIA:          45_000,
+    NORTH_AMERICA: 35_000,
+    MIDDLE_EAST:   20_000,
+    SOUTH_AMERICA: 40_000,
+    AFRICA_WEST:   22_000,
+    AFRICA_NORTH:  15_000,
+    AFRICA_EAST:   25_000,
+    AFRICA_SOUTH:  28_000,
+  },
+  NORTH_AMERICA: {
+    ASIA:          45_000,
+    EUROPE:        35_000,
+    MIDDLE_EAST:   35_000,
+    SOUTH_AMERICA: 25_000,
+    AFRICA_WEST:   35_000,
+    AFRICA_EAST:   40_000,
+    AFRICA_SOUTH:  40_000,
+  },
+  ASIA: {
+    EUROPE:        45_000,
+    NORTH_AMERICA: 45_000,
+    MIDDLE_EAST:   18_000,
+    SOUTH_AMERICA: 50_000,
+    AFRICA_EAST:   35_000,
+  },
+  MIDDLE_EAST: {
+    EUROPE:        20_000,
+    NORTH_AMERICA: 35_000,
+    ASIA:          18_000,
+    AFRICA_WEST:   18_000,
+    AFRICA_EAST:   15_000,
+    AFRICA_SOUTH:  20_000,
+  },
+  SOUTH_AMERICA: {
+    EUROPE:        40_000,
+    NORTH_AMERICA: 25_000,
+  },
+  AFRICA_WEST: {
+    EUROPE:        22_000,
+    NORTH_AMERICA: 35_000,
+    MIDDLE_EAST:   18_000,
+    AFRICA_EAST:   18_000,
+    AFRICA_SOUTH:  22_000,
+  },
+  AFRICA_NORTH: {
+    EUROPE:        15_000,
+    MIDDLE_EAST:   12_000,
+  },
+  AFRICA_EAST: {
+    EUROPE:        25_000,
+    MIDDLE_EAST:   15_000,
+    ASIA:          35_000,
+    NORTH_AMERICA: 40_000,
+  },
+  AFRICA_SOUTH: {
+    EUROPE:        28_000,
+    NORTH_AMERICA: 40_000,
+    MIDDLE_EAST:   20_000,
+    ASIA:          38_000,
+  },
+};
+
+function getZonePairCap(origin: ZoneKey | undefined, dest: ZoneKey | undefined): number | undefined {
+  if (!origin || !dest) return undefined;
+  return ZONE_PAIR_ECONOMY_CAPS[origin]?.[dest]
+    ?? ZONE_PAIR_ECONOMY_CAPS[dest]?.[origin];  // symmetric fallback
+}
+
+// ---------------------------------------------------------------------------
 // Haversine — great-circle distance in km
 // ---------------------------------------------------------------------------
 
@@ -158,6 +243,8 @@ export function estimateMilesRequired(
   cabin: CabinClass = "economy",
   tripType: TripType = "roundtrip",
   passengers: number = 1,
+  originZone?: ZoneKey,   // NEW
+  destZone?: ZoneKey,     // NEW
 ): MilesEstimate {
   // 1. Great-circle distance
   const distanceKm = haversineDistanceKm(fromLat, fromLon, toLat, toLon);
@@ -174,11 +261,21 @@ export function estimateMilesRequired(
   // 5. Raw calculation
   const rawMilesOneWay = distanceKm * baseRate * cabinMultiplier;
 
-  // 6. Apply floor
+  // 5. Apply floor
   const flooredOneWay = Math.max(rawMilesOneWay, MIN_MILES_ONEWAY[cabin]);
 
-  // 7. Round, then apply trip & passengers
-  const roundedOneWay = roundMiles(flooredOneWay);
+  // 5b. Zone-pair economy cap — clamp overestimation on long-haul
+  const economyCap = getZonePairCap(originZone, destZone);
+  // Scale cap by cabin multiplier (cap is defined for economy; business is 2.5× harder to get)
+  const scaledCap = economyCap !== undefined
+    ? economyCap * CABIN_MULTIPLIERS[cabin]
+    : undefined;
+  const cappedOneWay = scaledCap !== undefined
+    ? Math.min(flooredOneWay, scaledCap)
+    : flooredOneWay;
+
+  // 7. Round, then apply trip & passengers  (replaces original step 7)
+  const roundedOneWay = roundMiles(cappedOneWay);
   const totalMiles = roundedOneWay * tripMultiplier * passengers;
 
   return {
@@ -188,7 +285,7 @@ export function estimateMilesRequired(
     tripType,
     passengers,
     distanceKm: Math.round(distanceKm),
-    confidence: "ESTIMATE",
+    confidence: economyCap !== undefined ? "ESTIMATE" : "ROUGH_ESTIMATE",
     breakdown: {
       baseRate,
       cabinMultiplier,
