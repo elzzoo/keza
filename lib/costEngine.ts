@@ -175,18 +175,6 @@ function buildOptionExplanation(
   return `${program} (${typeLabel}) · ${milesFormatted} miles + $${taxes} taxes${promoNote}`;
 }
 
-// ─── Helper: regional tax surcharge ───────────────────────────────────────────
-
-const AFRICAN_ZONES = new Set([
-  "AFRICA_WEST", "AFRICA_NORTH", "AFRICA_EAST", "AFRICA_SOUTH",
-]);
-
-function getRegionalTaxSurcharge(originZone: string | null): number {
-  if (!originZone) return 0;
-  if (AFRICAN_ZONES.has(originZone)) return 25;
-  return 0;
-}
-
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export function buildCostOptions(
@@ -198,7 +186,6 @@ export function buildCostOptions(
   const originZone = getZone(from);
   const destZone   = getZone(to);
   const operatingAirline = airlines[0] ?? "";
-  const regionalSurcharge = getRegionalTaxSurcharge(originZone);
 
   const milesOptions: MilesOption[] = [];
 
@@ -229,12 +216,12 @@ export function buildCostOptions(
     const airlineForTaxes = useZoneFallback ? entry.inferredAirline : operatingAirline;
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
-      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers) + regionalSurcharge;
+      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone ?? undefined, destZone ?? undefined);
       milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers) + regionalSurcharge;
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone ?? undefined, destZone ?? undefined);
     milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
   }
 
@@ -253,7 +240,7 @@ export function buildCostOptions(
     const { miles: destMiles, source } = getMilesRequired(bonus.to, originZone, destZone, cabin, tripType, passengers);
     const ratio = getEffectiveRatio(bonus);
     const sourceMiles = Math.ceil(destMiles / ratio);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers) + regionalSurcharge;
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone ?? undefined, destZone ?? undefined);
 
     const promoApplied = bonus.promoRatio
       ? `${bonus.from} bonus ${Math.round((ratio - 1) * 100)}%`
@@ -422,8 +409,8 @@ export function buildCostOptions(
     : recommendation === "USE_MILES"
       ? `🔥 Tu économises $${savings} avec les miles`
       : signedSavings < 0
-        ? `❌ Les miles coûtent $${savings} de plus que le cash`
-        : `💵 Cash légèrement moins cher — conserve tes miles`;
+        ? `💵 Pay cash — save $${savings}`
+        : `💵 Cash légèrement avantageux — conserve tes miles`;
 
   // Trust disclaimer
   const disclaimer =

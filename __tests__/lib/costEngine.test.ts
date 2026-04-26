@@ -26,10 +26,10 @@ describe("buildCostOptions", () => {
       expect(fb).toBeDefined();
     });
 
-    it("calculates taxes as 550 × 2 pax + $25 African surcharge = 1125 for AF business from DSS", () => {
+    it("calculates taxes as 550 × 2 pax = 1100 for AF business from DSS (no arbitrary surcharge)", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.taxes).toBe(1125);
+      expect(fb.taxes).toBe(1100);
     });
 
     it("totalMilesCost = milesCost + taxes", () => {
@@ -125,11 +125,11 @@ describe("displayMessage", () => {
     }
   });
 
-  it("starts with ❌ or 💵 when USE_CASH", () => {
+  it("starts with 💵 when USE_CASH", () => {
     const cheap: FlightInput = { ...BASE, totalPrice: 50, cabin: "economy", passengers: 1 };
     const r = buildCostOptions(cheap, new Map());
     expect(r.recommendation).toBe("USE_CASH");
-    expect(r.displayMessage).toMatch(/❌|💵/);
+    expect(r.displayMessage).toMatch(/💵/);
   });
 });
 
@@ -165,17 +165,17 @@ describe("MilesOption.isBestDeal", () => {
   });
 });
 
-describe("regional tax adjustment — Africa origin", () => {
-  it("adds $25 surcharge for African origin (DSS) vs European origin", () => {
+describe("taxes — no arbitrary regional surcharge", () => {
+  it("DSS→CDG and CDG→JFK use per-airline taxes without extra surcharge", () => {
     const african: FlightInput = { ...BASE, from: "DSS", to: "CDG", cabin: "economy", passengers: 1, tripType: "oneway" };
     const european: FlightInput = { ...BASE, from: "CDG", to: "JFK", cabin: "economy", passengers: 1, tripType: "oneway" };
     const afr = buildCostOptions(african, new Map());
     const eur = buildCostOptions(european, new Map());
     const afrFb = afr.milesOptions.find((o) => o.program === "Flying Blue");
     const eurFb = eur.milesOptions.find((o) => o.program === "Flying Blue");
+    // Both use AF taxes directly (known airline) — no hidden surcharge
     if (afrFb && eurFb) {
-      // African route should have higher or equal taxes (due to +$25 regional surcharge)
-      expect(afrFb.taxes).toBeGreaterThanOrEqual(eurFb.taxes - 10);
+      expect(afrFb.taxes).toBe(eurFb.taxes);
     }
   });
 });
