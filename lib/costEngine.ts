@@ -5,8 +5,9 @@ import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
-import { estimateMilesRequired, type CabinClass, type ZoneKey } from "./dynamicAwardEngine";
+import { estimateMilesRequired, haversineDistanceKm, type CabinClass, type ZoneKey } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS } from "./globalPrograms";
+import { getContextualMileValue } from "./mileValue";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
 import type { Cabin, TripType } from "./engine";
@@ -98,17 +99,23 @@ function buildOption(
   chartSource: "REAL" | "ESTIMATE",
   taxes: number,
   cashTotal: number,
-  effectivePrices: Map<string, number>
+  effectivePrices: Map<string, number>,
+  cabin: Cabin,          // NEW
+  distanceKm: number,    // NEW — 0 means unknown, skip adjustment
 ): MilesOption {
   // Market value of a mile for this program (cents).
   // For TRANSFER: use the source currency's value (e.g. Amex MR value).
   const sourceProgram = via ?? program;
-  const valuePerMile =
+  const baseCents =
     effectivePrices.get(sourceProgram) ??
     effectivePrices.get(program) ??
     MILES_PRICE_MAP.get(sourceProgram) ??
     MILES_PRICE_MAP.get(program) ??
     DEFAULT_MILE_VALUE_CENTS;
+
+  const valuePerMile = distanceKm > 0
+    ? getContextualMileValue(baseCents, cabin, distanceKm)
+    : baseCents;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CORE FORMULA:  totalMilesCost = (milesRequired × valuePerMile) + taxes
@@ -152,6 +159,14 @@ export function buildCostOptions(
 
   const milesOptions: MilesOption[] = [];
 
+  // ── Pre-compute route distance for contextual mile value ──────────────────
+  const fromAirport = AIRPORTS.find(a => a.code === from);
+  const toAirport   = AIRPORTS.find(a => a.code === to);
+
+  const distanceKm = (fromAirport && toAirport)
+    ? haversineDistanceKm(fromAirport.lat, fromAirport.lon, toAirport.lat, toAirport.lon)
+    : 0;
+
   // ── Direct + Alliance options ──────────────────────────────────────────────
   const programs = getProgramsForAirline(operatingAirline);
 
@@ -172,12 +187,12 @@ export function buildCostOptions(
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
       const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
-      milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
+      milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
     const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
-    milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
+    milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
   }
 
   // ── Transfer options ──────────────────────────────────────────────────────
@@ -210,7 +225,9 @@ export function buildCostOptions(
       source,
       taxes,
       cashTotal,
-      effectivePrices
+      effectivePrices,
+      cabin,
+      distanceKm,
     );
     if (promoApplied) opt.promoApplied = promoApplied;
     milesOptions.push(opt);
@@ -218,9 +235,6 @@ export function buildCostOptions(
 
   // ── Dynamic global options (for routes/programs not in hardcoded charts) ──
   // Uses distance-based estimation to suggest ANY program worldwide
-  const fromAirport = AIRPORTS.find(a => a.code === from);
-  const toAirport   = AIRPORTS.find(a => a.code === to);
-
   if (fromAirport && toAirport) {
     const cabinMap: Record<Cabin, CabinClass> = {
       economy: "economy", premium: "premium_economy", business: "business", first: "first"

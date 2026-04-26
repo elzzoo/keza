@@ -52,11 +52,13 @@ describe("buildCostOptions", () => {
   });
 
   describe("effective prices from map", () => {
-    it("uses custom value per mile from effectivePrices map", () => {
+    it("uses custom value per mile from effectivePrices map (contextual: business × medium-haul = 2×)", () => {
+      // BASE is business cabin, DSS→CDG ~4,400 km (medium-haul, 1.0×), business cabin (2.0×)
+      // effectivePrices base = 2.5, adjusted = 2.5 × 2.0 × 1.0 = 5.0
       const prices = new Map([["Flying Blue", 2.5]]);
       const { milesOptions } = buildCostOptions(BASE, prices);
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.valuePerMile).toBe(2.5);
+      expect(fb.valuePerMile).toBeCloseTo(5.0);
     });
   });
 
