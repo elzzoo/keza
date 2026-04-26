@@ -32,7 +32,7 @@ export interface RecentSearch {
   /** Best savings found */
   bestSavings?: number;
   /** Recommendation */
-  recommendation?: "USE_MILES" | "USE_CASH" | "EQUIVALENT";
+  recommendation?: "USE_MILES" | "USE_CASH";
 }
 
 export interface FavoriteRoute {

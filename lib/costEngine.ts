@@ -14,7 +14,7 @@ import type { Cabin, TripType } from "./engine";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
-export type Recommendation = "USE_MILES" | "USE_CASH" | "EQUIVALENT";
+export type Recommendation = "USE_MILES" | "USE_CASH";
 
 export interface FlightInput {
   from: string;
@@ -43,6 +43,8 @@ export interface MilesOption {
 
   confidence: Confidence;         // HIGH / MEDIUM / LOW
   promoApplied?: string;
+  explanation: string;     // e.g. "Flying Blue direct · 30 000 miles + $300 taxes"
+  isBestDeal: boolean;     // true only on the cheapest option after deduplication
   chartSource: "REAL" | "ESTIMATE";
 }
 
@@ -53,7 +55,9 @@ export interface CostComparison {
   recommendation: Recommendation; // USE_MILES or USE_CASH — binary, no ambiguity
   bestOption: MilesOption | null; // the cheapest miles scenario
   milesOptions: MilesOption[];    // all computed options for detail view
-  explanation: string;            // human-readable reason (FR)
+  explanation: string;            // kept for backward compat
+  displayMessage: string;         // "🔥 Tu économises $X" or "❌ Les miles coûtent $X de plus"
+  disclaimer: string;             // trust disclaimer shown on every result
 }
 
 // ─── Helper: which airlines are in each program's network ────────────────────
@@ -129,6 +133,8 @@ function buildOption(
     MILES_CONFIDENCE_MAP.get(program) ??
     "LOW";
 
+  const explanation = buildOptionExplanation(type, program, via, milesRequired, taxes, undefined);
+
   return {
     type,
     program,
@@ -141,8 +147,44 @@ function buildOption(
     totalMilesCost,
     savings,
     confidence,
+    explanation,
+    isBestDeal: false,
     chartSource,
   };
+}
+
+// ─── Helper: human-readable per-option explanation ────────────────────────────
+
+function buildOptionExplanation(
+  type: "DIRECT" | "ALLIANCE" | "TRANSFER",
+  program: string,
+  via: string | undefined,
+  milesRequired: number,
+  taxes: number,
+  promoApplied: string | undefined,
+): string {
+  const typeLabel =
+    type === "DIRECT"   ? "direct" :
+    type === "ALLIANCE" ? "alliance" :
+    via?.startsWith("Achat") ? `achat via ${via}` :
+    `transfert ${via ?? ""}`;
+
+  const milesFormatted = milesRequired.toLocaleString("fr-FR");
+  const promoNote = promoApplied ? ` · ${promoApplied}` : "";
+
+  return `${program} (${typeLabel}) · ${milesFormatted} miles + $${taxes} taxes${promoNote}`;
+}
+
+// ─── Helper: regional tax surcharge ───────────────────────────────────────────
+
+const AFRICAN_ZONES = new Set([
+  "AFRICA_WEST", "AFRICA_NORTH", "AFRICA_EAST", "AFRICA_SOUTH",
+]);
+
+function getRegionalTaxSurcharge(originZone: string | null): number {
+  if (!originZone) return 0;
+  if (AFRICAN_ZONES.has(originZone)) return 25;
+  return 0;
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -156,6 +198,7 @@ export function buildCostOptions(
   const originZone = getZone(from);
   const destZone   = getZone(to);
   const operatingAirline = airlines[0] ?? "";
+  const regionalSurcharge = getRegionalTaxSurcharge(originZone);
 
   const milesOptions: MilesOption[] = [];
 
@@ -186,12 +229,12 @@ export function buildCostOptions(
     const airlineForTaxes = useZoneFallback ? entry.inferredAirline : operatingAirline;
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
-      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
+      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers) + regionalSurcharge;
       milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers) + regionalSurcharge;
     milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
   }
 
@@ -210,7 +253,7 @@ export function buildCostOptions(
     const { miles: destMiles, source } = getMilesRequired(bonus.to, originZone, destZone, cabin, tripType, passengers);
     const ratio = getEffectiveRatio(bonus);
     const sourceMiles = Math.ceil(destMiles / ratio);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers) + regionalSurcharge;
 
     const promoApplied = bonus.promoRatio
       ? `${bonus.from} bonus ${Math.round((ratio - 1) * 100)}%`
@@ -229,7 +272,10 @@ export function buildCostOptions(
       cabin,
       distanceKm,
     );
-    if (promoApplied) opt.promoApplied = promoApplied;
+    if (promoApplied) {
+      opt.promoApplied = promoApplied;
+      opt.explanation = buildOptionExplanation("TRANSFER", bonus.to, bonus.from, sourceMiles, taxes, promoApplied);
+    }
     milesOptions.push(opt);
   }
 
@@ -300,6 +346,8 @@ export function buildCostOptions(
         totalMilesCost,
         savings,
         confidence: "LOW",
+        explanation: buildOptionExplanation("ALLIANCE", prog.name, undefined, estimate.milesRequired, taxes, undefined),
+        isBestDeal: false,
         chartSource: "ESTIMATE",
       });
     }
@@ -337,6 +385,8 @@ export function buildCostOptions(
         totalMilesCost: totalAcquisitionCost,
         savings: Math.round((cashTotal - totalAcquisitionCost) * 100) / 100,
         confidence: "MEDIUM",
+        explanation: buildOptionExplanation("TRANSFER", opt.program, `Achat ${acquisition.cheapest.source}`, opt.milesRequired, opt.taxes, undefined),
+        isBestDeal: false,
         chartSource: opt.chartSource,
       });
     }
@@ -356,34 +406,41 @@ export function buildCostOptions(
     .slice(0, 12);
 
   // ── DECISION: compare REAL TOTAL COSTS ────────────────────────────────────
-  // bestOption = cheapest miles scenario
   const bestOption = dedupedOptions[0] ?? null;
-
-  // Decision: compare REAL TOTAL COSTS with an EQUIVALENT zone (±5%)
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
+  const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper
+  const savings = Math.round(Math.abs(signedSavings) * 100) / 100;
 
-  // Savings = absolute difference between cash and best miles cost
-  const savings = bestOption
-    ? Math.round(Math.abs(cashTotal - bestMilesCost) * 100) / 100
-    : 0;
+  // Binary decision — no EQUIVALENT zone, always picks a side
+  const recommendation: Recommendation = (bestOption && signedSavings > 0)
+    ? "USE_MILES"
+    : "USE_CASH";
 
-  // If the difference is < 5% of the cash price, it's essentially equivalent
-  const diffPct = cashTotal > 0 ? (savings / cashTotal) * 100 : 0;
-  const recommendation: Recommendation = !bestOption
-    ? "USE_CASH"
-    : diffPct < 5
-      ? "EQUIVALENT"
-      : bestMilesCost < cashTotal
-        ? "USE_MILES"
-        : "USE_CASH";
+  // Unambiguous display message
+  const displayMessage: string = !bestOption
+    ? `💵 Payez en cash — aucune option miles disponible`
+    : recommendation === "USE_MILES"
+      ? `🔥 Tu économises $${savings} avec les miles`
+      : signedSavings < 0
+        ? `❌ Les miles coûtent $${savings} de plus que le cash`
+        : `💵 Cash légèrement moins cher — conserve tes miles`;
 
-  // Explanation
+  // Trust disclaimer
+  const disclaimer =
+    "⚠️ Prix indicatifs basés sur tarifs réels et valeurs de miles estimées — vérifiez la disponibilité avant de réserver.";
+
+  // Mark best deal on the cheapest option
+  if (dedupedOptions.length > 0) {
+    dedupedOptions[0].isBestDeal = true;
+  }
+
+  // Legacy explanation string
   const explanation = bestOption
     ? recommendation === "USE_MILES"
       ? `Économisez $${savings} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + $${bestOption.taxes} taxes = $${bestMilesCost} vs $${cashTotal} cash)`
-      : recommendation === "EQUIVALENT"
-        ? `Quasi identique : $${bestMilesCost} en miles vs $${cashTotal} cash (${diffPct.toFixed(0)}% d'écart). Choisissez selon vos préférences.`
-        : `Le cash est moins cher de $${savings}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
+      : signedSavings < 0
+        ? `Le cash est moins cher de $${savings}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
+        : `Quasi identique — cash légèrement avantageux de $${savings}.`
     : `Aucune option miles disponible. Payez en cash ($${cashTotal}).`;
 
   return {
@@ -391,6 +448,8 @@ export function buildCostOptions(
     milesCost: bestOption ? bestMilesCost : 0,
     savings,
     recommendation,
+    displayMessage,
+    disclaimer,
     bestOption,
     milesOptions: dedupedOptions,
     explanation,

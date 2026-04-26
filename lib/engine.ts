@@ -51,10 +51,12 @@ export interface FlightResult {
   cashCost: number;                       // total cash price
   milesCost: number;                      // total cost of best miles option
   savings: number;                        // |cashCost - milesCost|
-  recommendation: "USE_MILES" | "USE_CASH" | "EQUIVALENT";
+  recommendation: "USE_MILES" | "USE_CASH";
   bestOption: MilesOption | null;         // cheapest miles scenario
   milesOptions: MilesOption[];            // all options for detail view
   explanation: string;                    // human-readable reason
+  displayMessage: string;
+  disclaimer: string;
 
   // ── Cabin price accuracy ───────────────────────────────────────────────────
   cabinPriceEstimated: boolean;   // true when price = economy × multiplier (not real cabin price)
@@ -532,6 +534,8 @@ function enrich(
     bestOption:          comparison.bestOption,
     milesOptions:        comparison.milesOptions,
     explanation:         comparison.explanation,
+    displayMessage:      comparison.displayMessage,
+    disclaimer:          comparison.disclaimer,
     cabinPriceEstimated: cabin !== "economy",
     searchId:            "",   // filled by caller; placeholder here
     optimization,

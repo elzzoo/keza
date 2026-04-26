@@ -42,7 +42,6 @@ const t = {
   noResults: { fr: "Aucun résultat", en: "No results" },
   useMiles: { fr: "MILES GAGNENT", en: "USE MILES" },
   useCash: { fr: "CASH GAGNE", en: "USE CASH" },
-  equivalent: { fr: "ÉQUIVALENT", en: "EQUIVALENT" },
 };
 
 export function MultiDateCompare({ searchParams, lang, formatPrice }: MultiDateCompareProps) {
@@ -115,14 +114,12 @@ export function MultiDateCompare({ searchParams, lang, formatPrice }: MultiDateC
   const getRecoLabel = (reco?: string) => {
     if (!reco) return "-";
     if (reco === "USE_MILES") return t.useMiles[lang];
-    if (reco === "USE_CASH") return t.useCash[lang];
-    return t.equivalent[lang];
+    return t.useCash[lang];
   };
 
   const getRecoClasses = (reco?: string) => {
     if (reco === "USE_MILES") return "bg-primary/15 text-blue-400 border-primary/30";
-    if (reco === "USE_CASH") return "bg-warning/10 text-warning border-warning/25";
-    return "bg-success/10 text-success border-success/25";
+    return "bg-warning/10 text-warning border-warning/25";
   };
 
   if (!open) {

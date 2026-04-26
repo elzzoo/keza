@@ -67,7 +67,6 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
   const duration   = flight.duration;
   const bestOption = flight.bestOption;
   const isUseMiles = flight.recommendation === "USE_MILES";
-  const isEquivalent = flight.recommendation === "EQUIVALENT";
 
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
@@ -82,21 +81,17 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
     <div className={clsx(
       "bg-surface rounded-2xl border overflow-hidden hover-lift",
       "transition-all duration-200 hover:shadow-card-hover",
-      isUseMiles ? "border-blue-500/30" : isEquivalent ? "border-emerald-500/30" : "border-border"
+      isUseMiles ? "border-blue-500/30" : "border-border"
     )}>
 
       {/* DECISION BANNER */}
       <div className={clsx(
         "px-5 py-4 text-center",
-        isUseMiles ? "bg-blue-500/10" : isEquivalent ? "bg-emerald-500/5" : "bg-surface"
+        isUseMiles ? "bg-blue-500/10" : "bg-surface"
       )}>
         {isUseMiles ? (
           <div className="text-lg font-black text-blue-400">
             {fr ? `Economisez ${fmt(savings)} avec les miles` : `Save ${fmt(savings)} with miles`}
-          </div>
-        ) : isEquivalent ? (
-          <div className="text-lg font-black text-emerald-400">
-            {fr ? "Cash \u2248 Miles \u2014 au choix" : "Cash \u2248 Miles \u2014 your call"}
           </div>
         ) : savings > 0 ? (
           <div className="text-lg font-black text-warning">
@@ -133,7 +128,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
           <div className={clsx(
             "font-black tabular-nums",
             priceSize(fmt(cashCost)),
-            !isUseMiles && !isEquivalent ? "text-success" : isEquivalent ? "text-emerald-400" : "text-fg"
+            !isUseMiles ? "text-success" : "text-fg"
           )}>
             {fmt(cashCost)}
           </div>
@@ -149,7 +144,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
               <div className={clsx(
                 "font-black tabular-nums",
                 priceSize(fmt(milesCost)),
-                isUseMiles ? "text-success" : isEquivalent ? "text-emerald-400" : "text-fg"
+                isUseMiles ? "text-success" : "text-fg"
               )}>
                 {fmt(milesCost)}
               </div>
@@ -177,7 +172,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className={clsx(
               "text-[10px] font-bold px-2 py-0.5 rounded-md border",
-              isUseMiles || isEquivalent
+              isUseMiles
                 ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
                 : "bg-surface-2 text-muted border-border"
             )}>
@@ -236,9 +231,7 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
               "flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-[13px] font-bold transition-all hover-lift",
               isUseMiles
                 ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/30"
-                : isEquivalent
-                  ? "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30"
-                  : "bg-warning/10 text-warning hover:bg-warning/20 border border-warning/25"
+                : "bg-warning/10 text-warning hover:bg-warning/20 border border-warning/25"
             )}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

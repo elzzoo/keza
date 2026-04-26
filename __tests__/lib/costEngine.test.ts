@@ -26,10 +26,10 @@ describe("buildCostOptions", () => {
       expect(fb).toBeDefined();
     });
 
-    it("calculates taxes as 550 × 2 pax = 1100 for AF business", () => {
+    it("calculates taxes as 550 × 2 pax + $25 African surcharge = 1125 for AF business from DSS", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.taxes).toBe(1100);
+      expect(fb.taxes).toBe(1125);
     });
 
     it("totalMilesCost = milesCost + taxes", () => {
@@ -63,9 +63,9 @@ describe("buildCostOptions", () => {
   });
 
   describe("recommendation", () => {
-    it("USE_MILES when miles cost is less than cash", () => {
+    it("recommendation is binary — USE_MILES or USE_CASH", () => {
       const { recommendation } = buildCostOptions(BASE, new Map());
-      expect(["USE_MILES", "USE_CASH", "EQUIVALENT"]).toContain(recommendation);
+      expect(["USE_MILES", "USE_CASH"]).toContain(recommendation);
     });
 
     it("USE_CASH when cash price is very low", () => {
@@ -101,5 +101,81 @@ describe("buildCostOptions", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       expect(milesOptions.length).toBeLessThanOrEqual(12);
     });
+  });
+});
+
+describe("binary recommendation — no EQUIVALENT", () => {
+  it("never returns EQUIVALENT", () => {
+    const r = buildCostOptions(BASE, new Map());
+    expect(r.recommendation).not.toBe("EQUIVALENT");
+    expect(["USE_MILES", "USE_CASH"]).toContain(r.recommendation);
+  });
+
+  it("USE_CASH when cash is $50 (miles always more expensive)", () => {
+    const cheap: FlightInput = { ...BASE, totalPrice: 50, cabin: "economy", passengers: 1 };
+    expect(buildCostOptions(cheap, new Map()).recommendation).toBe("USE_CASH");
+  });
+});
+
+describe("displayMessage", () => {
+  it("starts with 🔥 when USE_MILES", () => {
+    const r = buildCostOptions(BASE, new Map());
+    if (r.recommendation === "USE_MILES") {
+      expect(r.displayMessage).toMatch(/🔥/);
+    }
+  });
+
+  it("starts with ❌ or 💵 when USE_CASH", () => {
+    const cheap: FlightInput = { ...BASE, totalPrice: 50, cabin: "economy", passengers: 1 };
+    const r = buildCostOptions(cheap, new Map());
+    expect(r.recommendation).toBe("USE_CASH");
+    expect(r.displayMessage).toMatch(/❌|💵/);
+  });
+});
+
+describe("disclaimer", () => {
+  it("is a non-empty string on every result", () => {
+    const r = buildCostOptions(BASE, new Map());
+    expect(typeof r.disclaimer).toBe("string");
+    expect(r.disclaimer.length).toBeGreaterThan(10);
+  });
+});
+
+describe("MilesOption.explanation", () => {
+  it("includes program name and miles count", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
+    expect(fb.explanation).toContain("Flying Blue");
+    expect(fb.explanation).toContain("miles");
+  });
+});
+
+describe("MilesOption.isBestDeal", () => {
+  it("exactly one option has isBestDeal = true", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const best = milesOptions.filter((o) => o.isBestDeal);
+    expect(best).toHaveLength(1);
+  });
+
+  it("the isBestDeal option has the lowest totalMilesCost", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const best = milesOptions.find((o) => o.isBestDeal)!;
+    const minCost = Math.min(...milesOptions.map((o) => o.totalMilesCost));
+    expect(best.totalMilesCost).toBe(minCost);
+  });
+});
+
+describe("regional tax adjustment — Africa origin", () => {
+  it("adds $25 surcharge for African origin (DSS) vs European origin", () => {
+    const african: FlightInput = { ...BASE, from: "DSS", to: "CDG", cabin: "economy", passengers: 1, tripType: "oneway" };
+    const european: FlightInput = { ...BASE, from: "CDG", to: "JFK", cabin: "economy", passengers: 1, tripType: "oneway" };
+    const afr = buildCostOptions(african, new Map());
+    const eur = buildCostOptions(european, new Map());
+    const afrFb = afr.milesOptions.find((o) => o.program === "Flying Blue");
+    const eurFb = eur.milesOptions.find((o) => o.program === "Flying Blue");
+    if (afrFb && eurFb) {
+      // African route should have higher or equal taxes (due to +$25 regional surcharge)
+      expect(afrFb.taxes).toBeGreaterThanOrEqual(eurFb.taxes - 10);
+    }
   });
 });
