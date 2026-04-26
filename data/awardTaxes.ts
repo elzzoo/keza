@@ -64,7 +64,7 @@ function getRegionalDefaultTaxes(
 ): number {
   const isUK      = (from != null && UK_AIRPORTS.has(from)) || (to != null && UK_AIRPORTS.has(to));
   const isNAdom   = originZone === "NORTH_AMERICA" && destZone === "NORTH_AMERICA";
-  const isAfrica  = originZone?.startsWith("AFRICA_") || destZone?.startsWith("AFRICA_");
+  const isAfrica  = originZone?.startsWith("AFRICA_") === true || destZone?.startsWith("AFRICA_") === true;
   const isME      = originZone === "MIDDLE_EAST" || destZone === "MIDDLE_EAST";
   const isEurope  = originZone === "EUROPE" || destZone === "EUROPE";
 
@@ -73,6 +73,7 @@ function getRegionalDefaultTaxes(
   if      (isUK)     { economyBase = 250; businessBase = 500; }
   else if (isNAdom)  { economyBase = 30;  businessBase = 60;  }
   else if (isAfrica) { economyBase = 50;  businessBase = 100; }
+  // Europe outranks ME: European leg typically dominates surcharge on mixed routes
   else if (isEurope) { economyBase = 150; businessBase = 350; }
   else if (isME)     { economyBase = 40;  businessBase = 80;  }
   else               { economyBase = 100; businessBase = 200; }
