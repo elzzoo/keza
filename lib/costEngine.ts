@@ -252,8 +252,8 @@ export function buildCostOptions(
         dynamicCabin,
         tripType,
         passengers,
-        originZone as ZoneKey ?? undefined,
-        destZone as ZoneKey ?? undefined,
+        originZone ?? undefined,
+        destZone ?? undefined,
       );
 
       // Compute taxes using tax profile

@@ -114,6 +114,7 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     EUROPE:        35_000,
     MIDDLE_EAST:   35_000,
     SOUTH_AMERICA: 25_000,
+    AFRICA_NORTH:  33_000,
     AFRICA_WEST:   35_000,
     AFRICA_EAST:   40_000,
     AFRICA_SOUTH:  40_000,
@@ -261,10 +262,10 @@ export function estimateMilesRequired(
   // 5. Raw calculation
   const rawMilesOneWay = distanceKm * baseRate * cabinMultiplier;
 
-  // 5. Apply floor
+  // 6. Apply floor
   const flooredOneWay = Math.max(rawMilesOneWay, MIN_MILES_ONEWAY[cabin]);
 
-  // 5b. Zone-pair economy cap — clamp overestimation on long-haul
+  // 7. Zone-pair economy cap — clamp overestimation on long-haul
   const economyCap = getZonePairCap(originZone, destZone);
   // Scale cap by cabin multiplier (cap is defined for economy; business is 2.5× harder to get)
   const scaledCap = economyCap !== undefined
@@ -274,7 +275,7 @@ export function estimateMilesRequired(
     ? Math.min(flooredOneWay, scaledCap)
     : flooredOneWay;
 
-  // 7. Round, then apply trip & passengers  (replaces original step 7)
+  // 8. Round, then apply trip & passengers
   const roundedOneWay = roundMiles(cappedOneWay);
   const totalMiles = roundedOneWay * tripMultiplier * passengers;
 
