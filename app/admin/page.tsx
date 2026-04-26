@@ -366,7 +366,7 @@ export default async function AdminPage() {
               </div>
               {leads.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
-                  Aucun lead pour l'instant. Les soumissions du formulaire{" "}
+                  Aucun lead pour l&apos;instant. Les soumissions du formulaire{" "}
                   <code className="font-mono bg-gray-100 px-1 rounded">/entreprises</code>{" "}
                   apparaîtront ici.
                 </div>
