@@ -6,8 +6,34 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
 
+// ─── B2B Lead type ───────────────────────────────────────────────────────────
+
+interface B2BLead {
+  name: string;
+  company: string;
+  email: string;
+  teamSize: string;
+  message?: string;
+  receivedAt: string;
+}
+
 export const metadata: Metadata = { title: "Admin — KEZA", robots: "noindex" };
 export const dynamic = "force-dynamic";
+
+// ─── B2B leads fetching ──────────────────────────────────────────────────────
+
+async function fetchB2BLeads(): Promise<B2BLead[]> {
+  const raw = await redis.lrange("keza:b2b:leads", 0, 49);
+  return raw
+    .map((item) => {
+      try {
+        return typeof item === "string" ? JSON.parse(item) : item;
+      } catch {
+        return null;
+      }
+    })
+    .filter((x): x is B2BLead => x !== null);
+}
 
 // ─── Redis key helpers ───────────────────────────────────────────────────────
 
@@ -152,10 +178,11 @@ export default async function AdminPage() {
   }
 
   let stats: Awaited<ReturnType<typeof fetchStats>> | null = null;
+  let leads: B2BLead[] = [];
   let error: string | null = null;
 
   try {
-    stats = await fetchStats();
+    [stats, leads] = await Promise.all([fetchStats(), fetchB2BLeads()]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Erreur Redis inconnue";
   }
@@ -326,6 +353,68 @@ export default async function AdminPage() {
                 avec le header Authorization: Bearer CRON_SECRET.
               </p>
             )}
+
+            {/* B2B Leads */}
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Leads B2B Entreprises
+                </h2>
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                  {leads.length} lead{leads.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              {leads.length === 0 ? (
+                <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
+                  Aucun lead pour l'instant. Les soumissions du formulaire{" "}
+                  <code className="font-mono bg-gray-100 px-1 rounded">/entreprises</code>{" "}
+                  apparaîtront ici.
+                </div>
+              ) : (
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-gray-50">
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Reçu</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nom</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Entreprise</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Équipe</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Message</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {leads.map((lead, i) => (
+                          <tr key={i} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap text-xs">
+                              {formatDate(lead.receivedAt)}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                              {lead.name}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                              {lead.company}
+                            </td>
+                            <td className="px-4 py-3 text-blue-600 whitespace-nowrap">
+                              <a href={`mailto:${lead.email}`} className="hover:underline">
+                                {lead.email}
+                              </a>
+                            </td>
+                            <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                              {lead.teamSize}
+                            </td>
+                            <td className="px-4 py-3 text-gray-500 max-w-xs truncate">
+                              {lead.message || <span className="italic opacity-40">—</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>
