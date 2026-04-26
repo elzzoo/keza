@@ -183,8 +183,8 @@ export function buildCostOptions(
 ): CostComparison {
   const { from, to, totalPrice: cashTotal, airlines, cabin, tripType, passengers } = flight;
 
-  const originZone = getZone(from);
-  const destZone   = getZone(to);
+  const originZone = getZone(from) ?? undefined;
+  const destZone   = getZone(to)   ?? undefined;
   const operatingAirline = airlines[0] ?? "";
 
   const milesOptions: MilesOption[] = [];
@@ -216,12 +216,12 @@ export function buildCostOptions(
     const airlineForTaxes = useZoneFallback ? entry.inferredAirline : operatingAirline;
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
-      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone ?? undefined, destZone ?? undefined);
+      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone);
       milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone ?? undefined, destZone ?? undefined);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone);
     milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
   }
 
@@ -240,7 +240,7 @@ export function buildCostOptions(
     const { miles: destMiles, source } = getMilesRequired(bonus.to, originZone, destZone, cabin, tripType, passengers);
     const ratio = getEffectiveRatio(bonus);
     const sourceMiles = Math.ceil(destMiles / ratio);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone ?? undefined, destZone ?? undefined);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone);
 
     const promoApplied = bonus.promoRatio
       ? `${bonus.from} bonus ${Math.round((ratio - 1) * 100)}%`
@@ -299,8 +299,8 @@ export function buildCostOptions(
         dynamicCabin,
         tripType,
         passengers,
-        originZone ?? undefined,
-        destZone ?? undefined,
+        originZone,
+        destZone,
       );
 
       // Compute taxes using tax profile

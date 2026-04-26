@@ -167,15 +167,16 @@ describe("MilesOption.isBestDeal", () => {
 
 describe("taxes — no arbitrary regional surcharge", () => {
   it("DSS→CDG and CDG→JFK use per-airline taxes without extra surcharge", () => {
-    const african: FlightInput = { ...BASE, from: "DSS", to: "CDG", cabin: "economy", passengers: 1, tripType: "oneway" };
-    const european: FlightInput = { ...BASE, from: "CDG", to: "JFK", cabin: "economy", passengers: 1, tripType: "oneway" };
+    const african: FlightInput = { ...BASE, from: "DSS", to: "CDG", cabin: "business", passengers: 2, tripType: "roundtrip" };
+    const european: FlightInput = { ...BASE, from: "CDG", to: "JFK", cabin: "business", passengers: 2, tripType: "roundtrip" };
     const afr = buildCostOptions(african, new Map());
     const eur = buildCostOptions(european, new Map());
     const afrFb = afr.milesOptions.find((o) => o.program === "Flying Blue");
     const eurFb = eur.milesOptions.find((o) => o.program === "Flying Blue");
-    // Both use AF taxes directly (known airline) — no hidden surcharge
-    if (afrFb && eurFb) {
-      expect(afrFb.taxes).toBe(eurFb.taxes);
-    }
+    // Both use AF per-airline rate (known airline) — no hidden surcharge
+    expect(afrFb).toBeDefined();
+    expect(eurFb).toBeDefined();
+    // AF uses consistent per-airline taxes — same rate for both routes
+    expect(afrFb!.taxes).toBe(eurFb!.taxes);
   });
 });
