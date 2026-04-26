@@ -5,7 +5,7 @@ import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
-import { estimateMilesRequired, haversineDistanceKm, type CabinClass, type ZoneKey } from "./dynamicAwardEngine";
+import { estimateMilesRequired, haversineDistanceKm, type CabinClass } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS } from "./globalPrograms";
 import { getContextualMileValue } from "./mileValue";
 import { calculateAcquisitionCost } from "./milesAcquisition";
