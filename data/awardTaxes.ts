@@ -41,20 +41,69 @@ export const AWARD_TAXES: Record<string, AwardTaxRecord> = {
   "Etihad":              { economy:  60, business: 110, note: "Low surcharges" },
   "Air Senegal":         { economy:  30, business:  60, note: "Minimal surcharges" },
   "RwandAir":            { economy:  30, business:  60, note: "Minimal surcharges" },
-  // Default fallback for unknown airlines
-  _default:              { economy: 120, business: 250, note: "Estimated" },
 };
+
+// ---------------------------------------------------------------------------
+// UK airports — trigger higher default taxes even for unknown carriers.
+// Used only in the regional default fallback below.
+// ---------------------------------------------------------------------------
+const UK_AIRPORTS = new Set(["LHR", "LGW", "LCY", "MAN", "EDI", "BHX", "STN", "GLA"]);
+
+/**
+ * Regional default taxes for airlines not in AWARD_TAXES.
+ * Priority rules checked top-to-bottom; first match wins.
+ * All values are per-person, one-way.
+ */
+function getRegionalDefaultTaxes(
+  from: string | undefined,
+  to: string | undefined,
+  originZone: string | undefined,
+  destZone: string | undefined,
+  cabin: "economy" | "premium" | "business" | "first",
+  passengers: number,
+): number {
+  const isUK      = (from != null && UK_AIRPORTS.has(from)) || (to != null && UK_AIRPORTS.has(to));
+  const isNAdom   = originZone === "NORTH_AMERICA" && destZone === "NORTH_AMERICA";
+  const isAfrica  = originZone?.startsWith("AFRICA_") || destZone?.startsWith("AFRICA_");
+  const isME      = originZone === "MIDDLE_EAST" || destZone === "MIDDLE_EAST";
+  const isEurope  = originZone === "EUROPE" || destZone === "EUROPE";
+
+  let economyBase: number;
+  let businessBase: number;
+  if      (isUK)     { economyBase = 250; businessBase = 500; }
+  else if (isNAdom)  { economyBase = 30;  businessBase = 60;  }
+  else if (isAfrica) { economyBase = 50;  businessBase = 100; }
+  else if (isEurope) { economyBase = 150; businessBase = 350; }
+  else if (isME)     { economyBase = 40;  businessBase = 80;  }
+  else               { economyBase = 100; businessBase = 200; }
+
+  const base =
+    cabin === "economy" || cabin === "premium"
+      ? economyBase
+      : cabin === "first"
+      ? Math.round(businessBase * 1.2)
+      : businessBase;
+
+  return base * passengers;
+}
 
 export function getAwardTaxes(
   airline: string,
   cabin: "economy" | "premium" | "business" | "first",
-  passengers: number
+  passengers: number,
+  from?: string,
+  to?: string,
+  originZone?: string,
+  destZone?: string,
 ): number {
   if (passengers < 0 || !Number.isInteger(passengers)) {
     throw new Error(`Invalid passenger count: ${passengers}`);
   }
-  const record = AWARD_TAXES[airline] ?? AWARD_TAXES["_default"]!;
-  // premium treated as business for taxes; first = business × 1.2
+  const record = AWARD_TAXES[airline];
+  if (!record) {
+    return getRegionalDefaultTaxes(from, to, originZone, destZone, cabin, passengers);
+  }
+  // premium treated as economy for taxes; first = business × 1.2
   const base =
     cabin === "economy" || cabin === "premium"
       ? record.economy
