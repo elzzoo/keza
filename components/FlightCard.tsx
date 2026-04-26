@@ -94,7 +94,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
         {/* Global best badge — top-right corner */}
         {isGlobalBest && (
           <div className="absolute top-3 right-3 bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
-            🥇 Meilleure offre
+            🥇 {fr ? "Meilleure offre" : "Best deal"}
           </div>
         )}
 
@@ -143,7 +143,9 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
       {/* Estimated cabin warning — shown when business/first price is estimated */}
       {flight.cabinPriceEstimated && (
         <div className="bg-amber-500/10 text-amber-400 border-b border-amber-500/20 px-5 py-1.5 text-[11px] text-center font-medium">
-          ⚠️ Business/First — prix du marché estimé, pas garanti
+          {fr
+            ? "⚠️ Business/First — prix du marché estimé, pas garanti"
+            : "⚠️ Business/First — market price estimate, not guaranteed"}
         </div>
       )}
 
@@ -192,7 +194,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
         </div>
       </div>
 
-      {/* WHY SECTION — program + type + confidence badge */}
+      {/* WHY SECTION — program + type + miles breakdown */}
       {bestOption && (
         <div className="px-5 py-3.5 border-t border-border space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
