@@ -42,6 +42,8 @@ interface Props {
   lang: "fr" | "en";
   /** Format a USD amount into user's chosen currency */
   formatPrice?: (usd: number) => string;
+  /** True for the top card in the sorted results list */
+  isGlobalBest?: boolean;
 }
 
 /** Responsive text size — shrinks for long formatted prices (e.g. FCFA) */
@@ -52,7 +54,7 @@ function priceSize(formatted: string): string {
   return "text-2xl";
 }
 
-export function FlightCard({ flight, lang, formatPrice }: Props) {
+export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: Props) {
   const fr = lang === "fr";
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [variant, setVariant] = useState<"A" | "B">("A");
@@ -62,7 +64,6 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
 
   const cashCost   = flight.cashCost;
   const milesCost  = flight.milesCost;
-  const savings    = flight.savings;
   const stops      = flight.stops ?? 0;
   const duration   = flight.duration;
   const bestOption = flight.bestOption;
@@ -86,23 +87,34 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
 
       {/* DECISION BANNER */}
       <div className={clsx(
-        "px-5 py-4 text-center",
+        "px-5 py-4 text-center relative",
         isUseMiles ? "bg-blue-500/10" : "bg-surface"
       )}>
-        {isUseMiles ? (
-          <div className="text-lg font-black text-blue-400">
-            {fr ? `Economisez ${fmt(savings)} avec les miles` : `Save ${fmt(savings)} with miles`}
-          </div>
-        ) : savings > 0 ? (
-          <div className="text-lg font-black text-warning">
-            {fr ? `Miles co\u00fbtent ${fmt(savings)} de plus` : `Miles cost ${fmt(savings)} more`}
-          </div>
-        ) : (
-          <div className="text-lg font-black text-muted">
-            {fr ? "Pas d'option miles disponible" : "No miles option available"}
+
+        {/* Global best badge — top-right corner */}
+        {isGlobalBest && (
+          <div className="absolute top-3 right-3 bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
+            🥇 Meilleure offre
           </div>
         )}
-        <div className="text-[11px] text-muted mt-1 flex items-center justify-center gap-1.5 flex-wrap">
+
+        {/* Primary message — engine displayMessage */}
+        <div className={clsx(
+          "text-lg font-black",
+          isUseMiles ? "text-blue-400" : "text-amber-400"
+        )}>
+          {flight.displayMessage}
+        </div>
+
+        {/* Program context line */}
+        {bestOption && (
+          <div className="text-[11px] text-muted mt-0.5">
+            via {bestOption.program} ({TYPE_LABEL[lang][bestOption.type].toLowerCase()})
+          </div>
+        )}
+
+        {/* Route info + confidence badge */}
+        <div className="text-[11px] text-muted mt-1.5 flex items-center justify-center gap-1.5 flex-wrap">
           <span>{city(flight.from, lang)} → {city(flight.to, lang)}</span>
           <span className="text-subtle">·</span>
           <span>{stops === 0 ? (fr ? "Direct" : "Nonstop") : `${stops} ${fr ? "escale" : "stop"}${stops > 1 ? "s" : ""}`}</span>
@@ -118,8 +130,22 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
               <span>{fr ? "A/R" : "Round trip"}</span>
             </>
           )}
+          {/* Confidence badge — always visible in banner */}
+          <span className={clsx(
+            "text-[9px] font-semibold px-1.5 py-0.5 rounded border",
+            badge.color
+          )}>
+            {fr ? badge.fr : badge.en}
+          </span>
         </div>
       </div>
+
+      {/* Estimated cabin warning — shown when business/first price is estimated */}
+      {flight.cabinPriceEstimated && (
+        <div className="bg-amber-500/10 text-amber-400 border-b border-amber-500/20 px-5 py-1.5 text-[11px] text-center font-medium">
+          ⚠️ Business/First — prix du marché estimé, pas garanti
+        </div>
+      )}
 
       {/* COST COMPARISON — side by side */}
       <div className="grid grid-cols-2 divide-x divide-border border-t border-border">
@@ -186,13 +212,6 @@ export function FlightCard({ flight, lang, formatPrice }: Props) {
                 via {bestOption.via}
               </span>
             )}
-            {/* Confidence badge */}
-            <span className={clsx(
-              "text-[9px] font-semibold px-1.5 py-0.5 rounded border ml-auto",
-              badge.color
-            )}>
-              {fr ? badge.fr : badge.en}
-            </span>
           </div>
           <div className="text-[11px] text-muted leading-relaxed">
             {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢/mile + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
