@@ -247,7 +247,12 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
         <div className="space-y-3 stagger-children">
           {filtered.map((f, i) => (
             <div key={i} className="animate-fade-up">
-              <FlightCard flight={f} lang={lang} formatPrice={formatPrice} />
+              <FlightCard
+                flight={f}
+                lang={lang}
+                formatPrice={formatPrice}
+                isGlobalBest={i === 0 && tab !== "cash"}
+              />
             </div>
           ))}
         </div>
