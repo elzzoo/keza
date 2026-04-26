@@ -56,7 +56,11 @@ export interface FlightResult {
   milesOptions: MilesOption[];            // all options for detail view
   explanation: string;                    // human-readable reason
 
-  // ── Extra ──────────────���──────────────────────────────────────────────────
+  // ── Cabin price accuracy ───────────────────────────────────────────────────
+  cabinPriceEstimated: boolean;   // true when price = economy × multiplier (not real cabin price)
+  searchId: string;               // UUID per search — used for click tracking
+
+  // ── Extra ──────────────────────────────────────────────────────────────────
   optimization: OptimizerDecision;
 }
 
@@ -528,6 +532,8 @@ function enrich(
     bestOption:          comparison.bestOption,
     milesOptions:        comparison.milesOptions,
     explanation:         comparison.explanation,
+    cabinPriceEstimated: cabin !== "economy",
+    searchId:            "",   // filled by caller; placeholder here
     optimization,
   };
 
@@ -635,9 +641,12 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best))
     : undefined;
 
-  const results: FlightResult[] = withPromos.map((f) =>
-    enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn, date)
-  );
+  const searchId = crypto.randomUUID();
+  const results: FlightResult[] = withPromos.map((f) => {
+    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn, date);
+    r.searchId = searchId;
+    return r;
+  });
 
   // Sort: biggest savings first, then cheapest cash price
   results.sort((a, b) => b.savings !== a.savings ? b.savings - a.savings : a.totalPrice! - b.totalPrice!);
