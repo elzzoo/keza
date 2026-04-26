@@ -7,6 +7,11 @@ describe("getContextualMileValue", () => {
     expect(getContextualMileValue(BASE, "economy", 4_000)).toBe(1.5);
   });
 
+  it("multiplies by 1.4 for premium cabin", () => {
+    // medium-haul (1.0×) × premium (1.4×) = 2.1
+    expect(getContextualMileValue(BASE, "premium", 4_000)).toBeCloseTo(2.1);
+  });
+
   it("multiplies by 2.0 for business cabin", () => {
     // medium-haul (1.0×) × business (2.0×) = 3.0
     expect(getContextualMileValue(BASE, "business", 4_000)).toBeCloseTo(3.0);
