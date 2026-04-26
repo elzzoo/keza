@@ -277,7 +277,10 @@ export function buildCostOptions(
       const taxes = taxPerPax * passengers * (tripType === "roundtrip" ? 2 : 1);
 
       // Market value of miles
-      const valuePerMile = effectivePrices.get(prog.name) ?? prog.marketValueCents;
+      const baseCents = effectivePrices.get(prog.name) ?? prog.marketValueCents;
+      const valuePerMile = distanceKm > 0
+        ? getContextualMileValue(baseCents, cabin, distanceKm)
+        : baseCents;
       const milesCost = Math.round((estimate.milesRequired * valuePerMile) / 100 * 100) / 100;
       const totalMilesCost = Math.round((milesCost + taxes) * 100) / 100;
       const savings = Math.round((cashTotal - totalMilesCost) * 100) / 100;
