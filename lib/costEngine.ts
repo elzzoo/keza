@@ -114,38 +114,64 @@ const KRISFLYER_GUARANTEE_AIRLINES = new Set([
   "Singapore Airlines", "All Nippon Airways",
 ]);
 
-function getProgramsForAirline(airline: string): Array<{ program: string; type: "DIRECT" | "ALLIANCE" }> {
-  const results: Array<{ program: string; type: "DIRECT" | "ALLIANCE" }> = [];
-  const airlineAlliance = ALLIANCES[airline];
+interface ProgramMatch {
+  program: string;
+  type: "DIRECT" | "ALLIANCE";
+  /** The specific airline that triggered this match — used for correct tax calculation. */
+  matchedAirline: string;
+}
+
+/**
+ * Resolve loyalty programs for a set of airlines operating a route.
+ *
+ * Accepts the FULL airlines array (not just airlines[0]) so that multi-airline
+ * month-matrix results (e.g. ["Air Senegal", "Air France"]) correctly find
+ * Flying Blue via the Air France entry rather than silently dropping it.
+ *
+ * Priority:
+ *   1. Direct match — programAirline is in the airlines list
+ *   2. Alliance match — same alliance as the primary (first) airline
+ *   3. Airline-based guarantee — any airline in the list triggers the guarantee
+ *      (HIGH PRIORITY: airline-specific, fires regardless of alliance)
+ */
+function getProgramsForAirline(airlines: string[]): ProgramMatch[] {
+  const results: ProgramMatch[] = [];
+  const primary = airlines[0] ?? "";
+  const primaryAlliance = ALLIANCES[primary];
 
   for (const [program, programAirline] of Object.entries(PROGRAM_TO_AIRLINE)) {
     if (PROGRAMS_BY_NAME[program]?.isBookable === false) continue;
-    if (programAirline === airline) {
-      results.push({ program, type: "DIRECT" });
+    // Direct match: any airline in the list IS the program's own airline
+    const directMatch = airlines.find((a) => a === programAirline);
+    if (directMatch) {
+      results.push({ program, type: "DIRECT", matchedAirline: directMatch });
     } else if (
-      airlineAlliance &&
-      airlineAlliance !== "Independent" &&
-      ALLIANCES[programAirline] === airlineAlliance
+      primaryAlliance &&
+      primaryAlliance !== "Independent" &&
+      ALLIANCES[programAirline] === primaryAlliance
     ) {
-      results.push({ program, type: "ALLIANCE" });
+      results.push({ program, type: "ALLIANCE", matchedAirline: primary });
     }
   }
 
-  // Hard guarantee: Flying Blue is always available on Air France-KLM group.
-  // Defensive against airline name normalization edge cases (code-shares, IATA
-  // lookup misses) that would otherwise silently drop the most relevant program.
-  if (FLYING_BLUE_AIRLINES.has(airline) && !results.some(r => r.program === "Flying Blue")) {
-    results.push({ program: "Flying Blue", type: airline === "Air France" ? "DIRECT" : "ALLIANCE" });
+  // ── Airline-based guarantees (HIGH PRIORITY) ──────────────────────────────
+  // Checked against ALL airlines in the list. This catches cases where the
+  // FIRST airline is an independent carrier (e.g. Air Senegal) but Air France
+  // is also in the list — Flying Blue must still be guaranteed.
+
+  const fbMatch = airlines.find((a) => FLYING_BLUE_AIRLINES.has(a));
+  if (fbMatch && !results.some((r) => r.program === "Flying Blue")) {
+    results.push({ program: "Flying Blue", type: fbMatch === "Air France" ? "DIRECT" : "ALLIANCE", matchedAirline: fbMatch });
   }
 
-  // Guarantee Aeroplan for all Star Alliance airlines
-  if (AEROPLAN_GUARANTEE_AIRLINES.has(airline) && !results.some(r => r.program === "Aeroplan")) {
-    results.push({ program: "Aeroplan", type: airline === "Air Canada" ? "DIRECT" : "ALLIANCE" });
+  const aeroplanMatch = airlines.find((a) => AEROPLAN_GUARANTEE_AIRLINES.has(a));
+  if (aeroplanMatch && !results.some((r) => r.program === "Aeroplan")) {
+    results.push({ program: "Aeroplan", type: aeroplanMatch === "Air Canada" ? "DIRECT" : "ALLIANCE", matchedAirline: aeroplanMatch });
   }
 
-  // Guarantee Singapore KrisFlyer for Singapore Airlines and close Star Alliance partners
-  if (KRISFLYER_GUARANTEE_AIRLINES.has(airline) && !results.some(r => r.program === "Singapore KrisFlyer")) {
-    results.push({ program: "Singapore KrisFlyer", type: airline === "Singapore Airlines" ? "DIRECT" : "ALLIANCE" });
+  const kfMatch = airlines.find((a) => KRISFLYER_GUARANTEE_AIRLINES.has(a));
+  if (kfMatch && !results.some((r) => r.program === "Singapore KrisFlyer")) {
+    results.push({ program: "Singapore KrisFlyer", type: kfMatch === "Singapore Airlines" ? "DIRECT" : "ALLIANCE", matchedAirline: kfMatch });
   }
 
   return results;
@@ -264,40 +290,72 @@ export function buildCostOptions(
   const toAirport   = AIRPORTS.find(a => a.code === to);
 
   // ── Direct + Alliance options ──────────────────────────────────────────────
-  const programs = getProgramsForAirline(operatingAirline);
+  // Pass the FULL airlines array so multi-airline routes (month-matrix +
+  // discoverRouteAirlines) find the right programs even when airlines[0] is
+  // an independent carrier that would otherwise block the guarantee logic.
+  const programs = getProgramsForAirline(airlines);
 
-  // Zone fallback: used for month-matrix results where no airline codes are
-  // available. When the operating airline IS known (even if not in PROGRAM_TO_AIRLINE),
-  // we must filter zone-fallback programs by alliance to avoid suggesting
-  // irrelevant programs (e.g. Turkish Miles on Ryanair flights).
+  // Zone fallback: fires when no airline-based program was found AND zones are
+  // known. This covers month-matrix results where discoverRouteAirlines failed
+  // or returned only an empty-string airline.
   const useZoneFallback = programs.length === 0 && originZone && destZone;
   const operatingAlliance = ALLIANCES[operatingAirline] ?? null;
 
   const effectivePrograms = useZoneFallback
-    ? Object.entries(PROGRAM_TO_AIRLINE)
-        .filter(([program, programAirline]) => {
-          if (PROGRAMS_BY_NAME[program]?.isBookable === false) return false;
-          // Unknown airline (empty string, month-matrix): allow all programs
-          if (!operatingAirline) return true;
-          // Known airline but not in any alliance: exclude all programs
-          // (low-cost carriers, independent airlines with no partner network)
-          if (!operatingAlliance) return false;
-          // Independent airlines: only match programs from the same airline
-          if (operatingAlliance === "Independent") {
-            return ALLIANCES[programAirline] === "Independent";
+    ? (() => {
+        const base: Array<{ program: string; type: "DIRECT" | "ALLIANCE"; inferredAirline: string }> =
+          Object.entries(PROGRAM_TO_AIRLINE)
+          .filter(([program, programAirline]) => {
+            if (PROGRAMS_BY_NAME[program]?.isBookable === false) return false;
+            // Unknown airline (empty string): allow all programs
+            if (!operatingAirline) return true;
+            // Known airline with no alliance entry: likely a niche/LCC → exclude
+            if (!operatingAlliance) return false;
+            // Independent airlines: only show Independent-alliance programs
+            if (operatingAlliance === "Independent") {
+              return ALLIANCES[programAirline] === "Independent";
+            }
+            // Alliance airline: only show same-alliance programs
+            return ALLIANCES[programAirline] === operatingAlliance;
+          })
+          .map(([program, airline]) => ({
+            program,
+            type: "ALLIANCE" as const,
+            inferredAirline: airline,
+          }));
+
+        // ── Corridor fallback (LOW PRIORITY) ──────────────────────────────────
+        // Only fires when zone fallback is active (no airline-based match found).
+        // Ensures flagship programs appear on their primary corridors even when
+        // the operating airline is Independent (e.g. Air Senegal on DSS-CDG)
+        // and the alliance filter would otherwise exclude SkyTeam programs.
+        if (originZone && destZone) {
+          const isEuropeAfrica =
+            (originZone === "EUROPE" && destZone.startsWith("AFRICA_")) ||
+            (originZone.startsWith("AFRICA_") && destZone === "EUROPE");
+          const isAsiaNorthAmerica =
+            (originZone === "ASIA" && destZone === "NORTH_AMERICA") ||
+            (originZone === "NORTH_AMERICA" && destZone === "ASIA");
+
+          if (isEuropeAfrica && !base.some((p) => p.program === "Flying Blue")) {
+            base.push({ program: "Flying Blue", type: "DIRECT" as const, inferredAirline: "Air France" });
           }
-          // Alliance airline: only match programs in the same alliance
-          return ALLIANCES[programAirline] === operatingAlliance;
-        })
-        .map(([program, airline]) => ({
-          program,
-          type: "ALLIANCE" as const,
-          inferredAirline: airline,
-        }))
-    : programs.map((p) => ({ ...p, inferredAirline: operatingAirline }));
+          if (isAsiaNorthAmerica && !base.some((p) => p.program === "Singapore KrisFlyer")) {
+            base.push({ program: "Singapore KrisFlyer", type: "DIRECT" as const, inferredAirline: "Singapore Airlines" });
+          }
+        }
+        return base;
+      })()
+    // Normal path: use matchedAirline (the specific airline that caused the
+    // match) as inferredAirline so tax calculation uses the correct carrier —
+    // not necessarily airlines[0] which may be a different airline.
+    : programs.map((p) => ({ ...p, inferredAirline: p.matchedAirline }));
 
   for (const entry of effectivePrograms) {
-    const airlineForTaxes = useZoneFallback ? entry.inferredAirline : operatingAirline;
+    // Always use the matched/inferred airline for taxes — this is the airline
+    // the program actually uses on this route, regardless of which carrier
+    // Travelpayouts happened to list first.
+    const airlineForTaxes = entry.inferredAirline;
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
       const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
@@ -319,9 +377,10 @@ export function buildCostOptions(
     if (!programNames.has(bonus.to)) continue;
     if (!originZone || !destZone) continue;
 
-    const airlineForTaxes = useZoneFallback
-      ? (PROGRAM_TO_AIRLINE[bonus.to] ?? operatingAirline)
-      : operatingAirline;
+    // Always use the program's own airline for transfer taxes.
+    // operatingAirline may be a different carrier (e.g. Air Senegal on a
+    // DSS-CDG flight) — using it would give wrong tax figures.
+    const airlineForTaxes = PROGRAM_TO_AIRLINE[bonus.to] ?? operatingAirline;
 
     const { miles: destMiles, source } = getMilesRequired(bonus.to, originZone, destZone, cabin, tripType, passengers);
     const ratio = getEffectiveRatio(bonus);
@@ -351,43 +410,6 @@ export function buildCostOptions(
     milesOptions.push(opt);
   }
 
-  // ── Corridor guarantees ────────────────────────────────────────────────────
-  // Ensures flagship programs always appear on their primary corridors,
-  // regardless of which airline Travelpayouts returned for this specific result.
-  //
-  // WHY: When the month-matrix fallback fires, the "operating airline" may be
-  // an independent carrier (e.g. Air Senegal on DSS-CDG) that causes the zone
-  // fallback to only show Independent-alliance programs — silently dropping
-  // Flying Blue and KrisFlyer even though those are the most relevant programs
-  // for their respective corridors.
-  //
-  // Guard: only adds a program when it is NOT already in milesOptions, so the
-  // guarantee never creates duplicates when the airline lookup succeeds normally.
-  if (originZone && destZone) {
-    const isEuropeAfrica =
-      (originZone === "EUROPE" && destZone.startsWith("AFRICA_")) ||
-      (originZone.startsWith("AFRICA_") && destZone === "EUROPE");
-
-    const isAsiaNorthAmerica =
-      (originZone === "ASIA" && destZone === "NORTH_AMERICA") ||
-      (originZone === "NORTH_AMERICA" && destZone === "ASIA");
-
-    // Flying Blue — Europe ↔ Africa (Air France is the primary carrier)
-    if (isEuropeAfrica && !milesOptions.some((o) => o.program === "Flying Blue")) {
-      const { miles, source } = getMilesRequired("Flying Blue", originZone, destZone, cabin, tripType, passengers);
-      const taxes = getAwardTaxes("Air France", cabin, passengers, from, to, originZone, destZone)
-        * (tripType === "roundtrip" ? 2 : 1);
-      milesOptions.push(buildOption("DIRECT", "Flying Blue", undefined, "Air France", miles, source, taxes, cashTotal, effectivePrices));
-    }
-
-    // Singapore KrisFlyer — Asia ↔ North America (Singapore Airlines primary)
-    if (isAsiaNorthAmerica && !milesOptions.some((o) => o.program === "Singapore KrisFlyer")) {
-      const { miles, source } = getMilesRequired("Singapore KrisFlyer", originZone, destZone, cabin, tripType, passengers);
-      const taxes = getAwardTaxes("Singapore Airlines", cabin, passengers, from, to, originZone, destZone)
-        * (tripType === "roundtrip" ? 2 : 1);
-      milesOptions.push(buildOption("DIRECT", "Singapore KrisFlyer", undefined, "Singapore Airlines", miles, source, taxes, cashTotal, effectivePrices));
-    }
-  }
 
   // ── Dynamic global options (for routes/programs not in hardcoded charts) ──
   // Uses distance-based estimation to suggest ANY program worldwide
