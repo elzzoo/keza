@@ -636,7 +636,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v12:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v13:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
