@@ -5,7 +5,7 @@ import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
-import { estimateMilesRequired, haversineDistanceKm, type CabinClass } from "./dynamicAwardEngine";
+import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME } from "./globalPrograms";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
@@ -259,13 +259,9 @@ export function buildCostOptions(
 
   const milesOptions: MilesOption[] = [];
 
-  // ── Pre-compute route distance for contextual mile value ──────────────────
+  // ── Pre-compute airport coordinates (used for dynamic global options) ───────
   const fromAirport = AIRPORTS.find(a => a.code === from);
   const toAirport   = AIRPORTS.find(a => a.code === to);
-
-  const distanceKm = (fromAirport && toAirport)
-    ? haversineDistanceKm(fromAirport.lat, fromAirport.lon, toAirport.lat, toAirport.lon)
-    : 0;
 
   // ── Direct + Alliance options ──────────────────────────────────────────────
   const programs = getProgramsForAirline(operatingAirline);
