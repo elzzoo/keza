@@ -163,8 +163,6 @@ function buildOption(
   taxes: number,
   cashTotal: number,
   effectivePrices: Map<string, number>,
-  _cabin: Cabin,          // unused — kept for API consistency
-  _distanceKm: number,    // unused — kept for API consistency
 ): MilesOption {
   // Market value of a mile for this program (cents).
   // For TRANSFER: use the source currency's value (e.g. Amex MR value).
@@ -308,13 +306,13 @@ export function buildCostOptions(
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
       const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
         * (tripType === "roundtrip" ? 2 : 1);
-      milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
+      milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
     const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
       * (tripType === "roundtrip" ? 2 : 1);
-    milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
+    milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
   }
 
   // ── Transfer options ──────────────────────────────────────────────────────
@@ -349,8 +347,6 @@ export function buildCostOptions(
       taxes,
       cashTotal,
       effectivePrices,
-      cabin,
-      distanceKm,
     );
     if (promoApplied) {
       opt.promoApplied = promoApplied;
