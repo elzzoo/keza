@@ -5,6 +5,7 @@ import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import { PriceCalendar } from "./PriceCalendar";
 import { trackSearch } from "@/lib/analytics";
+import { toast } from "sonner";
 import clsx from "clsx";
 
 interface Props {
@@ -83,7 +84,9 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
       if (!res.ok) throw new Error(json.error ?? (lang === "fr" ? "Erreur de recherche" : "Search error"));
       onResults(json.results);
     } catch (err) {
-      setError(err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error"));
+      const msg = err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error");
+      setError(msg);
+      toast.error(msg);
       onResults([]);
     } finally { setBusy(false); onLoading(false); }
   }, [from, to, depDate, retDate, tripType, cabin, passengers, programs, busy, canGo, onResults, onLoading, onSearchStart, lang]);

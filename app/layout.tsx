@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -105,6 +106,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {children}
         <SpeedInsights />
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              background: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-fg)",
+            },
+          }}
+          richColors
+        />
         <Script
           async
           src="https://plausible.io/js/pa--f94oxZFO8yrXtN46QpIJ.js"

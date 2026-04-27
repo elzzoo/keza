@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { trackAlertCreated } from "@/lib/analytics";
 
 interface Props {
@@ -69,6 +70,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
 
       if (res.status === 201) {
         setStatus("success");
+        toast.success(t.success);
         trackAlertCreated({ from, to, cabin, currentPrice });
         // Remember email so /alertes can pre-fill it
         try {
@@ -76,18 +78,23 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         } catch { /* localStorage unavailable (SSR/private browsing) */ }
       } else if (res.status === 409) {
         setStatus("duplicate");
+        toast.warning(t.duplicate);
       } else if (res.status === 429) {
         const data = await res.json().catch(() => ({}));
         if (data.code === "FREE_LIMIT_REACHED") {
           setStatus("limitReached");
+          toast.warning(t.maxed);
         } else {
           setStatus("maxed");
+          toast.warning(t.maxed);
         }
       } else {
         setStatus("error");
+        toast.error(t.error);
       }
     } catch {
       setStatus("error");
+      toast.error(t.error);
     }
   }
 
