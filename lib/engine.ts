@@ -6,6 +6,7 @@ import { buildCostOptions, getEffectivePrices, type FlightInput, type MilesOptio
 import { iataToAirline } from "./iataAirlines";
 import { metroFor } from "./metroCodes";
 import { recordObservation } from "./autoCalibrate";
+import { fetchFromDuffel } from "./duffelProvider";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 const CABIN_MULTIPLIER: Record<Cabin, number> = {
@@ -471,6 +472,34 @@ export async function fetchCalendarPrices(
   return [];
 }
 
+/**
+ * Merge NormalizedFlight arrays from multiple providers.
+ * Deduplicates by (sorted airlines, stops), keeping the cheapest price per pairing.
+ * Preserves booking links from the first provider that has them (Travelpayouts).
+ */
+function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedFlight[]): NormalizedFlight[] {
+  const all = [...primary, ...secondary];
+  if (all.length === 0) return [];
+
+  const best = new Map<string, NormalizedFlight>();
+  for (const f of all) {
+    const key = `${[...f.airlines].sort().join(",")}::${f.stops ?? 0}`;
+    const existing = best.get(key);
+    if (!existing) {
+      best.set(key, f);
+    } else if (f.price < existing.price) {
+      // Keep booking link from the existing entry if the cheaper one doesn't have one
+      const merged: NormalizedFlight = {
+        ...f,
+        bookingLink: f.bookingLink ?? existing.bookingLink,
+      };
+      best.set(key, merged);
+    }
+  }
+
+  return Array.from(best.values());
+}
+
 // ─── Filter by stops preference ──────────────────────────────────────────────
 
 function filterByStops(flights: NormalizedFlight[], stops: Stops): NormalizedFlight[] {
@@ -586,14 +615,18 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     return new Map<string, number>();
   });
 
-  // 2. Fetch outbound flights
-  //    When stops=any, also try a direct-only fetch to catch nonstops that the
+  // 2. Fetch outbound flights — Travelpayouts + Duffel in parallel
+  //    When stops=any, also try a direct-only TP fetch to catch nonstops that the
   //    main query sometimes misses (Travelpayouts may rank them lower than
   //    connections priced cheaper). Merge & dedupe by airline+stops.
-  const rawOutbound = await fetchFromTravelpayouts(from, to, date, directOnly);
+  const [tpOutbound, duffelOutbound] = await Promise.all([
+    fetchFromTravelpayouts(from, to, date, directOnly),
+    fetchFromDuffel(from, to, date, cabin, passengers).catch((): NormalizedFlight[] => []),
+  ]);
+  const rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
 
   if (!directOnly && rawOutbound.every(f => (f.stops ?? 0) > 0)) {
-    // No direct flights in the default fetch — try explicit direct search
+    // No direct flights in the merged results — try explicit direct TP search
     const directFlights = await fetchFromTravelpayouts(from, to, date, true);
     if (directFlights.length > 0) {
       // Prepend direct flights (they're more valuable to the user)
@@ -610,12 +643,16 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
 
   const outbound = filterByStops(rawOutbound, stops);
 
-  // 3. Fetch return flights (Option A — two separate calls)
+  // 3. Fetch return flights (two separate legs) — Travelpayouts + Duffel in parallel
   let returnFlights: NormalizedFlight[] = [];
   if (tripType === "roundtrip" && returnDate) {
-    const rawReturn = await fetchFromTravelpayouts(to, from, returnDate, directOnly);
+    const [tpReturn, duffelReturn] = await Promise.all([
+      fetchFromTravelpayouts(to, from, returnDate, directOnly),
+      fetchFromDuffel(to, from, returnDate, cabin, passengers).catch((): NormalizedFlight[] => []),
+    ]);
+    const rawReturn = mergeFlights(tpReturn, duffelReturn);
 
-    // Same direct-flight recovery for return leg
+    // Same direct-flight recovery for return leg (TP only — Duffel already included all)
     if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
       const directReturn = await fetchFromTravelpayouts(to, from, returnDate, true);
       if (directReturn.length > 0) {
