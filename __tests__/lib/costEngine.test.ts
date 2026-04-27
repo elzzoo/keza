@@ -165,6 +165,28 @@ describe("MilesOption.isBestDeal", () => {
   });
 });
 
+describe("program filtering — isBookable", () => {
+  it("Aeroflot Bonus does not appear in results", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const aeroflot = milesOptions.find((o) => o.program === "Aeroflot Bonus");
+    expect(aeroflot).toBeUndefined();
+  });
+
+  it("IndiGo 6E Rewards does not appear in results", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const indigo = milesOptions.find((o) => o.program === "IndiGo 6E Rewards");
+    expect(indigo).toBeUndefined();
+  });
+});
+
+describe("savings rounding in displayMessage", () => {
+  it("displayMessage contains only integer dollar amounts (no decimals)", () => {
+    const { displayMessage } = buildCostOptions(BASE, new Map());
+    // Must not contain a decimal in the dollar amount
+    expect(displayMessage).not.toMatch(/\$\d+\.\d/);
+  });
+});
+
 describe("taxes — no arbitrary regional surcharge", () => {
   it("DSS→CDG and CDG→JFK use per-airline taxes without extra surcharge", () => {
     const african: FlightInput = { ...BASE, from: "DSS", to: "CDG", cabin: "business", passengers: 2, tripType: "roundtrip" };

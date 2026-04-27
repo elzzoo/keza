@@ -6,7 +6,7 @@ import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type C
 import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, haversineDistanceKm, type CabinClass } from "./dynamicAwardEngine";
-import { GLOBAL_PROGRAMS } from "./globalPrograms";
+import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME } from "./globalPrograms";
 import { getContextualMileValue } from "./mileValue";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
@@ -79,6 +79,7 @@ function getProgramsForAirline(airline: string): Array<{ program: string; type: 
   const airlineAlliance = ALLIANCES[airline];
 
   for (const [program, programAirline] of Object.entries(PROGRAM_TO_AIRLINE)) {
+    if (PROGRAMS_BY_NAME[program]?.isBookable === false) continue;
     if (programAirline === airline) {
       results.push({ program, type: "DIRECT" });
     } else if (
@@ -278,6 +279,7 @@ export function buildCostOptions(
     const coveredPrograms = new Set(milesOptions.map(o => o.program));
 
     for (const prog of GLOBAL_PROGRAMS) {
+      if (prog.isBookable === false) continue;
       if (coveredPrograms.has(prog.name)) continue;
 
       // Skip programs where the airline doesn't match alliance of operating airline
@@ -407,9 +409,9 @@ export function buildCostOptions(
   const displayMessage: string = !bestOption
     ? `💵 Payez en cash — aucune option miles disponible`
     : recommendation === "USE_MILES"
-      ? `🔥 Tu économises $${savings} avec les miles`
+      ? `🔥 Tu économises $${Math.round(savings)} avec les miles`
       : signedSavings < 0
-        ? `💵 Pay cash — save $${savings}`
+        ? `💵 Pay cash — save $${Math.round(savings)}`
         : `💵 Cash légèrement avantageux — conserve tes miles`;
 
   // Trust disclaimer
@@ -424,10 +426,10 @@ export function buildCostOptions(
   // Legacy explanation string
   const explanation = bestOption
     ? recommendation === "USE_MILES"
-      ? `Économisez $${savings} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + $${bestOption.taxes} taxes = $${bestMilesCost} vs $${cashTotal} cash)`
+      ? `Économisez $${Math.round(savings)} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + $${bestOption.taxes} taxes = $${bestMilesCost} vs $${cashTotal} cash)`
       : signedSavings < 0
-        ? `Le cash est moins cher de $${savings}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
-        : `Quasi identique — cash légèrement avantageux de $${savings}.`
+        ? `Le cash est moins cher de $${Math.round(savings)}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
+        : `Quasi identique — cash légèrement avantageux de $${Math.round(savings)}.`
     : `Aucune option miles disponible. Payez en cash ($${cashTotal}).`;
 
   return {

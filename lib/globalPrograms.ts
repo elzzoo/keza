@@ -43,6 +43,12 @@ export interface LoyaltyProgram {
    * Uses canonical currency names.
    */
   transferPartnersFrom: string[];
+  /**
+   * false = program is sanctioned, defunct, or irrelevant for international
+   * award redemptions. Filtered out by the cost engine.
+   * Defaults to true when omitted.
+   */
+  isBookable?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -573,6 +579,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Chase Ultimate Rewards",
       "Marriott Bonvoy",
     ],
+    isBookable: false,
   },
   {
     name: "Hawaiian Airlines HawaiianMiles",
@@ -586,6 +593,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Marriott Bonvoy",
     ],
+    isBookable: false,
   },
   {
     name: "Aeroflot Bonus",
@@ -596,12 +604,13 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.5,
     taxProfile: "low",
     transferPartnersFrom: [],
+    isBookable: false,
   },
   {
     name: "China Southern Sky Pearl Club",
     airlineCode: "CZ",
     airline: "China Southern Airlines",
-    alliance: "Independent",
+    alliance: "SkyTeam",
     purchaseMileCostPer1000: null,
     marketValueCents: 0.8,
     taxProfile: "low",
@@ -611,7 +620,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     name: "China Eastern Eastern Miles",
     airlineCode: "MU",
     airline: "China Eastern Airlines",
-    alliance: "Independent",
+    alliance: "SkyTeam",
     purchaseMileCostPer1000: null,
     marketValueCents: 0.7,
     taxProfile: "low",
@@ -646,6 +655,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.5,
     taxProfile: "low",
     transferPartnersFrom: [],
+    isBookable: false,
   },
   {
     name: "Air India Flying Returns",
