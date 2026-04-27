@@ -21,35 +21,39 @@ function iso2ToFlag(iso2: string): string {
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const q = (searchParams.get("q") ?? "").trim().toLowerCase();
+  try {
+    const { searchParams } = new URL(request.url);
+    const q = (searchParams.get("q") ?? "").trim().toLowerCase();
 
-  if (!q || q.length < 2) {
-    return NextResponse.json({ results: [] });
+    if (!q || q.length < 2) {
+      return NextResponse.json({ results: [] });
+    }
+
+    // Search by IATA code (exact or prefix), city name, or country
+    const results = allAirports
+      .filter(a => {
+        const code = a.c.toLowerCase();
+        const city = a.n.toLowerCase();
+        const country = a.co.toLowerCase();
+        return code.startsWith(q) || city.includes(q) || country.includes(q);
+      })
+      .slice(0, 15)
+      .map(a => ({
+        code: a.c,
+        city: a.n,
+        cityEn: a.n,
+        country: a.co,
+        countryEn: a.co,
+        flag: iso2ToFlag(a.i),
+        iso2: a.i,
+        lat: a.la,
+        lon: a.lo,
+      }));
+
+    return NextResponse.json({ results }, {
+      headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" },
+    });
+  } catch {
+    return NextResponse.json({ results: [] }, { status: 500 });
   }
-
-  // Search by IATA code (exact or prefix), city name, or country
-  const results = allAirports
-    .filter(a => {
-      const code = a.c.toLowerCase();
-      const city = a.n.toLowerCase();
-      const country = a.co.toLowerCase();
-      return code.startsWith(q) || city.includes(q) || country.includes(q);
-    })
-    .slice(0, 15)
-    .map(a => ({
-      code: a.c,
-      city: a.n,
-      cityEn: a.n,
-      country: a.co,
-      countryEn: a.co,
-      flag: iso2ToFlag(a.i),
-      iso2: a.i,
-      lat: a.la,
-      lon: a.lo,
-    }));
-
-  return NextResponse.json({ results }, {
-    headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" },
-  });
 }

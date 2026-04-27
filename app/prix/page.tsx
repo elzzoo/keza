@@ -17,10 +17,18 @@ export const metadata: Metadata = {
   },
 };
 
-// Computed at build time — no client JS needed for this calculation
-const ALL_HISTORIES = getAllDestinationPriceHistories();
-
 export default function PrixPage() {
+  // Wrapped in try/catch — page must never 500 regardless of data issues
+  let histories = null;
+  let dataError = false;
+  try {
+    histories = getAllDestinationPriceHistories();
+    if (!histories || histories.length === 0) dataError = true;
+  } catch (err) {
+    console.error("[/prix] Failed to load price histories:", err);
+    dataError = true;
+  }
+
   return (
     <div className="min-h-screen bg-bg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
@@ -43,22 +51,41 @@ export default function PrixPage() {
           </p>
         </div>
 
-        {/* Interactive chart */}
-        <PriceChart
-          histories={ALL_HISTORIES}
-          destinations={DESTINATIONS}
-          lang="fr"
-        />
+        {/* Data unavailable fallback */}
+        {dataError || !histories ? (
+          <div className="bg-surface border border-border rounded-2xl p-8 flex flex-col items-center gap-3 text-center">
+            <span className="text-4xl">⚠️</span>
+            <p className="font-bold text-fg">Données temporairement indisponibles</p>
+            <p className="text-sm text-muted">
+              Les graphiques de prix seront disponibles dans quelques instants.
+            </p>
+            <Link
+              href="/"
+              className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              ✈ Rechercher un vol
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Interactive chart */}
+            <PriceChart
+              histories={histories}
+              destinations={DESTINATIONS}
+              lang="fr"
+            />
 
-        {/* CTA */}
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
-          >
-            ✈ Rechercher un vol
-          </Link>
-        </div>
+            {/* CTA */}
+            <div className="mt-8 text-center">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
+              >
+                ✈ Rechercher un vol
+              </Link>
+            </div>
+          </>
+        )}
 
       </div>
     </div>

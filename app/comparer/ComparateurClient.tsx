@@ -39,9 +39,14 @@ export function buildComparisonData(iatas: string[]) {
       if (!dest) return null;
       const cpm = computeDealRatio(dest.cashEstimateUsd, dest.milesEstimate);
       const recommendation = classifyDeal(cpm);
-      const history = getMonthlyPrices(dest);
-      const bestLabels = history.bestMonths.map((i) => history.monthlyPrices[i].monthLabel);
-      return { dest, cpm, recommendation, bestLabels };
+      try {
+        const history = getMonthlyPrices(dest);
+        const bestLabels = history.bestMonths.map((i) => history.monthlyPrices[i].monthLabel);
+        return { dest, cpm, recommendation, bestLabels };
+      } catch {
+        // If price history fails, still render destination with empty best labels
+        return { dest, cpm, recommendation, bestLabels: [] };
+      }
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
 }

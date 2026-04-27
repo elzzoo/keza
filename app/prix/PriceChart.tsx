@@ -75,7 +75,27 @@ function buildSparkline(monthlyPrices: MonthlyPrice[]): {
   return { polylinePoints, areaPath, dots, minPrice, maxPrice, minIdx, maxIdx };
 }
 
+/**
+ * Public export — guards against empty data before delegating to the real chart.
+ * React rules of hooks require that hooks are always called, so we can't put an
+ * early-return guard inside the component that uses useState/useEffect.
+ */
 export function PriceChart({ histories, destinations, lang }: Props) {
+  if (!histories || histories.length === 0 || !destinations || destinations.length === 0) {
+    return (
+      <div className="bg-surface border border-border rounded-2xl p-8 flex flex-col items-center gap-3 text-center">
+        <span className="text-4xl">⚠️</span>
+        <p className="font-bold text-fg">
+          {lang === "fr" ? "Données temporairement indisponibles" : "Data temporarily unavailable"}
+        </p>
+      </div>
+    );
+  }
+  return <PriceChartInner histories={histories} destinations={destinations} lang={lang} />;
+}
+
+/** Inner chart — only rendered when histories & destinations are non-empty */
+function PriceChartInner({ histories, destinations, lang }: Props) {
   const recLabels = lang === "fr" ? REC_LABELS_FR : REC_LABELS_EN;
 
   // Default: Africa → first Africa destination (CMN = Casablanca)

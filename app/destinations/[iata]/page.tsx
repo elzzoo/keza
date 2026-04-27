@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
-import { getMonthlyPrices } from "@/lib/priceHistory";
+import { getMonthlyPrices, type DestinationPriceHistory } from "@/lib/priceHistory";
 import { DestinationPageClient } from "./DestinationPageClient";
 
 interface Props {
@@ -53,7 +53,25 @@ export default function DestinationPage({ params }: Props) {
 
   const cpm = computeDealRatio(dest.cashEstimateUsd, dest.milesEstimate);
   const recommendation = classifyDeal(cpm);
-  const history = getMonthlyPrices(dest);
+  let history: DestinationPriceHistory;
+  try {
+    history = getMonthlyPrices(dest);
+  } catch (err) {
+    console.error(`[/destinations/${dest.iata}] getMonthlyPrices failed:`, err);
+    // Flat-price fallback so the page renders without crashing
+    const MONTH_LABELS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+    history = {
+      iata: dest.iata,
+      monthlyPrices: MONTH_LABELS.map((label, i) => ({
+        month: i, monthLabel: label,
+        price: dest.cashEstimateUsd,
+        cpm: computeDealRatio(dest.cashEstimateUsd, dest.milesEstimate),
+        recommendation,
+      })),
+      bestMonths: [0],
+      worstMonths: [6],
+    };
+  }
   const priceEur = Math.round(dest.cashEstimateUsd * 0.92);
 
   const schema = {
