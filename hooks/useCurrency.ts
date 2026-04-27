@@ -13,6 +13,17 @@ interface ForexResponse {
   usdToXof: number;
 }
 
+// ── Static fallback rates (used before live rates are fetched) ───────────────
+// These are approximate values that ensure the currency toggle works immediately
+// on first load, before the /api/forex response arrives.
+// Live rates from the API override these once fetched.
+const FALLBACK_RATES: Record<string, number> = {
+  EUR: 0.92,  GBP: 0.79,  XOF: 608,   MAD: 10.1,  NGN: 1600,
+  KES: 130,   CAD: 1.37,  AUD: 1.55,  JPY: 155,   CHF: 0.90,
+  SEK: 10.5,  NOK: 10.8,  DKK: 6.9,   BRL: 5.0,   INR: 84,
+  AED: 3.67,  SAR: 3.75,  ZAR: 18.5,  EGP: 49,    TRY: 33,
+};
+
 // Global cache — shared across all components
 let cachedRates: Record<string, number> | null = null;
 let cachedDetected: CurrencyCode | null = null;
@@ -43,7 +54,7 @@ function saveCurrency(code: CurrencyCode) {
  */
 export function useCurrency() {
   const [currency, setCurrencyState] = useState<CurrencyCode>(loadSaved() ?? "USD");
-  const [rates, setRates] = useState<Record<string, number>>(cachedRates ?? {});
+  const [rates, setRates] = useState<Record<string, number>>(cachedRates ?? FALLBACK_RATES);
   const [ready, setReady] = useState(cachedRates !== null);
 
   useEffect(() => {

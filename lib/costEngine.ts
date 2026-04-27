@@ -351,6 +351,44 @@ export function buildCostOptions(
     milesOptions.push(opt);
   }
 
+  // ── Corridor guarantees ────────────────────────────────────────────────────
+  // Ensures flagship programs always appear on their primary corridors,
+  // regardless of which airline Travelpayouts returned for this specific result.
+  //
+  // WHY: When the month-matrix fallback fires, the "operating airline" may be
+  // an independent carrier (e.g. Air Senegal on DSS-CDG) that causes the zone
+  // fallback to only show Independent-alliance programs — silently dropping
+  // Flying Blue and KrisFlyer even though those are the most relevant programs
+  // for their respective corridors.
+  //
+  // Guard: only adds a program when it is NOT already in milesOptions, so the
+  // guarantee never creates duplicates when the airline lookup succeeds normally.
+  if (originZone && destZone) {
+    const isEuropeAfrica =
+      (originZone === "EUROPE" && destZone.startsWith("AFRICA_")) ||
+      (originZone.startsWith("AFRICA_") && destZone === "EUROPE");
+
+    const isAsiaNorthAmerica =
+      (originZone === "ASIA" && destZone === "NORTH_AMERICA") ||
+      (originZone === "NORTH_AMERICA" && destZone === "ASIA");
+
+    // Flying Blue — Europe ↔ Africa (Air France is the primary carrier)
+    if (isEuropeAfrica && !milesOptions.some((o) => o.program === "Flying Blue")) {
+      const { miles, source } = getMilesRequired("Flying Blue", originZone, destZone, cabin, tripType, passengers);
+      const taxes = getAwardTaxes("Air France", cabin, passengers, from, to, originZone, destZone)
+        * (tripType === "roundtrip" ? 2 : 1);
+      milesOptions.push(buildOption("DIRECT", "Flying Blue", undefined, "Air France", miles, source, taxes, cashTotal, effectivePrices));
+    }
+
+    // Singapore KrisFlyer — Asia ↔ North America (Singapore Airlines primary)
+    if (isAsiaNorthAmerica && !milesOptions.some((o) => o.program === "Singapore KrisFlyer")) {
+      const { miles, source } = getMilesRequired("Singapore KrisFlyer", originZone, destZone, cabin, tripType, passengers);
+      const taxes = getAwardTaxes("Singapore Airlines", cabin, passengers, from, to, originZone, destZone)
+        * (tripType === "roundtrip" ? 2 : 1);
+      milesOptions.push(buildOption("DIRECT", "Singapore KrisFlyer", undefined, "Singapore Airlines", miles, source, taxes, cashTotal, effectivePrices));
+    }
+  }
+
   // ── Dynamic global options (for routes/programs not in hardcoded charts) ──
   // Uses distance-based estimation to suggest ANY program worldwide
   if (fromAirport && toAirport) {
