@@ -176,6 +176,19 @@ function buildOptionExplanation(
   return `${program} (${typeLabel}) · ${milesFormatted} miles + $${taxes} taxes${promoNote}`;
 }
 
+// ─── Accessibility penalty ────────────────────────────────────────────────────
+
+const ACCESSIBILITY_MULTIPLIER: Record<1 | 2 | 3, number> = {
+  1: 1.0,
+  2: 1.2,
+  3: 1.4,
+};
+
+function accessibilityPenalty(programName: string): number {
+  const score = PROGRAMS_BY_NAME[programName]?.accessibilityScore ?? 2;
+  return ACCESSIBILITY_MULTIPLIER[score];
+}
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export function buildCostOptions(
@@ -390,12 +403,6 @@ export function buildCostOptions(
       seen.set(key, opt);
     }
   }
-  const accessibilityPenalty = (programName: string): number => {
-    const score = PROGRAMS_BY_NAME[programName]?.accessibilityScore ?? 2;
-    if (score === 1) return 1.0;
-    if (score === 3) return 1.4;
-    return 1.2; // score 2
-  };
 
   const dedupedOptions = Array.from(seen.values())
     .sort((a, b) =>
@@ -430,6 +437,7 @@ export function buildCostOptions(
 
   // Mark best deal on the cheapest option
   if (dedupedOptions.length > 0) {
+    // isBestDeal marks the top option after accessibility-weighted sort — not necessarily the cheapest raw cost
     dedupedOptions[0].isBestDeal = true;
   }
 

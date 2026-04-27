@@ -625,6 +625,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Marriott Bonvoy",
     ],
     isBookable: false,
+    accessibilityScore: 2,
   },
   {
     name: "Hawaiian Airlines HawaiianMiles",
@@ -639,6 +640,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Marriott Bonvoy",
     ],
     isBookable: false,
+    accessibilityScore: 2,
   },
   {
     name: "Aeroflot Bonus",
@@ -650,6 +652,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     taxProfile: "low",
     transferPartnersFrom: [],
     isBookable: false,
+    accessibilityScore: 3,
   },
   {
     name: "China Southern Sky Pearl Club",
@@ -705,6 +708,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     taxProfile: "low",
     transferPartnersFrom: [],
     isBookable: false,
+    accessibilityScore: 3,
   },
   {
     name: "Air India Flying Returns",
