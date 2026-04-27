@@ -98,6 +98,20 @@ export const MILES_PRICES: MilesPriceRecord[] = [
     confidence: "MEDIUM",
     lastUpdated: "2026-04-20",
   },
+
+  // ─── Additional airline loyalty programs ──────────────────────────────────
+  { program: "Delta SkyMiles",              valueCents: 1.2, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "BA Avios",                    valueCents: 1.5, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "Aeroplan",                    valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "AAdvantage",                  valueCents: 1.3, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "LifeMiles",                   valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
+  { program: "ANA Mileage Club",            valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "Singapore KrisFlyer",         valueCents: 1.4, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "Etihad Guest",                valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
+  { program: "Iberia Avios Plus",           valueCents: 1.4, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
+  { program: "Lufthansa Miles & More",      valueCents: 1.3, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "Korean Air SKYPASS",          valueCents: 1.4, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
+  { program: "Virgin Atlantic Flying Club", valueCents: 1.5, confidence: "HIGH",   lastUpdated: "2026-04-27" },
 ];
 
 // Fast lookup map: program name → market value in cents

@@ -68,11 +68,14 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
   const duration   = flight.duration;
   const bestOption = flight.bestOption;
   const isUseMiles = flight.recommendation === "USE_MILES";
+  const savingsRatio = flight.cashCost > 0 ? Math.abs(flight.savings) / flight.cashCost : 0;
+  const isNearParity = savingsRatio < 0.05 && bestOption !== null;
 
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
     .filter((a, i, arr) => arr.indexOf(a) === i)
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(a => !(a.length === 2 && /^[A-Z]{2}$/.test(a)));  // hide unresolved 2-letter IATA codes
 
   // Confidence badge for the miles estimate
   const confidence = bestOption?.confidence ?? "LOW";
@@ -103,17 +106,19 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
           "text-lg font-black",
           isUseMiles ? "text-blue-400" : "text-amber-400"
         )}>
-          {!bestOption
-            ? (fr ? "💵 Payez en cash — aucune option miles" : "💵 Pay cash — no miles option")
-            : flight.recommendation === "USE_MILES"
-              ? (fr
-                  ? `🔥 Tu économises ${fmt(flight.savings)} avec les miles`
-                  : `🔥 You save ${fmt(flight.savings)} with miles`)
-              : flight.savings > 0
+          {isNearParity
+            ? (fr ? "≈ Prix équivalent — garde tes miles" : "≈ Equivalent — keep your miles")
+            : !bestOption
+              ? (fr ? "💵 Payez en cash — aucune option miles" : "💵 Pay cash — no miles option")
+              : flight.recommendation === "USE_MILES"
                 ? (fr
-                    ? `💵 Cash moins cher — économise ${fmt(flight.savings)}`
-                    : `💵 Pay cash — save ${fmt(flight.savings)}`)
-                : (fr ? "💵 Cash légèrement avantageux" : "💵 Cash slightly better")}
+                    ? `🔥 Tu économises ${fmt(flight.savings)} avec les miles`
+                    : `🔥 You save ${fmt(flight.savings)} with miles`)
+                : flight.savings > 0
+                  ? (fr
+                      ? `💵 Cash moins cher — économise ${fmt(flight.savings)}`
+                      : `💵 Pay cash — save ${fmt(flight.savings)}`)
+                  : (fr ? "💵 Cash légèrement avantageux" : "💵 Cash slightly better")}
         </div>
 
         {/* Program context line */}
@@ -140,13 +145,15 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
               <span>{fr ? "A/R" : "Round trip"}</span>
             </>
           )}
-          {/* Confidence badge — always visible in banner */}
-          <span className={clsx(
-            "text-[9px] font-semibold px-1.5 py-0.5 rounded border",
-            badge.color
-          )}>
-            {fr ? badge.fr : badge.en}
-          </span>
+          {/* Confidence badge — only shown for estimates or non-HIGH confidence */}
+          {bestOption && (bestOption.chartSource === "ESTIMATE" || confidence !== "HIGH") && (
+            <span className={clsx(
+              "text-[9px] font-semibold px-1.5 py-0.5 rounded border",
+              badge.color
+            )}>
+              {fr ? badge.fr : badge.en}
+            </span>
+          )}
         </div>
       </div>
 

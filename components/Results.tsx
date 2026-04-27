@@ -90,10 +90,17 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
   const [stopFilter, setStopFilter] = useState<"all" | "direct" | "stops">("all");
   const [sortBy, setSortBy] = useState<SortBy>("value");
 
+  const stopsFiltered = useMemo(() => {
+    let r = [...results];
+    if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
+    if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
+    return r;
+  }, [results, stopFilter]);
+
   const counts = useMemo(() => ({
-    miles: results.filter(r => r.recommendation === "USE_MILES").length,
-    cash:  results.filter(r => r.recommendation === "USE_CASH").length,
-  }), [results]);
+    miles: stopsFiltered.filter(r => r.recommendation === "USE_MILES").length,
+    cash:  stopsFiltered.filter(r => r.recommendation === "USE_CASH").length,
+  }), [stopsFiltered]);
 
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
@@ -103,15 +110,13 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
   const allWithStops = results.length > 0 && !hasDirectFlights;
 
   const filtered = useMemo(() => {
-    let r = [...results];
+    let r = [...stopsFiltered];
     if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES");
     if (tab === "cash")  r = r.filter(x => x.recommendation === "USE_CASH");
-    if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
-    if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
     if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
     else r.sort((a, b) => b.savings - a.savings);
     return r;
-  }, [results, tab, stopFilter, sortBy]);
+  }, [stopsFiltered, tab, sortBy]);
 
   if (loading) {
     return (
@@ -201,7 +206,7 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
       {/* Recommendation tabs */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none">
         {(["all", "miles", "cash"] as const).map(k => {
-          const count = k === "all" ? results.length : counts[k as keyof typeof counts];
+          const count = k === "all" ? stopsFiltered.length : counts[k as keyof typeof counts];
           const s = tabStyles[k];
           return (
             <button

@@ -142,7 +142,7 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     NORTH_AMERICA: 25_000,
   },
   AFRICA_WEST: {
-    EUROPE:        22_000,
+    EUROPE:        35_000,
     NORTH_AMERICA: 35_000,
     MIDDLE_EAST:   18_000,
     AFRICA_EAST:   18_000,
