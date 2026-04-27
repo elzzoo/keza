@@ -163,8 +163,8 @@ function buildOption(
   taxes: number,
   cashTotal: number,
   effectivePrices: Map<string, number>,
-  cabin: Cabin,          // NEW
-  distanceKm: number,    // NEW — 0 means unknown, skip adjustment
+  _cabin: Cabin,          // unused — kept for API consistency
+  _distanceKm: number,    // unused — kept for API consistency
 ): MilesOption {
   // Market value of a mile for this program (cents).
   // For TRANSFER: use the source currency's value (e.g. Amex MR value).

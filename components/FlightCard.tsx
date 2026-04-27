@@ -76,9 +76,6 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
     .filter(o => !o.isBestDeal)
     .slice(0, 3);
 
-  const confDot = (confidence: string) =>
-    confidence === "HIGH" ? "🟢" : confidence === "MEDIUM" ? "🔵" : "🟡";
-
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
     .filter((a, i, arr) => arr.indexOf(a) === i)
