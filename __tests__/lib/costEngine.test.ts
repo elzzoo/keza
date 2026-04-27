@@ -27,10 +27,12 @@ describe("buildCostOptions", () => {
       expect(fb).toBeDefined();
     });
 
-    it("calculates taxes as 550 × 2 pax × 2 (roundtrip) = 2200 for AF business from DSS", () => {
+    it("calculates taxes for AF business DSS→CDG RT 2 pax with corridor cap", () => {
+      // AF business base=$400, Europe↔Africa cap maxBusiness=$160
+      // Capped per-leg: $160; RT 2-pax: 160 × 2 pax × 2 legs = 640
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.taxes).toBe(2200);
+      expect(fb.taxes).toBe(640);
     });
 
     it("totalMilesCost = milesCost + taxes", () => {
@@ -194,19 +196,22 @@ describe("savings rounding in displayMessage", () => {
   });
 });
 
-describe("taxes — no arbitrary regional surcharge", () => {
-  it("DSS→CDG and CDG→JFK use per-airline taxes without extra surcharge", () => {
-    const african: FlightInput = { ...BASE, from: "DSS", to: "CDG", cabin: "business", passengers: 2, tripType: "roundtrip" };
-    const european: FlightInput = { ...BASE, from: "CDG", to: "JFK", cabin: "business", passengers: 2, tripType: "roundtrip" };
-    const afr = buildCostOptions(african, new Map());
-    const eur = buildCostOptions(european, new Map());
-    const afrFb = afr.milesOptions.find((o) => o.program === "Flying Blue");
-    const eurFb = eur.milesOptions.find((o) => o.program === "Flying Blue");
-    // Both use AF per-airline rate (known airline) — no hidden surcharge
+describe("taxes — corridor-aware caps (different corridors → different taxes)", () => {
+  it("Africa↔Europe taxes are lower than Europe↔NA taxes for same program", () => {
+    const african: FlightInput  = { ...BASE, from: "DSS", to: "CDG", cabin: "business", passengers: 2, tripType: "roundtrip" };
+    const atlantic: FlightInput = { ...BASE, from: "CDG", to: "JFK", cabin: "business", passengers: 2, tripType: "roundtrip" };
+    const afrResult  = buildCostOptions(african,  new Map());
+    const atlaResult = buildCostOptions(atlantic, new Map());
+    const afrFb  = afrResult.milesOptions.find((o) => o.program === "Flying Blue");
+    const atlaFb = atlaResult.milesOptions.find((o) => o.program === "Flying Blue");
     expect(afrFb).toBeDefined();
-    expect(eurFb).toBeDefined();
-    // AF uses consistent per-airline taxes — same rate for both routes
-    expect(afrFb!.taxes).toBe(eurFb!.taxes);
+    expect(atlaFb).toBeDefined();
+    // Africa↔Europe: cap $160/leg × 2 pax × 2 = 640
+    // Europe↔NA: cap $220/leg × 2 pax × 2 = 880
+    // Corridor cap ensures Africa route is cheaper (realistic: DSS is shorter than JFK)
+    expect(afrFb!.taxes).toBeLessThan(atlaFb!.taxes);
+    expect(afrFb!.taxes).toBe(640);
+    expect(atlaFb!.taxes).toBe(880);
   });
 });
 
