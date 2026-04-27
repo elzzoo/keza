@@ -1,5 +1,6 @@
 // __tests__/lib/costEngine.test.ts
 import { buildCostOptions, type FlightInput } from "@/lib/costEngine";
+import { PROGRAMS_BY_NAME } from "@/lib/globalPrograms";
 
 const BASE: FlightInput = {
   from: "DSS",
@@ -200,5 +201,52 @@ describe("taxes — no arbitrary regional surcharge", () => {
     expect(eurFb).toBeDefined();
     // AF uses consistent per-airline taxes — same rate for both routes
     expect(afrFb!.taxes).toBe(eurFb!.taxes);
+  });
+});
+
+describe("accessibility scoring — score-1 programs prioritized over score-3", () => {
+  it("isBestDeal is never a score-3 program when a score-1 option exists", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const best = milesOptions.find((o) => o.isBestDeal)!;
+    const SCORE_3_PROGRAMS = [
+      "Hainan Fortune Wings Club",
+      "China Southern Sky Pearl Club",
+      "China Eastern Eastern Miles",
+      "Air India Flying Returns",
+      "Garuda GarudaMiles",
+      "Vietnam Airlines Lotusmiles",
+      "Saudia Alfursan",
+      "EgyptAir Plus",
+      "South African Voyager",
+      "Royal Jordanian Royal Plus",
+      "SriLankan FlySmiLes",
+      "Air China PhoenixMiles",
+    ];
+    expect(SCORE_3_PROGRAMS).not.toContain(best.program);
+  });
+
+  it("score-1 programs appear before score-3 programs in milesOptions", () => {
+    const { milesOptions } = buildCostOptions(BASE, new Map());
+    const score3Programs = [
+      "Hainan Fortune Wings Club",
+      "China Southern Sky Pearl Club",
+      "China Eastern Eastern Miles",
+      "Air India Flying Returns",
+      "Garuda GarudaMiles",
+      "Saudia Alfursan",
+      "EgyptAir Plus",
+      "Royal Jordanian Royal Plus",
+      "SriLankan FlySmiLes",
+      "Air China PhoenixMiles",
+    ];
+    const firstScore3Index = milesOptions.findIndex((o) => score3Programs.includes(o.program));
+    const lastScore1Index = milesOptions.reduce((last, o, i) => {
+      const s = PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2;
+      return s === 1 ? i : last;
+    }, -1);
+    // All score-3 programs must appear after all score-1 programs
+    if (firstScore3Index !== -1 && lastScore1Index !== -1) {
+      expect(firstScore3Index).toBeGreaterThan(lastScore1Index);
+    }
   });
 });

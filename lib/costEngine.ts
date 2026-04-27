@@ -390,8 +390,18 @@ export function buildCostOptions(
       seen.set(key, opt);
     }
   }
+  const accessibilityPenalty = (programName: string): number => {
+    const score = PROGRAMS_BY_NAME[programName]?.accessibilityScore ?? 2;
+    if (score === 1) return 1.0;
+    if (score === 3) return 1.4;
+    return 1.2; // score 2
+  };
+
   const dedupedOptions = Array.from(seen.values())
-    .sort((a, b) => a.totalMilesCost - b.totalMilesCost)  // cheapest first
+    .sort((a, b) =>
+      a.totalMilesCost * accessibilityPenalty(a.program) -
+      b.totalMilesCost * accessibilityPenalty(b.program)
+    )
     .slice(0, 12);
 
   // ── DECISION: compare REAL TOTAL COSTS ────────────────────────────────────

@@ -49,6 +49,14 @@ export interface LoyaltyProgram {
    * Defaults to true when omitted.
    */
   isBookable?: boolean;
+  /**
+   * How easily a typical user can access this program.
+   * 1 = widely accessible (major transfer partners, universally known)
+   * 2 = moderately accessible (limited transfer partners or regional)
+   * 3 = hard to access (no transfer partners, not purchasable, niche airline)
+   * Defaults to 2 when omitted.
+   */
+  accessibilityScore?: 1 | 2 | 3;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,6 +95,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Capital One Miles",
       "Bilt Rewards",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Delta SkyMiles",
@@ -100,6 +109,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Korean Air SKYPASS",
@@ -113,6 +123,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Chase Ultimate Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Aeromexico Club Premier",
@@ -127,6 +138,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Capital One Miles",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Garuda GarudaMiles",
@@ -137,6 +149,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.8,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "Vietnam Airlines Lotusmiles",
@@ -147,6 +160,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.9,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "Saudia Alfursan",
@@ -157,6 +171,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.8,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
 
   // ── Star Alliance ────────────────────────────────────────────────────
@@ -174,6 +189,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Aeroplan",
@@ -190,6 +206,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "United MileagePlus",
@@ -204,6 +221,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "ANA Mileage Club",
@@ -217,6 +235,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Singapore KrisFlyer",
@@ -234,6 +253,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "LifeMiles",
@@ -251,6 +271,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Marriott Bonvoy",
       "Brex Rewards",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Ethiopian ShebaMiles",
@@ -263,6 +284,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Lufthansa Miles & More",
@@ -275,6 +297,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Thai Royal Orchid Plus",
@@ -288,6 +311,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "COPA ConnectMiles",
@@ -300,6 +324,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Asiana Club",
@@ -312,6 +337,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "EgyptAir Plus",
@@ -322,6 +348,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.8,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "South African Voyager",
@@ -332,6 +359,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.7,
     taxProfile: "medium",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "EVA Infinity MileageLands",
@@ -344,6 +372,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
 
   // ── Oneworld ─────────────────────────────────────────────────────────
@@ -362,6 +391,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Qatar Privilege Club",
@@ -376,6 +406,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Cathay Pacific Asia Miles",
@@ -392,6 +423,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "AAdvantage",
@@ -404,6 +436,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Iberia Avios Plus",
@@ -420,6 +453,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Alaska Mileage Plan",
@@ -433,6 +467,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Marriott Bonvoy",
       "Bilt Rewards",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Qantas Frequent Flyer",
@@ -446,6 +481,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Japan Airlines Mileage Bank",
@@ -458,6 +494,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Malaysia Airlines Enrich",
@@ -470,6 +507,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Royal Jordanian Royal Plus",
@@ -480,6 +518,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.8,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "SriLankan FlySmiLes",
@@ -490,6 +529,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.7,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "Finnair Plus",
@@ -502,6 +542,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     transferPartnersFrom: [
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 2,
   },
 
   // ── Independent ──────────────────────────────────────────────────────
@@ -521,6 +562,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Etihad Guest",
@@ -536,6 +578,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Capital One Miles",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "Virgin Atlantic Flying Club",
@@ -553,6 +596,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
+    accessibilityScore: 1,
   },
   {
     name: "JetBlue TrueBlue",
@@ -566,6 +610,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Chase Ultimate Rewards",
       "Amex Membership Rewards",
     ],
+    accessibilityScore: 2,
   },
   {
     name: "Southwest Rapid Rewards",
@@ -615,6 +660,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.8,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "China Eastern Eastern Miles",
@@ -625,6 +671,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.7,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "Air China PhoenixMiles",
@@ -635,6 +682,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.7,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "Hainan Fortune Wings Club",
@@ -645,6 +693,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.6,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
   {
     name: "IndiGo 6E Rewards",
@@ -666,6 +715,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 0.6,
     taxProfile: "low",
     transferPartnersFrom: [],
+    accessibilityScore: 3,
   },
 ];
 
