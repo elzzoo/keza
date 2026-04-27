@@ -546,29 +546,10 @@ export function buildCostOptions(
 }
 
 // ─── Redis-backed effective price loader ──────────────────────────────────────
+// Delegates to milesDataService for a single source of truth.
+// Behaviour is identical to before (Redis-first, static fallback, never throws).
 
 export async function getEffectivePrices(): Promise<Map<string, number>> {
-  const map = new Map<string, number>();
-  const programs = Array.from(MILES_PRICE_MAP.keys());
-
-  try {
-    const { redis } = await import("./redis");
-    await Promise.all(
-      programs.map(async (program) => {
-        const key = `miles:price:${program}`;
-        const cached = await redis.get<number>(key).catch(() => null);
-        if (typeof cached === "number") {
-          map.set(program, cached);
-        } else {
-          map.set(program, MILES_PRICE_MAP.get(program)!);
-        }
-      })
-    );
-  } catch {
-    Array.from(MILES_PRICE_MAP.entries()).forEach(([program, price]) => {
-      map.set(program, price);
-    });
-  }
-
-  return map;
+  const { getAllEffectivePrices } = await import("./milesDataService");
+  return getAllEffectivePrices();
 }

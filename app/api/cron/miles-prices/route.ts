@@ -41,8 +41,11 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     // ── 3. Ensure all programs have a value in Redis ────────────────────────
     // If a program has no observations yet, sync static baseline so Redis
-    // always has a value (prevents cold-start issues)
+    // always has a value (prevents cold-start issues).
+    // Also writes miles:lastUpdated:{program} so getLastUpdated() can report
+    // when values were last confirmed by the cron.
     const synced: string[] = [];
+    const now = new Date().toISOString();
     const programs = Array.from(MILES_PRICE_MAP.entries());
     for (const [program, staticValue] of programs) {
       const existing = await redis.get<number>(`miles:price:${program}`).catch(() => null);
@@ -50,11 +53,16 @@ export async function GET(request: Request): Promise<NextResponse> {
         await redis.set(`miles:price:${program}`, staticValue, { ex: 7 * 24 * 60 * 60 });
         synced.push(program);
       }
+      // Always stamp lastUpdated — either we just synced OR recalibration
+      // already wrote a fresh value above.  Either way the cron ran today.
+      await redis
+        .set(`miles:lastUpdated:${program}`, now, { ex: 8 * 24 * 60 * 60 })
+        .catch(() => null);
     }
     report.synced = synced;
 
     // ── 4. Store last-run timestamp ─────────────────────────────────────────
-    await redis.set("cron:miles-prices:lastRun", new Date().toISOString(), { ex: 48 * 60 * 60 });
+    await redis.set("cron:miles-prices:lastRun", now, { ex: 48 * 60 * 60 });
 
     report.ok = true;
     return NextResponse.json(report);
