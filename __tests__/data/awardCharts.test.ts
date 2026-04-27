@@ -16,8 +16,15 @@ describe("getMilesRequired", () => {
   });
 
   it("returns Turkish economy AFRICA_WEST→EUROPE 1 pax oneway", () => {
+    // Official Turkish chart 2025-2026: Zone 6 (West Africa) → Zone 2 (Europe) = 25,000 economy one-way
     const result = getMilesRequired("Turkish Miles&Smiles", "AFRICA_WEST", "EUROPE", "economy", "oneway", 1);
-    expect(result.miles).toBe(15_000);
+    expect(result.miles).toBe(25_000);
+    expect(result.source).toBe("REAL");
+  });
+
+  it("returns Turkish economy AFRICA_WEST→EUROPE roundtrip = 50,000", () => {
+    const result = getMilesRequired("Turkish Miles&Smiles", "AFRICA_WEST", "EUROPE", "economy", "roundtrip", 1);
+    expect(result.miles).toBe(50_000);
     expect(result.source).toBe("REAL");
   });
 

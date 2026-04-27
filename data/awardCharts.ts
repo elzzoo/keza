@@ -74,17 +74,21 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_SOUTH:  { economy: 17_500, premium: 27_500, business: 55_000 },
     },
     AFRICA_WEST: {
-      EUROPE:        { economy: 15_000, premium: 25_000, business: 50_000 },
-      NORTH_AMERICA: { economy: 35_000, premium: 50_000, business: 85_000 },
-      MIDDLE_EAST:   { economy: 15_000, premium: 25_000, business: 50_000 },
-      ASIA:          { economy: 40_000, premium: 55_000, business: 90_000 },
+      // Official Turkish chart 2025-2026: Zone 6 (Central/West Africa) → Zone 2 (Europe)
+      // Economy: 25,000 one-way / Business: 50,000 one-way
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 50_000 },
+      NORTH_AMERICA: { economy: 40_000, premium: 55_000, business: 85_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+      ASIA:          { economy: 45_000, premium: 60_000, business: 90_000 },
       AFRICA_WEST:   { economy:  7_500, premium: 12_000, business: 25_000 },
-      AFRICA_EAST:   { economy: 15_000, premium: 22_500, business: 45_000 },
-      AFRICA_SOUTH:  { economy: 17_500, premium: 27_500, business: 55_000 },
-      AFRICA_NORTH:  { economy: 10_000, premium: 17_500, business: 35_000 },
+      AFRICA_EAST:   { economy: 17_500, premium: 25_000, business: 45_000 },
+      AFRICA_SOUTH:  { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_NORTH:  { economy: 12_500, premium: 20_000, business: 35_000 },
     },
     AFRICA_EAST: {
-      EUROPE:        { economy: 17_500, premium: 27_500, business: 55_000 },
+      // Official Turkish chart 2025-2026: Zone 7 (East Africa) → Zone 2 (Europe)
+      // Economy: ~22,500 one-way (between Zone 6 and Zone 5 rates)
+      EUROPE:        { economy: 22_500, premium: 32_500, business: 55_000 },
       NORTH_AMERICA: { economy: 37_500, premium: 55_000, business: 90_000 },
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
       AFRICA_EAST:   { economy:  7_500, premium: 12_000, business: 25_000 },

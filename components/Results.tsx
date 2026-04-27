@@ -152,7 +152,9 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
             <p className="text-[11px] text-muted mt-0.5">{lang === "fr" ? "vols trouvés" : "flights found"}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
-            <p className={`font-black text-warning ${fmt(bestPrice).length > 10 ? "text-sm" : "text-xl"}`}>{fmt(bestPrice)}</p>
+            <p className={`font-black text-warning ${fmt(bestPrice).length > 10 ? "text-sm" : "text-xl"}`}>
+              <span className="text-xs font-medium text-muted mr-0.5">{lang === "fr" ? "dès" : "from"}</span>{fmt(bestPrice)}
+            </p>
             <p className="text-[11px] text-muted mt-0.5">{t.best}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">

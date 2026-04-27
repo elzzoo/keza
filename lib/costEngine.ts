@@ -306,6 +306,14 @@ export function buildCostOptions(
         prog.alliance !== "Independent"
       ) continue;
 
+      // Score-3 "Independent" programs (Hainan, niche carriers) have no partner
+      // networks — they can only book their own airline's flights.
+      // Only show them when the operating airline IS the program's own airline.
+      const isRestrictedIndependent =
+        prog.alliance === "Independent" &&
+        (PROGRAMS_BY_NAME[prog.name]?.accessibilityScore ?? 2) === 3;
+      if (isRestrictedIndependent && operatingAirline && operatingAirline !== prog.airline) continue;
+
       const estimate = estimateMilesRequired(
         prog.name,
         prog.alliance,
