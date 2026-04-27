@@ -21,6 +21,21 @@ const SECURITY_HEADERS = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js App Router requires both
+      "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline
+      "img-src 'self' data: blob: https:", // allow HTTPS images (airline logos etc.)
+      "connect-src 'self' https:", // Sentry, Vercel analytics, API calls
+      "font-src 'self' data:",
+      "frame-ancestors 'none'", // belt+suspenders with X-Frame-Options
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; "),
+  },
 ];
 
 const nextConfig = {
