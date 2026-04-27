@@ -134,6 +134,7 @@ async function fetchV3(
   }
 
   return Array.from(seen.values())
+    .filter((f) => f.price >= MIN_REALISTIC_PRICE_USD)   // drop data artifacts
     .slice(0, 15)
     .map((f) => {
       const flight: NormalizedFlight = {
@@ -198,6 +199,7 @@ async function fetchMonthMatrix(
   }
 
   return Array.from(byDate.values())
+    .filter((f) => f.value >= MIN_REALISTIC_PRICE_USD)   // drop data artifacts
     .slice(0, 15)
     .map((f) => ({
       from,
@@ -209,9 +211,30 @@ async function fetchMonthMatrix(
     }));
 }
 
-/** Rewrite a NormalizedFlight's from/to back to the airport codes the user asked for. */
+// Minimum realistic price for any international route (USD).
+// Travelpayouts occasionally surfaces promotional micro-fares ($1–$10) that
+// are data artifacts or expired flash deals — they skew the "best price" tile
+// and make the miles comparison misleading. Anything below this is discarded.
+const MIN_REALISTIC_PRICE_USD = 30;
+
+/**
+ * Rewrite a NormalizedFlight's from/to back to the airport codes the user
+ * asked for, AND fix booking-link URLs that Travelpayouts built using the
+ * metro-code fallback (e.g. DKR instead of DSS, PAR instead of CDG).
+ */
 function rebrandRoute(flights: NormalizedFlight[], from: string, to: string): NormalizedFlight[] {
-  return flights.map((f) => ({ ...f, from, to }));
+  const fromMetro = metroFor(from);   // e.g. "DKR" when from="DSS", null when no metro alias
+  const toMetro   = metroFor(to);     // e.g. "PAR" when to="CDG"
+  return flights.map((f) => {
+    const result = { ...f, from, to };
+    if (result.bookingLink) {
+      // Replace the metro code with the actual airport code so that the
+      // Aviasales deep link opens for the right airport.
+      if (fromMetro) result.bookingLink = result.bookingLink.replaceAll(fromMetro, from);
+      if (toMetro)   result.bookingLink = result.bookingLink.replaceAll(toMetro, to);
+    }
+    return result;
+  });
 }
 
 /**
@@ -519,6 +542,7 @@ function enrich(
   effectivePrices: Map<string, number>,
   returnFlight?: NormalizedFlight,
   searchDate?: string,
+  returnDate?: string,
 ): FlightResult {
   const multiplier = CABIN_MULTIPLIER[cabin];
 
@@ -575,10 +599,20 @@ function enrich(
     result.returnAirlines = returnFlight?.airlines;
   }
 
-  if (f.bookingLink) {
+  if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
+    // Round-trip: always build a proper RT Aviasales search URL.
+    // TP v3 deep links are per-leg (one-way); they don't encode the return segment,
+    // so they open a one-way search and confuse users. The RT search URL correctly
+    // shows combined outbound + return itineraries.
+    // Format: {FROM}{DEPART_DATE}{TO}{RETURN_DATE}{FROM}{PAX}
+    // Example: DSS20260610CDG20260617DSS1
+    const departureDateCompact = searchDate.replace(/-/g, "");
+    const returnDateCompact    = returnDate.replace(/-/g, "");
+    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${departureDateCompact}${f.to}${returnDateCompact}${f.from}${passengers}?marker=${TP_MARKER}`;
+  } else if (f.bookingLink) {
     result.bookingLink = f.bookingLink;
   } else if (searchDate && f.from && f.to) {
-    // Fallback: Aviasales search link when no deep link from Travelpayouts v3
+    // One-way fallback: build Aviasales search link
     const dateCompact = searchDate.replace(/-/g, "");
     result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${dateCompact}${f.to}${passengers ?? 1}?marker=${TP_MARKER}`;
   }
@@ -602,7 +636,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v11:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v12:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
@@ -684,7 +718,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
 
   const searchId = crypto.randomUUID();
   const results: FlightResult[] = withPromos.map((f) => {
-    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn, date);
+    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn, date, returnDate);
     r.searchId = searchId;
     return r;
   });

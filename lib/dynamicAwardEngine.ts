@@ -104,10 +104,13 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     NORTH_AMERICA: 35_000,
     MIDDLE_EAST:   20_000,
     SOUTH_AMERICA: 40_000,
-    AFRICA_WEST:   22_000,
-    AFRICA_NORTH:  15_000,
-    AFRICA_EAST:   25_000,
-    AFRICA_SOUTH:  28_000,
+    // Raised from 22K → 35K so that programs with different alliance rates
+    // (United ~30K, LifeMiles ~20K, Delta ~32K) are not all clamped to 22K.
+    // 35K is the realistic ceiling for premium programs on this corridor.
+    AFRICA_WEST:   35_000,
+    AFRICA_NORTH:  18_000,
+    AFRICA_EAST:   28_000,
+    AFRICA_SOUTH:  30_000,
   },
   NORTH_AMERICA: {
     ASIA:          45_000,

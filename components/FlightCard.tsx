@@ -98,12 +98,22 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
           </div>
         )}
 
-        {/* Primary message — engine displayMessage */}
+        {/* Primary message — generated client-side so it uses the user's currency */}
         <div className={clsx(
           "text-lg font-black",
           isUseMiles ? "text-blue-400" : "text-amber-400"
         )}>
-          {flight.displayMessage}
+          {!bestOption
+            ? (fr ? "💵 Payez en cash — aucune option miles" : "💵 Pay cash — no miles option")
+            : flight.recommendation === "USE_MILES"
+              ? (fr
+                  ? `🔥 Tu économises ${fmt(flight.savings)} avec les miles`
+                  : `🔥 You save ${fmt(flight.savings)} with miles`)
+              : flight.savings > 0
+                ? (fr
+                    ? `💵 Cash moins cher — économise ${fmt(flight.savings)}`
+                    : `💵 Pay cash — save ${fmt(flight.savings)}`)
+                : (fr ? "💵 Cash légèrement avantageux" : "💵 Cash slightly better")}
         </div>
 
         {/* Program context line */}

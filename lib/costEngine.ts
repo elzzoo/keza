@@ -63,16 +63,42 @@ export interface CostComparison {
 // ─── Helper: which airlines are in each program's network ────────────────────
 // NOTE: keys must match exactly what alliances.ts has (e.g. "United" not "United Airlines")
 
+// Maps each loyalty program name → the program's own operating airline.
+// Used to determine DIRECT (same airline) vs ALLIANCE (partner) matching.
+// Keys must match exactly what awardCharts.ts AND globalPrograms.ts use.
+// Values must match keys in lib/alliances.ts and lib/iataAirlines.ts.
 const PROGRAM_TO_AIRLINE: Record<string, string> = {
-  "Flying Blue":          "Air France",
-  "Turkish Miles&Smiles": "Turkish Airlines",
-  "Emirates Skywards":    "Emirates",
-  "Qatar Privilege Club": "Qatar Airways",
-  "British Airways Avios":"British Airways",
-  "Ethiopian ShebaMiles": "Ethiopian Airlines",
-  "Air Canada Aeroplan":  "Air Canada",
-  "United MileagePlus":   "United",
+  // ─── SkyTeam ───────────────────────────────────────────────────────────────
+  "Flying Blue":             "Air France",        // Air France + KLM
+  "Delta SkyMiles":          "Delta",             // matches iataToAirline("DL")
+  "Korean Air SKYPASS":      "Korean Air",
+  // ─── Star Alliance ─────────────────────────────────────────────────────────
+  "Turkish Miles&Smiles":    "Turkish Airlines",
+  "Ethiopian ShebaMiles":    "Ethiopian Airlines",
+  "Air Canada Aeroplan":     "Air Canada",
+  "Aeroplan":                "Air Canada",        // globalPrograms alias
+  "United MileagePlus":      "United",
+  "Lufthansa Miles & More":  "Lufthansa",
+  "Singapore KrisFlyer":     "Singapore Airlines",
+  "ANA Mileage Club":        "All Nippon Airways",
+  "LifeMiles":               "Avianca",
+  // ─── Oneworld ──────────────────────────────────────────────────────────────
+  "British Airways Avios":   "British Airways",   // awardCharts key
+  "BA Avios":                "British Airways",   // globalPrograms alias
+  "Qatar Privilege Club":    "Qatar Airways",
+  "AAdvantage":              "American Airlines",
+  "Iberia Avios Plus":       "Iberia",
+  "Japan Airlines Mileage Bank": "Japan Airlines",
+  // ─── Independent ───────────────────────────────────────────────────────────
+  "Emirates Skywards":       "Emirates",
+  "Etihad Guest":            "Etihad",            // matches alliances.ts key
 };
+
+// Airlines whose native program is Flying Blue (Air France-KLM group).
+// Flying Blue must ALWAYS be included for these, regardless of matching logic.
+const FLYING_BLUE_AIRLINES = new Set([
+  "Air France", "KLM", "Transavia France", "Transavia", "HOP! Air France",
+]);
 
 function getProgramsForAirline(airline: string): Array<{ program: string; type: "DIRECT" | "ALLIANCE" }> {
   const results: Array<{ program: string; type: "DIRECT" | "ALLIANCE" }> = [];
@@ -90,6 +116,14 @@ function getProgramsForAirline(airline: string): Array<{ program: string; type: 
       results.push({ program, type: "ALLIANCE" });
     }
   }
+
+  // Hard guarantee: Flying Blue is always available on Air France-KLM group.
+  // Defensive against airline name normalization edge cases (code-shares, IATA
+  // lookup misses) that would otherwise silently drop the most relevant program.
+  if (FLYING_BLUE_AIRLINES.has(airline) && !results.some(r => r.program === "Flying Blue")) {
+    results.push({ program: "Flying Blue", type: airline === "Air France" ? "DIRECT" : "ALLIANCE" });
+  }
+
   return results;
 }
 
@@ -214,16 +248,34 @@ export function buildCostOptions(
   // ── Direct + Alliance options ──────────────────────────────────────────────
   const programs = getProgramsForAirline(operatingAirline);
 
-  // When the operating airline is unknown or not in any alliance, fall back to
-  // checking ALL programs directly based on route zones. This is common for
-  // month-matrix results where we only have prices but no airline codes.
+  // Zone fallback: used for month-matrix results where no airline codes are
+  // available. When the operating airline IS known (even if not in PROGRAM_TO_AIRLINE),
+  // we must filter zone-fallback programs by alliance to avoid suggesting
+  // irrelevant programs (e.g. Turkish Miles on Ryanair flights).
   const useZoneFallback = programs.length === 0 && originZone && destZone;
+  const operatingAlliance = ALLIANCES[operatingAirline] ?? null;
+
   const effectivePrograms = useZoneFallback
-    ? Object.entries(PROGRAM_TO_AIRLINE).map(([program, airline]) => ({
-        program,
-        type: "ALLIANCE" as const,          // mark as alliance since we don't know the exact operator
-        inferredAirline: airline,
-      }))
+    ? Object.entries(PROGRAM_TO_AIRLINE)
+        .filter(([program, programAirline]) => {
+          if (PROGRAMS_BY_NAME[program]?.isBookable === false) return false;
+          // Unknown airline (empty string, month-matrix): allow all programs
+          if (!operatingAirline) return true;
+          // Known airline but not in any alliance: exclude all programs
+          // (low-cost carriers, independent airlines with no partner network)
+          if (!operatingAlliance) return false;
+          // Independent airlines: only match programs from the same airline
+          if (operatingAlliance === "Independent") {
+            return ALLIANCES[programAirline] === "Independent";
+          }
+          // Alliance airline: only match programs in the same alliance
+          return ALLIANCES[programAirline] === operatingAlliance;
+        })
+        .map(([program, airline]) => ({
+          program,
+          type: "ALLIANCE" as const,
+          inferredAirline: airline,
+        }))
     : programs.map((p) => ({ ...p, inferredAirline: operatingAirline }));
 
   for (const entry of effectivePrograms) {

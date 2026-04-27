@@ -37,6 +37,9 @@ export const ALLIANCES: Record<string, string> = {
   "Aegean Airlines": "Star Alliance",
   "LOT Polish Airlines": "Star Alliance",
   "SAS": "Star Alliance",
+  "All Nippon Airways": "Star Alliance", // ANA — for ANA Mileage Club matching
+  "Avianca": "Star Alliance",            // for LifeMiles matching
+  "TAM Airlines": "Star Alliance",       // LATAM affiliate
   // Oneworld
   "British Airways": "Oneworld",
   "American Airlines": "Oneworld",
@@ -52,9 +55,11 @@ export const ALLIANCES: Record<string, string> = {
   "Japan Airlines": "Oneworld",
   "Cathay Pacific": "Oneworld",
   "SriLankan Airlines": "Oneworld",      // Associate member
+  "Alaska Airlines": "Oneworld",         // Joined 2021
   // Independent
   "Emirates": "Independent",
   "Etihad": "Independent",
+  "Etihad Airways": "Independent",       // globalPrograms uses this full name
   "RwandAir": "Independent",
   "Air Senegal": "Independent",
   "Air Algérie": "Independent",

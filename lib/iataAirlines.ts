@@ -22,6 +22,11 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   ET: "Ethiopian Airlines",
   SA: "South African Airways",
   LX: "Swiss",
+  NH: "All Nippon Airways",
+  AV: "Avianca",
+  OS: "Austrian Airlines",
+  SN: "Brussels Airlines",
+  LO: "LOT Polish Airlines",
 
   // ─── Oneworld ──────────────────────────────────────────────────────────────
   BA: "British Airways",
