@@ -110,9 +110,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           position="bottom-center"
           toastOptions={{
             style: {
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-fg)",
+              background: "rgb(var(--surface))",
+              border: "1px solid rgb(var(--border))",
+              color: "rgb(var(--fg))",
             },
           }}
           richColors
