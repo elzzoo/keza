@@ -435,10 +435,17 @@ export function buildCostOptions(
   const disclaimer =
     "⚠️ Prix indicatifs basés sur tarifs réels et valeurs de miles estimées — vérifiez la disponibilité avant de réserver.";
 
-  // Mark best deal on the cheapest option
+  // Mark best deal: prefer accessible (score 1 or 2) options over score-3 programs.
+  // Score-3 programs may still appear in the list for users who hold those miles,
+  // but they should never surface as the headline recommendation.
   if (dedupedOptions.length > 0) {
-    // isBestDeal marks the top option after accessibility-weighted sort — not necessarily the cheapest raw cost
-    dedupedOptions[0].isBestDeal = true;
+    const hasAccessibleOption = dedupedOptions.some(
+      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2,
+    );
+    const bestDeal = hasAccessibleOption
+      ? dedupedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2)!
+      : dedupedOptions[0]; // fall back to cheapest if no accessible option exists
+    bestDeal.isBestDeal = true;
   }
 
   // Legacy explanation string
