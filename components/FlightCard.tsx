@@ -71,6 +71,14 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
   const savingsRatio = flight.cashCost > 0 ? Math.abs(flight.savings) / flight.cashCost : 0;
   const isNearParity = savingsRatio < 0.05 && bestOption !== null;
 
+  const [showAlts, setShowAlts] = useState(false);
+  const alternatives = (flight.milesOptions ?? [])
+    .filter(o => !o.isBestDeal)
+    .slice(0, 3);
+
+  const confDot = (confidence: string) =>
+    confidence === "HIGH" ? "🟢" : confidence === "MEDIUM" ? "🔵" : "🟡";
+
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
     .filter((a, i, arr) => arr.indexOf(a) === i)
@@ -235,6 +243,40 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
           <div className="text-[11px] text-muted leading-relaxed">
             {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢/mile + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
           </div>
+        </div>
+      )}
+
+      {/* ALTERNATIVES — top 2-3 other options */}
+      {alternatives.length > 0 && (
+        <div className="border-t border-border">
+          <button
+            onClick={() => setShowAlts(v => !v)}
+            className="w-full px-5 py-2.5 flex items-center justify-between text-[11px] text-muted hover:text-fg transition-colors"
+          >
+            <span>{fr ? `${alternatives.length} autre${alternatives.length > 1 ? "s" : ""} option${alternatives.length > 1 ? "s" : ""}` : `${alternatives.length} more option${alternatives.length > 1 ? "s" : ""}`}</span>
+            <span className="text-subtle">{showAlts ? "▲" : "▼"}</span>
+          </button>
+          {showAlts && (
+            <div className="px-5 pb-3 space-y-2">
+              {alternatives.map((opt, i) => {
+                const altTypeLabel = TYPE_LABEL[lang][opt.type === "TRANSFER" ? "TRANSFER" : opt.type === "DIRECT" ? "DIRECT" : "ALLIANCE"];
+                return (
+                  <div key={i} className="flex items-center justify-between text-[11px] py-1.5 border-t border-border/50 first:border-t-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span>{confDot(opt.confidence)}</span>
+                      <span className="text-muted font-semibold">{opt.program}</span>
+                      {opt.via && <span className="text-subtle">via {opt.via}</span>}
+                      <span className="text-subtle">· {altTypeLabel.toLowerCase()}</span>
+                    </div>
+                    <div className="text-right shrink-0 ml-2">
+                      <span className="font-bold text-fg">{fmt(opt.totalMilesCost)}</span>
+                      <span className="text-subtle ml-1">({formatMiles(opt.milesRequired)}pts)</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

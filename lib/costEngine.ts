@@ -11,6 +11,7 @@ import { getContextualMileValue } from "./mileValue";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
 import type { Cabin, TripType } from "./engine";
+import { buildScenarios, type Scenario } from "./scenarioEngine";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -55,6 +56,7 @@ export interface CostComparison {
   recommendation: Recommendation; // USE_MILES or USE_CASH — binary, no ambiguity
   bestOption: MilesOption | null; // the cheapest miles scenario
   milesOptions: MilesOption[];    // all computed options for detail view
+  scenarios?: Scenario[];         // NEW — same data as milesOptions, typed as Scenario[]
   explanation: string;            // kept for backward compat
   displayMessage: string;         // "🔥 Tu économises $X" or "❌ Les miles coûtent $X de plus"
   disclaimer: string;             // trust disclaimer shown on every result
@@ -526,6 +528,7 @@ export function buildCostOptions(
     disclaimer,
     bestOption,
     milesOptions: dedupedOptions,
+    scenarios: buildScenarios(dedupedOptions),
     explanation,
   };
 }
