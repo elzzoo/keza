@@ -27,10 +27,10 @@ describe("buildCostOptions", () => {
       expect(fb).toBeDefined();
     });
 
-    it("calculates taxes as 550 × 2 pax = 1100 for AF business from DSS (no arbitrary surcharge)", () => {
+    it("calculates taxes as 550 × 2 pax × 2 (roundtrip) = 2200 for AF business from DSS", () => {
       const { milesOptions } = buildCostOptions(BASE, new Map());
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.taxes).toBe(1100);
+      expect(fb.taxes).toBe(2200);
     });
 
     it("totalMilesCost = milesCost + taxes", () => {
@@ -53,13 +53,13 @@ describe("buildCostOptions", () => {
   });
 
   describe("effective prices from map", () => {
-    it("uses custom value per mile from effectivePrices map (contextual: business × medium-haul = 2×)", () => {
-      // BASE is business cabin, DSS→CDG ~4,400 km (medium-haul, 1.0×), business cabin (2.0×)
-      // effectivePrices base = 2.5, adjusted = 2.5 × 2.0 × 1.0 = 5.0
+    it("uses custom value per mile from effectivePrices map (constant: no contextual adjustment)", () => {
+      // valuePerMile is constant per program — no distance/cabin adjustment applied.
+      // effectivePrices base = 2.5, valuePerMile = 2.5 (unchanged)
       const prices = new Map([["Flying Blue", 2.5]]);
       const { milesOptions } = buildCostOptions(BASE, prices);
       const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
-      expect(fb.valuePerMile).toBeCloseTo(5.0);
+      expect(fb.valuePerMile).toBeCloseTo(2.5);
     });
   });
 
@@ -119,18 +119,20 @@ describe("binary recommendation — no EQUIVALENT", () => {
 });
 
 describe("displayMessage", () => {
-  it("starts with 🔥 when USE_MILES", () => {
+  it("starts with miles_cheaper when USE_MILES (logging format)", () => {
     const r = buildCostOptions(BASE, new Map());
     if (r.recommendation === "USE_MILES") {
-      expect(r.displayMessage).toMatch(/🔥/);
+      // displayMessage is a logging-only token since UI generates it client-side
+      expect(r.displayMessage).toMatch(/^miles_cheaper:/);
     }
   });
 
-  it("starts with 💵 when USE_CASH", () => {
+  it("starts with cash_cheaper when USE_CASH (logging format)", () => {
     const cheap: FlightInput = { ...BASE, totalPrice: 50, cabin: "economy", passengers: 1 };
     const r = buildCostOptions(cheap, new Map());
     expect(r.recommendation).toBe("USE_CASH");
-    expect(r.displayMessage).toMatch(/💵/);
+    // displayMessage is a logging-only token since UI generates it client-side
+    expect(r.displayMessage).toMatch(/^cash_cheaper:|^no_miles_option/);
   });
 });
 
@@ -181,10 +183,14 @@ describe("program filtering — isBookable", () => {
 });
 
 describe("savings rounding in displayMessage", () => {
-  it("displayMessage contains only integer dollar amounts (no decimals)", () => {
+  it("displayMessage logging token contains an integer amount (no decimals)", () => {
     const { displayMessage } = buildCostOptions(BASE, new Map());
-    // Must not contain a decimal in the dollar amount
-    expect(displayMessage).not.toMatch(/\$\d+\.\d/);
+    // Logging format: "miles_cheaper:NNN" or "cash_cheaper:NNN" or "no_miles_option"
+    // If it contains a colon, the value after must be an integer
+    if (displayMessage.includes(":")) {
+      const value = displayMessage.split(":")[1];
+      expect(value).toMatch(/^\d+$/);
+    }
   });
 });
 

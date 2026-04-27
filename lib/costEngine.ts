@@ -7,7 +7,6 @@ import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, haversineDistanceKm, type CabinClass } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME } from "./globalPrograms";
-import { getContextualMileValue } from "./mileValue";
 import { calculateAcquisitionCost } from "./milesAcquisition";
 import { AIRPORTS } from "@/data/airports";
 import type { Cabin, TripType } from "./engine";
@@ -102,6 +101,19 @@ const FLYING_BLUE_AIRLINES = new Set([
   "Air France", "KLM", "Transavia France", "Transavia", "HOP! Air France",
 ]);
 
+// Star Alliance airlines for which Aeroplan should always be guaranteed
+const AEROPLAN_GUARANTEE_AIRLINES = new Set([
+  "Air Canada", "United", "Lufthansa", "Turkish Airlines", "Singapore Airlines",
+  "Ethiopian Airlines", "Swiss", "South African Airways", "EgyptAir",
+  "TAP Air Portugal", "All Nippon Airways", "Avianca",
+  "Brussels Airlines", "Austrian Airlines", "LOT Polish Airlines", "SAS",
+]);
+
+// Airlines for which Singapore KrisFlyer should always be guaranteed
+const KRISFLYER_GUARANTEE_AIRLINES = new Set([
+  "Singapore Airlines", "All Nippon Airways",
+]);
+
 function getProgramsForAirline(airline: string): Array<{ program: string; type: "DIRECT" | "ALLIANCE" }> {
   const results: Array<{ program: string; type: "DIRECT" | "ALLIANCE" }> = [];
   const airlineAlliance = ALLIANCES[airline];
@@ -124,6 +136,16 @@ function getProgramsForAirline(airline: string): Array<{ program: string; type: 
   // lookup misses) that would otherwise silently drop the most relevant program.
   if (FLYING_BLUE_AIRLINES.has(airline) && !results.some(r => r.program === "Flying Blue")) {
     results.push({ program: "Flying Blue", type: airline === "Air France" ? "DIRECT" : "ALLIANCE" });
+  }
+
+  // Guarantee Aeroplan for all Star Alliance airlines
+  if (AEROPLAN_GUARANTEE_AIRLINES.has(airline) && !results.some(r => r.program === "Aeroplan")) {
+    results.push({ program: "Aeroplan", type: airline === "Air Canada" ? "DIRECT" : "ALLIANCE" });
+  }
+
+  // Guarantee Singapore KrisFlyer for Singapore Airlines and close Star Alliance partners
+  if (KRISFLYER_GUARANTEE_AIRLINES.has(airline) && !results.some(r => r.program === "Singapore KrisFlyer")) {
+    results.push({ program: "Singapore KrisFlyer", type: airline === "Singapore Airlines" ? "DIRECT" : "ALLIANCE" });
   }
 
   return results;
@@ -154,9 +176,9 @@ function buildOption(
     MILES_PRICE_MAP.get(program) ??
     DEFAULT_MILE_VALUE_CENTS;
 
-  const valuePerMile = distanceKm > 0
-    ? getContextualMileValue(baseCents, cabin, distanceKm)
-    : baseCents;
+  // valuePerMile is constant per program — no contextual adjustment.
+  // This ensures consistent, predictable comparisons across routes.
+  const valuePerMile = baseCents;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CORE FORMULA:  totalMilesCost = (milesRequired × valuePerMile) + taxes
@@ -284,12 +306,14 @@ export function buildCostOptions(
     const airlineForTaxes = useZoneFallback ? entry.inferredAirline : operatingAirline;
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
-      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone);
+      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
+        * (tripType === "roundtrip" ? 2 : 1);
       milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
+      * (tripType === "roundtrip" ? 2 : 1);
     milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices, cabin, distanceKm));
   }
 
@@ -308,7 +332,8 @@ export function buildCostOptions(
     const { miles: destMiles, source } = getMilesRequired(bonus.to, originZone, destZone, cabin, tripType, passengers);
     const ratio = getEffectiveRatio(bonus);
     const sourceMiles = Math.ceil(destMiles / ratio);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone);
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
+      * (tripType === "roundtrip" ? 2 : 1);
 
     const promoApplied = bonus.promoRatio
       ? `${bonus.from} bonus ${Math.round((ratio - 1) * 100)}%`
@@ -380,17 +405,13 @@ export function buildCostOptions(
         destZone,
       );
 
-      // Compute taxes using tax profile
-      const taxPerPax = prog.taxProfile === "low" ? 50
-        : prog.taxProfile === "medium" ? 150
-        : 350;
-      const taxes = taxPerPax * passengers * (tripType === "roundtrip" ? 2 : 1);
+      // Compute taxes: route+airline based, RT-aware
+      const taxes = getAwardTaxes(prog.airline, cabin, passengers, from, to, originZone, destZone)
+        * (tripType === "roundtrip" ? 2 : 1);
 
-      // Market value of miles
+      // Market value of miles — constant per program, no contextual adjustment
       const baseCents = effectivePrices.get(prog.name) ?? prog.marketValueCents;
-      const valuePerMile = distanceKm > 0
-        ? getContextualMileValue(baseCents, cabin, distanceKm)
-        : baseCents;
+      const valuePerMile = baseCents;
       const milesCost = Math.round((estimate.milesRequired * valuePerMile) / 100 * 100) / 100;
       const totalMilesCost = Math.round((milesCost + taxes) * 100) / 100;
       const savings = Math.round((cashTotal - totalMilesCost) * 100) / 100;
@@ -479,19 +500,18 @@ export function buildCostOptions(
   const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper
   const savings = Math.round(Math.abs(signedSavings) * 100) / 100;
 
-  // Binary decision — no EQUIVALENT zone, always picks a side
-  const recommendation: Recommendation = (bestOption && signedSavings > 0)
+  // Strict: USE_MILES only when best miles cost is strictly cheaper than cash
+  const recommendation: Recommendation = (bestOption !== null && bestOption.totalMilesCost < cashTotal)
     ? "USE_MILES"
     : "USE_CASH";
 
-  // Unambiguous display message
+  // NOTE: displayMessage is not rendered by the UI (FlightCard generates it client-side
+  // with the user's currency via fmt()). This server-side value is kept for logging only.
   const displayMessage: string = !bestOption
-    ? `💵 Payez en cash — aucune option miles disponible`
+    ? "no_miles_option"
     : recommendation === "USE_MILES"
-      ? `🔥 Tu économises $${Math.round(savings)} avec les miles`
-      : signedSavings < 0
-        ? `💵 Pay cash — save $${Math.round(savings)}`
-        : `💵 Cash légèrement avantageux — conserve tes miles`;
+      ? `miles_cheaper:${Math.round(savings)}`
+      : `cash_cheaper:${Math.round(savings)}`;
 
   // Trust disclaimer
   const disclaimer =
@@ -513,11 +533,11 @@ export function buildCostOptions(
   // Legacy explanation string
   const explanation = bestOption
     ? recommendation === "USE_MILES"
-      ? `Économisez $${Math.round(savings)} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + $${bestOption.taxes} taxes = $${bestMilesCost} vs $${cashTotal} cash)`
+      ? `Économisez ${Math.round(savings)} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + ${bestOption.taxes} taxes = ${bestMilesCost} vs ${cashTotal} cash)`
       : signedSavings < 0
-        ? `Le cash est moins cher de $${Math.round(savings)}. Miles coûteraient $${bestMilesCost} vs $${cashTotal} cash.`
-        : `Quasi identique — cash légèrement avantageux de $${Math.round(savings)}.`
-    : `Aucune option miles disponible. Payez en cash ($${cashTotal}).`;
+        ? `Le cash est moins cher de ${Math.round(savings)}. Miles coûteraient ${bestMilesCost} vs ${cashTotal} cash.`
+        : `Quasi identique — cash légèrement avantageux de ${Math.round(savings)}.`
+    : `Aucune option miles disponible. Payez en cash (${cashTotal}).`;
 
   return {
     cashCost: cashTotal,

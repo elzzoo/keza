@@ -259,18 +259,37 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
           {showAlts && (
             <div className="px-5 pb-3 space-y-2">
               {alternatives.map((opt, i) => {
-                const altTypeLabel = TYPE_LABEL[lang][opt.type === "TRANSFER" ? "TRANSFER" : opt.type === "DIRECT" ? "DIRECT" : "ALLIANCE"];
+                const scenType = (opt.via?.startsWith("Achat") ? "BUY" : opt.type) as "DIRECT" | "ALLIANCE" | "TRANSFER" | "BUY";
+                const typeColors: Record<string, string> = {
+                  DIRECT:   "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                  ALLIANCE: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                  TRANSFER: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                  BUY:      "bg-green-500/10 text-green-400 border-green-500/20",
+                };
+                const typeLabels: Record<string, { fr: string; en: string }> = {
+                  DIRECT:   { fr: "Direct",    en: "Direct" },
+                  ALLIANCE: { fr: "Alliance",  en: "Alliance" },
+                  TRANSFER: { fr: "Transfert", en: "Transfer" },
+                  BUY:      { fr: "Achat",     en: "Buy" },
+                };
+                const confScore = opt.confidence === "HIGH" ? 95 : opt.confidence === "MEDIUM" ? 70 : 45;
                 return (
                   <div key={i} className="flex items-center justify-between text-[11px] py-1.5 border-t border-border/50 first:border-t-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span>{confDot(opt.confidence)}</span>
-                      <span className="text-muted font-semibold">{opt.program}</span>
-                      {opt.via && <span className="text-subtle">via {opt.via}</span>}
-                      <span className="text-subtle">· {altTypeLabel.toLowerCase()}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                      <span className={clsx("text-[9px] font-bold px-1.5 py-0.5 rounded border shrink-0", typeColors[scenType])}>
+                        {fr ? typeLabels[scenType].fr : typeLabels[scenType].en}
+                      </span>
+                      <span className="text-muted font-semibold truncate">{opt.program}</span>
+                      {opt.via && !opt.via.startsWith("Achat") && (
+                        <span className="text-subtle shrink-0">via {opt.via}</span>
+                      )}
+                      {opt.promoApplied && (
+                        <span className="text-[9px] text-success font-bold shrink-0">🎁 bonus</span>
+                      )}
                     </div>
-                    <div className="text-right shrink-0 ml-2">
-                      <span className="font-bold text-fg">{fmt(opt.totalMilesCost)}</span>
-                      <span className="text-subtle ml-1">({formatMiles(opt.milesRequired)}pts)</span>
+                    <div className="text-right shrink-0 ml-2 space-y-0.5">
+                      <div className="font-bold text-fg">{fmt(opt.totalMilesCost)}</div>
+                      <div className="text-subtle text-[9px]">{formatMiles(opt.milesRequired)}pts · {confScore}%</div>
                     </div>
                   </div>
                 );
