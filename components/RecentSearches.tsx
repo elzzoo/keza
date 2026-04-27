@@ -46,7 +46,7 @@ export function RecentSearches({ searches, lang, onSelect }: Props) {
                     ? "bg-primary/15 text-blue-400"
                     : "bg-warning/10 text-warning"
                 }`}>
-                  {s.recommendation === "USE_MILES" ? "\u2708" : "\u25c8"} ${s.bestSavings.toFixed(0)}
+                  {s.recommendation === "USE_MILES" ? "\u2708" : "$"} {s.bestSavings.toFixed(0)}
                 </span>
               )}
               <span className="text-[10px] text-subtle">{timeAgo(s.timestamp, fr)}</span>

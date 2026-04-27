@@ -187,7 +187,8 @@ export default function HomePage() {
             initialFrom={prefillFrom}
             initialTo={prefillTo}
             savedPrograms={profile?.programs}
-            savedCabin={sharedParams?.cabin ?? profile?.cabin}
+            savedCabin={profile?.cabin}
+            initialCabin={sharedParams?.cabin}
             formatPrice={formatPrice}
             initialDate={sharedParams?.date}
             initialTripType={sharedParams?.tripType}
@@ -309,7 +310,7 @@ export default function HomePage() {
                     desc: lang === "fr"
                       ? "Valeur correcte. Bon choix selon votre programme et vos points disponibles."
                       : "Decent value. Good choice depending on your program and available points.",
-                    icon: "◎",
+                    icon: "✓",
                   },
                   {
                     bg: "bg-warning/10",
@@ -319,7 +320,7 @@ export default function HomePage() {
                     desc: lang === "fr"
                       ? "Le prix cash est plus avantageux. Gardez vos miles pour une meilleure occasion."
                       : "Cash price is more advantageous. Save your miles for a better deal.",
-                    icon: "◈",
+                    icon: "$",
                   },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3">

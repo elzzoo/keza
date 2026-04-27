@@ -16,7 +16,10 @@ interface Props {
   initialFrom?: string;
   initialTo?: string;
   savedPrograms?: string[];
+  /** Cabin from user profile (applied once, user changes override) */
   savedCabin?: "economy" | "premium" | "business" | "first";
+  /** Cabin from URL params — takes priority over savedCabin */
+  initialCabin?: "economy" | "premium" | "business" | "first";
   /** Format a USD amount into user's chosen currency */
   formatPrice?: (usd: number) => string;
   /** Pre-fill from shared URL */
@@ -34,7 +37,7 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
-export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, formatPrice, initialDate, initialTripType, initialPax }: Props) {
+export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax }: Props) {
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");
   const [tripType,   setTripType]   = useState<TripType>(initialTripType ?? "roundtrip");
@@ -47,17 +50,38 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
   const [busy,       setBusy]       = useState(false);
   const [showCalendar, setShowCalendar] = useState<"dep" | "ret" | null>(null);
 
-  // React to external route selection (popular routes)
+  // React to external route selection (popular routes / URL params)
   useEffect(() => { if (initialFrom) setFrom(initialFrom); }, [initialFrom]);
-  useEffect(() => { if (initialTo) setTo(initialTo); }, [initialTo]);
+  useEffect(() => { if (initialTo)   setTo(initialTo);     }, [initialTo]);
 
-  // Restore saved programs & cabin from profile (once on mount)
+  // URL param prefill — date, tripType, pax.
+  // These only run once (guard prevents overwriting user changes).
+  const [urlParamApplied, setUrlParamApplied] = useState(false);
+  useEffect(() => {
+    if (urlParamApplied) return;
+    let applied = false;
+    if (initialDate)    { setDepDate(initialDate); setRetDate(addDays(initialDate, 7)); applied = true; }
+    if (initialTripType){ setTripType(initialTripType); applied = true; }
+    if (initialPax)     { setPassengers(initialPax); applied = true; }
+    if (applied) setUrlParamApplied(true);
+  }, [initialDate, initialTripType, initialPax, urlParamApplied]);
+
+  // URL cabin param — always beats profile cabin.
+  const [urlCabinApplied, setUrlCabinApplied] = useState(false);
+  useEffect(() => {
+    if (urlCabinApplied || !initialCabin) return;
+    setCabin(initialCabin);
+    setUrlCabinApplied(true);
+  }, [initialCabin, urlCabinApplied]);
+
+  // Restore saved programs & cabin from profile (once on mount, only if no URL cabin).
   const [profileLoaded, setProfileLoaded] = useState(false);
   useEffect(() => {
     if (profileLoaded) return;
     if (savedPrograms?.length) { setPrograms(savedPrograms.join(", ")); setProfileLoaded(true); }
-    if (savedCabin) { setCabin(savedCabin); setProfileLoaded(true); }
-  }, [savedPrograms, savedCabin, profileLoaded]);
+    // Profile cabin only applies if URL didn't supply one
+    if (savedCabin && !initialCabin) { setCabin(savedCabin); setProfileLoaded(true); }
+  }, [savedPrograms, savedCabin, initialCabin, profileLoaded]);
 
   const canGo = !!from && !!to && from !== to;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
@@ -158,21 +182,23 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
               {fr ? "Date aller" : "Departure"}
             </p>
             <div className="flex gap-1.5">
-              <button
-                type="button"
-                onClick={() => (document.getElementById("keza-dep") as HTMLInputElement)?.showPicker?.()}
-                className="flex-1 flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 hover:bg-primary/5 transition-all"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
-                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <span className="font-medium">
-                  {new Date(depDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
-                </span>
-                <input id="keza-dep" type="date" value={depDate} min={today}
+              {/* The date input is overlaid transparently over the button so the
+                  native date picker opens on click — this works cross-browser,
+                  including iOS Safari which doesn't support showPicker(). */}
+              <div className="relative flex-1">
+                <div className="flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg pointer-events-none">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span className="font-medium">
+                    {new Date(depDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
+                  </span>
+                </div>
+                <input type="date" value={depDate} min={today}
                   onChange={e => onDep(e.target.value)}
-                  className="sr-only" tabIndex={-1} />
-              </button>
+                  className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                />
+              </div>
               {/* Calendar toggle */}
               {canShowCalendar && (
                 <button
@@ -205,21 +231,20 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
                 {fr ? "Date retour" : "Return"}
               </p>
               <div className="flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => (document.getElementById("keza-ret") as HTMLInputElement)?.showPicker?.()}
-                  className="flex-1 flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg hover:border-primary/40 hover:bg-primary/5 transition-all"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
-                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                  <span className="font-medium">
-                    {new Date(retDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
-                  </span>
-                  <input id="keza-ret" type="date" value={retDate} min={addDays(depDate, 1)}
+                <div className="relative flex-1">
+                  <div className="flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg pointer-events-none">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
+                      <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span className="font-medium">
+                      {new Date(retDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
+                    </span>
+                  </div>
+                  <input type="date" value={retDate} min={addDays(depDate, 1)}
                     onChange={e => setRetDate(e.target.value)}
-                    className="sr-only" tabIndex={-1} />
-                </button>
+                    className="absolute inset-0 opacity-0 w-full cursor-pointer"
+                  />
+                </div>
                 {/* Calendar toggle for return */}
                 {canShowCalendar && (
                   <button
@@ -351,7 +376,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
                 <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                 {fr ? "Recherche en cours…" : "Searching…"}
               </span>
-            : `✦  ${fr ? "Optimiser mon vol" : "Optimize my flight"}`
+            : `${fr ? "Optimiser mon vol" : "Optimize my flight"} →`
           }
         </button>
       </div>

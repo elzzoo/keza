@@ -207,7 +207,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             </>
           ) : (
             <>
-              <div className="text-2xl font-black text-subtle">\u2014</div>
+              <div className="text-2xl font-black text-subtle">—</div>
               <div className="text-[10px] text-muted uppercase tracking-widest mt-1 font-bold">
                 Miles
               </div>

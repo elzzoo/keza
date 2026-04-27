@@ -111,9 +111,16 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Focus the search input whenever the dropdown opens.
+  // useEffect runs after React commits the DOM, so the input is guaranteed
+  // to exist. A setTimeout-based focus fails on iOS Safari because it's
+  // no longer inside the synchronous user-gesture event handler.
+  useEffect(() => {
+    if (open && inputRef.current) inputRef.current.focus();
+  }, [open]);
+
   const openDropdown = () => {
     setOpen(true); setQuery("");
-    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const selectAirport = (airport: Airport) => {
