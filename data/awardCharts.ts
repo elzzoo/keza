@@ -354,6 +354,28 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
+  // Singapore KrisFlyer — official Saver award chart (2025)
+  // One-way per pax. Source: krisflyer.com/flights/use-miles/award-table
+  "Singapore KrisFlyer": {
+    ASIA: {
+      NORTH_AMERICA: { economy: 35_000, premium: 55_000, business: 90_000 },
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 25_000, premium: 40_000, business: 75_000 },
+      AFRICA_WEST:   { economy: 35_000, premium: 55_000, business: 90_000 },
+      ASIA:          { economy: 12_500, premium: 20_000, business: 40_000 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 47_500, business: 80_000 },
+      ASIA:          { economy: 30_000, premium: 47_500, business: 80_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 90_000 },
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+    },
+  },
+
   "Iberia Avios Plus": {
     EUROPE: {
       EUROPE:        { economy:  9_000, premium: 13_500, business: 18_000 },

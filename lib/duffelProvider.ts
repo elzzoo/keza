@@ -168,10 +168,15 @@ export async function fetchFromDuffel(
         // name === null means ZZ/YP/ZG virtual code — skip silently
         if (name && !resolvedAirlines.includes(name)) resolvedAirlines.push(name);
       }
-      // Fallback: use first segment code as-is when ALL segments were unresolved
+      // Fallback: use first segment code as-is when ALL segments were unresolved.
+      // Skip virtual/unresolved codes (ZZ, YP, ZG) even in fallback — caller would
+      // display a raw unintelligible code. Better to skip the offer entirely.
       if (resolvedAirlines.length === 0) {
         const firstCode = segments[0]?.operating_carrier?.iata_code ?? segments[0]?.marketing_carrier?.iata_code;
-        if (firstCode) resolvedAirlines.push(firstCode.toUpperCase());
+        const VIRTUAL_CODES = new Set(["ZZ", "YP", "ZG"]);
+        if (firstCode && !VIRTUAL_CODES.has(firstCode.toUpperCase())) {
+          resolvedAirlines.push(firstCode.toUpperCase());
+        }
       }
 
       // Duration: use Duffel's pre-computed slice duration when available
