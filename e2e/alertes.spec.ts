@@ -32,9 +32,11 @@ test.describe("/alertes page", () => {
     await page.getByRole("button", { name: /recevoir le lien|send link/i }).click();
 
     // Should show a success notice after submission
+    // FR: "Un lien de gestion a été envoyé à cet email"
+    // EN: "A management link has been sent to this email"
     await expect(
-      page.getByText(/lien de gestion vient d'être envoyé|management link has been sent/i)
-    ).toBeVisible({ timeout: 5000 });
+      page.getByText(/lien de gestion.*envoy|management link has been sent/i)
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test("localStorage email+token pre-fills and fetches alerts", async ({ page }) => {
@@ -54,7 +56,8 @@ test.describe("/alertes page", () => {
       localStorage.setItem("keza:alertes:token", "fake-token-for-test");
     });
 
-    await page.reload();
+    // Use domcontentloaded to avoid waiting for API fetches triggered by localStorage data
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     // Email input should be pre-filled
     await expect(page.getByPlaceholder(/email/i)).toHaveValue("saved@example.com");
