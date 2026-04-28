@@ -6,20 +6,28 @@ import { logError } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 
 // Max time to wait for a full search before returning with partial flag.
-// Covers Duffel (8s) + TP retries — give the engine a fair shot, but
-// don't leave the user staring at a spinner forever.
-const SEARCH_TIMEOUT_MS = 9_000;
+// 18s gives Duffel's full first attempt (8s) + TP time on Vercel cloud-to-cloud.
+// The client AbortController fires at 10s so users never actually wait this long —
+// the server completes in the background and warms the cache for the next visitor.
+const SEARCH_TIMEOUT_MS = 18_000;
 
 /**
- * Build the same cache key that searchEngine uses (v17).
- * Used to serve stale-but-valid cached results when the fresh search times out.
+ * Build the versioned cache key that searchEngine uses.
+ * Bump the version constant here AND in lib/engine.ts together whenever
+ * the FlightResult shape or miles-engine logic changes.
  */
-function buildCacheKey(p: {
-  from: string; to: string; date: string;
-  tripType: string; returnDate?: string;
-  stops: string; cabin: string; passengers: number;
-}): string {
-  return `keza:v18:${p.from}:${p.to}:${p.date}:${p.tripType}:${p.returnDate ?? ""}:${p.stops}:${p.cabin}:${p.passengers}`;
+const CACHE_VERSION = "v19";
+const CACHE_VERSION_FALLBACKS = ["v18", "v17"] as const;
+
+function buildCacheKey(
+  version: string,
+  p: {
+    from: string; to: string; date: string;
+    tripType: string; returnDate?: string;
+    stops: string; cabin: string; passengers: number;
+  }
+): string {
+  return `keza:${version}:${p.from}:${p.to}:${p.date}:${p.tripType}:${p.returnDate ?? ""}:${p.stops}:${p.cabin}:${p.passengers}`;
 }
 
 /* ── input validation ── */
@@ -85,17 +93,25 @@ export async function POST(request: Request) {
     let partial = false;
 
     if (timedOut || engineResult === null) {
-      // Attempt to serve stale cached results so the user isn't left empty-handed
-      const cacheKey = buildCacheKey({
+      // Try current version first, then fall back through older versions.
+      // This prevents empty results when the cache was just bumped (cold v19).
+      const keyParams = {
         from, to, date,
         tripType: searchParams.tripType!,
         returnDate: searchParams.returnDate,
         stops: searchParams.stops!,
         cabin: searchParams.cabin!,
         passengers,
-      });
-      const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
-      results = cached ?? [];
+      };
+      const versions = [CACHE_VERSION, ...CACHE_VERSION_FALLBACKS];
+      results = [];
+      for (const ver of versions) {
+        const cached = await redis.get<FlightResult[]>(buildCacheKey(ver, keyParams)).catch(() => null);
+        if (cached && cached.length > 0) {
+          results = cached;
+          break;
+        }
+      }
       partial = true;
       console.warn(`[api/search] timeout for ${from}→${to}, returning ${results.length} cached results`);
     } else {

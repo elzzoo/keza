@@ -642,35 +642,31 @@ export function buildCostOptions(
       b.totalMilesCost * accessibilityPenalty(b.program)
     );
 
-  // Ensure corridor-guaranteed programs always appear in the final output.
-  // Take top 12 by penalized cost, then append any corridor-guaranteed programs
-  // that didn't make the cut. The list may exceed 12 slightly to accommodate them.
-  const top12 = sortedOptions.slice(0, 12);
-  const top12Programs = new Set(top12.map((o) => o.program));
-  for (const progName of Array.from(corridorGuaranteedPrograms)) {
-    if (!top12Programs.has(progName)) {
-      const opt = seen.get(`${progName}::`);
-      if (opt) {
-        top12.push(opt);
-        top12Programs.add(progName);
-      }
-    }
-  }
-  const dedupedOptions = top12;
+  // Corridor-guaranteed programs always appear FIRST, then remaining options sorted by cost.
+  // This ensures flagship programs (KrisFlyer, ANA, JAL, Emirates, Flying Blue) are always
+  // visible at the top of every card on their primary corridors — never buried past position 12.
+  const corridorOpts    = sortedOptions.filter(o =>  corridorGuaranteedPrograms.has(o.program));
+  const nonCorridorOpts = sortedOptions.filter(o => !corridorGuaranteedPrograms.has(o.program));
+  const dedupedOptions  = [
+    ...corridorOpts,
+    ...nonCorridorOpts.slice(0, Math.max(0, 12 - corridorOpts.length)),
+  ];
 
   // ── DECISION: accessible-first bestOption ─────────────────────────────────
-  // Score-3 niche programs (SAA Voyager, Air China PhoenixMiles, etc.) may rank
-  // cheapest by raw cost but are inaccessible to most users. bestOption and the
-  // headline savings/recommendation must reflect a program the user can actually use.
-  // Fall back to the raw cheapest only when no accessible (score ≤ 2) option exists.
+  // IMPORTANT: bestOption selection uses sortedOptions (penalized-cost order), NOT
+  // dedupedOptions (corridor-first display order). This preserves the invariant that
+  // bestOption is always the cheapest accessible program — independent of display ordering.
+  // Score-3 niche programs (SAA Voyager, Air China PhoenixMiles, etc.) may rank cheapest
+  // by raw cost but are inaccessible to most users. Fall back to raw cheapest only when
+  // no accessible (score ≤ 2) option exists.
   let bestOption: MilesOption | null = null;
-  if (dedupedOptions.length > 0) {
-    const hasAccessibleOption = dedupedOptions.some(
+  if (sortedOptions.length > 0) {
+    const hasAccessibleOption = sortedOptions.some(
       (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2,
     );
     bestOption = hasAccessibleOption
-      ? dedupedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2)!
-      : dedupedOptions[0]; // fall back to cheapest if no accessible option exists
+      ? sortedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2)!
+      : sortedOptions[0]; // fall back to cheapest if no accessible option exists
     bestOption.isBestDeal = true;
   }
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
