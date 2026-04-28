@@ -243,3 +243,95 @@ describe("accessibility scoring — score-1 programs prioritized over score-3", 
     }
   });
 });
+
+// ─── Global scaling tests ────────────────────────────────────────────────────
+
+describe("NRT → LAX (Asia → North America)", () => {
+  const baseNRT: FlightInput = {
+    from: "NRT", to: "LAX",
+    totalPrice: 900, airlines: ["All Nippon Airways"],
+    stops: 0, cabin: "economy", tripType: "roundtrip", passengers: 1,
+  };
+
+  it("includes ANA Mileage Club when operating airline is ANA", () => {
+    const { milesOptions } = buildCostOptions(baseNRT, new Map());
+    expect(milesOptions.find((o) => o.program === "ANA Mileage Club")).toBeDefined();
+  });
+
+  it("includes Japan Airlines Mileage Bank via corridor guarantee (even when airline is ANA)", () => {
+    const { milesOptions } = buildCostOptions(baseNRT, new Map());
+    expect(milesOptions.find((o) => o.program === "Japan Airlines Mileage Bank")).toBeDefined();
+  });
+
+  it("includes both ANA and JAL when airlines list contains both", () => {
+    const flight: FlightInput = { ...baseNRT, airlines: ["All Nippon Airways", "Japan Airlines"] };
+    const { milesOptions } = buildCostOptions(flight, new Map());
+    expect(milesOptions.find((o) => o.program === "ANA Mileage Club")).toBeDefined();
+    expect(milesOptions.find((o) => o.program === "Japan Airlines Mileage Bank")).toBeDefined();
+  });
+
+  it("miles for ANA Mileage Club are realistic (30K–70K RT)", () => {
+    const { milesOptions } = buildCostOptions(baseNRT, new Map());
+    const ana = milesOptions.find((o) => o.program === "ANA Mileage Club")!;
+    expect(ana.milesRequired).toBeGreaterThanOrEqual(30_000);
+    expect(ana.milesRequired).toBeLessThanOrEqual(70_000);
+  });
+});
+
+describe("MIA → GRU (North America → South America)", () => {
+  const baseMIA: FlightInput = {
+    from: "MIA", to: "GRU",
+    totalPrice: 1_000, airlines: ["LATAM Brasil"],
+    stops: 0, cabin: "economy", tripType: "roundtrip", passengers: 1,
+  };
+
+  it("includes LATAM Pass", () => {
+    const { milesOptions } = buildCostOptions(baseMIA, new Map());
+    expect(milesOptions.find((o) => o.program === "LATAM Pass")).toBeDefined();
+  });
+
+  it("includes LifeMiles", () => {
+    const { milesOptions } = buildCostOptions(baseMIA, new Map());
+    expect(milesOptions.find((o) => o.program === "LifeMiles")).toBeDefined();
+  });
+
+  it("does not include Air India Flying Returns (strict regional filter)", () => {
+    // Air India has no flights to South America — should be excluded
+    const flight: FlightInput = { ...baseMIA, airlines: ["United"] };
+    const { milesOptions } = buildCostOptions(flight, new Map());
+    expect(milesOptions.find((o) => o.program === "Air India Flying Returns")).toBeUndefined();
+  });
+
+  it("LATAM Pass miles are realistic (40K–120K RT economy)", () => {
+    const { milesOptions } = buildCostOptions(baseMIA, new Map());
+    const latam = milesOptions.find((o) => o.program === "LATAM Pass")!;
+    expect(latam.milesRequired).toBeGreaterThanOrEqual(40_000);
+    expect(latam.milesRequired).toBeLessThanOrEqual(120_000);
+  });
+});
+
+describe("MAD → BCN (intra-Europe short-haul)", () => {
+  const baseMAD: FlightInput = {
+    from: "MAD", to: "BCN",
+    totalPrice: 120, airlines: ["Iberia"],
+    stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+  };
+
+  it("includes Iberia Avios Plus when operating airline is Iberia", () => {
+    const { milesOptions } = buildCostOptions(baseMAD, new Map());
+    expect(milesOptions.find((o) => o.program === "Iberia Avios Plus")).toBeDefined();
+  });
+
+  it("includes Iberia Avios Plus when operating airline is Vueling (Oneworld alliance)", () => {
+    const flight: FlightInput = { ...baseMAD, airlines: ["Vueling"] };
+    const { milesOptions } = buildCostOptions(flight, new Map());
+    expect(milesOptions.find((o) => o.program === "Iberia Avios Plus")).toBeDefined();
+  });
+
+  it("Iberia Avios Plus miles for MAD→BCN are realistic short-haul (5K–25K OW)", () => {
+    const { milesOptions } = buildCostOptions(baseMAD, new Map());
+    const iberia = milesOptions.find((o) => o.program === "Iberia Avios Plus")!;
+    expect(iberia.milesRequired).toBeGreaterThanOrEqual(5_000);
+    expect(iberia.milesRequired).toBeLessThanOrEqual(25_000);
+  });
+});

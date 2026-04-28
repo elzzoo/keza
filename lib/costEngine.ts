@@ -90,6 +90,7 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "AAdvantage":              "American Airlines",
   "Iberia Avios Plus":       "Iberia",
   "Japan Airlines Mileage Bank": "Japan Airlines",
+  "LATAM Pass":               "LATAM Brasil",
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -175,6 +176,63 @@ function getProgramsForAirline(airlines: string[]): ProgramMatch[] {
   }
 
   return results;
+}
+
+// ─── Corridor guarantees ─────────────────────────────────────────────────────
+// Programs that must always appear on specific route corridors, regardless of
+// which airline operated the flight. Applied unconditionally pre-loop so they
+// participate in the same cost calculation, scoring, and ranking as all other
+// programs.
+//
+// Priority: airline-based guarantees (getProgramsForAirline) fire first;
+// corridor guarantees only ADD programs not already present.
+
+interface CorridorGuarantee {
+  program: string;
+  type: "DIRECT" | "ALLIANCE";
+  inferredAirline: string;
+}
+
+function getCorridorGuarantees(originZone: string, destZone: string): CorridorGuarantee[] {
+  const g: CorridorGuarantee[] = [];
+
+  const isEuropeAfrica =
+    (originZone === "EUROPE" && destZone.startsWith("AFRICA_")) ||
+    (originZone.startsWith("AFRICA_") && destZone === "EUROPE");
+
+  const isAsiaNorthAmerica =
+    (originZone === "ASIA" && destZone === "NORTH_AMERICA") ||
+    (originZone === "NORTH_AMERICA" && destZone === "ASIA");
+
+  const involvesSouthAmerica =
+    originZone === "SOUTH_AMERICA" || destZone === "SOUTH_AMERICA";
+
+  const isEuropeIntra = originZone === "EUROPE" && destZone === "EUROPE";
+
+  // Europe ↔ Africa — Flying Blue (Air France flagship corridor)
+  if (isEuropeAfrica) {
+    g.push({ program: "Flying Blue", type: "DIRECT", inferredAirline: "Air France" });
+  }
+
+  // Asia ↔ North America — KrisFlyer + ANA + JAL (three primary programs)
+  if (isAsiaNorthAmerica) {
+    g.push({ program: "Singapore KrisFlyer",       type: "DIRECT", inferredAirline: "Singapore Airlines" });
+    g.push({ program: "ANA Mileage Club",           type: "DIRECT", inferredAirline: "All Nippon Airways" });
+    g.push({ program: "Japan Airlines Mileage Bank",type: "DIRECT", inferredAirline: "Japan Airlines"     });
+  }
+
+  // South America routes — LATAM Pass + LifeMiles (flagship programs for this corridor)
+  if (involvesSouthAmerica) {
+    g.push({ program: "LATAM Pass", type: "DIRECT", inferredAirline: "LATAM Brasil" });
+    g.push({ program: "LifeMiles",  type: "DIRECT", inferredAirline: "Avianca"      });
+  }
+
+  // Intra-Europe — Iberia Avios Plus (best short-haul value in Europe)
+  if (isEuropeIntra) {
+    g.push({ program: "Iberia Avios Plus", type: "DIRECT", inferredAirline: "Iberia" });
+  }
+
+  return g;
 }
 
 // ─── Helper: build one MilesOption ───────────────────────────────────────────
@@ -301,7 +359,7 @@ export function buildCostOptions(
   const useZoneFallback = programs.length === 0 && originZone && destZone;
   const operatingAlliance = ALLIANCES[operatingAirline] ?? null;
 
-  const effectivePrograms = useZoneFallback
+  const effectivePrograms: Array<{ program: string; type: "DIRECT" | "ALLIANCE"; inferredAirline: string }> = useZoneFallback
     ? (() => {
         const base: Array<{ program: string; type: "DIRECT" | "ALLIANCE"; inferredAirline: string }> =
           Object.entries(PROGRAM_TO_AIRLINE)
@@ -324,32 +382,26 @@ export function buildCostOptions(
             inferredAirline: airline,
           }));
 
-        // ── Corridor fallback (LOW PRIORITY) ──────────────────────────────────
-        // Only fires when zone fallback is active (no airline-based match found).
-        // Ensures flagship programs appear on their primary corridors even when
-        // the operating airline is Independent (e.g. Air Senegal on DSS-CDG)
-        // and the alliance filter would otherwise exclude SkyTeam programs.
-        if (originZone && destZone) {
-          const isEuropeAfrica =
-            (originZone === "EUROPE" && destZone.startsWith("AFRICA_")) ||
-            (originZone.startsWith("AFRICA_") && destZone === "EUROPE");
-          const isAsiaNorthAmerica =
-            (originZone === "ASIA" && destZone === "NORTH_AMERICA") ||
-            (originZone === "NORTH_AMERICA" && destZone === "ASIA");
-
-          if (isEuropeAfrica && !base.some((p) => p.program === "Flying Blue")) {
-            base.push({ program: "Flying Blue", type: "DIRECT" as const, inferredAirline: "Air France" });
-          }
-          if (isAsiaNorthAmerica && !base.some((p) => p.program === "Singapore KrisFlyer")) {
-            base.push({ program: "Singapore KrisFlyer", type: "DIRECT" as const, inferredAirline: "Singapore Airlines" });
-          }
-        }
         return base;
       })()
     // Normal path: use matchedAirline (the specific airline that caused the
     // match) as inferredAirline so tax calculation uses the correct carrier —
     // not necessarily airlines[0] which may be a different airline.
     : programs.map((p) => ({ ...p, inferredAirline: p.matchedAirline }));
+
+  // ── Apply corridor guarantees (pre-loop, unconditional) ────────────────────
+  // Ensures flagship programs appear on their primary corridors regardless of
+  // which specific airline Travelpayouts returned. Only adds programs not
+  // already in effectivePrograms (no duplicates).
+  const corridorGuaranteedPrograms = new Set<string>();
+  if (originZone && destZone) {
+    for (const g of getCorridorGuarantees(originZone, destZone)) {
+      corridorGuaranteedPrograms.add(g.program);
+      if (!effectivePrograms.some((p) => p.program === g.program)) {
+        effectivePrograms.push(g);
+      }
+    }
+  }
 
   for (const entry of effectivePrograms) {
     // Always use the matched/inferred airline for taxes — this is the airline
@@ -436,6 +488,25 @@ export function buildCostOptions(
         prog.alliance !== operatingAlliance &&
         prog.alliance !== "Independent"
       ) continue;
+
+      // Strict regional filter: exclude programs whose airlines don't serve these zones.
+      // Prevents showing Air India on MIA-GRU, Korean Air on SA routes, etc.
+      const PROGRAM_SERVED_ZONES: Partial<Record<string, string[]>> = {
+        "Air India Flying Returns":    ["ASIA", "EUROPE", "NORTH_AMERICA", "MIDDLE_EAST"],
+        "Korean Air SKYPASS":          ["ASIA", "NORTH_AMERICA", "EUROPE"],
+        "Thai Royal Orchid Plus":      ["ASIA", "EUROPE", "MIDDLE_EAST"],
+        "Garuda Indonesia":            ["ASIA", "EUROPE", "MIDDLE_EAST"],
+        "Vietnam Airlines Lotusmiles": ["ASIA"],
+        "China Southern Sky Pearl":    ["ASIA", "NORTH_AMERICA", "EUROPE"],
+        "China Eastern Eastern Miles": ["ASIA", "NORTH_AMERICA", "EUROPE"],
+        "Hainan Fortune Wings":        ["ASIA"],
+        "Aeromexico Club Premier":     ["NORTH_AMERICA", "SOUTH_AMERICA", "EUROPE"],
+        "LATAM Pass":                  ["SOUTH_AMERICA", "NORTH_AMERICA", "EUROPE"],
+      };
+      const servedZones = PROGRAM_SERVED_ZONES[prog.name];
+      if (servedZones && originZone && destZone) {
+        if (!servedZones.includes(originZone) || !servedZones.includes(destZone)) continue;
+      }
 
       // Score-3 "Independent" programs (Hainan, niche carriers) have no partner
       // networks — they can only book their own airline's flights.
@@ -539,12 +610,27 @@ export function buildCostOptions(
     }
   }
 
-  const dedupedOptions = Array.from(seen.values())
+  const sortedOptions = Array.from(seen.values())
     .sort((a, b) =>
       a.totalMilesCost * accessibilityPenalty(a.program) -
       b.totalMilesCost * accessibilityPenalty(b.program)
-    )
-    .slice(0, 12);
+    );
+
+  // Ensure corridor-guaranteed programs always appear in the final output.
+  // Take top 12 by penalized cost, then append any corridor-guaranteed programs
+  // that didn't make the cut. The list may exceed 12 slightly to accommodate them.
+  const top12 = sortedOptions.slice(0, 12);
+  const top12Programs = new Set(top12.map((o) => o.program));
+  for (const progName of Array.from(corridorGuaranteedPrograms)) {
+    if (!top12Programs.has(progName)) {
+      const opt = seen.get(`${progName}::`);
+      if (opt) {
+        top12.push(opt);
+        top12Programs.add(progName);
+      }
+    }
+  }
+  const dedupedOptions = top12;
 
   // ── DECISION: compare REAL TOTAL COSTS ────────────────────────────────────
   const bestOption = dedupedOptions[0] ?? null;

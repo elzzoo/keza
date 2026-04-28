@@ -109,6 +109,12 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   { program: "Singapore KrisFlyer",         valueCents: 1.4, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "Etihad Guest",                valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   { program: "Iberia Avios Plus",           valueCents: 1.4, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
+  {
+    program: "LATAM Pass",
+    valueCents: 1.3,
+    confidence: "MEDIUM",
+    lastUpdated: "2026-04-28",
+  },
   { program: "Lufthansa Miles & More",      valueCents: 1.3, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "Korean Air SKYPASS",          valueCents: 1.4, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   { program: "Virgin Atlantic Flying Club", valueCents: 1.5, confidence: "HIGH",   lastUpdated: "2026-04-27" },

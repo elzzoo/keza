@@ -56,6 +56,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       ASIA:          { economy: 35_000, premium: 50_000, business: 90_000 },
       MIDDLE_EAST:   { economy: 15_000, premium: 20_000, business: 45_000 },
       SOUTH_AMERICA: { economy: 45_000, premium: 65_000, business: 110_000 },
+      EUROPE:        { economy: 15_000, premium: 20_000, business: 35_000 },
     },
     MIDDLE_EAST: {
       EUROPE:        { economy: 15_000, premium: 20_000, business: 45_000 },
@@ -290,6 +291,38 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
+  "ANA Mileage Club": {
+    ASIA: {
+      NORTH_AMERICA: { economy: 35_000, premium: 55_000, business: 88_000 },
+      EUROPE:        { economy: 35_000, premium: 55_000, business: 88_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 10_000, premium: 15_000, business: 30_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 88_000 },
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 88_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+  },
+
+  "LATAM Pass": {
+    SOUTH_AMERICA: {
+      SOUTH_AMERICA:  { economy: 10_000, premium: 15_000, business: 30_000 },
+      NORTH_AMERICA:  { economy: 25_000, premium: 37_500, business: 55_000 },
+      EUROPE:         { economy: 35_000, premium: 52_500, business: 70_000 },
+      MIDDLE_EAST:    { economy: 42_000, premium: 60_000, business: 85_000 },
+    },
+    NORTH_AMERICA: {
+      SOUTH_AMERICA:  { economy: 25_000, premium: 37_500, business: 55_000 },
+    },
+    EUROPE: {
+      SOUTH_AMERICA:  { economy: 35_000, premium: 52_500, business: 70_000 },
+    },
+  },
+
   "United MileagePlus": {
     AFRICA_NORTH: {
       EUROPE:        { economy: 22_500, premium: 32_500, business: 60_000 },
@@ -320,6 +353,26 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       MIDDLE_EAST:   { economy: 22_500, premium: 32_500, business: 55_000 },
     },
   },
+
+  "Iberia Avios Plus": {
+    EUROPE: {
+      EUROPE:        { economy:  9_000, premium: 13_500, business: 18_000 },
+      NORTH_AMERICA: { economy: 25_000, premium: 37_500, business: 57_500 },
+      SOUTH_AMERICA: { economy: 30_000, premium: 45_000, business: 65_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 25_000, business: 40_000 },
+      AFRICA_NORTH:  { economy: 17_500, premium: 25_000, business: 40_000 },
+      AFRICA_WEST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 57_500 },
+      SOUTH_AMERICA: { economy: 25_000, premium: 37_500, business: 57_500 },
+    },
+    SOUTH_AMERICA: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 65_000 },
+      NORTH_AMERICA: { economy: 25_000, premium: 37_500, business: 57_500 },
+      SOUTH_AMERICA: { economy: 12_500, premium: 20_000, business: 35_000 },
+    },
+  },
 };
 
 // Distance-based fallback estimate (miles)
@@ -328,7 +381,7 @@ function distanceFallback(originZone: Zone, destZone: Zone): number {
     AFRICA_NORTH:{ EUROPE: 2_000, NORTH_AMERICA: 7_000, MIDDLE_EAST: 3_500, AFRICA_WEST: 3_000, AFRICA_EAST: 5_000, ASIA: 8_000, SOUTH_AMERICA: 8_500 },
     AFRICA_WEST: { EUROPE: 4_500, NORTH_AMERICA: 8_000, MIDDLE_EAST: 5_500, ASIA: 9_000, AFRICA_EAST: 4_000, AFRICA_SOUTH: 5_000, SOUTH_AMERICA: 9_000 },
     AFRICA_EAST: { EUROPE: 5_000, NORTH_AMERICA: 9_500, MIDDLE_EAST: 3_500, ASIA: 6_500, AFRICA_SOUTH: 3_500 },
-    EUROPE:      { NORTH_AMERICA: 7_000, ASIA: 8_000, MIDDLE_EAST: 3_500, SOUTH_AMERICA: 9_000 },
+    EUROPE:      { EUROPE: 2_000, NORTH_AMERICA: 7_000, ASIA: 8_000, MIDDLE_EAST: 3_500, SOUTH_AMERICA: 9_000 },
     MIDDLE_EAST: { EUROPE: 3_500, NORTH_AMERICA: 9_500, ASIA: 4_000 },
     NORTH_AMERICA:{ ASIA: 10_000, SOUTH_AMERICA: 6_500 },
     ASIA:        { SOUTH_AMERICA: 12_000 },

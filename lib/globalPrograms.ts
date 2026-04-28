@@ -456,6 +456,18 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 1,
   },
   {
+    name: "LATAM Pass",
+    airlineCode: "LA",
+    airline: "LATAM Brasil",
+    alliance: "Oneworld",
+    purchaseMileCostPer1000: null,
+    marketValueCents: 1.3,
+    taxProfile: "low",
+    transferPartnersFrom: [],
+    isBookable: true,
+    accessibilityScore: 2,
+  },
+  {
     name: "Alaska Mileage Plan",
     airlineCode: "AS",
     airline: "Alaska Airlines",

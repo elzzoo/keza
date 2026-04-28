@@ -56,6 +56,13 @@ export const ALLIANCES: Record<string, string> = {
   "Cathay Pacific": "Oneworld",
   "SriLankan Airlines": "Oneworld",      // Associate member
   "Alaska Airlines": "Oneworld",         // Joined 2021
+  // LATAM Group (Oneworld member since 2020)
+  "LATAM Brasil":    "Oneworld",
+  "LATAM Chile":     "Oneworld",
+  "LATAM Argentina": "Oneworld",
+  "LATAM Perú":      "Oneworld",
+  "LATAM Colombia":  "Oneworld",
+  "LATAM":           "Oneworld",           // generic IATA code catch-all
   // Independent
   "Emirates": "Independent",
   "Etihad": "Independent",
