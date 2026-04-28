@@ -158,13 +158,21 @@ export async function fetchFromDuffel(
       const segments = slice.segments ?? [];
       const stops = Math.max(0, segments.length - 1);
 
-      // Prefer operating carrier, fall back to marketing carrier
-      const firstSeg = segments[0];
-      const carrierCode =
-        firstSeg?.operating_carrier?.iata_code ??
-        firstSeg?.marketing_carrier?.iata_code ??
-        "";
-      const airline = carrierCode ? iataToAirline(carrierCode) : "";
+      // Prefer operating carrier, fall back to marketing carrier.
+      // Collect ALL unique resolved airline names across all segments.
+      const resolvedAirlines: string[] = [];
+      for (const seg of segments) {
+        const code = seg?.operating_carrier?.iata_code ?? seg?.marketing_carrier?.iata_code;
+        if (!code) continue;
+        const name = iataToAirline(code);
+        // name === null means ZZ/YP/ZG virtual code — skip silently
+        if (name && !resolvedAirlines.includes(name)) resolvedAirlines.push(name);
+      }
+      // Fallback: use first segment code as-is when ALL segments were unresolved
+      if (resolvedAirlines.length === 0) {
+        const firstCode = segments[0]?.operating_carrier?.iata_code ?? segments[0]?.marketing_carrier?.iata_code;
+        if (firstCode) resolvedAirlines.push(firstCode.toUpperCase());
+      }
 
       // Duration: use Duffel's pre-computed slice duration when available
       let duration: number | undefined;
@@ -184,7 +192,7 @@ export async function fetchFromDuffel(
         from,
         to,
         price:    priceUsd,
-        airlines: airline ? [airline] : [],
+        airlines: resolvedAirlines,
         stops,
       };
       if (duration && duration > 0) flight.duration = duration;

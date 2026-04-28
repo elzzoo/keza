@@ -152,7 +152,7 @@ async function fetchV3(
         from,
         to,
         price: f.price,
-        airlines: [iataToAirline(f.airline)],
+        airlines: [iataToAirline(f.airline) ?? f.airline.toUpperCase()],
         stops: f.transfers ?? 0,
       };
       if (f.duration && f.duration > 0) flight.duration = f.duration;
@@ -327,7 +327,9 @@ async function discoverRouteAirlines(
       if (!res.ok) continue;
       const json = (await res.json()) as { data?: Array<{ airline: string }> };
       if (Array.isArray(json.data) && json.data.length > 0) {
-        const fromApi = json.data.map((f) => iataToAirline(f.airline));
+        const fromApi = json.data
+          .map((f) => iataToAirline(f.airline))
+          .filter((n): n is string => n !== null);  // skip virtual ZZ/YP/ZG codes
         // Merge API result with supplements — deduplicated, supplements appended
         const merged = Array.from(new Set([...fromApi, ...supplements]));
         return merged;
@@ -782,7 +784,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v15:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v16:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);

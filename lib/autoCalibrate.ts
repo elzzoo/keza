@@ -150,7 +150,7 @@ export async function recalibrate(): Promise<Record<string, { before: number; af
 export async function getForexRate(): Promise<number> {
   const CACHE_KEY = "forex:usd:xof";
   const CACHE_TTL = 12 * 60 * 60; // 12h
-  const FALLBACK_RATE = 605; // approximate if all APIs fail
+  const FALLBACK_RATE = 600; // approximate if all APIs fail (updated 2026-04-28)
 
   try {
     // Check cache first

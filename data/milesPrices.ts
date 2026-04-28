@@ -100,6 +100,18 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   },
 
   // ─── Additional airline loyalty programs ──────────────────────────────────
+  // ─── Niche/regional programs (score-3, no transfer partners) ────────────────
+  // Values reflect true accessibility-adjusted cost. These appear for users who
+  // already hold these miles, not as headline recommendations.
+  { program: "South African Voyager",       valueCents: 1.1, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "Air China PhoenixMiles",      valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "China Eastern Eastern Miles", valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "EgyptAir Plus",               valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "SriLankan FlySmiLes",         valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "COPA ConnectMiles",           valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "Royal Jordanian Royal Plus",  valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+  { program: "Garuda GarudaMiles",          valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
+
   { program: "Delta SkyMiles",              valueCents: 1.2, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "BA Avios",                    valueCents: 1.5, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "Aeroplan",                    valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-04-27" },

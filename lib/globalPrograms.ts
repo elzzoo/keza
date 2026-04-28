@@ -146,7 +146,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Garuda Indonesia",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.8,
+    marketValueCents: 1.0,   // raised: 0.8→1.0
     taxProfile: "low",
     transferPartnersFrom: [],
     accessibilityScore: 3,
@@ -345,7 +345,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "EgyptAir",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.8,
+    marketValueCents: 1.0,   // raised: 0.8→1.0 — reflects true acquisition difficulty
     taxProfile: "low",
     transferPartnersFrom: [],
     accessibilityScore: 3,
@@ -356,7 +356,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "South African Airways",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.7,
+    marketValueCents: 1.1,   // raised: 0.7→1.1 — no transfer partners, hard to acquire
     taxProfile: "medium",
     transferPartnersFrom: [],
     accessibilityScore: 3,
@@ -527,7 +527,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Royal Jordanian",
     alliance: "Oneworld",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.8,
+    marketValueCents: 1.0,   // raised: 0.8→1.0
     taxProfile: "low",
     transferPartnersFrom: [],
     accessibilityScore: 3,
@@ -538,7 +538,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "SriLankan Airlines",
     alliance: "Oneworld",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.7,
+    marketValueCents: 1.0,   // raised: 0.7→1.0
     taxProfile: "low",
     transferPartnersFrom: [],
     accessibilityScore: 3,
@@ -683,7 +683,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "China Eastern Airlines",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.7,
+    marketValueCents: 1.0,   // raised: 0.7→1.0
     taxProfile: "low",
     transferPartnersFrom: [],
     accessibilityScore: 3,
@@ -694,7 +694,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Air China",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: null,
-    marketValueCents: 0.7,
+    marketValueCents: 1.0,   // raised: 0.7→1.0
     taxProfile: "low",
     transferPartnersFrom: [],
     accessibilityScore: 3,

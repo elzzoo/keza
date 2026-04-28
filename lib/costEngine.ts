@@ -320,8 +320,9 @@ function buildOptionExplanation(
 
 const ACCESSIBILITY_MULTIPLIER: Record<1 | 2 | 3, number> = {
   1: 1.0,
-  2: 1.2,
-  3: 1.4,
+  2: 1.1,
+  3: 1.8,   // score-3 programs pushed well down the list — they're shown for users
+             // who already hold those miles, not as headline recommendations
 };
 
 function accessibilityPenalty(programName: string): number {
@@ -647,13 +648,26 @@ export function buildCostOptions(
   }
   const dedupedOptions = top12;
 
-  // ── DECISION: compare REAL TOTAL COSTS ────────────────────────────────────
-  const bestOption = dedupedOptions[0] ?? null;
+  // ── DECISION: accessible-first bestOption ─────────────────────────────────
+  // Score-3 niche programs (SAA Voyager, Air China PhoenixMiles, etc.) may rank
+  // cheapest by raw cost but are inaccessible to most users. bestOption and the
+  // headline savings/recommendation must reflect a program the user can actually use.
+  // Fall back to the raw cheapest only when no accessible (score ≤ 2) option exists.
+  let bestOption: MilesOption | null = null;
+  if (dedupedOptions.length > 0) {
+    const hasAccessibleOption = dedupedOptions.some(
+      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2,
+    );
+    bestOption = hasAccessibleOption
+      ? dedupedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2)!
+      : dedupedOptions[0]; // fall back to cheapest if no accessible option exists
+    bestOption.isBestDeal = true;
+  }
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
   const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper
   const savings = Math.round(Math.abs(signedSavings) * 100) / 100;
 
-  // Strict: USE_MILES only when best miles cost is strictly cheaper than cash
+  // Strict: USE_MILES only when the ACCESSIBLE best option is strictly cheaper than cash
   const recommendation: Recommendation = (bestOption !== null && bestOption.totalMilesCost < cashTotal)
     ? "USE_MILES"
     : "USE_CASH";
@@ -669,19 +683,6 @@ export function buildCostOptions(
   // Trust disclaimer
   const disclaimer =
     "⚠️ Prix indicatifs basés sur tarifs réels et valeurs de miles estimées — vérifiez la disponibilité avant de réserver.";
-
-  // Mark best deal: prefer accessible (score 1 or 2) options over score-3 programs.
-  // Score-3 programs may still appear in the list for users who hold those miles,
-  // but they should never surface as the headline recommendation.
-  if (dedupedOptions.length > 0) {
-    const hasAccessibleOption = dedupedOptions.some(
-      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2,
-    );
-    const bestDeal = hasAccessibleOption
-      ? dedupedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2)!
-      : dedupedOptions[0]; // fall back to cheapest if no accessible option exists
-    bestDeal.isBestDeal = true;
-  }
 
   // Legacy explanation string
   const explanation = bestOption

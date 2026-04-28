@@ -113,7 +113,7 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     AFRICA_SOUTH:  30_000,
   },
   NORTH_AMERICA: {
-    ASIA:          45_000,
+    ASIA:          35_000,   // lowered 45K→35K — KrisFlyer/ANA realistic OW economy Saver
     EUROPE:        35_000,
     MIDDLE_EAST:   35_000,
     SOUTH_AMERICA: 25_000,
@@ -123,8 +123,8 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     AFRICA_SOUTH:  40_000,
   },
   ASIA: {
-    EUROPE:        45_000,
-    NORTH_AMERICA: 45_000,
+    EUROPE:        40_000,   // lowered 45K→40K for Asia↔Europe long-haul
+    NORTH_AMERICA: 35_000,   // lowered 45K→35K — KrisFlyer Saver is ~30-37.5K OW
     MIDDLE_EAST:   18_000,
     SOUTH_AMERICA: 50_000,
     AFRICA_EAST:   35_000,
