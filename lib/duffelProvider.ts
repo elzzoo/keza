@@ -193,6 +193,9 @@ export async function fetchFromDuffel(
         }
       }
 
+      // Skip offers where we cannot identify any airline (all-virtual segments)
+      if (resolvedAirlines.length === 0) continue;
+
       const flight: NormalizedFlight = {
         from,
         to,
