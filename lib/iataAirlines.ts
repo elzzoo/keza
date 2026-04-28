@@ -47,6 +47,8 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   AT: "Royal Air Maroc",
   MH: "Malaysia Airlines",
   JL: "Japan Airlines",
+  CX: "Cathay Pacific",        // Oneworld — needed for Cathay Pacific Asia Miles match
+  QF: "Qantas",                // Oneworld — needed for Qantas Frequent Flyer match
   RJ: "Royal Jordanian",
   TP: "TAP Air Portugal",      // Star Alliance
   I2: "Iberia Express",        // Oneworld affiliate

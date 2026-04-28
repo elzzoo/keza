@@ -54,6 +54,8 @@ export const ALLIANCES: Record<string, string> = {
   "Level": "Oneworld",                   // IAG group low-cost
   "Japan Airlines": "Oneworld",
   "Cathay Pacific": "Oneworld",
+  "Qantas": "Oneworld",                   // added for QF → Qantas Frequent Flyer match
+  "LATAM Airlines": "Oneworld",           // iataToAirline("LA") returns this name
   "SriLankan Airlines": "Oneworld",      // Associate member
   "Alaska Airlines": "Oneworld",         // Joined 2021
   // LATAM Group (Oneworld member since 2020)

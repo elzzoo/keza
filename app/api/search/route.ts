@@ -16,8 +16,8 @@ const SEARCH_TIMEOUT_MS = 18_000;
  * Bump the version constant here AND in lib/engine.ts together whenever
  * the FlightResult shape or miles-engine logic changes.
  */
-const CACHE_VERSION = "v19";
-const CACHE_VERSION_FALLBACKS = ["v18", "v17"] as const;
+const CACHE_VERSION = "v20";
+const CACHE_VERSION_FALLBACKS = ["v19", "v18", "v17"] as const;
 
 function buildCacheKey(
   version: string,

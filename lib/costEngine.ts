@@ -90,10 +90,50 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "AAdvantage":              "American Airlines",
   "Iberia Avios Plus":       "Iberia",
   "Japan Airlines Mileage Bank": "Japan Airlines",
-  "LATAM Pass":               "LATAM Brasil",
+  "LATAM Pass":              "LATAM Brasil",
+  "Cathay Pacific Asia Miles": "Cathay Pacific",  // CX — iataAirlines now resolves correctly
+  "Qantas Frequent Flyer":   "Qantas",            // QF — iataAirlines now resolves correctly
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
+};
+
+// ─── Operator → flagship program (hard guarantees) ───────────────────────────
+// Explicit airline-name → program map used in Step 3 of getProgramsForAirline.
+// This is a direct lookup complementing the inverse PROGRAM_TO_AIRLINE iteration.
+// Covers edge cases: multi-segment flights where the flagship carrier isn't airlines[0],
+// naming variants (LATAM Airlines vs LATAM Brasil), and any future iataToAirline gaps.
+//
+// Rule: if any airline in flight.airlines is a key here, its program is injected
+// BEFORE ranking — goes through the full cost/scoring pipeline, never forced to top.
+const OPERATOR_TO_PROGRAM: Record<string, string> = {
+  // Star Alliance
+  "Singapore Airlines":  "Singapore KrisFlyer",
+  "All Nippon Airways":  "ANA Mileage Club",
+  "United":              "United MileagePlus",
+  "Lufthansa":           "Lufthansa Miles & More",
+  "Turkish Airlines":    "Turkish Miles&Smiles",
+  "Ethiopian Airlines":  "Ethiopian ShebaMiles",
+  "Air Canada":          "Aeroplan",
+  "Avianca":             "LifeMiles",
+  // Oneworld
+  "Japan Airlines":      "Japan Airlines Mileage Bank",
+  "British Airways":     "BA Avios",
+  "American Airlines":   "AAdvantage",
+  "Qatar Airways":       "Qatar Privilege Club",
+  "Cathay Pacific":      "Cathay Pacific Asia Miles",
+  "Qantas":              "Qantas Frequent Flyer",
+  "Iberia":              "Iberia Avios Plus",
+  "LATAM Airlines":      "LATAM Pass",   // iataToAirline("LA") returns this name
+  "LATAM Brasil":        "LATAM Pass",   // alliances.ts canonical name
+  // SkyTeam
+  "Air France":          "Flying Blue",
+  "KLM":                 "Flying Blue",
+  "Delta":               "Delta SkyMiles",
+  "Korean Air":          "Korean Air SKYPASS",
+  // Independent
+  "Emirates":            "Emirates Skywards",
+  "Etihad":              "Etihad Guest",
 };
 
 // Airlines whose native program is Flying Blue (Air France-KLM group).
@@ -173,6 +213,25 @@ function getProgramsForAirline(airlines: string[]): ProgramMatch[] {
   const kfMatch = airlines.find((a) => KRISFLYER_GUARANTEE_AIRLINES.has(a));
   if (kfMatch && !results.some((r) => r.program === "Singapore KrisFlyer")) {
     results.push({ program: "Singapore KrisFlyer", type: kfMatch === "Singapore Airlines" ? "DIRECT" : "ALLIANCE", matchedAirline: kfMatch });
+  }
+
+  // ── Step 3: Operator-based flagship injection ─────────────────────────────
+  // For each airline actually present in this flight, ensure its primary loyalty
+  // program is included. This is a direct O(1) lookup that complements the
+  // inverse PROGRAM_TO_AIRLINE iteration above. It catches:
+  //   • Multi-segment flights where the flagship carrier isn't airlines[0]
+  //   • Naming drift (e.g. "LATAM Airlines" vs "LATAM Brasil")
+  //   • Any future iataToAirline additions not yet in PROGRAM_TO_AIRLINE
+  // Programs go through full cost/scoring/ranking — nothing is forced to top.
+  for (const airline of airlines) {
+    const flagship = OPERATOR_TO_PROGRAM[airline];
+    if (
+      flagship &&
+      PROGRAMS_BY_NAME[flagship]?.isBookable !== false &&
+      !results.some((r) => r.program === flagship)
+    ) {
+      results.push({ program: flagship, type: "DIRECT", matchedAirline: airline });
+    }
   }
 
   return results;
