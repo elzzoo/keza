@@ -164,10 +164,11 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
 
       {/* Supplemental airline — price is indicative (not from the airline's own booking system) */}
       {flight.isSupplemental && (
-        <div className="bg-sky-500/10 text-sky-400 border-b border-sky-500/20 px-5 py-1.5 text-[11px] text-center font-medium">
-          {fr
-            ? "✈️ Vol direct disponible — prix indicatif, vérifier sur le site de la compagnie"
-            : "✈️ Direct flight available — indicative price, check airline website"}
+        <div className="bg-sky-500/10 text-sky-400 border-b border-sky-500/20 px-5 py-2 text-[11px] text-center font-medium space-y-0.5">
+          <div>✈️ {fr ? "Vol direct disponible" : "Direct flight available"}</div>
+          <div className="text-sky-400/70 text-[10px]">
+            {fr ? "💵 Prix indicatif (non temps réel) — vérifier sur le site de la compagnie" : "💵 Indicative price (not real-time) — check airline website"}
+          </div>
         </div>
       )}
 
@@ -184,13 +185,24 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
       <div className="grid grid-cols-2 divide-x divide-border border-t border-border">
         {/* Cash */}
         <div className="px-4 py-3.5 text-center">
-          <div className={clsx(
-            "font-black tabular-nums",
-            priceSize(fmt(cashCost)),
-            !isUseMiles ? "text-success" : "text-fg"
-          )}>
-            {fmt(cashCost)}
-          </div>
+          {flight.isSupplemental ? (
+            <>
+              <div className="font-black tabular-nums text-base text-sky-400">
+                ~{fmt(cashCost)}
+              </div>
+              <div className="text-[9px] text-muted/60 mt-0.5">
+                – {fmt(Math.round(cashCost * 1.3))}
+              </div>
+            </>
+          ) : (
+            <div className={clsx(
+              "font-black tabular-nums",
+              priceSize(fmt(cashCost)),
+              !isUseMiles ? "text-success" : "text-fg"
+            )}>
+              {fmt(cashCost)}
+            </div>
+          )}
           <div className="text-[10px] text-muted uppercase tracking-widest mt-1 font-bold">
             Cash
           </div>
@@ -334,15 +346,19 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             })}
             className={clsx(
               "flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-[13px] font-bold transition-all hover-lift",
-              isUseMiles
-                ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/30"
-                : "bg-warning/10 text-warning hover:bg-warning/20 border border-warning/25"
+              flight.isSupplemental
+                ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/30"
+                : isUseMiles
+                  ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/30"
+                  : "bg-warning/10 text-warning hover:bg-warning/20 border border-warning/25"
             )}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-            {fr ? CTA_COPY[variant].fr : CTA_COPY[variant].en}
+            {flight.isSupplemental
+              ? (fr ? "Voir sur le site de la compagnie" : "Check airline website")
+              : (fr ? CTA_COPY[variant].fr : CTA_COPY[variant].en)}
           </a>
         </div>
       )}

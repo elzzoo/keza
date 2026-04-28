@@ -72,6 +72,10 @@ export interface FlightResult {
    * UI must surface a "prix indicatif" disclaimer.
    */
   isSupplemental?: boolean;
+  /** Data origin: Duffel (real-time booking API), Travelpayouts (cache-based), or synthetic */
+  source?: "DUFFEL" | "TP" | "SYNTHETIC";
+  /** How reliable the price is — HIGH = Duffel live price, LOW = TP cached, ESTIMATED = synthetic floor */
+  priceConfidence?: "HIGH" | "LOW" | "ESTIMATED";
 }
 
 // ─── Travelpayouts fetch ─────────────────────────────────────────────────────
@@ -565,7 +569,7 @@ export async function fetchCalendarPrices(
  * Deduplicates by (sorted airlines, stops), keeping the cheapest price per pairing.
  * Preserves booking links from the first provider that has them (Travelpayouts).
  */
-function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedFlight[]): NormalizedFlight[] {
+export function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedFlight[]): NormalizedFlight[] {
   const all = [...primary, ...secondary];
   if (all.length === 0) return [];
 
@@ -575,13 +579,21 @@ function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedFlight[]
     const existing = best.get(key);
     if (!existing) {
       best.set(key, f);
-    } else if (f.price < existing.price) {
-      // Keep booking link from the existing entry if the cheaper one doesn't have one
-      const merged: NormalizedFlight = {
-        ...f,
-        bookingLink: f.bookingLink ?? existing.bookingLink,
-      };
-      best.set(key, merged);
+    } else {
+      const fIsDuffel = f.source === "DUFFEL";
+      const existingIsDuffel = existing.source === "DUFFEL";
+      if (fIsDuffel && !existingIsDuffel) {
+        // New entry is Duffel (HIGH confidence) — prefer it over TP; inherit TP booking link if Duffel has none
+        best.set(key, { ...f, bookingLink: f.bookingLink ?? existing.bookingLink });
+      } else if (!fIsDuffel && existingIsDuffel) {
+        // Existing is Duffel — keep it; only carry over TP booking link if Duffel lacks one
+        if (!existing.bookingLink && f.bookingLink) {
+          best.set(key, { ...existing, bookingLink: f.bookingLink });
+        }
+      } else if (f.price < existing.price) {
+        // Same source tier — keep the cheaper one
+        best.set(key, { ...f, bookingLink: f.bookingLink ?? existing.bookingLink });
+      }
     }
   }
 
@@ -666,7 +678,9 @@ function enrich(
     optimization,
   };
 
-  if (f.isSupplemental) result.isSupplemental = true;
+  if (f.isSupplemental)    result.isSupplemental    = true;
+  if (f.source)            result.source            = f.source;
+  if (f.priceConfidence)   result.priceConfidence   = f.priceConfidence;
 
   if (returnPrice !== undefined) {
     result.returnPrice    = returnPrice;
@@ -694,6 +708,64 @@ function enrich(
   return result;
 }
 
+// ─── Enrich a synthetic flight (no miles calculation) ────────────────────────
+// Synthetic flights are airlines we know serve a route but whose prices are not
+// in any provider index. We show them as "Vol direct disponible" with an
+// indicative price range (~min – min×1.3). They are NOT ranked with real
+// flights and receive NO miles options.
+
+function enrichSynthetic(
+  f: NormalizedFlight,
+  cabin: Cabin,
+  passengers: number,
+  tripType: TripType,
+  searchDate?: string,
+  returnDate?: string,
+): FlightResult {
+  const multiplier    = CABIN_MULTIPLIER[cabin];
+  const outboundPrice = Math.round(f.price * multiplier * 100) / 100;
+  const totalPrice    = Math.round(outboundPrice * passengers * 100) / 100;
+
+  const result: FlightResult = {
+    from:    f.from,
+    to:      f.to,
+    price:   outboundPrice,
+    airlines: f.airlines,
+    stops:    f.stops ?? 0,
+    duration: f.duration,
+    tripType,
+    cabin,
+    passengers,
+    totalPrice,
+    cashCost:            totalPrice,
+    milesCost:           0,
+    savings:             0,
+    recommendation:      "USE_CASH",
+    bestOption:          null,
+    milesOptions:        [],
+    explanation:         "Prix indicatif — vol direct disponible",
+    displayMessage:      "💵 Prix indicatif",
+    disclaimer:          "Prix estimé, non garanti",
+    cabinPriceEstimated: cabin !== "economy",
+    searchId:            "",   // filled by caller
+    optimization:        { type: "CASH" },
+    isSupplemental:      true,
+    source:              "SYNTHETIC",
+    priceConfidence:     "ESTIMATED",
+  };
+
+  if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
+    const departureDateCompact = searchDate.replace(/-/g, "");
+    const returnDateCompact    = returnDate.replace(/-/g, "");
+    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${departureDateCompact}${f.to}${returnDateCompact}${f.from}${passengers}?marker=${TP_MARKER}`;
+  } else if (searchDate && f.from && f.to) {
+    const dateCompact = searchDate.replace(/-/g, "");
+    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${dateCompact}${f.to}${passengers}?marker=${TP_MARKER}`;
+  }
+
+  return result;
+}
+
 // ─── Main engine ─────────────────────────────────────────────────────────────
 
 export async function searchEngine(params: SearchParams): Promise<FlightResult[]> {
@@ -710,7 +782,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v14:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v15:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
@@ -724,22 +796,28 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   });
 
   // 2. Fetch outbound flights — Travelpayouts + Duffel in parallel
+  //    Duffel is the PRIMARY source (real-time, HIGH confidence).
+  //    Travelpayouts is the fallback (cache-based, LOW confidence).
   //    When stops=any, also try a direct-only TP fetch to catch nonstops that the
   //    main query sometimes misses (Travelpayouts may rank them lower than
   //    connections priced cheaper). Merge & dedupe by airline+stops.
-  const [tpOutbound, duffelOutbound] = await Promise.all([
+  const [tpOutboundRaw, duffelOutboundRaw] = await Promise.all([
     fetchFromTravelpayouts(from, to, date, directOnly),
     fetchFromDuffel(from, to, date, cabin, passengers).catch((): NormalizedFlight[] => []),
   ]);
+  // Tag by source so mergeFlights can prefer Duffel over TP for same key
+  const tpOutbound     = tpOutboundRaw.map(f => ({ ...f, source: "TP"     as const, priceConfidence: "LOW"  as const }));
+  const duffelOutbound = duffelOutboundRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const }));
   const rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
 
-  // ── Inject synthetic entries for supplement airlines missing from providers ──
+  // ── Collect synthetic entries for supplement airlines missing from providers ─
   // Airlines in ROUTE_AIRLINE_SUPPLEMENTS are known to fly this route but not
-  // indexed by Travelpayouts (e.g. Air Senegal on DSS→CDG). We create a
-  // placeholder entry so the cost engine can show the correct miles programs
-  // and the UI can surface "Vol direct disponible" for these carriers.
-  // The price is set to the cheapest available TP fare as an indicative floor.
-  // FlightCard shows a "prix indicatif" warning for isSupplemental=true entries.
+  // indexed by any provider (e.g. Air Senegal on DSS→CDG). We create placeholder
+  // entries to surface "Vol direct disponible" in the UI with an indicative price.
+  // IMPORTANT: synthetics are kept in a SEPARATE array — they never enter the
+  // miles engine (no buildCostOptions) and are appended AFTER the sorted real
+  // results so they never displace a real flight in the ranking.
+  const syntheticFlights: NormalizedFlight[] = [];
   {
     const suppKey = `${from}-${to}`;
     const suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
@@ -750,7 +828,10 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     if (cheapestPrice > 0) {
       for (const airline of suppAirlines) {
         if (!coveredAirlines.has(airline)) {
-          rawOutbound.push({ from, to, price: cheapestPrice, airlines: [airline], stops: 0, isSupplemental: true });
+          syntheticFlights.push({
+            from, to, price: cheapestPrice, airlines: [airline], stops: 0,
+            isSupplemental: true, source: "SYNTHETIC", priceConfidence: "ESTIMATED",
+          });
         }
       }
     }
@@ -777,10 +858,12 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   // 3. Fetch return flights (two separate legs) — Travelpayouts + Duffel in parallel
   let returnFlights: NormalizedFlight[] = [];
   if (tripType === "roundtrip" && returnDate) {
-    const [tpReturn, duffelReturn] = await Promise.all([
+    const [tpReturnRaw, duffelReturnRaw] = await Promise.all([
       fetchFromTravelpayouts(to, from, returnDate, directOnly),
       fetchFromDuffel(to, from, returnDate, cabin, passengers).catch((): NormalizedFlight[] => []),
     ]);
+    const tpReturn     = tpReturnRaw.map(f => ({ ...f, source: "TP"     as const, priceConfidence: "LOW"  as const }));
+    const duffelReturn = duffelReturnRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const }));
     const rawReturn = mergeFlights(tpReturn, duffelReturn);
 
     // Same direct-flight recovery for return leg (TP only — Duffel already included all)
@@ -821,17 +904,34 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   });
 
   // Sort: best effective cost first (what the user actually pays, cash OR miles).
-  // Cash-only flights (no miles option) rank by their cash price — they are NOT
-  // pushed to the bottom. A cheap cash-only Air Senegal flight ranks above an
-  // expensive miles redemption when it genuinely costs less.
-  const effectiveCost = (r: FlightResult) =>
-    r.milesCost > 0 ? Math.min(r.cashCost, r.milesCost) : r.cashCost;
+  // Apply a confidence penalty so TP-cached prices (LOW) are treated as slightly
+  // more expensive than Duffel real-time prices (HIGH) for ranking purposes only.
+  // This does NOT change the displayed price — it only affects tie-breaking.
+  //   HIGH (Duffel) → ×1.00  (no penalty)
+  //   LOW  (TP)     → ×1.05  (5% penalty — reflects pricing uncertainty)
+  const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };
+  const effectiveCost = (r: FlightResult) => {
+    const penalty = CONFIDENCE_PENALTY[r.priceConfidence ?? "LOW"] ?? 1.05;
+    const base = r.milesCost > 0 ? Math.min(r.cashCost, r.milesCost) : r.cashCost;
+    return base * penalty;
+  };
   results.sort((a, b) => {
     const diff = effectiveCost(a) - effectiveCost(b);
     return diff !== 0 ? diff : (a.totalPrice ?? 0) - (b.totalPrice ?? 0);
   });
 
+  // Enrich synthetic flights (no miles engine) and append AFTER sorted real results.
+  // Synthetics represent airlines we know serve the route but whose real prices
+  // are not available — they surface as "Vol direct disponible" with indicative pricing.
+  const syntheticResults: FlightResult[] = syntheticFlights.map((f) => {
+    const r = enrichSynthetic(f, cabin, passengers, tripType, date, returnDate);
+    r.searchId = searchId;
+    return r;
+  });
+  const allResults = [...results, ...syntheticResults];
+
   // 5b. Auto-calibrate: record observations for self-learning mile values
+  // Only record real (non-synthetic) flights — synthetics have estimated prices.
   // Fire-and-forget — never block the response
   Promise.allSettled(
     results.map((r) => {
@@ -847,8 +947,8 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     })
   ).catch(() => null);
 
-  // 6. Cache
-  await redis.set(cacheKey, results, { ex: 3600 }).catch(() => null);
+  // 6. Cache (real + synthetic results together)
+  await redis.set(cacheKey, allResults, { ex: 3600 }).catch(() => null);
 
-  return results;
+  return allResults;
 }
