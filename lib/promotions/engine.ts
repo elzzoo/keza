@@ -24,6 +24,13 @@ export interface NormalizedFlight {
   duration?: number;
   stops?: number;
   bookingLink?: string;
+  /**
+   * True for synthetic entries injected via ROUTE_AIRLINE_SUPPLEMENTS —
+   * airlines known to fly the route but not indexed by Travelpayouts.
+   * The price is an indicative estimate (cheapest available fare on the route).
+   * UI must show a "prix indicatif" warning for these flights.
+   */
+  isSupplemental?: boolean;
 }
 
 export function applyPromotions(

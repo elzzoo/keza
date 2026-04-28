@@ -65,6 +65,13 @@ export interface FlightResult {
 
   // ── Extra ──────────────────────────────────────────────────────────────────
   optimization: OptimizerDecision;
+  /**
+   * True when this flight entry was synthetically injected for an airline
+   * known to fly the route but absent from Travelpayouts' index.
+   * Price is indicative (derived from cheapest available TP fare).
+   * UI must surface a "prix indicatif" disclaimer.
+   */
+  isSupplemental?: boolean;
 }
 
 // ─── Travelpayouts fetch ─────────────────────────────────────────────────────
@@ -659,6 +666,8 @@ function enrich(
     optimization,
   };
 
+  if (f.isSupplemental) result.isSupplemental = true;
+
   if (returnPrice !== undefined) {
     result.returnPrice    = returnPrice;
     result.returnAirlines = returnFlight?.airlines;
@@ -701,7 +710,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v13:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v14:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
@@ -723,6 +732,29 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     fetchFromDuffel(from, to, date, cabin, passengers).catch((): NormalizedFlight[] => []),
   ]);
   const rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
+
+  // ── Inject synthetic entries for supplement airlines missing from providers ──
+  // Airlines in ROUTE_AIRLINE_SUPPLEMENTS are known to fly this route but not
+  // indexed by Travelpayouts (e.g. Air Senegal on DSS→CDG). We create a
+  // placeholder entry so the cost engine can show the correct miles programs
+  // and the UI can surface "Vol direct disponible" for these carriers.
+  // The price is set to the cheapest available TP fare as an indicative floor.
+  // FlightCard shows a "prix indicatif" warning for isSupplemental=true entries.
+  {
+    const suppKey = `${from}-${to}`;
+    const suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
+    const coveredAirlines = new Set(rawOutbound.flatMap(f => f.airlines));
+    const cheapestPrice = rawOutbound.length > 0
+      ? Math.min(...rawOutbound.map(f => f.price))
+      : 0;
+    if (cheapestPrice > 0) {
+      for (const airline of suppAirlines) {
+        if (!coveredAirlines.has(airline)) {
+          rawOutbound.push({ from, to, price: cheapestPrice, airlines: [airline], stops: 0, isSupplemental: true });
+        }
+      }
+    }
+  }
 
   if (!directOnly && rawOutbound.every(f => (f.stops ?? 0) > 0)) {
     // No direct flights in the merged results — try explicit direct TP search
@@ -788,8 +820,16 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     return r;
   });
 
-  // Sort: biggest savings first, then cheapest cash price
-  results.sort((a, b) => b.savings !== a.savings ? b.savings - a.savings : a.totalPrice! - b.totalPrice!);
+  // Sort: best effective cost first (what the user actually pays, cash OR miles).
+  // Cash-only flights (no miles option) rank by their cash price — they are NOT
+  // pushed to the bottom. A cheap cash-only Air Senegal flight ranks above an
+  // expensive miles redemption when it genuinely costs less.
+  const effectiveCost = (r: FlightResult) =>
+    r.milesCost > 0 ? Math.min(r.cashCost, r.milesCost) : r.cashCost;
+  results.sort((a, b) => {
+    const diff = effectiveCost(a) - effectiveCost(b);
+    return diff !== 0 ? diff : (a.totalPrice ?? 0) - (b.totalPrice ?? 0);
+  });
 
   // 5b. Auto-calibrate: record observations for self-learning mile values
   // Fire-and-forget — never block the response

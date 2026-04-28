@@ -114,7 +114,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
           {isNearParity
             ? (fr ? "≈ Prix équivalent — garde tes miles" : "≈ Equivalent — keep your miles")
             : !bestOption
-              ? (fr ? "💵 Payez en cash — aucune option miles" : "💵 Pay cash — no miles option")
+              ? (fr ? "💵 Paiement cash uniquement" : "💵 Cash only")
               : flight.recommendation === "USE_MILES"
                 ? (fr
                     ? `🔥 Tu économises ${fmt(flight.savings)} avec les miles`
@@ -161,6 +161,15 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
           )}
         </div>
       </div>
+
+      {/* Supplemental airline — price is indicative (not from the airline's own booking system) */}
+      {flight.isSupplemental && (
+        <div className="bg-sky-500/10 text-sky-400 border-b border-sky-500/20 px-5 py-1.5 text-[11px] text-center font-medium">
+          {fr
+            ? "✈️ Vol direct disponible — prix indicatif, vérifier sur le site de la compagnie"
+            : "✈️ Direct flight available — indicative price, check airline website"}
+        </div>
+      )}
 
       {/* Estimated cabin warning — shown when business/first price is estimated */}
       {flight.cabinPriceEstimated && (
