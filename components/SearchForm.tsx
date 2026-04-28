@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import clsx from "clsx";
 
 interface Props {
-  onResults: (r: FlightResult[]) => void;
+  onResults: (r: FlightResult[], partial?: boolean) => void;
   onLoading: (l: boolean) => void;
   onSearchStart?: (params: {from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"}) => void;
   lang: "fr" | "en";
@@ -93,6 +93,14 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     setShowCalendar(null); // close calendar on search
     onSearchStart?.({ from, to, date: depDate, cabin, tripType });
     trackSearch({ from, to, cabin, tripType, pax: passengers });
+
+    // Client-side guard: if the server doesn't respond within 10s,
+    // stop the spinner. Do NOT wipe existing results — keep them visible
+    // and show a non-blocking warning instead.
+    const CLIENT_TIMEOUT_MS = 10_000;
+    const controller = new AbortController();
+    const clientTimer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
+
     try {
       const res = await fetch("/api/search", {
         method: "POST",
@@ -103,15 +111,28 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
           tripType, cabin, passengers,
           userPrograms: programs ? programs.split(",").map(p => p.trim()).filter(Boolean) : [],
         }),
+        signal: controller.signal,
       });
-      const json = await res.json() as { results: FlightResult[]; error?: string };
+      clearTimeout(clientTimer);
+      const json = await res.json() as { results: FlightResult[]; partial?: boolean; error?: string };
       if (!res.ok) throw new Error(json.error ?? (lang === "fr" ? "Erreur de recherche" : "Search error"));
-      onResults(json.results);
+      onResults(json.results, json.partial);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error");
-      setError(msg);
-      toast.error(msg);
-      onResults([]);
+      clearTimeout(clientTimer);
+      const isAbort = (err as Error).name === "AbortError";
+      if (isAbort) {
+        // Timeout: stop spinner, keep previous results, show non-blocking warning
+        const msg = lang === "fr"
+          ? "⚠️ Résultats partiels affichés — certaines sources indisponibles"
+          : "⚠️ Partial results — some sources unavailable";
+        toast.warning(msg, { duration: 6000 });
+        // Do NOT call onResults([]) — keep whatever was displayed before
+      } else {
+        const msg = err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error");
+        setError(msg);
+        toast.error(msg);
+        // Do NOT wipe results on error either — keep previous display intact
+      }
     } finally { setBusy(false); onLoading(false); }
   }, [from, to, depDate, retDate, tripType, cabin, passengers, programs, busy, canGo, onResults, onLoading, onSearchStart, lang]);
 

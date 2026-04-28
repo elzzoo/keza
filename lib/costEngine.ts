@@ -209,6 +209,11 @@ function getCorridorGuarantees(originZone: string, destZone: string): CorridorGu
 
   const isEuropeIntra = originZone === "EUROPE" && destZone === "EUROPE";
 
+  // Middle East ↔ Europe or North America — Emirates Skywards is the flagship program
+  const isMiddleEastLongHaul =
+    (originZone === "MIDDLE_EAST" && (destZone === "EUROPE" || destZone === "NORTH_AMERICA")) ||
+    (destZone === "MIDDLE_EAST" && (originZone === "EUROPE" || originZone === "NORTH_AMERICA"));
+
   // Europe ↔ Africa — Flying Blue (Air France flagship corridor)
   if (isEuropeAfrica) {
     g.push({ program: "Flying Blue", type: "DIRECT", inferredAirline: "Air France" });
@@ -230,6 +235,11 @@ function getCorridorGuarantees(originZone: string, destZone: string): CorridorGu
   // Intra-Europe — Iberia Avios Plus (best short-haul value in Europe)
   if (isEuropeIntra) {
     g.push({ program: "Iberia Avios Plus", type: "DIRECT", inferredAirline: "Iberia" });
+  }
+
+  // Middle East ↔ Europe / North America — Emirates Skywards (flagship hub carrier)
+  if (isMiddleEastLongHaul) {
+    g.push({ program: "Emirates Skywards", type: "DIRECT", inferredAirline: "Emirates" });
   }
 
   return g;

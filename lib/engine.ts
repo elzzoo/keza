@@ -78,6 +78,30 @@ export interface FlightResult {
   priceConfidence?: "HIGH" | "LOW" | "ESTIMATED";
 }
 
+// ─── Retry helper ────────────────────────────────────────────────────────────
+/**
+ * Retry an async function up to `maxAttempts` times.
+ * Only retries on network errors or 5xx responses (not 4xx — those are permanent).
+ * Uses exponential backoff: attempt 1 → 500ms wait, attempt 2 → 1000ms wait.
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  backoffMs: number[] = [500, 1000]
+): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const wait = backoffMs[attempt] ?? backoffMs[backoffMs.length - 1];
+      if (attempt < maxAttempts - 1) await new Promise(r => setTimeout(r, wait));
+    }
+  }
+  throw lastErr;
+}
+
 // ─── Travelpayouts fetch ─────────────────────────────────────────────────────
 // Primary:  aviasales/v3/prices_for_dates  — returns airline IATA codes + deep links
 // Fallback: v2/prices/month-matrix         — broader coverage, but no airline data
@@ -111,10 +135,16 @@ async function fetchV3(
   url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 3600 },
-    headers: { Accept: "application/json" },
-  });
+  let res: Response;
+  try {
+    res = await withRetry(() => fetch(url.toString(), {
+      next: { revalidate: 3600 },
+      headers: { Accept: "application/json" },
+    }));
+  } catch (err) {
+    console.error(`[engine] aviasales v3 network error for ${from}→${to}:`, err);
+    return [];
+  }
 
   if (!res.ok) {
     console.error(`[engine] aviasales v3 ${res.status} for ${from}→${to}`);
@@ -180,10 +210,16 @@ async function fetchMonthMatrix(
   url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 3600 },
-    headers: { Accept: "application/json" },
-  });
+  let res: Response;
+  try {
+    res = await withRetry(() => fetch(url.toString(), {
+      next: { revalidate: 3600 },
+      headers: { Accept: "application/json" },
+    }));
+  } catch (err) {
+    console.error(`[engine] month-matrix network error for ${from}→${to}:`, err);
+    return [];
+  }
 
   if (!res.ok) {
     console.error(`[engine] month-matrix ${res.status} for ${from}→${to}`);
@@ -784,7 +820,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v17:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:v18:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);

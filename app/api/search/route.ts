@@ -1,8 +1,26 @@
 import { NextResponse } from "next/server";
-import { searchEngine, type SearchParams } from "@/lib/engine";
+import { searchEngine, type SearchParams, type FlightResult } from "@/lib/engine";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError } from "@/lib/logger";
+import { redis } from "@/lib/redis";
+
+// Max time to wait for a full search before returning with partial flag.
+// Covers Duffel (8s) + TP retries — give the engine a fair shot, but
+// don't leave the user staring at a spinner forever.
+const SEARCH_TIMEOUT_MS = 9_000;
+
+/**
+ * Build the same cache key that searchEngine uses (v17).
+ * Used to serve stale-but-valid cached results when the fresh search times out.
+ */
+function buildCacheKey(p: {
+  from: string; to: string; date: string;
+  tripType: string; returnDate?: string;
+  stops: string; cabin: string; passengers: number;
+}): string {
+  return `keza:v18:${p.from}:${p.to}:${p.date}:${p.tripType}:${p.returnDate ?? ""}:${p.stops}:${p.cabin}:${p.passengers}`;
+}
 
 /* ── input validation ── */
 const IATA_RE = /^[A-Z]{3}$/;
@@ -39,7 +57,7 @@ export async function POST(request: Request) {
 
     const passengers = Math.min(Math.max(Number(body.passengers) || 1, 1), 9);
 
-    const results = await searchEngine({
+    const searchParams: SearchParams = {
       from,
       to,
       date,
@@ -49,12 +67,45 @@ export async function POST(request: Request) {
       cabin:        ["economy", "premium", "business", "first"].includes(body.cabin ?? "") ? body.cabin! as "economy" | "premium" | "business" | "first" : "economy",
       passengers,
       userPrograms: Array.isArray(body.userPrograms) ? body.userPrograms.filter((p): p is string => typeof p === "string").slice(0, 20) : [],
-    });
+    };
 
-    // Fetch forex rate (non-blocking, fallback to 605 if fails)
-    const forexRate = await getForexRate().catch(() => 605);
+    // Race the search against a hard timeout.
+    // On timeout, fall back to cached results — NEVER return empty to the user.
+    let timedOut = false;
+    const timeoutSignal = new Promise<null>(resolve =>
+      setTimeout(() => { timedOut = true; resolve(null); }, SEARCH_TIMEOUT_MS)
+    );
 
-    return NextResponse.json({ results, count: results.length, forexRate });
+    const engineResult = await Promise.race([
+      searchEngine(searchParams).then(r => r),
+      timeoutSignal,
+    ]) as FlightResult[] | null;
+
+    let results: FlightResult[];
+    let partial = false;
+
+    if (timedOut || engineResult === null) {
+      // Attempt to serve stale cached results so the user isn't left empty-handed
+      const cacheKey = buildCacheKey({
+        from, to, date,
+        tripType: searchParams.tripType!,
+        returnDate: searchParams.returnDate,
+        stops: searchParams.stops!,
+        cabin: searchParams.cabin!,
+        passengers,
+      });
+      const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
+      results = cached ?? [];
+      partial = true;
+      console.warn(`[api/search] timeout for ${from}→${to}, returning ${results.length} cached results`);
+    } else {
+      results = engineResult;
+    }
+
+    // Fetch forex rate (non-blocking, fallback to 600 if fails)
+    const forexRate = await getForexRate().catch(() => 600);
+
+    return NextResponse.json({ results, count: results.length, forexRate, partial });
   } catch (err) {
     logError("[api/search]", err);
     return NextResponse.json(

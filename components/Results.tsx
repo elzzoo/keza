@@ -13,6 +13,7 @@ interface Props {
   loading: boolean;
   lang: "fr" | "en";
   onBack: () => void;
+  partial?: boolean;
   searchMeta?: { from: string; to: string; cabin: string };
   formatPrice?: (usd: number) => string;
 }
@@ -26,7 +27,7 @@ const L = {
     all: "Tous",
     miles: "Utilisez miles",
     cash: "Payez cash",
-    empty: "Aucun vol trouvé pour cette combinaison",
+    empty: "⚠️ Données indisponibles sur cette route actuellement",
     emptyDesc: "Nos sources de données couvrent mieux certaines routes. Essayez :",
     emptyTips: [
       "Élargir les dates (±7 jours)",
@@ -34,6 +35,7 @@ const L = {
       "Utiliser DKR (Dakar ville) au lieu de DSS pour les vols long-courriers",
       "Passer par un hub (CDG, IST, DXB) pour l'Afrique ↔ USA",
     ],
+    partial: "⚠️ Résultats partiels affichés — certaines sources indisponibles",
     back: "← Nouvelle recherche",
     loading: "Recherche en cours…",
   },
@@ -45,7 +47,7 @@ const L = {
     all: "All",
     miles: "Use miles",
     cash: "Use cash",
-    empty: "No flights found for this combination",
+    empty: "⚠️ Data unavailable for this route at the moment",
     emptyDesc: "Our data sources cover some routes better than others. Try:",
     emptyTips: [
       "Broaden the dates (±7 days)",
@@ -53,6 +55,7 @@ const L = {
       "Use DKR (Dakar city) instead of DSS for long-haul",
       "Route via a hub (CDG, IST, DXB) for Africa ↔ USA",
     ],
+    partial: "⚠️ Partial results shown — some sources unavailable",
     back: "← New search",
     loading: "Searching…",
   },
@@ -83,7 +86,7 @@ function SkeletonCard() {
   );
 }
 
-export function Results({ results, loading, lang, onBack, searchMeta, formatPrice }: Props) {
+export function Results({ results, loading, lang, onBack, partial, searchMeta, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
@@ -185,6 +188,14 @@ export function Results({ results, loading, lang, onBack, searchMeta, formatPric
                 : "Nonstop flights may exist on this route. Our engine compares connecting fares below. Check the airline's website directly for nonstop options."}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Partial results warning */}
+      {partial && results.length > 0 && (
+        <div className="bg-warning/10 rounded-xl border border-warning/25 px-4 py-3 flex items-center gap-3">
+          <span className="text-base">⚠️</span>
+          <p className="text-xs font-semibold text-warning">{t.partial}</p>
         </div>
       )}
 

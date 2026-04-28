@@ -6,6 +6,8 @@ type Cabin = "economy" | "premium" | "business" | "first";
 
 const DUFFEL_BASE = "https://api.duffel.com";
 const TIMEOUT_MS = 8_000;
+const MAX_RETRIES = 2;
+const RETRY_BACKOFF_MS = [600, 1200] as const; // wait before attempt 2, 3
 
 /** Map KEZA cabin names to Duffel cabin class values */
 const CABIN_MAP: Record<Cabin, string> = {
@@ -118,23 +120,54 @@ export async function fetchFromDuffel(
     },
   };
 
-  try {
+  // Helper: single attempt with its own abort controller
+  async function attemptFetch(): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      const r = await fetch(`${DUFFEL_BASE}/air/offer_requests`, {
+        method:  "POST",
+        headers: {
+          Authorization:    `Bearer ${apiKey}`,
+          "Content-Type":   "application/json",
+          "Duffel-Version": "v2",
+          Accept:           "application/json",
+        },
+        body:   JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      return r;
+    } catch (e) {
+      clearTimeout(timer);
+      throw e;
+    }
+  }
 
-    const res = await fetch(`${DUFFEL_BASE}/air/offer_requests`, {
-      method:  "POST",
-      headers: {
-        Authorization:    `Bearer ${apiKey}`,
-        "Content-Type":   "application/json",
-        "Duffel-Version": "v2",
-        Accept:           "application/json",
-      },
-      body:   JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
+  try {
+    let res: Response | null = null;
+    let lastErr: unknown;
 
-    clearTimeout(timer);
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        res = await attemptFetch();
+        // Don't retry on 4xx (client errors) — only on network failures or 5xx
+        if (res.ok || (res.status >= 400 && res.status < 500)) break;
+        // 5xx: retry
+        lastErr = new Error(`[duffel] ${res.status}`);
+      } catch (err) {
+        lastErr = err;
+        const name = (err as Error).name;
+        if (name === "AbortError") {
+          console.warn(`[duffel] timeout attempt ${attempt + 1} for ${from}→${to}`);
+        }
+      }
+      if (attempt < MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, RETRY_BACKOFF_MS[attempt] ?? 1200));
+      }
+    }
+
+    if (!res) throw lastErr;
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
@@ -220,7 +253,7 @@ export async function fetchFromDuffel(
   } catch (err) {
     const name = (err as Error).name;
     if (name === "AbortError") {
-      console.warn(`[duffel] timeout (>${TIMEOUT_MS}ms) for ${from}→${to}`);
+      console.warn(`[duffel] all attempts timed out (>${TIMEOUT_MS}ms) for ${from}→${to}`);
     } else {
       console.error(`[duffel] unexpected error for ${from}→${to}:`, err);
     }

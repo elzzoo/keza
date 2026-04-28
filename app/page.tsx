@@ -32,6 +32,7 @@ export default function HomePage() {
 
   const [lang,       setLang]       = useState<"fr" | "en">("fr");
   const [results,    setResults]    = useState<FlightResult[]>([]);
+  const [partial,    setPartial]    = useState(false);
   const [loading,    setLoading]    = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
@@ -83,8 +84,9 @@ export default function HomePage() {
     saveLang(newLang);
   }, [saveLang]);
 
-  const handleResults = useCallback((r: FlightResult[]) => {
+  const handleResults = useCallback((r: FlightResult[], isPartial?: boolean) => {
     setResults(r);
+    setPartial(isPartial ?? false);
     setHasSearched(true);
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
@@ -220,6 +222,7 @@ export default function HomePage() {
                 loading={loading}
                 lang={lang}
                 onBack={handleBack}
+                partial={partial}
                 searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
                 formatPrice={formatPrice}
               />
