@@ -246,6 +246,34 @@ describe("accessibility scoring — score-1 programs prioritized over score-3", 
 
 // ─── Global scaling tests ────────────────────────────────────────────────────
 
+describe("SIN → LAX (Asia → North America, Singapore Airlines)", () => {
+  const baseSIN: FlightInput = {
+    from: "SIN", to: "LAX",
+    totalPrice: 1_200, airlines: ["Singapore Airlines"],
+    stops: 0, cabin: "economy", tripType: "roundtrip", passengers: 1,
+  };
+
+  it("includes Singapore KrisFlyer as DIRECT", () => {
+    const { milesOptions } = buildCostOptions(baseSIN, new Map());
+    const kf = milesOptions.find((o) => o.program === "Singapore KrisFlyer");
+    expect(kf).toBeDefined();
+    expect(kf!.type).toBe("DIRECT");
+  });
+
+  it("does not include Air India Flying Returns (no India endpoint)", () => {
+    // SIN and LAX are not Indian airports — home-airport filter must block Air India.
+    const { milesOptions } = buildCostOptions(baseSIN, new Map());
+    expect(milesOptions.find((o) => o.program === "Air India Flying Returns")).toBeUndefined();
+  });
+
+  it("KrisFlyer miles are realistic (30K–100K RT economy)", () => {
+    const { milesOptions } = buildCostOptions(baseSIN, new Map());
+    const kf = milesOptions.find((o) => o.program === "Singapore KrisFlyer")!;
+    expect(kf.milesRequired).toBeGreaterThanOrEqual(30_000);
+    expect(kf.milesRequired).toBeLessThanOrEqual(100_000);
+  });
+});
+
 describe("NRT → LAX (Asia → North America)", () => {
   const baseNRT: FlightInput = {
     from: "NRT", to: "LAX",
@@ -275,6 +303,13 @@ describe("NRT → LAX (Asia → North America)", () => {
     const ana = milesOptions.find((o) => o.program === "ANA Mileage Club")!;
     expect(ana.milesRequired).toBeGreaterThanOrEqual(30_000);
     expect(ana.milesRequired).toBeLessThanOrEqual(70_000);
+  });
+
+  it("does not include Air India Flying Returns (no India connection on NRT→LAX)", () => {
+    // Air India is Star Alliance like ANA, but NRT→LAX has no India endpoint.
+    // Home-airport filter must exclude it.
+    const { milesOptions } = buildCostOptions(baseNRT, new Map());
+    expect(milesOptions.find((o) => o.program === "Air India Flying Returns")).toBeUndefined();
   });
 });
 

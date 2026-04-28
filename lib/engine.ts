@@ -567,6 +567,13 @@ function enrich(
   };
 
   const comparison  = buildCostOptions(flightInput, effectivePrices);
+
+  // DEBUG — remove once production activation confirmed (set KEZA_DEBUG_PROGRAMS=1)
+  if (process.env.KEZA_DEBUG_PROGRAMS === "1") {
+    const programs = comparison.milesOptions.map(o => `${o.program}(${o.type})`).join(", ");
+    console.log(`[KEZA_DEBUG] ${f.from}→${f.to} | airlines:${f.airlines.join("+")} | programs:[${programs}]`);
+  }
+
   const optimization = optimizeMiles(f.airlines, userPrograms);
 
   const result: FlightResult = {

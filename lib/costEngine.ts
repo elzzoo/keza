@@ -508,6 +508,21 @@ export function buildCostOptions(
         if (!servedZones.includes(originZone) || !servedZones.includes(destZone)) continue;
       }
 
+      // Home-airport filter: some programs are only relevant when at least one
+      // endpoint is in the airline's home country. Without this, Air India
+      // appears on NRT→LAX and SIN→LAX (Star Alliance match) even though no
+      // India connection exists — which misleads users.
+      // Add more programs here as needed (key = program name, value = home IATA codes).
+      const PROGRAM_HOME_AIRPORTS: Partial<Record<string, Set<string>>> = {
+        "Air India Flying Returns": new Set([
+          "DEL","BOM","CCU","MAA","HYD","BLR","AMD","GOI","COK","TRV",
+          "IXC","ATQ","IXR","IXD","SXR","LKO","BBI","NAG","PAT","IXB",
+          "GAU","VGA","VTZ","IXM","IXZ","CNN","IXE","IXA","DIB","IMF",
+        ]),
+      };
+      const homeAirports = PROGRAM_HOME_AIRPORTS[prog.name];
+      if (homeAirports && !homeAirports.has(from) && !homeAirports.has(to)) continue;
+
       // Score-3 "Independent" programs (Hainan, niche carriers) have no partner
       // networks — they can only book their own airline's flights.
       // Only show them when the operating airline IS the program's own airline.
