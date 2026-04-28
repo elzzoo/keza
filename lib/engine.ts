@@ -237,14 +237,67 @@ function rebrandRoute(flights: NormalizedFlight[], from: string, to: string): No
   });
 }
 
+// ─── Static airline supplements ──────────────────────────────────────────────
+// Travelpayouts doesn't index many African/regional carriers (Air Senegal,
+// Transair, etc.) because they don't distribute through GDS/OTAs.
+// This map injects known carriers for specific routes so the cost engine can
+// show the right miles programs (e.g. Flying Blue for Air France partner routes).
+//
+// Key format: "ORIGIN-DEST" (canonical, uppercase). Both directions are listed.
+// Values are airline NAMES (as used in iataAirlines.ts / alliances.ts).
+// DO NOT add carriers you're unsure about — better to under-report than mislead.
+const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
+  // West Africa ↔ Europe
+  "DSS-CDG": ["Air Senegal", "Air France", "Corsair"],
+  "CDG-DSS": ["Air Senegal", "Air France", "Corsair"],
+  "DSS-LHR": ["Air Senegal"],
+  "LHR-DSS": ["Air Senegal"],
+
+  "LOS-CDG": ["Air France"],
+  "CDG-LOS": ["Air France"],
+  "LOS-LHR": ["British Airways"],
+  "LHR-LOS": ["British Airways"],
+  "LOS-FRA": ["Lufthansa"],
+  "FRA-LOS": ["Lufthansa"],
+
+  "ABJ-CDG": ["Air France"],
+  "CDG-ABJ": ["Air France"],
+  "ACC-LHR": ["British Airways"],
+  "LHR-ACC": ["British Airways"],
+  "CMN-CDG": ["Royal Air Maroc", "Air France"],
+  "CDG-CMN": ["Royal Air Maroc", "Air France"],
+
+  // East / Southern Africa ↔ Europe
+  "NBO-LHR": ["British Airways", "Kenya Airways"],
+  "LHR-NBO": ["British Airways", "Kenya Airways"],
+  "NBO-CDG": ["Air France", "Kenya Airways"],
+  "CDG-NBO": ["Air France", "Kenya Airways"],
+  "JNB-LHR": ["British Airways", "South African Airways"],
+  "LHR-JNB": ["British Airways", "South African Airways"],
+  "ADD-CDG": ["Ethiopian Airlines", "Air France"],
+  "CDG-ADD": ["Ethiopian Airlines", "Air France"],
+
+  // West Africa ↔ North America (often via European hubs)
+  "DSS-JFK": ["Air Senegal", "Air France"],
+  "JFK-DSS": ["Air Senegal", "Air France"],
+  "LOS-JFK": ["United"],
+  "JFK-LOS": ["United"],
+};
+
 /**
  * Discover airlines that operate a route by querying v3 WITHOUT a date filter.
- * Returns unique airline names (already mapped via iataToAirline).
+ * Merges Travelpayouts data with static supplements for routes with poor GDS coverage
+ * (primarily African carriers that don't distribute through OTAs).
  */
 async function discoverRouteAirlines(
   attempts: Array<[string, string]>,
   token: string
 ): Promise<string[]> {
+  // Check static supplements first (keyed by first attempt = canonical code pair)
+  const [primaryFrom, primaryTo] = attempts[0] ?? ["", ""];
+  const supplementKey = `${primaryFrom.toUpperCase()}-${primaryTo.toUpperCase()}`;
+  const supplements = ROUTE_AIRLINE_SUPPLEMENTS[supplementKey] ?? [];
+
   for (const [o, d] of attempts) {
     const url = new URL(`${TP_BASE}/aviasales/v3/prices_for_dates`);
     url.searchParams.set("origin", o.toUpperCase());
@@ -263,12 +316,17 @@ async function discoverRouteAirlines(
       if (!res.ok) continue;
       const json = (await res.json()) as { data?: Array<{ airline: string }> };
       if (Array.isArray(json.data) && json.data.length > 0) {
-        const unique = Array.from(new Set(json.data.map((f) => iataToAirline(f.airline))));
-        return unique;
+        const fromApi = json.data.map((f) => iataToAirline(f.airline));
+        // Merge API result with supplements — deduplicated, supplements appended
+        const merged = Array.from(new Set([...fromApi, ...supplements]));
+        return merged;
       }
     } catch { /* try next attempt pair */ }
   }
-  return [];
+
+  // Travelpayouts returned nothing — return supplements only so the cost engine
+  // can still compute miles options for the known carriers on this route.
+  return supplements;
 }
 
 async function fetchFromTravelpayouts(
