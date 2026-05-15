@@ -21,7 +21,7 @@ export function ProgramsWidget({ lang }: Props) {
   const { profile, setBalances, setBankPoints } = useProfile();
 
   return (
-    <div className="bg-surface border border-border rounded-2xl p-4">
+    <div className="bg-surface border border-border rounded-2xl p-4" data-programs-widget="">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
