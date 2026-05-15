@@ -6,7 +6,7 @@ import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
-import { isBusinessMode as checkBusinessMode, HIGH_TAXES_THRESHOLD_USD, buildBusinessChips } from "@/lib/businessMode";
+import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
