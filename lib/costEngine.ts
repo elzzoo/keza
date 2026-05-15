@@ -112,11 +112,11 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Lufthansa":           "Lufthansa Miles & More",
   "Turkish Airlines":    "Turkish Miles&Smiles",
   "Ethiopian Airlines":  "Ethiopian ShebaMiles",
-  "Air Canada":          "Aeroplan",
+  "Air Canada":          "Air Canada Aeroplan",
   "Avianca":             "LifeMiles",
   // Oneworld
   "Japan Airlines":      "Japan Airlines Mileage Bank",
-  "British Airways":     "BA Avios",
+  "British Airways":     "British Airways Avios",
   "American Airlines":   "AAdvantage",
   "Qatar Airways":       "Qatar Privilege Club",
   "Cathay Pacific":      "Cathay Pacific Asia Miles",
@@ -204,8 +204,8 @@ function getProgramsForAirline(airlines: string[]): ProgramMatch[] {
   }
 
   const aeroplanMatch = airlines.find((a) => AEROPLAN_GUARANTEE_AIRLINES.has(a));
-  if (aeroplanMatch && !results.some((r) => r.program === "Aeroplan")) {
-    results.push({ program: "Aeroplan", type: aeroplanMatch === "Air Canada" ? "DIRECT" : "ALLIANCE", matchedAirline: aeroplanMatch });
+  if (aeroplanMatch && !results.some((r) => r.program === "Air Canada Aeroplan")) {
+    results.push({ program: "Air Canada Aeroplan", type: aeroplanMatch === "Air Canada" ? "DIRECT" : "ALLIANCE", matchedAirline: aeroplanMatch });
   }
 
   const kfMatch = airlines.find((a) => KRISFLYER_GUARANTEE_AIRLINES.has(a));
