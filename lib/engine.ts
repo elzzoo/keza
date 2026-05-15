@@ -730,8 +730,12 @@ function enrich(
     result.returnAirlines = returnFlight?.airlines;
   }
 
-  if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
-    // Round-trip: always build a proper RT Aviasales search URL.
+  if (f.source === "DUFFEL" && f.bookingLink) {
+    // Duffel provides a real-time booking link — always prefer it over a generic
+    // Aviasales search URL, even for roundtrips. Duffel links are HIGH confidence.
+    result.bookingLink = f.bookingLink;
+  } else if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
+    // Round-trip TP: build a proper RT Aviasales search URL.
     // TP v3 deep links are per-leg (one-way); they don't encode the return segment,
     // so they open a one-way search and confuse users. The RT search URL correctly
     // shows combined outbound + return itineraries.
@@ -765,7 +769,10 @@ function enrichSynthetic(
   searchDate?: string,
   returnDate?: string,
 ): FlightResult {
-  const multiplier    = CABIN_MULTIPLIER[cabin];
+  // Synthetics are built from the cheapest TP price (economy base).
+  // If that cheapest price came from a Duffel flight (cabinResolved=true),
+  // it already reflects the requested cabin — don't double-apply the multiplier.
+  const multiplier    = f.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
   const outboundPrice = Math.round(f.price * multiplier * 100) / 100;
   const totalPrice    = Math.round(outboundPrice * passengers * 100) / 100;
 
@@ -789,7 +796,7 @@ function enrichSynthetic(
     explanation:         "Prix indicatif — vol direct disponible",
     displayMessage:      "💵 Prix indicatif",
     disclaimer:          "Prix estimé, non garanti",
-    cabinPriceEstimated: cabin !== "economy",
+    cabinPriceEstimated: !f.cabinResolved && cabin !== "economy",
     searchId:            "",   // filled by caller
     optimization:        { type: "CASH" },
     isSupplemental:      true,
@@ -894,7 +901,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
       for (const df of directFlights) {
         const key = `${df.airlines.join(",")}:${df.stops}`;
         if (!existingKeys.has(key)) {
-          rawOutbound.unshift(df);
+          rawOutbound.unshift({ ...df, source: "TP" as const, priceConfidence: "LOW" as const });
           existingKeys.add(key);
         }
       }
@@ -922,7 +929,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
         for (const df of directReturn) {
           const key = `${df.airlines.join(",")}:${df.stops}`;
           if (!existingKeys.has(key)) {
-            rawReturn.unshift(df);
+            rawReturn.unshift({ ...df, source: "TP" as const, priceConfidence: "LOW" as const });
             existingKeys.add(key);
           }
         }

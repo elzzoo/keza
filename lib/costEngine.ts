@@ -130,6 +130,9 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   // SkyTeam
   "Air France":          "Flying Blue",
   "KLM":                 "Flying Blue",
+  "Transavia France":    "Flying Blue",
+  "Transavia":           "Flying Blue",
+  "HOP! Air France":     "Flying Blue",
   "Delta":               "Delta SkyMiles",
   "Korean Air":          "Korean Air SKYPASS",
   // Independent
@@ -579,11 +582,11 @@ export function buildCostOptions(
         "Air India Flying Returns":    ["ASIA", "EUROPE", "NORTH_AMERICA", "MIDDLE_EAST"],
         "Korean Air SKYPASS":          ["ASIA", "NORTH_AMERICA", "EUROPE"],
         "Thai Royal Orchid Plus":      ["ASIA", "EUROPE", "MIDDLE_EAST"],
-        "Garuda Indonesia":            ["ASIA", "EUROPE", "MIDDLE_EAST"],
+        "Garuda GarudaMiles":          ["ASIA", "EUROPE", "MIDDLE_EAST"],
         "Vietnam Airlines Lotusmiles": ["ASIA"],
-        "China Southern Sky Pearl":    ["ASIA", "NORTH_AMERICA", "EUROPE"],
+        "China Southern Sky Pearl Club": ["ASIA", "NORTH_AMERICA", "EUROPE"],
         "China Eastern Eastern Miles": ["ASIA", "NORTH_AMERICA", "EUROPE"],
-        "Hainan Fortune Wings":        ["ASIA"],
+        "Hainan Fortune Wings Club":   ["ASIA"],
         "Aeromexico Club Premier":     ["NORTH_AMERICA", "SOUTH_AMERICA", "EUROPE"],
         "LATAM Pass":                  ["SOUTH_AMERICA", "NORTH_AMERICA", "EUROPE"],
       };
@@ -704,7 +707,13 @@ export function buildCostOptions(
   for (const opt of milesOptions) {
     const key = `${opt.program}::${opt.via ?? ""}`;
     const existing = seen.get(key);
-    if (!existing || opt.totalMilesCost < existing.totalMilesCost) {
+    // Prefer DIRECT over ALLIANCE when cost is equal — avoids labeling a
+    // direct-airline redemption as "alliance" just because the corridor
+    // guarantee added it first.
+    const cheaper = !existing || opt.totalMilesCost < existing.totalMilesCost;
+    const samePrice = existing && opt.totalMilesCost === existing.totalMilesCost;
+    const betterType = samePrice && opt.type === "DIRECT" && existing.type !== "DIRECT";
+    if (cheaper || betterType) {
       seen.set(key, opt);
     }
   }
@@ -746,10 +755,14 @@ export function buildCostOptions(
   const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper, negative = cash cheaper
   const savings = Math.round(signedSavings * 100) / 100;  // keep sign — UI uses recommendation to determine direction
 
-  // Strict: USE_MILES only when the ACCESSIBLE best option is strictly cheaper than cash
-  const recommendation: Recommendation = (bestOption !== null && bestOption.totalMilesCost < cashTotal)
-    ? "USE_MILES"
-    : "USE_CASH";
+  // USE_MILES only when miles save at least $10 — avoids recommending miles for
+  // $1–$9 "savings" where breakeven uncertainty dwarfs the benefit.
+  const MIN_SAVINGS_USD = 10;
+  const recommendation: Recommendation = (
+    bestOption !== null &&
+    bestOption.totalMilesCost < cashTotal &&
+    (cashTotal - bestOption.totalMilesCost) >= MIN_SAVINGS_USD
+  ) ? "USE_MILES" : "USE_CASH";
 
   // NOTE: displayMessage is not rendered by the UI (FlightCard generates it client-side
   // with the user's currency via fmt()). This server-side value is kept for logging only.

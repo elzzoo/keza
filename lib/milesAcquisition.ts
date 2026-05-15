@@ -84,7 +84,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
     transferPartnersFrom: ["Citi ThankYou", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
-  "Aeroplan": {
+  "Air Canada Aeroplan": {
     purchaseMileCostPer1000: 25,
     marketValueCents: 1.5,
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
@@ -120,7 +120,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
     transferPartnersFrom: ["Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
-  "BA Avios": {
+  "British Airways Avios": {
     purchaseMileCostPer1000: 25,
     marketValueCents: 1.3,
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],

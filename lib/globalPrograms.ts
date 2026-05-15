@@ -192,7 +192,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 1,
   },
   {
-    name: "Aeroplan",
+    name: "Air Canada Aeroplan",
     airlineCode: "AC",
     airline: "Air Canada",
     alliance: "Star Alliance",
@@ -377,7 +377,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
 
   // ── Oneworld ─────────────────────────────────────────────────────────
   {
-    name: "BA Avios",
+    name: "British Airways Avios",
     airlineCode: "BA",
     airline: "British Airways",
     alliance: "Oneworld",

@@ -57,7 +57,7 @@ export const ALLIANCE_BASE_RATES: Record<Alliance, number> = {
 export const PROGRAM_RATE_OVERRIDES: Record<string, number> = {
   // Distance-based programs tend to be cheaper short-haul, pricier long-haul.
   // The override reflects a blended average.
-  "BA Avios":            6.5,
+  "British Airways Avios": 6.5,
   "Iberia Avios Plus":   6.5,
   "Emirates Skywards":   9.5,
   "Etihad Guest":        8.5,
@@ -67,12 +67,13 @@ export const PROGRAM_RATE_OVERRIDES: Record<string, number> = {
   "Virgin Atlantic Flying Club": 7.5,
 };
 
-/** Cabin class multipliers applied on top of the economy base rate. */
+/** Cabin class multipliers applied on top of the economy base rate.
+ *  first = 4.0 → business × 1.6, matching cash ratio (CABIN_MULTIPLIER: 6.5/4.0). */
 export const CABIN_MULTIPLIERS: Record<CabinClass, number> = {
   economy:         1.0,
   premium_economy: 1.5,
   business:        2.5,
-  first:           3.5,
+  first:           4.0,
 };
 
 /** Minimum miles that any program charges (floor). */

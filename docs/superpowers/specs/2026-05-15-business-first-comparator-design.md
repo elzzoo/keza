@@ -88,7 +88,7 @@ Autres programmes   [Miles&Smiles 45K*]  [Avios 85K]  Voir tous →
 ```
 
 - Each chip shows: `{program} {milesRequired / 1000}K`
-- If a program has notably high taxes (`option.taxesUSD > 300`): append `*` + footnote `"* taxes élevées / high taxes"`
+- If a program has notably high taxes (`option.taxes > 300`): append `*` + footnote `"* taxes élevées / high taxes"` (`MilesOption.taxes` is in USD)
 - "Voir tous →" toggles `showAlts` (existing state) — reuses the existing alternatives expand
 - If `alternatives.length === 0`: entire chips row hidden (single-program result)
 
@@ -169,7 +169,7 @@ Coverage:
 - `isBusinessMode = false` when `cabin === "economy"` → no badge, no chips
 - chips row renders when `alternatives.length > 0` in Business mode
 - chips row hidden when `alternatives.length === 0`
-- high-taxes footnote (`*`) appears when `option.taxesUSD > 300`
+- high-taxes footnote (`*`) appears when `option.taxes > 300`
 - savings label shows "vs Business cash estimé" in FR
 - savings label shows "vs estimated Business cash" in EN
 

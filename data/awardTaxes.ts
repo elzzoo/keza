@@ -67,7 +67,8 @@ const UK_AIRPORTS = new Set(["LHR", "LGW", "LCY", "MAN", "EDI", "BHX", "STN", "G
 interface CorridorCap {
   minEconomy: number;
   maxEconomy: number;
-  maxBusiness: number; // business / first cap
+  maxBusiness: number; // business cap
+  maxFirst:    number; // first class cap (= maxBusiness × 1.5)
 }
 
 function getCorridorCap(
@@ -81,7 +82,7 @@ function getCorridorCap(
   // UK routes — UK APD is real, but cap economy at $150/leg and business at $300/leg.
   // This prevents BA's $500 flat rate from yielding $1000 RT even in economy.
   if (isUK) {
-    return { minEconomy: 100, maxEconomy: 150, maxBusiness: 300 };
+    return { minEconomy: 100, maxEconomy: 150, maxBusiness: 300, maxFirst: 450 };
   }
 
   const oz = originZone ?? "";
@@ -94,35 +95,31 @@ function getCorridorCap(
   const isSA     = oz === "SOUTH_AMERICA"   || dz === "SOUTH_AMERICA";
 
   // Europe ↔ Africa — primary KEZA corridor.
-  // RT total target: $50–150. Per-leg max = $75.
-  if (isEurope && isAfrica) return { minEconomy: 25, maxEconomy: 75,  maxBusiness: 160 };
+  if (isEurope && isAfrica) return { minEconomy: 25, maxEconomy: 75,  maxBusiness: 160, maxFirst: 240 };
 
   // Europe ↔ North America (transatlantic).
-  // RT total target: $50–200. Per-leg max = $100.
-  if (isEurope && isNA)     return { minEconomy: 25, maxEconomy: 100, maxBusiness: 220 };
+  if (isEurope && isNA)     return { minEconomy: 25, maxEconomy: 100, maxBusiness: 220, maxFirst: 330 };
 
   // Europe ↔ Asia (long-haul).
-  // RT total target: $50–120. Per-leg max = $60.
-  if (isEurope && isAsia)   return { minEconomy: 25, maxEconomy: 60,  maxBusiness: 140 };
+  if (isEurope && isAsia)   return { minEconomy: 25, maxEconomy: 60,  maxBusiness: 140, maxFirst: 210 };
 
   // Asia routes (intra or cross-hemisphere).
-  // Per-leg max = $60.
-  if (isAsia)               return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 130 };
+  if (isAsia)               return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 130, maxFirst: 195 };
 
   // Middle East corridors (generally low carrier charges).
-  if (isME)                 return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 120 };
+  if (isME)                 return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 120, maxFirst: 180 };
 
   // South America
-  if (isSA)                 return { minEconomy: 30, maxEconomy: 100, maxBusiness: 200 };
+  if (isSA)                 return { minEconomy: 30, maxEconomy: 100, maxBusiness: 200, maxFirst: 300 };
 
   // Africa intra-regional
-  if (isAfrica)             return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 120 };
+  if (isAfrica)             return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 120, maxFirst: 180 };
 
   // Intra-Europe
-  if (isEurope)             return { minEconomy: 25, maxEconomy: 80,  maxBusiness: 160 };
+  if (isEurope)             return { minEconomy: 25, maxEconomy: 80,  maxBusiness: 160, maxFirst: 240 };
 
-  // Global hard ceiling — prevents any route exceeding $150 economy one-way.
-  return { minEconomy: 25, maxEconomy: 150, maxBusiness: 300 };
+  // Global hard ceiling
+  return { minEconomy: 25, maxEconomy: 150, maxBusiness: 300, maxFirst: 450 };
 }
 
 /**
@@ -166,7 +163,7 @@ export function getAwardTaxes(
   originZone?: string,
   destZone?:   string,
 ): number {
-  if (passengers < 0 || !Number.isInteger(passengers)) {
+  if (passengers <= 0 || !Number.isInteger(passengers)) {
     throw new Error(`Invalid passenger count: ${passengers}`);
   }
 
@@ -185,7 +182,9 @@ export function getAwardTaxes(
 
   // 2. Apply corridor cap — clamps base to realistic range for this route.
   const cap = getCorridorCap(originZone, destZone, from, to);
-  const maxForCabin = cabin === "economy" || cabin === "premium"
+  const maxForCabin = cabin === "first"
+    ? cap.maxFirst
+    : cabin === "economy" || cabin === "premium"
     ? cap.maxEconomy
     : cap.maxBusiness;
   const minForCabin = cap.minEconomy; // minimum applies to all cabins

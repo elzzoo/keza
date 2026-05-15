@@ -81,8 +81,9 @@ describe("getAwardTaxes — unknown airline, zone-aware + corridor cap", () => {
     expect(getAwardTaxes("Unknown Air", "premium", 1, "CDG", "JFK", "EUROPE", "NORTH_AMERICA")).toBe(100);
   });
 
-  it("first cabin uses business cap × 1.2 logic, bounded by maxBusiness", () => {
-    // Europe↔NA: regional default first = Math.round(260 × 1.2) = 312; cap maxBusiness=220 → 220
-    expect(getAwardTaxes("Unknown Air", "first", 1, "CDG", "JFK", "EUROPE", "NORTH_AMERICA")).toBe(220);
+  it("first cabin uses business cap × 1.5, bounded by maxFirst (not maxBusiness)", () => {
+    // Europe↔NA: regional default first = Math.round(260 × 1.5) = 390; maxFirst=330 → 330
+    // (first now has its own cap: maxBusiness × 1.5 = 220 × 1.5 = 330)
+    expect(getAwardTaxes("Unknown Air", "first", 1, "CDG", "JFK", "EUROPE", "NORTH_AMERICA")).toBe(330);
   });
 });

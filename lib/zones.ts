@@ -15,7 +15,7 @@ const ZONE_MAP: Record<string, Zone> = {
   // ── Africa North ──────────────────────────────────────────────────────────
   // Morocco
   CMN: "AFRICA_NORTH", RAK: "AFRICA_NORTH", FEZ: "AFRICA_NORTH",
-  ORN: "AFRICA_NORTH", TNG: "AFRICA_NORTH", OUD: "AFRICA_NORTH",
+  TNG: "AFRICA_NORTH", OUD: "AFRICA_NORTH",
   NDR: "AFRICA_NORTH", AHU: "AFRICA_NORTH", SMW: "AFRICA_NORTH",
   EUN: "AFRICA_NORTH", TTA: "AFRICA_NORTH", ERH: "AFRICA_NORTH",
   // Tunisia
@@ -89,8 +89,7 @@ const ZONE_MAP: Record<string, Zone> = {
   FIH: "AFRICA_EAST", FKI: "AFRICA_EAST", GOM: "AFRICA_EAST",
   MYD: "AFRICA_EAST", BGF: "AFRICA_EAST",
   // Indian Ocean (East Africa grouping)
-  SEZ: "AFRICA_EAST", RUN: "AFRICA_EAST", MRU: "AFRICA_SOUTH", // Reunion & Seychelles → east; Mauritius → south
-  HAH: "AFRICA_EAST",  // Moroni, Comoros
+  SEZ: "AFRICA_EAST", RUN: "AFRICA_EAST", HAH: "AFRICA_EAST",  // Seychelles, Réunion, Comoros → east
 
   // ── Africa South ──────────────────────────────────────────────────────────
   // South Africa
@@ -109,15 +108,15 @@ const ZONE_MAP: Record<string, Zone> = {
   // Madagascar
   TNR: "AFRICA_SOUTH", MJN: "AFRICA_SOUTH", DIE: "AFRICA_SOUTH",
   TMM: "AFRICA_SOUTH", MOQ: "AFRICA_SOUTH",
-  // Mauritius (remote south)
-  // MRU already placed in EAST above — re-assign to SOUTH for award chart purposes
+  // Mauritius
+  MRU: "AFRICA_SOUTH",
 
   // ── Europe ────────────────────────────────────────────────────────────────
   // France
   CDG: "EUROPE", ORY: "EUROPE", LYN: "EUROPE", NCE: "EUROPE",
   MRS: "EUROPE", TLS: "EUROPE", BOD: "EUROPE", NTE: "EUROPE",
   LYS: "EUROPE", MPL: "EUROPE", SXB: "EUROPE", LIL: "EUROPE",
-  REU: "EUROPE", RNS: "EUROPE", CLY: "EUROPE", BIQ: "EUROPE",
+  RNS: "EUROPE", CLY: "EUROPE", BIQ: "EUROPE",
   CFE: "EUROPE", PGF: "EUROPE", BES: "EUROPE", LRH: "EUROPE",
   // UK & Ireland
   LHR: "EUROPE", LGW: "EUROPE", LCY: "EUROPE", STN: "EUROPE",
@@ -133,7 +132,6 @@ const ZONE_MAP: Record<string, Zone> = {
   VLC: "EUROPE", SVQ: "EUROPE", BIO: "EUROPE", TFN: "EUROPE",
   TFS: "EUROPE", LPA: "EUROPE", FUE: "EUROPE", ACE: "EUROPE",
   SDR: "EUROPE", OVD: "EUROPE", GRX: "EUROPE", ALC: "EUROPE",
-  REU: "EUROPE",
   // Portugal
   LIS: "EUROPE", OPO: "EUROPE", FAO: "EUROPE", FNC: "EUROPE",
   PDL: "EUROPE", TER: "EUROPE", HOR: "EUROPE",
@@ -262,8 +260,6 @@ const ZONE_MAP: Record<string, Zone> = {
   // Mongolia / Central Asia
   ULN: "ASIA", ALA: "ASIA", TSE: "ASIA",
   TAS: "ASIA", OSS: "ASIA", FRU: "ASIA",
-  // Myanmar (Burma)
-  RGN: "ASIA",
 
   // ── South America ─────────────────────────────────────────────────────────
   // Brazil

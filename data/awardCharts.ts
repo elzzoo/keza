@@ -144,6 +144,14 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       ASIA:          { economy: 30_000, premium: 45_000, business: 77_500 },
       MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 45_000 },
     },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 40_000, premium: 57_500, business: 92_500 },
+      MIDDLE_EAST:   { economy: 22_500, premium: 32_500, business: 55_000 },
+      NORTH_AMERICA: { economy: 55_000, premium: 80_000, business: 132_500 },
+      ASIA:          { economy: 40_000, premium: 57_500, business: 95_000 },
+      AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_WEST:   { economy: 27_500, premium: 40_000, business: 67_500 },
+    },
     MIDDLE_EAST: {
       EUROPE:        { economy: 17_500, premium: 27_500, business: 45_000 },
       NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 87_500 },
@@ -178,6 +186,14 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
       ASIA:          { economy: 32_500, premium: 47_500, business: 82_500 },
       MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 40_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 35_000, premium: 50_000, business: 85_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      NORTH_AMERICA: { economy: 50_000, premium: 72_500, business: 115_000 },
+      ASIA:          { economy: 37_500, premium: 55_000, business: 90_000 },
+      AFRICA_EAST:   { economy: 15_000, premium: 22_500, business: 42_500 },
+      AFRICA_WEST:   { economy: 22_500, premium: 32_500, business: 60_000 },
     },
     MIDDLE_EAST: {
       EUROPE:        { economy: 15_000, premium: 22_500, business: 40_000 },
@@ -397,25 +413,28 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
   },
 };
 
-/** Cabin multipliers used when no static chart entry exists for a program/route. */
+/** Cabin multipliers used when no static chart entry exists for a program/route.
+ *  first = business × 1.6 → matches cash ratio (6.5 / 4.0 = 1.625) and chart
+ *  lookup override (rawMiles × 1.5 rounds to ~1.5–1.6 depending on rounding). */
 const FALLBACK_CABIN_MULTIPLIERS: Record<string, number> = {
   economy:  1.0,
   premium:  1.5,
   business: 2.5,
-  first:    3.5,
+  first:    4.0,  // 2.5 × 1.6 ≈ 4.0; aligns with cash multiplier ratio (6.5/4.0)
 };
 
 // Distance-based fallback estimate (miles) — cabin-scaled to prevent economy miles
 // leaking into Business/First calculations for programs without static chart entries.
 function distanceFallback(originZone: Zone, destZone: Zone, cabin: string = "economy"): number {
   const ZONE_DISTANCE_ESTIMATE: Partial<Record<Zone, Partial<Record<Zone, number>>>> = {
-    AFRICA_NORTH:{ EUROPE: 2_000, NORTH_AMERICA: 7_000, MIDDLE_EAST: 3_500, AFRICA_WEST: 3_000, AFRICA_EAST: 5_000, ASIA: 8_000, SOUTH_AMERICA: 8_500 },
-    AFRICA_WEST: { EUROPE: 4_500, NORTH_AMERICA: 8_000, MIDDLE_EAST: 5_500, ASIA: 9_000, AFRICA_EAST: 4_000, AFRICA_SOUTH: 5_000, SOUTH_AMERICA: 9_000 },
-    AFRICA_EAST: { EUROPE: 5_000, NORTH_AMERICA: 9_500, MIDDLE_EAST: 3_500, ASIA: 6_500, AFRICA_SOUTH: 3_500 },
-    EUROPE:      { EUROPE: 2_000, NORTH_AMERICA: 7_000, ASIA: 8_000, MIDDLE_EAST: 3_500, SOUTH_AMERICA: 9_000 },
-    MIDDLE_EAST: { EUROPE: 3_500, NORTH_AMERICA: 9_500, ASIA: 4_000 },
+    AFRICA_NORTH: { EUROPE: 2_000, NORTH_AMERICA: 7_000, MIDDLE_EAST: 3_500, AFRICA_WEST: 3_000, AFRICA_EAST: 5_000, AFRICA_SOUTH: 7_500, ASIA: 8_000, SOUTH_AMERICA: 8_500 },
+    AFRICA_WEST:  { EUROPE: 4_500, NORTH_AMERICA: 8_000, MIDDLE_EAST: 5_500, ASIA: 9_000, AFRICA_EAST: 4_000, AFRICA_SOUTH: 5_000, AFRICA_NORTH: 3_000, SOUTH_AMERICA: 9_000 },
+    AFRICA_EAST:  { EUROPE: 5_000, NORTH_AMERICA: 9_500, MIDDLE_EAST: 3_500, ASIA: 6_500, AFRICA_SOUTH: 3_500, AFRICA_NORTH: 5_000 },
+    AFRICA_SOUTH: { EUROPE: 9_000, NORTH_AMERICA: 12_000, MIDDLE_EAST: 6_500, ASIA: 9_500, AFRICA_EAST: 3_500, AFRICA_WEST: 5_000, AFRICA_NORTH: 7_500, SOUTH_AMERICA: 7_500 },
+    EUROPE:       { EUROPE: 2_000, NORTH_AMERICA: 7_000, ASIA: 8_000, MIDDLE_EAST: 3_500, SOUTH_AMERICA: 9_000 },
+    MIDDLE_EAST:  { EUROPE: 3_500, NORTH_AMERICA: 9_500, ASIA: 4_000 },
     NORTH_AMERICA:{ ASIA: 10_000, SOUTH_AMERICA: 6_500 },
-    ASIA:        { SOUTH_AMERICA: 12_000 },
+    ASIA:         { SOUTH_AMERICA: 12_000 },
   };
   const d = ZONE_DISTANCE_ESTIMATE[originZone]?.[destZone]
     ?? ZONE_DISTANCE_ESTIMATE[destZone]?.[originZone]
