@@ -162,6 +162,15 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
         </div>
       </div>
 
+      {/* Synthetic / estimated price badge — shown for non-supplemental SYNTHETIC flights */}
+      {!flight.isSupplemental && (flight.source === "SYNTHETIC" || flight.priceConfidence === "ESTIMATED") && (
+        <div className="border-b border-amber-500/20 px-5 py-1.5 flex items-center justify-center gap-1.5">
+          <span className="text-xs text-amber-400/70 italic">
+            {fr ? "Prix indicatif" : "Estimated price"}
+          </span>
+        </div>
+      )}
+
       {/* Supplemental airline — price is indicative (not from the airline's own booking system) */}
       {flight.isSupplemental && (
         <div className="bg-sky-500/10 text-sky-400 border-b border-sky-500/20 px-5 py-2 text-[11px] text-center font-medium space-y-0.5">
