@@ -35,6 +35,11 @@ export interface NormalizedFlight {
   source?: "DUFFEL" | "TP" | "SYNTHETIC";
   /** How reliable the price is — HIGH = Duffel live price, LOW = TP cached, ESTIMATED = synthetic floor */
   priceConfidence?: "HIGH" | "LOW" | "ESTIMATED";
+  /**
+   * True when the price already reflects the requested cabin class (e.g. Duffel real-time).
+   * When true, CABIN_MULTIPLIER must NOT be applied — the cabin is already priced in.
+   */
+  cabinResolved?: boolean;
 }
 
 export function applyPromotions(

@@ -660,11 +660,13 @@ function enrich(
   searchDate?: string,
   returnDate?: string,
 ): FlightResult {
-  const multiplier = CABIN_MULTIPLIER[cabin];
+  // Duffel flights already price the exact cabin — don't double-apply the multiplier.
+  const outboundMultiplier = f.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
+  const returnMultiplier   = returnFlight?.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
 
-  const outboundPrice = Math.round(f.price * multiplier * 100) / 100;
+  const outboundPrice = Math.round(f.price * outboundMultiplier * 100) / 100;
   const returnPrice   = returnFlight
-    ? Math.round(returnFlight.price * multiplier * 100) / 100
+    ? Math.round(returnFlight.price * returnMultiplier * 100) / 100
     : undefined;
 
   const totalPrice = returnPrice !== undefined
@@ -712,7 +714,9 @@ function enrich(
     explanation:         comparison.explanation,
     displayMessage:      comparison.displayMessage,
     disclaimer:          comparison.disclaimer,
-    cabinPriceEstimated: cabin !== "economy",
+    // cabinPriceEstimated: true only when we applied a multiplier estimate.
+    // Duffel flights (cabinResolved) already carry the real cabin price.
+    cabinPriceEstimated: !f.cabinResolved && cabin !== "economy",
     searchId:            "",   // filled by caller; placeholder here
     optimization,
   };
@@ -846,7 +850,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   ]);
   // Tag by source so mergeFlights can prefer Duffel over TP for same key
   const tpOutbound     = tpOutboundRaw.map(f => ({ ...f, source: "TP"     as const, priceConfidence: "LOW"  as const }));
-  const duffelOutbound = duffelOutboundRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const }));
+  const duffelOutbound = duffelOutboundRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
   const rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
 
   // ── Collect synthetic entries for supplement airlines missing from providers ─
@@ -902,7 +906,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
       fetchFromDuffel(to, from, returnDate, cabin, passengers).catch((): NormalizedFlight[] => []),
     ]);
     const tpReturn     = tpReturnRaw.map(f => ({ ...f, source: "TP"     as const, priceConfidence: "LOW"  as const }));
-    const duffelReturn = duffelReturnRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const }));
+    const duffelReturn = duffelReturnRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
     const rawReturn = mergeFlights(tpReturn, duffelReturn);
 
     // Same direct-flight recovery for return leg (TP only — Duffel already included all)
