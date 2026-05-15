@@ -20,6 +20,10 @@ export interface UserProfile {
   createdAt: string;
   /** Last activity */
   lastActiveAt: string;
+  /** Miles balances per loyalty program (e.g., {"Flying Blue": 45000}) */
+  balances: Record<string, number>;
+  /** Bank transfer points/miles (e.g., {"Amex MR": 80000}) */
+  bankPoints: Record<string, number>;
 }
 
 export interface RecentSearch {
@@ -41,6 +45,14 @@ export interface FavoriteRoute {
   addedAt: string;
 }
 
+export const BANK_CURRENCIES = [
+  { key: "Amex MR",           label: "Amex Membership Rewards" },
+  { key: "Chase UR",          label: "Chase Ultimate Rewards"  },
+  { key: "Capital One Miles", label: "Capital One Miles"       },
+] as const;
+
+export type BankCurrencyKey = typeof BANK_CURRENCIES[number]["key"];
+
 const STORAGE_KEY = "keza_profile";
 const MAX_RECENT = 10;
 const MAX_FAVORITES = 20;
@@ -55,6 +67,8 @@ function defaultProfile(): UserProfile {
     favoriteRoutes: [],
     createdAt: new Date().toISOString(),
     lastActiveAt: new Date().toISOString(),
+    balances: {},
+    bankPoints: {},
   };
 }
 
