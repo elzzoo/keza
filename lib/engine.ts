@@ -939,14 +939,31 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
     ? applyPromotions(returnFlights, promotions)
     : [];
 
-  // 5. Pair outbound + cheapest return, enrich
+  // 5. Pair outbound + best-matching return, enrich
+  // Strategy: prefer a return leg that shares at least one operating airline
+  // with the outbound (avoids fictitious cross-carrier totals). Fall back to
+  // the cheapest available return when no same-carrier match exists.
   const cheapestReturn = returnWithPromos.length
     ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best))
     : undefined;
 
+  function bestReturnFor(outboundFlight: NormalizedFlight): NormalizedFlight | undefined {
+    if (!returnWithPromos.length) return undefined;
+    const outboundSet = new Set(outboundFlight.airlines);
+    // Same-carrier candidates: share ≥1 airline with outbound
+    const sameCarrier = returnWithPromos.filter(r =>
+      r.airlines.some(a => outboundSet.has(a))
+    );
+    if (sameCarrier.length > 0) {
+      return sameCarrier.reduce((best, f) => (f.price < best.price ? f : best));
+    }
+    // No carrier match — use cheapest overall
+    return cheapestReturn;
+  }
+
   const searchId = crypto.randomUUID();
   const results: FlightResult[] = withPromos.map((f) => {
-    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, cheapestReturn, date, returnDate);
+    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date, returnDate);
     r.searchId = searchId;
     return r;
   });
