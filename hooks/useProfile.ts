@@ -47,6 +47,14 @@ export function useProfile() {
     update({ cabin });
   }, [update]);
 
+  const setBalances = useCallback((balances: Record<string, number>) => {
+    update({ balances });
+  }, [update]);
+
+  const setBankPoints = useCallback((bankPoints: Record<string, number>) => {
+    update({ bankPoints });
+  }, [update]);
+
   const recordSearch = useCallback((search: Omit<RecentSearch, "timestamp">) => {
     addRecentSearch(search);
     setProfile(loadProfile()); // refresh
@@ -66,6 +74,8 @@ export function useProfile() {
     setLang,
     setCurrency,
     setCabin,
+    setBalances,
+    setBankPoints,
     recordSearch,
     toggleFavorite,
   };
