@@ -828,8 +828,13 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const cacheKey   = `keza:v21:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
+  // Each caller gets a fresh searchId — the cached results share flight/price
+  // data but click-tracking must be per-session, not shared across users.
   const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
-  if (cached) return cached;
+  if (cached) {
+    const freshId = crypto.randomUUID();
+    return cached.map((r) => ({ ...r, searchId: freshId }));
+  }
 
   // Fetch effective miles prices once (Redis → static fallback)
   const effectivePrices = await getEffectivePrices().catch(() => {
