@@ -8,6 +8,7 @@ import { CardRecommendation } from "./CardRecommendation";
 import { PriceAlertForm } from "./PriceAlertForm";
 import PortfolioCheck from "@/components/PortfolioCheck";
 import clsx from "clsx";
+import { isBusinessMode } from "@/lib/businessMode";
 
 interface Props {
   results: FlightResult[];
@@ -211,7 +212,7 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
       )}
 
       {/* Business/First mode contextual banner */}
-      {results.length > 0 && (searchMeta?.cabin === "business" || searchMeta?.cabin === "first") && (
+      {results.length > 0 && searchMeta && isBusinessMode(searchMeta.cabin) && (
         <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 border border-primary/20 rounded-xl">
           <span className="text-lg flex-shrink-0">✈️</span>
           <div>
