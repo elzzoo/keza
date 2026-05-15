@@ -280,16 +280,49 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
         </div>
       )}
 
+      {/* BUSINESS MODE — program chips */}
+      {isBusinessMode && alternatives.length > 0 && (
+        <div className="px-5 py-2.5 border-t border-border">
+          <div className="text-[9px] text-muted/60 uppercase tracking-widest mb-2">
+            {fr ? "Autres programmes" : "Other programs"}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            {buildBusinessChips(alternatives).map((chip, i) => (
+              <span
+                key={i}
+                className="text-[10px] px-2.5 py-1 bg-surface-2 border border-border rounded-full text-muted"
+              >
+                {chip.label}{chip.highTaxes ? "*" : ""}
+              </span>
+            ))}
+            <button
+              onClick={() => setShowAlts(v => !v)}
+              className="text-[10px] text-primary hover:text-primary-hover transition-colors font-medium"
+            >
+              {fr ? "Voir tous" : "See all"} →
+            </button>
+          </div>
+          {buildBusinessChips(alternatives).some(c => c.highTaxes) && (
+            <div className="text-[9px] text-muted/40 mt-1.5">
+              * {fr ? "taxes élevées" : "high taxes"}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ALTERNATIVES — top 2-3 other options */}
       {alternatives.length > 0 && (
         <div className="border-t border-border">
-          <button
-            onClick={() => setShowAlts(v => !v)}
-            className="w-full px-5 py-2.5 flex items-center justify-between text-[11px] text-muted hover:text-fg transition-colors"
-          >
-            <span>{fr ? `${alternatives.length} autre${alternatives.length > 1 ? "s" : ""} option${alternatives.length > 1 ? "s" : ""}` : `${alternatives.length} more option${alternatives.length > 1 ? "s" : ""}`}</span>
-            <span className="text-subtle">{showAlts ? "▲" : "▼"}</span>
-          </button>
+          {/* Toggle button hidden in Business mode — the chips row handles expand there */}
+          {!isBusinessMode && (
+            <button
+              onClick={() => setShowAlts(v => !v)}
+              className="w-full px-5 py-2.5 flex items-center justify-between text-[11px] text-muted hover:text-fg transition-colors"
+            >
+              <span>{fr ? `${alternatives.length} autre${alternatives.length > 1 ? "s" : ""} option${alternatives.length > 1 ? "s" : ""}` : `${alternatives.length} more option${alternatives.length > 1 ? "s" : ""}`}</span>
+              <span className="text-subtle">{showAlts ? "▲" : "▼"}</span>
+            </button>
+          )}
           {showAlts && (
             <div className="px-5 pb-3 space-y-2">
               {alternatives.map((opt, i) => {
