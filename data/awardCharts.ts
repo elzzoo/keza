@@ -397,8 +397,17 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
   },
 };
 
-// Distance-based fallback estimate (miles)
-function distanceFallback(originZone: Zone, destZone: Zone): number {
+/** Cabin multipliers used when no static chart entry exists for a program/route. */
+const FALLBACK_CABIN_MULTIPLIERS: Record<string, number> = {
+  economy:  1.0,
+  premium:  1.5,
+  business: 2.5,
+  first:    3.5,
+};
+
+// Distance-based fallback estimate (miles) — cabin-scaled to prevent economy miles
+// leaking into Business/First calculations for programs without static chart entries.
+function distanceFallback(originZone: Zone, destZone: Zone, cabin: string = "economy"): number {
   const ZONE_DISTANCE_ESTIMATE: Partial<Record<Zone, Partial<Record<Zone, number>>>> = {
     AFRICA_NORTH:{ EUROPE: 2_000, NORTH_AMERICA: 7_000, MIDDLE_EAST: 3_500, AFRICA_WEST: 3_000, AFRICA_EAST: 5_000, ASIA: 8_000, SOUTH_AMERICA: 8_500 },
     AFRICA_WEST: { EUROPE: 4_500, NORTH_AMERICA: 8_000, MIDDLE_EAST: 5_500, ASIA: 9_000, AFRICA_EAST: 4_000, AFRICA_SOUTH: 5_000, SOUTH_AMERICA: 9_000 },
@@ -411,7 +420,8 @@ function distanceFallback(originZone: Zone, destZone: Zone): number {
   const d = ZONE_DISTANCE_ESTIMATE[originZone]?.[destZone]
     ?? ZONE_DISTANCE_ESTIMATE[destZone]?.[originZone]
     ?? 7_000;
-  return Math.round(d * 4.5);
+  const multiplier = FALLBACK_CABIN_MULTIPLIERS[cabin] ?? 1.0;
+  return Math.round(d * 4.5 * multiplier);
 }
 
 export function getMilesRequired(
@@ -431,11 +441,12 @@ export function getMilesRequired(
   let source: "REAL" | "ESTIMATE";
 
   if (entry) {
+    // Static charts have economy/premium/business columns only; first uses business rates.
     const cabinKey = cabin === "first" ? "business" : cabin;
-    milesPerPaxOneway = entry[cabinKey] ?? distanceFallback(originZone, destZone);
+    milesPerPaxOneway = entry[cabinKey] ?? distanceFallback(originZone, destZone, cabin);
     source = "REAL";
   } else {
-    milesPerPaxOneway = distanceFallback(originZone, destZone);
+    milesPerPaxOneway = distanceFallback(originZone, destZone, cabin);
     source = "ESTIMATE";
   }
 
