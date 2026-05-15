@@ -61,7 +61,7 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   },
   {
     program: "Air Canada Aeroplan",
-    valueCents: 1.5,          // Strong program with good partner availability
+    valueCents: 1.6,          // Strong program with good partner availability
     confidence: "HIGH",
     lastUpdated: "2026-04-20",
   },
@@ -113,8 +113,6 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   { program: "Garuda GarudaMiles",          valueCents: 1.0, confidence: "LOW",    lastUpdated: "2026-04-28" },
 
   { program: "Delta SkyMiles",              valueCents: 1.2, confidence: "HIGH",   lastUpdated: "2026-04-27" },
-  { program: "BA Avios",                    valueCents: 1.5, confidence: "HIGH",   lastUpdated: "2026-04-27" },
-  { program: "Aeroplan",                    valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "AAdvantage",                  valueCents: 1.3, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "LifeMiles",                   valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   { program: "ANA Mileage Club",            valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-04-27" },

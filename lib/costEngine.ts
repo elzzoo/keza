@@ -77,7 +77,6 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Turkish Miles&Smiles":    "Turkish Airlines",
   "Ethiopian ShebaMiles":    "Ethiopian Airlines",
   "Air Canada Aeroplan":     "Air Canada",
-  "Aeroplan":                "Air Canada",        // globalPrograms alias
   "United MileagePlus":      "United",
   "Lufthansa Miles & More":  "Lufthansa",
   "Singapore KrisFlyer":     "Singapore Airlines",
@@ -85,7 +84,6 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "LifeMiles":               "Avianca",
   // ─── Oneworld ──────────────────────────────────────────────────────────────
   "British Airways Avios":   "British Airways",   // awardCharts key
-  "BA Avios":                "British Airways",   // globalPrograms alias
   "Qatar Privilege Club":    "Qatar Airways",
   "AAdvantage":              "American Airlines",
   "Iberia Avios Plus":       "Iberia",
