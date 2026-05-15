@@ -33,7 +33,7 @@ echo "✅ ESLint OK"
 echo ""
 
 echo "▶ Tests unitaires..."
-npx jest --passWithNoTests || { echo ""; echo "❌ Tests échoués — push bloqué."; exit 1; }
+npx jest --passWithNoTests --testPathPatterns="^(?!.*worktrees).*" || { echo ""; echo "❌ Tests échoués — push bloqué."; exit 1; }
 echo "✅ Tests OK"
 echo ""
 
