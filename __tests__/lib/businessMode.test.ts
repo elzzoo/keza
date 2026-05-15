@@ -46,6 +46,10 @@ describe("isBusinessMode", () => {
   it("returns false for premium", () => {
     expect(isBusinessMode("premium")).toBe(false);
   });
+
+  it("returns false for empty string", () => {
+    expect(isBusinessMode("")).toBe(false);
+  });
 });
 
 // ── HIGH_TAXES_THRESHOLD_USD ──────────────────────────────────────────────────
