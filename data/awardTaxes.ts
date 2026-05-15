@@ -153,7 +153,7 @@ function getRegionalDefaultBase(
   else              { eco =  80; biz = 180; }
 
   return cabin === "economy" || cabin === "premium" ? eco
-    : cabin === "first" ? Math.round(biz * 1.2)
+    : cabin === "first" ? Math.round(biz * 1.5)
     : biz;
 }
 
@@ -177,7 +177,7 @@ export function getAwardTaxes(
     base = cabin === "economy" || cabin === "premium"
       ? record.economy
       : cabin === "first"
-      ? Math.round(record.business * 1.2)
+      ? Math.round(record.business * 1.5)
       : record.business;
   } else {
     base = getRegionalDefaultBase(from, to, originZone, destZone, cabin);

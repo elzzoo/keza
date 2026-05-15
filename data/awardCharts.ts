@@ -441,9 +441,13 @@ export function getMilesRequired(
   let source: "REAL" | "ESTIMATE";
 
   if (entry) {
-    // Static charts have economy/premium/business columns only; first uses business rates.
+    // Static charts have economy/premium/business columns only; no "first" column.
+    // First class uses business rates × 1.5 to reflect the typical first-vs-business
+    // award premium (~40-60% more miles). This keeps the miles/cash ratio coherent:
+    //   cash ratio (first/business) ≈ 1.6×  →  miles ratio ≈ 1.5×
     const cabinKey = cabin === "first" ? "business" : cabin;
-    milesPerPaxOneway = entry[cabinKey] ?? distanceFallback(originZone, destZone, cabin);
+    const rawMiles = entry[cabinKey] ?? distanceFallback(originZone, destZone, cabin);
+    milesPerPaxOneway = cabin === "first" ? Math.round(rawMiles * 1.5) : rawMiles;
     source = "REAL";
   } else {
     milesPerPaxOneway = distanceFallback(originZone, destZone, cabin);
