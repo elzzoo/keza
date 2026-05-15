@@ -322,8 +322,13 @@ function buildOption(
   cashTotal: number,
   effectivePrices: Map<string, number>,
 ): MilesOption {
-  // Market value of a mile for this program (cents).
-  // For TRANSFER: use the source currency's value (e.g. Amex MR value).
+  // For DIRECT/ALLIANCE: valuePerMile = destination program's cents/mile.
+  // For TRANSFER: milesCost uses the SOURCE currency's cents/unit (opportunity
+  // cost — e.g. Amex MR 2.0¢ per MR point burned), while valuePerMile also
+  // reflects that source value so the UI formula stays self-consistent.
+  // This is intentional: "how much does it cost me to burn X Amex MR points?"
+  // is the right pricing question for a transfer.  The destination program's
+  // own value (e.g. FB 1.5¢) would understate the true cost.
   const sourceProgram = via ?? program;
   const baseCents =
     effectivePrices.get(sourceProgram) ??
@@ -332,12 +337,15 @@ function buildOption(
     MILES_PRICE_MAP.get(program) ??
     DEFAULT_MILE_VALUE_CENTS;
 
-  // valuePerMile is constant per program — no contextual adjustment.
-  // This ensures consistent, predictable comparisons across routes.
+  // valuePerMile — source currency value for TRANSFER, destination for others.
+  // UI must label it "¢/pt" (not "¢/mile") when type === "TRANSFER" to avoid
+  // implying that destination miles carry this valuation.
   const valuePerMile = baseCents;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CORE FORMULA:  totalMilesCost = (milesRequired × valuePerMile) + taxes
+  // For TRANSFER: milesRequired = destination miles needed; valuePerMile =
+  // source currency cost/unit (assumes 1:1 ratio at transfer time).
   // ═══════════════════════════════════════════════════════════════════════════
   const milesCost      = Math.round((milesRequired * valuePerMile) / 100 * 100) / 100;
   const totalMilesCost = Math.round((milesCost + taxes) * 100) / 100;

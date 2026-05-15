@@ -276,7 +276,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             )}
           </div>
           <div className="text-[11px] text-muted leading-relaxed">
-            {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}¢/mile + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
+            {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}{bestOption.type === "TRANSFER" ? "¢/pt" : "¢/mile"} + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
           </div>
         </div>
       )}
