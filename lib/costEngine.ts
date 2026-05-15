@@ -405,7 +405,8 @@ export function buildCostOptions(
   flight: FlightInput,
   effectivePrices: Map<string, number>
 ): CostComparison {
-  const { from, to, totalPrice: cashTotal, airlines, cabin, tripType, passengers } = flight;
+  const { from, to, totalPrice: cashTotal, airlines, cabin, tripType } = flight;
+  const passengers = Math.max(1, Math.round(flight.passengers || 1)); // defensive: always ≥ 1
 
   const originZone = getZone(from) ?? undefined;
   const destZone   = getZone(to)   ?? undefined;
