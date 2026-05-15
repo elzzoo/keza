@@ -77,6 +77,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
   const alternatives = (flight.milesOptions ?? [])
     .filter(o => !o.isBestDeal)
     .slice(0, 3);
+  const businessChips = isBusinessMode ? buildBusinessChips(alternatives) : [];
 
   // Airlines deduped
   const airlines = [...flight.airlines, ...(flight.returnAirlines ?? [])]
@@ -287,9 +288,9 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             {fr ? "Autres programmes" : "Other programs"}
           </div>
           <div className="flex flex-wrap gap-2 items-center">
-            {buildBusinessChips(alternatives).map((chip, i) => (
+            {businessChips.map((chip, i) => (
               <span
-                key={i}
+                key={chip.label}
                 className="text-[10px] px-2.5 py-1 bg-surface-2 border border-border rounded-full text-muted"
               >
                 {chip.label}{chip.highTaxes ? "*" : ""}
@@ -302,7 +303,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
               {fr ? "Voir tous" : "See all"} →
             </button>
           </div>
-          {buildBusinessChips(alternatives).some(c => c.highTaxes) && (
+          {businessChips.some(c => c.highTaxes) && (
             <div className="text-[9px] text-muted/40 mt-1.5">
               * {fr ? "taxes élevées" : "high taxes"}
             </div>
