@@ -723,10 +723,10 @@ export function buildCostOptions(
   let bestOption: MilesOption | null = null;
   if (sortedOptions.length > 0) {
     const hasAccessibleOption = sortedOptions.some(
-      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2,
+      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2,
     );
     bestOption = hasAccessibleOption
-      ? sortedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2)!
+      ? sortedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2)!
       : sortedOptions[0]; // fall back to cheapest if no accessible option exists
     bestOption.isBestDeal = true;
   }
