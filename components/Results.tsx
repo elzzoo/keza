@@ -39,6 +39,8 @@ const L = {
     partial: "⚠️ Résultats partiels affichés — certaines sources indisponibles",
     back: "← Nouvelle recherche",
     loading: "Recherche en cours…",
+    businessBannerTitle: "Mode Business — comparaison vs prix Business cash",
+    businessBannerDesc: "Les miles en Business offrent souvent 5–8× plus de valeur qu'en éco · Prix cash estimé (×4 éco)",
   },
   en: {
     results: "Results",
@@ -59,6 +61,8 @@ const L = {
     partial: "⚠️ Partial results shown — some sources unavailable",
     back: "← New search",
     loading: "Searching…",
+    businessBannerTitle: "Business mode — compared against Business cash price",
+    businessBannerDesc: "Miles in Business often deliver 5–8× more value than economy · Cash price estimated (×4 eco)",
   },
 };
 
@@ -203,6 +207,17 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
         <div className="bg-warning/10 rounded-xl border border-warning/25 px-4 py-3 flex items-center gap-3">
           <span className="text-base">⚠️</span>
           <p className="text-xs font-semibold text-warning">{t.partial}</p>
+        </div>
+      )}
+
+      {/* Business/First mode contextual banner */}
+      {results.length > 0 && (searchMeta?.cabin === "business" || searchMeta?.cabin === "first") && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 border border-primary/20 rounded-xl">
+          <span className="text-lg flex-shrink-0">✈️</span>
+          <div>
+            <p className="text-xs font-semibold text-blue-300">{t.businessBannerTitle}</p>
+            <p className="text-[11px] text-muted mt-0.5">{t.businessBannerDesc}</p>
+          </div>
         </div>
       )}
 
