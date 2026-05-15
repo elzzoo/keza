@@ -974,11 +974,13 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const allResults = [...results, ...syntheticResults];
 
   // 5b. Auto-calibrate: record observations for self-learning mile values
-  // Only record real (non-synthetic) flights — synthetics have estimated prices.
+  // Only record HIGH-confidence prices (Duffel real-time) — TP cached prices
+  // and multiplier-estimated fares would corrupt the auto-calibration signal.
   // Fire-and-forget — never block the response
   Promise.allSettled(
     results.map((r) => {
       if (!r.bestOption || r.cashCost <= 0) return Promise.resolve();
+      if (r.priceConfidence !== "HIGH") return Promise.resolve();
       return recordObservation(
         r.bestOption.program,
         r.cashCost,
