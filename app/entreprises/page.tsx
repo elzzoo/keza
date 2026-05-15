@@ -383,16 +383,7 @@ export default function EntreprisesPage() {
             </div>
             <p className="text-sm text-muted">{t.spSub}</p>
 
-            {/* Logo placeholders */}
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-28 h-10 rounded-xl bg-surface-2 border border-border skeleton opacity-50"
-                />
-              ))}
-            </div>
-            <p className="text-xs text-subtle pt-2">{t.spLogos}</p>
+            <p className="text-sm text-muted max-w-md mx-auto pt-2">{t.spLogos}</p>
           </div>
         </section>
 
