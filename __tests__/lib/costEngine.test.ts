@@ -93,9 +93,12 @@ describe("buildCostOptions", () => {
   });
 
   describe("savings field", () => {
-    it("is zero or positive", () => {
-      const { savings } = buildCostOptions(BASE, new Map());
-      expect(savings).toBeGreaterThanOrEqual(0);
+    it("is a finite number (positive = miles cheaper, negative = cash cheaper)", () => {
+      const { savings, recommendation } = buildCostOptions(BASE, new Map());
+      expect(Number.isFinite(savings)).toBe(true);
+      // Sign must agree with recommendation
+      if (recommendation === "USE_MILES") expect(savings).toBeGreaterThan(0);
+      if (recommendation === "USE_CASH")  expect(savings).toBeLessThanOrEqual(0);
     });
   });
 
@@ -191,7 +194,8 @@ describe("savings rounding in displayMessage", () => {
     // If it contains a colon, the value after must be an integer
     if (displayMessage.includes(":")) {
       const value = displayMessage.split(":")[1];
-      expect(value).toMatch(/^\d+$/);
+      // Negative savings are allowed (cash cheaper); strip leading minus before checking integer
+      expect(value.replace(/^-/, "")).toMatch(/^\d+$/);
     }
   });
 });

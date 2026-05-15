@@ -729,8 +729,8 @@ export function buildCostOptions(
     bestOption.isBestDeal = true;
   }
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
-  const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper
-  const savings = Math.round(Math.abs(signedSavings) * 100) / 100;
+  const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper, negative = cash cheaper
+  const savings = Math.round(signedSavings * 100) / 100;  // keep sign — UI uses recommendation to determine direction
 
   // Strict: USE_MILES only when the ACCESSIBLE best option is strictly cheaper than cash
   const recommendation: Recommendation = (bestOption !== null && bestOption.totalMilesCost < cashTotal)
@@ -742,8 +742,8 @@ export function buildCostOptions(
   const displayMessage: string = !bestOption
     ? "no_miles_option"
     : recommendation === "USE_MILES"
-      ? `miles_cheaper:${Math.round(savings)}`
-      : `cash_cheaper:${Math.round(savings)}`;
+      ? `miles_cheaper:${Math.round(savings)}`          // savings > 0
+      : `cash_cheaper:${Math.round(Math.abs(savings))}`; // savings ≤ 0 → log absolute amount
 
   // Trust disclaimer
   const disclaimer =
