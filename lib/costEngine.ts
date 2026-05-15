@@ -253,7 +253,7 @@ interface CorridorGuarantee {
   inferredAirline: string;
 }
 
-function getCorridorGuarantees(originZone: string, destZone: string): CorridorGuarantee[] {
+function getCorridorGuarantees(originZone: string, destZone: string, airlines: string[] = []): CorridorGuarantee[] {
   const g: CorridorGuarantee[] = [];
 
   const isEuropeAfrica =
@@ -274,8 +274,12 @@ function getCorridorGuarantees(originZone: string, destZone: string): CorridorGu
     (originZone === "MIDDLE_EAST" && (destZone === "EUROPE" || destZone === "NORTH_AMERICA")) ||
     (destZone === "MIDDLE_EAST" && (originZone === "EUROPE" || originZone === "NORTH_AMERICA"));
 
-  // Europe ↔ Africa — Flying Blue (Air France flagship corridor)
-  if (isEuropeAfrica) {
+  // Europe ↔ Africa — Flying Blue only when AF/KLM metal is involved.
+  // Flying Blue cannot be redeemed on unrelated carriers (e.g. Ethiopian, Turkish).
+  // When airlines list is empty/unknown we still inject it (conservative: better
+  // to show an extra option than silently hide it).
+  const fbPresent = airlines.length === 0 || airlines.some((a) => FLYING_BLUE_AIRLINES.has(a));
+  if (isEuropeAfrica && fbPresent) {
     g.push({ program: "Flying Blue", type: "DIRECT", inferredAirline: "Air France" });
   }
 
@@ -467,7 +471,7 @@ export function buildCostOptions(
   // already in effectivePrograms (no duplicates).
   const corridorGuaranteedPrograms = new Set<string>();
   if (originZone && destZone) {
-    for (const g of getCorridorGuarantees(originZone, destZone)) {
+    for (const g of getCorridorGuarantees(originZone, destZone, airlines)) {
       corridorGuaranteedPrograms.add(g.program);
       if (!effectivePrograms.some((p) => p.program === g.program)) {
         effectivePrograms.push(g);
