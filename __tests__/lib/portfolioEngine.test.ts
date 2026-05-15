@@ -211,6 +211,17 @@ describe("CANT_AFFORD", () => {
       shortfall: 8000,
     });
   });
+
+  it("returns CANT_AFFORD when best-shortfall program has no transfer partner", () => {
+    // Use a program name not present in TRANSFER_BONUSES.to
+    const noPartnerOpt = makeOption("SomeAirlineMiles", 50000);
+    const result = checkPortfolio(
+      [noPartnerOpt],
+      { "SomeAirlineMiles": 10000 },
+      { "Amex MR": 100000 }, // lots of points but no transfer path to "SomeAirlineMiles"
+    );
+    expect(result.type).toBe("CANT_AFFORD");
+  });
 });
 
 // ─── EDGE CASES ───────────────────────────────────────────────────────────────
