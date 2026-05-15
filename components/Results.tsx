@@ -6,6 +6,7 @@ import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
 import { CardRecommendation } from "./CardRecommendation";
 import { PriceAlertForm } from "./PriceAlertForm";
+import PortfolioCheck from "@/components/PortfolioCheck";
 import clsx from "clsx";
 
 interface Props {
@@ -108,6 +109,12 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
 
+  // Use milesOptions from the best-deal result, fallback to first result
+  const bestResultOptions =
+    results.find(r => r.bestOption?.isBestDeal === true)?.milesOptions ??
+    results[0]?.milesOptions ??
+    [];
+
   // Check if there are any direct flights
   const hasDirectFlights = results.some(r => (r.stops ?? 0) === 0);
   const allWithStops = results.length > 0 && !hasDirectFlights;
@@ -201,6 +208,11 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
 
       {/* Card recommendation (transfer savings) */}
       {results.length > 0 && <CardRecommendation results={results} lang={lang} formatPrice={formatPrice} />}
+
+      {/* Portfolio check */}
+      {results.length > 0 && (
+        <PortfolioCheck milesOptions={bestResultOptions} lang={lang} />
+      )}
 
       {/* Price alert form */}
       {results.length > 0 && searchMeta && bestPrice > 0 && (

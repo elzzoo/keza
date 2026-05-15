@@ -2,6 +2,8 @@
 
 import { PROGRAMS } from "@/data/programs";
 import { trackProgramClick } from "@/lib/analytics";
+import { useProfile } from "@/hooks/useProfile";
+import { BANK_CURRENCIES } from "@/lib/userProfile";
 
 interface Props {
   lang: "fr" | "en";
@@ -16,9 +18,10 @@ const TOP5 = PROGRAMS.slice(0, 5);
 
 export function ProgramsWidget({ lang }: Props) {
   const t = L[lang];
+  const { profile, setBalances, setBankPoints } = useProfile();
 
   return (
-    <div className="bg-surface border border-border rounded-2xl p-4">
+    <div className="bg-surface border border-border rounded-2xl p-4" data-programs-widget="">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -69,6 +72,60 @@ export function ProgramsWidget({ lang }: Props) {
 
       {/* Footer */}
       <p className="text-[10px] text-muted mt-3 pt-3 border-t border-border/50">{t.updated}</p>
+
+      {/* Mes soldes — balance inputs */}
+      {profile && (
+        <>
+          <div className="border-t border-white/10 my-3" />
+
+          <p className="text-sm font-semibold text-white/70 mt-4 mb-2">💳 Mes soldes</p>
+
+          {/* Per-program balances */}
+          <div className="space-y-2">
+            {profile.programs.map((prog) => (
+              <div key={prog} className="flex items-center gap-2">
+                <span className="flex-1 text-xs text-fg truncate">{prog}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  defaultValue={profile.balances[prog] || ""}
+                  onBlur={(e) =>
+                    setBalances({ ...profile.balances, [prog]: Number(e.target.value) || 0 })
+                  }
+                  className="bg-white/10 border border-white/20 rounded px-2 py-1 w-20 text-right text-sm text-white"
+                />
+                <span className="text-xs opacity-50">miles</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Bank transfer currencies */}
+          {BANK_CURRENCIES.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {BANK_CURRENCIES.map((bank) => (
+                <div key={bank.key} className="flex items-center gap-2">
+                  <span className="flex-1 text-xs text-fg truncate">{bank.label}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    defaultValue={profile.bankPoints[bank.key] || ""}
+                    onBlur={(e) =>
+                      setBankPoints({
+                        ...profile.bankPoints,
+                        [bank.key]: Number(e.target.value) || 0,
+                      })
+                    }
+                    className="bg-white/10 border border-white/20 rounded px-2 py-1 w-20 text-right text-sm text-white"
+                  />
+                  <span className="text-xs opacity-50">pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
