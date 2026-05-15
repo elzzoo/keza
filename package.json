@@ -26,6 +26,10 @@
     "sonner": "^2.0.7",
     "web-push": "^3.6.7"
   },
+  "overrides": {
+    "d3-color": ">=3.1.0",
+    "glob": ">=10.4.6"
+  },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/jest": "^30.0.0",
