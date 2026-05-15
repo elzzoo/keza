@@ -5,6 +5,7 @@ import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { SITE_URL } from "@/lib/siteConfig";
+import { ProfileProvider } from "@/contexts/ProfileContext";
 
 const inter = localFont({
   src: "./fonts/GeistVF.woff",
@@ -104,19 +105,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
-        {children}
-        <SpeedInsights />
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            style: {
-              background: "rgb(var(--surface))",
-              border: "1px solid rgb(var(--border))",
-              color: "rgb(var(--fg))",
-            },
-          }}
-          richColors
-        />
+        <ProfileProvider>
+          {children}
+          <SpeedInsights />
+          <Toaster
+            position="bottom-center"
+            toastOptions={{
+              style: {
+                background: "rgb(var(--surface))",
+                border: "1px solid rgb(var(--border))",
+                color: "rgb(var(--fg))",
+              },
+            }}
+            richColors
+          />
+        </ProfileProvider>
         <Script
           async
           src="https://plausible.io/js/pa--f94oxZFO8yrXtN46QpIJ.js"
