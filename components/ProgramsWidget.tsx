@@ -10,8 +10,8 @@ interface Props {
 }
 
 const L = {
-  fr: { title: "Top programmes", seeAll: "Voir tout →", score: "Score KEZA", updated: "Mis à jour · avr. 2026" },
-  en: { title: "Top programs",   seeAll: "See all →",   score: "KEZA Score", updated: "Updated · Apr 2026" },
+  fr: { title: "Top programmes", seeAll: "Voir tout →", score: "Score KEZA", updated: "Mis à jour · avr. 2026", balances: "💳 Mes soldes", miles: "miles", pts: "pts" },
+  en: { title: "Top programs",   seeAll: "See all →",   score: "KEZA Score", updated: "Updated · Apr 2026", balances: "💳 My balances", miles: "miles", pts: "pts" },
 };
 
 const TOP5 = PROGRAMS.slice(0, 5);
@@ -78,7 +78,7 @@ export function ProgramsWidget({ lang }: Props) {
         <>
           <div className="border-t border-white/10 my-3" />
 
-          <p className="text-sm font-semibold text-white/70 mt-4 mb-2">💳 Mes soldes</p>
+          <p className="text-sm font-semibold text-white/70 mt-4 mb-2">{t.balances}</p>
 
           {/* Per-program balances */}
           <div className="space-y-2">
@@ -95,7 +95,7 @@ export function ProgramsWidget({ lang }: Props) {
                   }
                   className="bg-white/10 border border-white/20 rounded px-2 py-1 w-20 text-right text-sm text-white"
                 />
-                <span className="text-xs opacity-50">miles</span>
+                <span className="text-xs opacity-50">{t.miles}</span>
               </div>
             ))}
           </div>
@@ -119,7 +119,7 @@ export function ProgramsWidget({ lang }: Props) {
                     }
                     className="bg-white/10 border border-white/20 rounded px-2 py-1 w-20 text-right text-sm text-white"
                   />
-                  <span className="text-xs opacity-50">pts</span>
+                  <span className="text-xs opacity-50">{t.pts}</span>
                 </div>
               ))}
             </div>
