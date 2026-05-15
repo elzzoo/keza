@@ -288,7 +288,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             {fr ? "Autres programmes" : "Other programs"}
           </div>
           <div className="flex flex-wrap gap-2 items-center">
-            {businessChips.map((chip, i) => (
+            {businessChips.map((chip) => (
               <span
                 key={chip.label}
                 className="text-[10px] px-2.5 py-1 bg-surface-2 border border-border rounded-full text-muted"
