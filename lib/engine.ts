@@ -175,7 +175,8 @@ async function fetchV3(
   }
 
   return Array.from(seen.values())
-    .filter((f) => f.price >= MIN_REALISTIC_PRICE_USD)   // drop data artifacts
+    .filter((f) => f.price >= MIN_REALISTIC_PRICE_USD)          // drop data artifacts
+    .filter((f) => iataToAirline(f.airline) !== null)           // skip blacklisted/virtual carriers
     .slice(0, 15)
     .map((f) => {
       const flight: NormalizedFlight = {

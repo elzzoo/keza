@@ -16,6 +16,8 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   OZ: "Asiana Airlines",       // Star Alliance
 
   // ─── Star Alliance ─────────────────────────────────────────────────────────
+  AI: "Air India",            // Star Alliance
+  TG: "Thai Airways",         // Star Alliance
   LH: "Lufthansa",
   UA: "United",
   AC: "Air Canada",
@@ -72,9 +74,12 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   CM: "Copa Airlines",
   OB: "BoA (Boliviana)",
   AH: "Air Algérie",
-  DM: "Divi Divi Air",
+  VN: "Vietnam Airlines",     // SkyTeam associate
+  GF: "Gulf Air",             // independent
 
   // ─── Low-cost carriers (common in Travelpayouts / Duffel results) ─────────
+  HV: "Transavia",            // Air France-KLM LCC
+  "3O": "Air Arabia Maroc",   // Air Arabia subsidiary
   VY: "Vueling",
   VF: "Ajet",
   FR: "Ryanair",
@@ -86,6 +91,8 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   W9: "Wizz Air Abu Dhabi",
   W4: "Wizz Air Malta",
   X5: "SmartLynx Airlines",
+  "3U": "Sichuan Airlines",   // Chinese carrier
+  S4: "SATA Air Açores",      // Portuguese regional
 
   // ─── Duffel virtual codes ─────────────────────────────────────────────────
   // "ZZ" is Duffel's placeholder for multi-carrier or unidentified segments.
@@ -102,7 +109,8 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
 export function iataToAirline(code: string): string | null {
   const upper = code.toUpperCase();
   // Known virtual/unresolved codes → return null so callers can skip them
-  if (upper === "ZZ" || upper === "YP" || upper === "ZG") return null;
+  const VIRTUAL_CODES = new Set(["ZZ", "YP", "ZG", "DM", "Z0", "NI"]);
+  if (VIRTUAL_CODES.has(upper)) return null;
   return IATA_TO_AIRLINE[upper] ?? null;
 }
 
