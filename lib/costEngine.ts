@@ -89,8 +89,11 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Iberia Avios Plus":       "Iberia",
   "Japan Airlines Mileage Bank": "Japan Airlines",
   "LATAM Pass":              "LATAM Brasil",
-  "Cathay Pacific Asia Miles": "Cathay Pacific",  // CX — iataAirlines now resolves correctly
-  "Qantas Frequent Flyer":   "Qantas",            // QF — iataAirlines now resolves correctly
+  // Cathay Pacific Asia Miles + Qantas Frequent Flyer intentionally omitted:
+  // neither has a static award chart → they would silently use distanceFallback and
+  // produce a duplicate vs the dynamic engine estimate. They surface correctly via
+  // OPERATOR_TO_PROGRAM (corridor guarantee when CX/QF flies the route) and
+  // globalPrograms (dynamic engine for all searches).
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
