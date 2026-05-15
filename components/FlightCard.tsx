@@ -6,6 +6,7 @@ import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
+import { isBusinessMode as checkBusinessMode, HIGH_TAXES_THRESHOLD_USD, buildBusinessChips } from "@/lib/businessMode";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
@@ -70,6 +71,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
   const isUseMiles = flight.recommendation === "USE_MILES";
   const savingsRatio = flight.cashCost > 0 ? Math.abs(flight.savings) / flight.cashCost : 0;
   const isNearParity = savingsRatio < 0.05 && bestOption !== null;
+  const isBusinessMode = checkBusinessMode(flight.cabin);
 
   const [showAlts, setShowAlts] = useState(false);
   const alternatives = (flight.milesOptions ?? [])
@@ -117,8 +119,8 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
               ? (fr ? "💵 Paiement cash uniquement" : "💵 Cash only")
               : flight.recommendation === "USE_MILES"
                 ? (fr
-                    ? `🔥 Tu économises ${fmt(flight.savings)} avec les miles`
-                    : `🔥 You save ${fmt(flight.savings)} with miles`)
+                    ? `🔥 Tu économises ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " avec les miles"}`
+                    : `🔥 You save ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " with miles"}`)
                 : flight.savings > 0
                   ? (fr
                       ? `💵 Cash moins cher — économise ${fmt(flight.savings)}`
@@ -213,7 +215,7 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             </div>
           )}
           <div className="text-[10px] text-muted uppercase tracking-widest mt-1 font-bold">
-            Cash
+            {isBusinessMode ? "Business cash" : "Cash"}
           </div>
         </div>
 
@@ -261,6 +263,11 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
             <span className="text-[12px] font-bold text-fg">
               {bestOption.program}
             </span>
+            {isBusinessMode && (
+              <span className="text-[8px] font-bold bg-primary/30 text-blue-300 rounded px-1.5 py-0.5">
+                BEST J
+              </span>
+            )}
             {bestOption.via && (
               <span className="text-[10px] text-muted">
                 via {bestOption.via}
