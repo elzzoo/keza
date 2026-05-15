@@ -437,10 +437,10 @@ export function buildCostOptions(
           Object.entries(PROGRAM_TO_AIRLINE)
           .filter(([program, programAirline]) => {
             if (PROGRAMS_BY_NAME[program]?.isBookable === false) return false;
-            // Unknown airline (empty string): allow all programs
-            if (!operatingAirline) return true;
-            // Known airline with no alliance entry: likely a niche/LCC → exclude
-            if (!operatingAlliance) return false;
+            // Unknown airline (empty string) or airline not in alliances map: allow all programs.
+            // A niche/LCC carrier with no alliance should not silently suppress miles options —
+            // the user may still hold miles from any program regardless of the operating airline.
+            if (!operatingAirline || !operatingAlliance) return true;
             // Independent airlines: only show Independent-alliance programs
             if (operatingAlliance === "Independent") {
               return ALLIANCES[programAirline] === "Independent";
