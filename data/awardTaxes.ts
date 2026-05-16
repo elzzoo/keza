@@ -45,6 +45,9 @@ export const AWARD_TAXES: Record<string, AwardTaxRecord> = {
   "Iberia":              { economy: 120, business: 240, note: "Moderate YQ on long-haul" },
   "Royal Air Maroc":     { economy:  50, business: 100, note: "Moderate surcharges" },
   "Japan Airlines":      { economy:  80, business: 150, note: "Moderate surcharges" },
+  "Cathay Pacific":      { economy: 100, business: 200, note: "Moderate surcharges" },
+  "Qantas":              { economy: 120, business: 240, note: "Moderate YQ surcharges" },
+  "LATAM Brasil":        { economy:  60, business: 110, note: "Low surcharges" },
   // Independent
   "Emirates":            { economy:  50, business:  90, note: "Low surcharges" },
   "Etihad":              { economy:  60, business: 110, note: "Low surcharges" },
@@ -187,7 +190,13 @@ export function getAwardTaxes(
     : cabin === "economy" || cabin === "premium"
     ? cap.maxEconomy
     : cap.maxBusiness;
-  const minForCabin = cap.minEconomy; // minimum applies to all cabins
+  // Scale the minimum proportionally: business/first have higher minimum taxes.
+  // e.g. UK APD: economy min=$100, business min=100*(300/150)=$200, first=100*(450/150)=$300
+  const minForCabin = cabin === "first"
+    ? Math.round(cap.minEconomy * (cap.maxFirst / cap.maxEconomy))
+    : cabin === "business"
+    ? Math.round(cap.minEconomy * (cap.maxBusiness / cap.maxEconomy))
+    : cap.minEconomy;
 
   const capped = Math.min(Math.max(base, minForCabin), maxForCabin);
 

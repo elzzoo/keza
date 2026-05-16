@@ -110,7 +110,7 @@ export async function getBuyMilesPrice(program: string): Promise<BuyMilesPrice> 
   try {
     const { calculateAcquisitionCost } = await import("./milesAcquisition");
     const result = calculateAcquisitionCost(program, 1000);
-    const directPath = result.paths.find((p) => p.source === "airline direct");
+    const directPath = result.paths.find((p) => p.method === "direct_purchase");
     return {
       program,
       costPer1000: directPath?.costPer1000 ?? null,

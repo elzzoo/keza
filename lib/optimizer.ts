@@ -1,5 +1,30 @@
 import { ALLIANCES } from "./alliances";
 import { TRANSFERS } from "./transfers";
+import { PROGRAMS_BY_NAME } from "./globalPrograms";
+
+// Airline → flagship program mapping (must stay in sync with costEngine OPERATOR_TO_PROGRAM)
+// Used by the optimizer to match user programs against operating airlines.
+const AIRLINE_TO_PROGRAM: Record<string, string> = {
+  "Air France":         "Flying Blue",
+  "KLM":                "Flying Blue",
+  "Delta":              "Delta SkyMiles",
+  "Korean Air":         "Korean Air SKYPASS",
+  "Turkish Airlines":   "Turkish Miles&Smiles",
+  "Ethiopian Airlines": "Ethiopian ShebaMiles",
+  "Air Canada":         "Air Canada Aeroplan",
+  "United":             "United MileagePlus",
+  "Lufthansa":          "Lufthansa Miles & More",
+  "Singapore Airlines": "Singapore KrisFlyer",
+  "All Nippon Airways": "ANA Mileage Club",
+  "Avianca":            "LifeMiles",
+  "British Airways":    "British Airways Avios",
+  "Qatar Airways":      "Qatar Privilege Club",
+  "American Airlines":  "AAdvantage",
+  "Iberia":             "Iberia Avios Plus",
+  "Japan Airlines":     "Japan Airlines Mileage Bank",
+  "Emirates":           "Emirates Skywards",
+  "Etihad":             "Etihad Guest",
+};
 
 export type OptimizerDecision =
   | { type: "DIRECT"; program: string }
@@ -13,16 +38,23 @@ export function optimizeMiles(
 ): OptimizerDecision {
   const airline = airlines[0] ?? "";
 
-  // 1. Direct: user already has miles in this airline's program
-  if (userPrograms.includes(airline)) {
-    return { type: "DIRECT", program: airline };
+  // 1. Direct: user holds miles in the flagship program for this airline.
+  // userPrograms contains PROGRAM NAMES (e.g. "Flying Blue"), NOT airline names.
+  // We look up the airline's flagship program and check if the user has it.
+  const flagshipProgram = AIRLINE_TO_PROGRAM[airline];
+  if (flagshipProgram && userPrograms.includes(flagshipProgram)) {
+    return { type: "DIRECT", program: flagshipProgram };
   }
 
   // 2. Alliance: user has miles in a partner airline
+  // ALLIANCES maps airline names → alliance string.
+  // userPrograms contains program names (e.g. "Flying Blue"), not airline names,
+  // so we look up each program in PROGRAMS_BY_NAME to get its alliance field.
   const airlineAlliance = ALLIANCES[airline];
   if (airlineAlliance && airlineAlliance !== "Independent") {
     for (const program of userPrograms) {
-      if (ALLIANCES[program] === airlineAlliance) {
+      const prog = PROGRAMS_BY_NAME[program];
+      if (prog && prog.alliance === airlineAlliance) {
         return { type: "ALLIANCE", viaProgram: program, alliance: airlineAlliance };
       }
     }

@@ -223,6 +223,17 @@ export function calculateAcquisitionCost(
   program: string,
   milesNeeded: number,
 ): AcquisitionResult {
+  if (milesNeeded <= 0) {
+    return {
+      program,
+      milesNeeded,
+      paths: [],
+      cheapest: null,
+      redemptionValueUsd: 0,
+      valueRatio: null,
+    };
+  }
+
   const data = PROGRAM_DATA[program];
 
   if (!data) {

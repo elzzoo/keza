@@ -225,6 +225,13 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_SOUTH:  { economy: 13_000, premium: 26_000, business: 47_750 },
       AFRICA_WEST:   { economy: 20_000, premium: 40_000, business: 60_000 },
     },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },
+      NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      AFRICA_SOUTH:  { economy:  7_500, premium: 15_000, business: 30_000 },
+      AFRICA_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
+    },
     EUROPE: {
       NORTH_AMERICA: { economy: 26_000, premium: 52_000, business: 78_000 },
       ASIA:          { economy: 39_000, premium: 78_000, business: 104_000 },
@@ -414,30 +421,33 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.
- *  first = business × 1.6 → matches cash ratio (6.5 / 4.0 = 1.625) and chart
- *  lookup override (rawMiles × 1.5 rounds to ~1.5–1.6 depending on rounding). */
+ *  first = business × 1.5 (chart lookup override: rawMiles × 1.5). The cash
+ *  ratio (6.5 / 4.0 = 1.625) is slightly higher; 1.5× is the miles convention. */
 const FALLBACK_CABIN_MULTIPLIERS: Record<string, number> = {
   economy:  1.0,
   premium:  1.5,
   business: 2.5,
-  first:    4.0,  // 2.5 × 1.6 ≈ 4.0; aligns with cash multiplier ratio (6.5/4.0)
+  first:    4.0,  // 2.5 × 1.6 = 4.0; cash ratio (6.5/4.0=1.625) — slightly above the 1.5× convention
+};
+
+// Distance-based fallback estimate (km) — declared at module level, NOT inside
+// distanceFallback(), so the object is allocated once and reused on every call.
+const ZONE_DISTANCE_ESTIMATE_KM: Partial<Record<Zone, Partial<Record<Zone, number>>>> = {
+  AFRICA_NORTH: { EUROPE: 2_000, NORTH_AMERICA: 7_000, MIDDLE_EAST: 3_500, AFRICA_WEST: 3_000, AFRICA_EAST: 5_000, AFRICA_SOUTH: 7_500, ASIA: 8_000, SOUTH_AMERICA: 8_500 },
+  AFRICA_WEST:  { EUROPE: 4_500, NORTH_AMERICA: 8_000, MIDDLE_EAST: 5_500, ASIA: 9_000, AFRICA_EAST: 4_000, AFRICA_SOUTH: 5_000, AFRICA_NORTH: 3_000, SOUTH_AMERICA: 9_000 },
+  AFRICA_EAST:  { EUROPE: 5_000, NORTH_AMERICA: 9_500, MIDDLE_EAST: 3_500, ASIA: 6_500, AFRICA_SOUTH: 3_500, AFRICA_NORTH: 5_000 },
+  AFRICA_SOUTH: { EUROPE: 9_000, NORTH_AMERICA: 12_000, MIDDLE_EAST: 6_500, ASIA: 9_500, AFRICA_EAST: 3_500, AFRICA_WEST: 5_000, AFRICA_NORTH: 7_500, SOUTH_AMERICA: 7_500 },
+  EUROPE:       { EUROPE: 2_000, NORTH_AMERICA: 7_000, ASIA: 8_000, MIDDLE_EAST: 3_500, SOUTH_AMERICA: 9_000 },
+  MIDDLE_EAST:  { EUROPE: 3_500, NORTH_AMERICA: 9_500, ASIA: 4_000 },
+  NORTH_AMERICA:{ ASIA: 10_000, SOUTH_AMERICA: 6_500 },
+  ASIA:         { SOUTH_AMERICA: 12_000 },
 };
 
 // Distance-based fallback estimate (miles) — cabin-scaled to prevent economy miles
 // leaking into Business/First calculations for programs without static chart entries.
 function distanceFallback(originZone: Zone, destZone: Zone, cabin: string = "economy"): number {
-  const ZONE_DISTANCE_ESTIMATE: Partial<Record<Zone, Partial<Record<Zone, number>>>> = {
-    AFRICA_NORTH: { EUROPE: 2_000, NORTH_AMERICA: 7_000, MIDDLE_EAST: 3_500, AFRICA_WEST: 3_000, AFRICA_EAST: 5_000, AFRICA_SOUTH: 7_500, ASIA: 8_000, SOUTH_AMERICA: 8_500 },
-    AFRICA_WEST:  { EUROPE: 4_500, NORTH_AMERICA: 8_000, MIDDLE_EAST: 5_500, ASIA: 9_000, AFRICA_EAST: 4_000, AFRICA_SOUTH: 5_000, AFRICA_NORTH: 3_000, SOUTH_AMERICA: 9_000 },
-    AFRICA_EAST:  { EUROPE: 5_000, NORTH_AMERICA: 9_500, MIDDLE_EAST: 3_500, ASIA: 6_500, AFRICA_SOUTH: 3_500, AFRICA_NORTH: 5_000 },
-    AFRICA_SOUTH: { EUROPE: 9_000, NORTH_AMERICA: 12_000, MIDDLE_EAST: 6_500, ASIA: 9_500, AFRICA_EAST: 3_500, AFRICA_WEST: 5_000, AFRICA_NORTH: 7_500, SOUTH_AMERICA: 7_500 },
-    EUROPE:       { EUROPE: 2_000, NORTH_AMERICA: 7_000, ASIA: 8_000, MIDDLE_EAST: 3_500, SOUTH_AMERICA: 9_000 },
-    MIDDLE_EAST:  { EUROPE: 3_500, NORTH_AMERICA: 9_500, ASIA: 4_000 },
-    NORTH_AMERICA:{ ASIA: 10_000, SOUTH_AMERICA: 6_500 },
-    ASIA:         { SOUTH_AMERICA: 12_000 },
-  };
-  const d = ZONE_DISTANCE_ESTIMATE[originZone]?.[destZone]
-    ?? ZONE_DISTANCE_ESTIMATE[destZone]?.[originZone]
+  const d = ZONE_DISTANCE_ESTIMATE_KM[originZone]?.[destZone]
+    ?? ZONE_DISTANCE_ESTIMATE_KM[destZone]?.[originZone]
     ?? 7_000;
   const multiplier = FALLBACK_CABIN_MULTIPLIERS[cabin] ?? 1.0;
   return Math.round(d * 4.5 * multiplier);
