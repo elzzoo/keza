@@ -68,6 +68,8 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
   "Turkish Miles&Smiles": {
     AFRICA_NORTH: {
       EUROPE:        { economy: 12_500, premium: 20_000, business: 40_000 },
+      NORTH_AMERICA: { economy: 32_500, premium: 47_500, business: 77_500 },
+      ASIA:          { economy: 30_000, premium: 45_000, business: 72_500 },
       MIDDLE_EAST:   { economy: 10_000, premium: 17_500, business: 35_000 },
       AFRICA_NORTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
       AFRICA_WEST:   { economy: 10_000, premium: 17_500, business: 35_000 },
@@ -440,6 +442,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
     AFRICA_NORTH: {
       EUROPE:        { economy: 17_500, premium: 25_000, business: 40_000 },
+      NORTH_AMERICA: { economy: 25_000, premium: 37_500, business: 57_500 },
     },
     AFRICA_WEST: {
       EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },

@@ -47,4 +47,15 @@ export const TRANSFERS: TransferPartner[] = [
   { from: "Capital One Miles", to: "Iberia Avios Plus",           ratio: 1.0 },
   { from: "Capital One Miles", to: "Virgin Atlantic Flying Club", ratio: 1.0 },
   { from: "Capital One Miles", to: "Cathay Pacific Asia Miles",   ratio: 1.0 },
+  // Bilt Rewards
+  { from: "Bilt Rewards", to: "Flying Blue",                  ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Turkish Miles&Smiles",         ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Air Canada Aeroplan",          ratio: 1.0 },
+  { from: "Bilt Rewards", to: "United MileagePlus",           ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Singapore KrisFlyer",          ratio: 1.0 },
+  { from: "Bilt Rewards", to: "British Airways Avios",        ratio: 1.0 },
+  { from: "Bilt Rewards", to: "AAdvantage",                   ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Alaska Mileage Plan",          ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Emirates Skywards",            ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Qatar Privilege Club",         ratio: 1.0 },
 ];
