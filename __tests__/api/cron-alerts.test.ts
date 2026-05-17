@@ -18,6 +18,7 @@ jest.mock("@/lib/push", () => ({
 
 jest.mock("@/lib/engine", () => ({
   fetchCalendarPrices: (...args: unknown[]) => mockFetchCalendarPrices(...args),
+  CABIN_MULTIPLIER: { economy: 1.0, premium: 1.8, business: 4.0, first: 6.5 },
 }));
 
 import { NextRequest } from "next/server";

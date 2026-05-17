@@ -5,7 +5,7 @@ import {
   sendOnboardingJ3Email,
   sendOnboardingJ7Email,
 } from "@/lib/alerts";
-import { fetchCalendarPrices } from "@/lib/engine";
+import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { logError } from "@/lib/logger";
@@ -69,10 +69,7 @@ export async function GET(req: NextRequest) {
 
               if (allPrices.length > 0) {
                 const cheapest = Math.min(...allPrices);
-                const cabinMultiplier =
-                  alert.cabin === "first" ? 6.5 :
-                  alert.cabin === "business" ? 4.0 :
-                  alert.cabin === "premium" ? 1.8 : 1.0;
+                const cabinMultiplier = CABIN_MULTIPLIER[alert.cabin as keyof typeof CABIN_MULTIPLIER] ?? 1.0;
                 currentPrice = Math.round(cheapest * cabinMultiplier);
               }
             } catch {

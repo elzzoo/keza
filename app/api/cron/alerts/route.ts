@@ -7,7 +7,7 @@ import {
 } from "@/lib/alerts";
 import { sendPushToEmail } from "@/lib/push";
 import { createManageAlertsToken } from "@/lib/alertTokens";
-import { fetchCalendarPrices } from "@/lib/engine";
+import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
@@ -60,11 +60,8 @@ export async function GET(req: NextRequest) {
       for (const alert of alerts) {
         checked++;
 
-        // Apply cabin multiplier
-        const cabinMultiplier =
-          alert.cabin === "first" ? 6.5 :
-          alert.cabin === "business" ? 4.0 :
-          alert.cabin === "premium" ? 1.8 : 1.0;
+        // Apply cabin multiplier — single source of truth in lib/engine.ts
+        const cabinMultiplier = CABIN_MULTIPLIER[alert.cabin as keyof typeof CABIN_MULTIPLIER] ?? 1.0;
 
         const adjustedPrice = Math.round(cheapest * cabinMultiplier);
 
