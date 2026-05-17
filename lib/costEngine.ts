@@ -143,6 +143,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Emirates":            "Emirates Skywards",
   "Etihad":              "Etihad Guest",
   "Virgin Atlantic":     "Virgin Atlantic Flying Club",
+  "Alaska Airlines":     "Alaska Mileage Plan",
 };
 
 // Airlines whose native program is Flying Blue (Air France-KLM group).

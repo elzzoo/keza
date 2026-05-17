@@ -121,6 +121,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 42_500, premium: 62_500, business: 105_000 },
       AFRICA_WEST:   { economy: 22_500, premium: 32_500, business: 55_000 },
       AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_SOUTH:  { economy: 22_500, premium: 32_500, business: 55_000 },
     },
     AFRICA_WEST: {
       EUROPE:        { economy: 36_000, premium: 50_000, business: 85_000 },
@@ -151,6 +152,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       ASIA:          { economy: 40_000, premium: 57_500, business: 95_000 },
       AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
       AFRICA_WEST:   { economy: 27_500, premium: 40_000, business: 67_500 },
+      AFRICA_NORTH:  { economy: 22_500, premium: 32_500, business: 55_000 },
     },
     MIDDLE_EAST: {
       EUROPE:        { economy: 17_500, premium: 27_500, business: 45_000 },
@@ -379,6 +381,14 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_SOUTH:  { economy: 15_000, premium: 22_500, business: 42_500 },
       AFRICA_WEST:   { economy: 17_500, premium: 25_000, business: 47_500 },
     },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 30_000, premium: 42_500, business: 75_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 62_500, business: 110_000 },
+      MIDDLE_EAST:   { economy: 22_500, premium: 32_500, business: 60_000 },
+      AFRICA_SOUTH:  { economy: 10_000, premium: 15_000, business: 30_000 },
+      AFRICA_EAST:   { economy: 15_000, premium: 22_500, business: 42_500 },
+      AFRICA_WEST:   { economy: 22_500, premium: 32_500, business: 60_000 },
+    },
     EUROPE: {
       NORTH_AMERICA: { economy: 30_000, premium: 42_500, business: 70_000 },
       ASIA:          { economy: 35_000, premium: 50_000, business: 80_000 },
@@ -425,6 +435,15 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       EUROPE:        { economy: 30_000, premium: 45_000, business: 65_000 },
       NORTH_AMERICA: { economy: 25_000, premium: 37_500, business: 57_500 },
       SOUTH_AMERICA: { economy: 12_500, premium: 20_000, business: 35_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 17_500, premium: 25_000, business: 40_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
     },
   },
 };

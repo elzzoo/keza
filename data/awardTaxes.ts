@@ -115,6 +115,9 @@ function getCorridorCap(
   // South America
   if (isSA)                 return { minEconomy: 30, maxEconomy: 100, maxBusiness: 200, maxFirst: 300 };
 
+  // North America ↔ Africa (transoceanic ~8,000 km — must precede intra-Africa catch-all)
+  if (isNA && isAfrica)     return { minEconomy: 25, maxEconomy: 100, maxBusiness: 200, maxFirst: 300 };
+
   // Africa intra-regional
   if (isAfrica)             return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 120, maxFirst: 180 };
 

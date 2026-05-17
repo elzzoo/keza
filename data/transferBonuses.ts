@@ -84,10 +84,23 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Marriott Bonvoy",  to: "ANA Mileage Club",           baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Flying Blue",                baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "British Airways Avios",      baseRatio: 0.333, transferTime: "3-5 days" },
-  { from: "Marriott Bonvoy",  to: "Emirates Skywards",          baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Emirates Skywards",              baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Air Canada Aeroplan",           baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Singapore KrisFlyer",           baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "United MileagePlus",            baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Turkish Miles&Smiles",          baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Qatar Privilege Club",          baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "LifeMiles",                     baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Iberia Avios Plus",             baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Etihad Guest",                  baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Virgin Atlantic Flying Club",   baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Cathay Pacific Asia Miles",     baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "AAdvantage",                    baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Ethiopian ShebaMiles",          baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Qantas Frequent Flyer",         baseRatio: 0.333, transferTime: "3-5 days" },
 
   // Alaska Mileage Plan
-  { from: "Bilt Rewards",     to: "Alaska Mileage Plan",        baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Alaska Mileage Plan",           baseRatio: 1.0, transferTime: "instant" },
 ];
 
 // Returns effective ratio (promo if set and not expired, else base).
