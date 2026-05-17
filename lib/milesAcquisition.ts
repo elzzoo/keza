@@ -63,7 +63,7 @@ interface ProgramAcquisitionData {
 const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Flying Blue": {
     purchaseMileCostPer1000: 30,
-    marketValueCents: 1.2,
+    marketValueCents: 1.5, // canonical: matches milesPrices.ts (was 1.2 — 25% drift from cost engine)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Citi ThankYou", "Capital One Miles", "Bilt Rewards"],
   },
   "Delta SkyMiles": {
@@ -141,8 +141,8 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "AAdvantage": {
     purchaseMileCostPer1000: 30,
     marketValueCents: 1.3,
-    transferPartnersFrom: ["Marriott Bonvoy"],
-    transferRatios: { "Marriott Bonvoy": 0.333 },
+    transferPartnersFrom: ["Marriott Bonvoy", "Bilt Rewards"],
+    transferRatios: { "Marriott Bonvoy": 0.333, "Bilt Rewards": 1.0 },
   },
   "Iberia Avios Plus": {
     purchaseMileCostPer1000: 22,

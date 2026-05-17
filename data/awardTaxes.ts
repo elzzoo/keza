@@ -106,6 +106,9 @@ function getCorridorCap(
   // Europe ↔ Asia (long-haul).
   if (isEurope && isAsia)   return { minEconomy: 25, maxEconomy: 60,  maxBusiness: 140, maxFirst: 210 };
 
+  // Asia ↔ Africa (long-haul ~6,000–9,000 km — must precede generic isAsia catch-all)
+  if (isAsia && isAfrica)   return { minEconomy: 25, maxEconomy: 80,  maxBusiness: 160, maxFirst: 240 };
+
   // Asia routes (intra or cross-hemisphere).
   if (isAsia)               return { minEconomy: 20, maxEconomy: 60,  maxBusiness: 130, maxFirst: 195 };
 

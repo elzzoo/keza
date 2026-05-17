@@ -99,8 +99,9 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Marriott Bonvoy",  to: "Ethiopian ShebaMiles",          baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Qantas Frequent Flyer",         baseRatio: 0.333, transferTime: "3-5 days" },
 
-  // Alaska Mileage Plan
+  // Alaska Mileage Plan + AAdvantage (Bilt Rewards)
   { from: "Bilt Rewards",     to: "Alaska Mileage Plan",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "AAdvantage",                    baseRatio: 1.0, transferTime: "instant" },
 ];
 
 // Returns effective ratio (promo if set and not expired, else base).

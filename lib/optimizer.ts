@@ -62,11 +62,23 @@ export function optimizeMiles(
     }
   }
 
-  // 3. Transfer: user has transferable points currency
-  for (const transfer of TRANSFERS) {
-    if (userPrograms.includes(transfer.from)) {
-      return { type: "TRANSFER", from: transfer.from, to: transfer.to };
+  // 3. Transfer: user has transferable points currency.
+  // Alliance-aware: prefer transfers to a program whose airline is in the same alliance
+  // as the operating airline (e.g. don't recommend Flying Blue for a Lufthansa flight).
+  // First pass: same-alliance destinations. Second pass: any destination (fallback).
+  const availableTransfers = TRANSFERS.filter((t) => userPrograms.includes(t.from));
+  if (availableTransfers.length > 0) {
+    if (airlineAlliance && airlineAlliance !== "Independent") {
+      const allianceMatch = availableTransfers.find((t) => {
+        const prog = PROGRAMS_BY_NAME[t.to];
+        return prog && prog.alliance === airlineAlliance;
+      });
+      if (allianceMatch) {
+        return { type: "TRANSFER", from: allianceMatch.from, to: allianceMatch.to };
+      }
     }
+    // Fallback: any available transfer
+    return { type: "TRANSFER", from: availableTransfers[0].from, to: availableTransfers[0].to };
   }
 
   // 4. Cash fallback

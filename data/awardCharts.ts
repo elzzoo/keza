@@ -446,6 +446,171 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
     },
   },
+
+  // ─── Qantas Frequent Flyer ────────────────────────────────────────────────
+  // Published zone chart (Qantas + Oneworld partners). One-way per pax.
+  "Qantas Frequent Flyer": {
+    ASIA: {
+      NORTH_AMERICA: { economy: 41_000, premium: 61_500, business: 99_000 },
+      EUROPE:        { economy: 41_000, premium: 61_500, business: 99_000 },
+      ASIA:          { economy: 18_000, premium: 27_000, business: 54_000 },
+      MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 67_500 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 41_000, premium: 61_500, business: 99_000 },
+      EUROPE:        { economy: 32_500, premium: 48_750, business: 82_500 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 32_500, premium: 48_750, business: 82_500 },
+      ASIA:          { economy: 41_000, premium: 61_500, business: 99_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 25_000, premium: 37_500, business: 67_500 },
+    },
+  },
+
+  // ─── AAdvantage (American Airlines) ──────────────────────────────────────
+  // MileSAAver chart for Oneworld partners. One-way per pax.
+  "AAdvantage": {
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 30_000, premium: 50_000, business: 57_500 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 70_000 },
+      MIDDLE_EAST:   { economy: 30_000, premium: 45_000, business: 57_500 },
+      SOUTH_AMERICA: { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_NORTH:  { economy: 30_000, premium: 45_000, business: 57_500 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 50_000, business: 57_500 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 70_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_NORTH:  { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_WEST:   { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_SOUTH:  { economy: 35_000, premium: 52_500, business: 65_000 },
+    },
+    ASIA: {
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 70_000 },
+      EUROPE:        { economy: 40_000, premium: 60_000, business: 70_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 57_500 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 57_500 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 65_000 },
+    },
+  },
+
+  // ─── Lufthansa Miles & More ───────────────────────────────────────────────
+  // Zone-based chart for Lufthansa Group and Star Alliance. One-way per pax.
+  "Lufthansa Miles & More": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 60_000 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 70_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_NORTH:  { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_WEST:   { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_SOUTH:  { economy: 35_000, premium: 52_500, business: 65_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 60_000 },
+      ASIA:          { economy: 45_000, premium: 67_500, business: 90_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 70_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 67_500, business: 90_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
+      ASIA:          { economy: 20_000, premium: 30_000, business: 50_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 70_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 65_000 },
+    },
+  },
+
+  // ─── Alaska Mileage Plan ──────────────────────────────────────────────────
+  // Oneworld partner awards (JAL/BA/AA/QR partners). One-way per pax.
+  "Alaska Mileage Plan": {
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 57_500 },
+      ASIA:          { economy: 30_000, premium: 45_000, business: 60_000 },
+      MIDDLE_EAST:   { economy: 30_000, premium: 45_000, business: 57_500 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 57_500 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 70_000 },
+    },
+    ASIA: {
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 60_000 },
+      EUROPE:        { economy: 40_000, premium: 60_000, business: 70_000 },
+    },
+  },
+
+  // ─── Delta SkyMiles ───────────────────────────────────────────────────────
+  // Region-based chart for Delta and SkyTeam partners. One-way per pax.
+  // Delta uses dynamic pricing, but these are typical published floor values.
+  "Delta SkyMiles": {
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 75_000 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 85_000 },
+      AFRICA_NORTH:  { economy: 30_000, premium: 45_000, business: 75_000 },
+      AFRICA_WEST:   { economy: 32_500, premium: 48_750, business: 80_000 },
+      AFRICA_EAST:   { economy: 32_500, premium: 48_750, business: 80_000 },
+      MIDDLE_EAST:   { economy: 30_000, premium: 45_000, business: 72_500 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+      ASIA:          { economy: 32_500, premium: 48_750, business: 82_500 },
+      AFRICA_NORTH:  { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_WEST:   { economy: 22_500, premium: 33_750, business: 60_000 },
+      AFRICA_EAST:   { economy: 22_500, premium: 33_750, business: 60_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 22_500, premium: 33_750, business: 60_000 },
+      NORTH_AMERICA: { economy: 32_500, premium: 48_750, business: 80_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 22_500, premium: 33_750, business: 60_000 },
+      NORTH_AMERICA: { economy: 32_500, premium: 48_750, business: 80_000 },
+    },
+    ASIA: {
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 85_000 },
+      EUROPE:        { economy: 32_500, premium: 48_750, business: 82_500 },
+    },
+    MIDDLE_EAST: {
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 72_500 },
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.

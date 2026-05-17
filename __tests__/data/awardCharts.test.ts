@@ -40,9 +40,10 @@ describe("getMilesRequired", () => {
   });
 
   // ── Cabin isolation — fallback programs must scale with cabin ─────────────
+  // Use Cathay Pacific Asia Miles — no static chart, always falls back to ESTIMATE.
   it("ESTIMATE program: business miles > economy miles (no cabin leak)", () => {
-    const eco = getMilesRequired("Delta SkyMiles", "AFRICA_WEST", "EUROPE", "economy",  "oneway", 1);
-    const biz = getMilesRequired("Delta SkyMiles", "AFRICA_WEST", "EUROPE", "business", "oneway", 1);
+    const eco = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_WEST", "EUROPE", "economy",  "oneway", 1);
+    const biz = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_WEST", "EUROPE", "business", "oneway", 1);
     expect(eco.source).toBe("ESTIMATE");
     expect(biz.source).toBe("ESTIMATE");
     // Business should be ~2.5× economy, must be at least 2×
@@ -50,15 +51,15 @@ describe("getMilesRequired", () => {
   });
 
   it("ESTIMATE program: first miles > business miles", () => {
-    const biz   = getMilesRequired("Delta SkyMiles", "AFRICA_WEST", "NORTH_AMERICA", "business", "oneway", 1);
-    const first = getMilesRequired("Delta SkyMiles", "AFRICA_WEST", "NORTH_AMERICA", "first",    "oneway", 1);
+    const biz   = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_WEST", "NORTH_AMERICA", "business", "oneway", 1);
+    const first = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_WEST", "NORTH_AMERICA", "first",    "oneway", 1);
     expect(first.miles).toBeGreaterThan(biz.miles);
   });
 
   it("ESTIMATE program: premium miles between economy and business", () => {
-    const eco     = getMilesRequired("Delta SkyMiles", "EUROPE", "NORTH_AMERICA", "economy",  "oneway", 1);
-    const premium = getMilesRequired("Delta SkyMiles", "EUROPE", "NORTH_AMERICA", "premium",  "oneway", 1);
-    const biz     = getMilesRequired("Delta SkyMiles", "EUROPE", "NORTH_AMERICA", "business", "oneway", 1);
+    const eco     = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_SOUTH", "EUROPE", "economy",  "oneway", 1);
+    const premium = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_SOUTH", "EUROPE", "premium",  "oneway", 1);
+    const biz     = getMilesRequired("Cathay Pacific Asia Miles", "AFRICA_SOUTH", "EUROPE", "business", "oneway", 1);
     expect(premium.miles).toBeGreaterThan(eco.miles);
     expect(premium.miles).toBeLessThan(biz.miles);
   });

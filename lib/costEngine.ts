@@ -480,6 +480,20 @@ export function buildCostOptions(
   const { from, to, totalPrice: cashTotal, airlines, cabin, tripType } = flight;
   const passengers = Math.max(1, Math.round(flight.passengers || 1)); // defensive: always ≥ 1
 
+  // Guard: no valid cash price → skip miles comparison entirely
+  if (!cashTotal || cashTotal <= 0) {
+    return {
+      cashCost: 0, milesCost: 0, savings: 0,
+      recommendation: "USE_CASH",
+      bestOption: null,
+      milesOptions: [],
+      scenarios: [],
+      explanation: "No cash price available.",
+      displayMessage: "no_cash_price",
+      disclaimer: "",
+    };
+  }
+
   const originZone = getZone(from) ?? undefined;
   const destZone   = getZone(to)   ?? undefined;
   const operatingAirline = airlines[0] ?? "";
@@ -787,6 +801,9 @@ export function buildCostOptions(
     bestOption = hasAccessibleOption
       ? sortedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2)!
       : sortedOptions[0]; // fall back to cheapest if no accessible option exists
+    // isBestDeal marks the best available miles option (cheapest accessible program).
+    // It is unconditional: it identifies the best miles deal, not whether miles beat cash.
+    // The UI must check `recommendation === "USE_MILES"` to decide whether to suggest using miles.
     bestOption.isBestDeal = true;
   }
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
