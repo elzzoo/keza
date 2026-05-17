@@ -130,6 +130,9 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     MIDDLE_EAST:   18_000,
     SOUTH_AMERICA: 50_000,
     AFRICA_EAST:   35_000,
+    AFRICA_WEST:   35_000,   // ~9,000 km (SIN→DKR) — similar to Asia↔Africa_East
+    AFRICA_NORTH:  28_000,   // ~8,000 km (SIN→CMN) — shorter than Asia↔Africa_East
+    AFRICA_SOUTH:  38_000,   // covered via AFRICA_SOUTH[ASIA] but added explicitly for clarity
   },
   MIDDLE_EAST: {
     EUROPE:        20_000,
@@ -138,10 +141,12 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     AFRICA_WEST:   18_000,
     AFRICA_EAST:   15_000,
     AFRICA_SOUTH:  20_000,
+    AFRICA_NORTH:  12_000,   // Cairo/Riyadh→North Africa — short hop
   },
   SOUTH_AMERICA: {
     EUROPE:        40_000,
     NORTH_AMERICA: 25_000,
+    AFRICA_WEST:   35_000,   // São Paulo→Dakar ~7,500 km — transatlantic-lite
   },
   AFRICA_WEST: {
     EUROPE:        35_000,
@@ -149,22 +154,35 @@ const ZONE_PAIR_ECONOMY_CAPS: Partial<Record<ZoneKey, Partial<Record<ZoneKey, nu
     MIDDLE_EAST:   18_000,
     AFRICA_EAST:   18_000,
     AFRICA_SOUTH:  22_000,
+    AFRICA_NORTH:  12_000,   // Dakar→Casablanca ~3,400 km — intra-Africa short-haul
+    ASIA:          35_000,   // Dakar→Southeast Asia ~9,000 km
   },
   AFRICA_NORTH: {
     EUROPE:        15_000,
     MIDDLE_EAST:   12_000,
+    AFRICA_WEST:   12_000,   // Morocco→Senegal ~3,400 km
+    AFRICA_EAST:   18_000,   // Cairo→Nairobi ~4,000 km
+    AFRICA_SOUTH:  25_000,   // Cairo→Cape Town ~7,500 km
+    ASIA:          28_000,   // Cairo→Southeast Asia ~8,000 km
+    NORTH_AMERICA: 33_000,   // covered via NORTH_AMERICA fallback, explicit for clarity
   },
   AFRICA_EAST: {
     EUROPE:        25_000,
     MIDDLE_EAST:   15_000,
     ASIA:          35_000,
     NORTH_AMERICA: 40_000,
+    AFRICA_NORTH:  18_000,   // Nairobi→Cairo ~4,000 km
+    AFRICA_SOUTH:  15_000,   // Nairobi→Cape Town ~3,600 km
+    AFRICA_WEST:   18_000,   // covered via AFRICA_WEST fallback, explicit for clarity
   },
   AFRICA_SOUTH: {
     EUROPE:        28_000,
     NORTH_AMERICA: 40_000,
     MIDDLE_EAST:   20_000,
     ASIA:          38_000,
+    AFRICA_EAST:   15_000,   // Cape Town→Nairobi ~3,600 km
+    AFRICA_NORTH:  25_000,   // Cape Town→Cairo ~7,500 km
+    AFRICA_WEST:   22_000,   // covered via AFRICA_WEST fallback, explicit for clarity
   },
 };
 

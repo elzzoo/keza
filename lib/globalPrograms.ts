@@ -94,6 +94,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Citi ThankYou",
       "Capital One Miles",
       "Bilt Rewards",
+      "Marriott Bonvoy",  // 3:1 ratio — consistent with transferBonuses.ts
     ],
     accessibilityScore: 1,
   },

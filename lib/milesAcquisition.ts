@@ -64,7 +64,8 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Flying Blue": {
     purchaseMileCostPer1000: 30,
     marketValueCents: 1.5, // canonical: matches milesPrices.ts (was 1.2 — 25% drift from cost engine)
-    transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Citi ThankYou", "Capital One Miles", "Bilt Rewards"],
+    transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Citi ThankYou", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
+    transferRatios: { "Marriott Bonvoy": 0.333 },  // 3:1 — consistent with transferBonuses.ts
   },
   "Delta SkyMiles": {
     purchaseMileCostPer1000: 35,
