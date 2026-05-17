@@ -69,6 +69,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_NORTH: {
       EUROPE:        { economy: 12_500, premium: 20_000, business: 40_000 },
       NORTH_AMERICA: { economy: 32_500, premium: 47_500, business: 77_500 },
+      SOUTH_AMERICA: { economy: 45_000, premium: 65_000, business: 90_000 }, // ~9,500 km via IST
       ASIA:          { economy: 30_000, premium: 45_000, business: 72_500 },
       MIDDLE_EAST:   { economy: 10_000, premium: 17_500, business: 35_000 },
       AFRICA_NORTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
@@ -81,6 +82,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       // Economy: 25,000 one-way / Business: 50,000 one-way
       EUROPE:        { economy: 25_000, premium: 37_500, business: 50_000 },
       NORTH_AMERICA: { economy: 40_000, premium: 55_000, business: 85_000 },
+      SOUTH_AMERICA: { economy: 42_500, premium: 62_500, business: 87_500 }, // ~6,000 km DSS→GRU via IST
       MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
       ASIA:          { economy: 45_000, premium: 60_000, business: 90_000 },
       AFRICA_WEST:   { economy:  7_500, premium: 12_000, business: 25_000 },
@@ -93,6 +95,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       // Economy: ~22,500 one-way (between Zone 6 and Zone 5 rates)
       EUROPE:        { economy: 22_500, premium: 32_500, business: 55_000 },
       NORTH_AMERICA: { economy: 37_500, premium: 55_000, business: 90_000 },
+      SOUTH_AMERICA: { economy: 47_500, premium: 70_000, business: 95_000 }, // ~11,000 km NBO→GRU via IST
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
       AFRICA_EAST:   { economy:  7_500, premium: 12_000, business: 25_000 },
       AFRICA_SOUTH:  { economy: 12_500, premium: 20_000, business: 40_000 },
@@ -101,6 +104,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_SOUTH: {
       EUROPE:        { economy: 22_500, premium: 35_000, business: 65_000 },
       NORTH_AMERICA: { economy: 42_500, premium: 62_500, business: 92_500 },
+      SOUTH_AMERICA: { economy: 45_000, premium: 65_000, business: 90_000 }, // ~7,000 km JNB→GRU via IST
       ASIA:          { economy: 32_500, premium: 48_750, business: 80_000 },
       MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
       AFRICA_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
@@ -109,6 +113,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 30_000, premium: 42_500, business: 70_000 },
+      SOUTH_AMERICA: { economy: 35_000, premium: 50_000, business: 80_000 }, // Zone 2→Zone 9 per TK chart
       ASIA:          { economy: 35_000, premium: 50_000, business: 80_000 },
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
       AFRICA_SOUTH:  { economy: 22_500, premium: 35_000, business: 65_000 },
@@ -116,7 +121,17 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     MIDDLE_EAST: {
       EUROPE:        { economy: 12_500, premium: 20_000, business: 40_000 },
       NORTH_AMERICA: { economy: 35_000, premium: 50_000, business: 80_000 },
+      SOUTH_AMERICA: { economy: 42_500, premium: 62_500, business: 87_500 }, // via IST connection
       ASIA:          { economy: 17_500, premium: 25_000, business: 50_000 },
+    },
+    SOUTH_AMERICA: {
+      EUROPE:        { economy: 35_000, premium: 50_000, business: 80_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 42_500, business: 70_000 },
+      MIDDLE_EAST:   { economy: 42_500, premium: 62_500, business: 87_500 },
+      AFRICA_WEST:   { economy: 42_500, premium: 62_500, business: 87_500 },
+      AFRICA_NORTH:  { economy: 45_000, premium: 65_000, business: 90_000 },
+      AFRICA_EAST:   { economy: 47_500, premium: 70_000, business: 95_000 },
+      AFRICA_SOUTH:  { economy: 45_000, premium: 65_000, business: 90_000 },
     },
   },
 
@@ -218,10 +233,12 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
       AFRICA_NORTH:  { economy:  7_500, premium: 15_000, business: 30_000 },
       NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      SOUTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 }, // Zone 8: BA flies BOG/LIM/EZE/GRU/SCL
     },
     AFRICA_WEST: {
       EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },
       NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      SOUTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 }, // same Zone 8 distance band as North America
       MIDDLE_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
       AFRICA_WEST:   { economy:  7_500, premium: 15_000, business: 30_000 },
       AFRICA_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
@@ -230,6 +247,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_EAST: {
       EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },
       MIDDLE_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
+      SOUTH_AMERICA: { economy: 52_000, premium: 104_000, business: 130_000 }, // long ultra-haul via LHR/MIA
       AFRICA_EAST:   { economy:  7_500, premium: 15_000, business: 30_000 },
       AFRICA_SOUTH:  { economy: 13_000, premium: 26_000, business: 47_750 },
       AFRICA_WEST:   { economy: 20_000, premium: 40_000, business: 60_000 },
@@ -237,12 +255,14 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_SOUTH: {
       EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },
       NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      SOUTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 }, // JNB→GRU similar band to JNB→LHR
       AFRICA_SOUTH:  { economy:  7_500, premium: 15_000, business: 30_000 },
       AFRICA_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
       MIDDLE_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 26_000, premium: 52_000, business: 78_000 },
+      SOUTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 }, // Zone 8 per BA Executive Club chart
       ASIA:          { economy: 39_000, premium: 78_000, business: 104_000 },
       MIDDLE_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
     },
@@ -252,6 +272,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_NORTH: {
       EUROPE:        { economy: 17_500, premium: 27_500, business: 55_000 },
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 37_500 },
+      SOUTH_AMERICA: { economy: 45_000, premium: 65_000, business: 95_000 }, // Star Alliance partners (United/Copa) via ADD hub
       AFRICA_WEST:   { economy: 10_000, premium: 15_000, business: 30_000 },
       AFRICA_EAST:   { economy: 10_000, premium: 15_000, business: 30_000 },
       AFRICA_SOUTH:  { economy: 15_000, premium: 22_500, business: 45_000 },
@@ -259,6 +280,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_WEST: {
       EUROPE:        { economy: 20_000, premium: 30_000, business: 60_000 },
       NORTH_AMERICA: { economy: 40_000, premium: 57_500, business: 100_000 },
+      SOUTH_AMERICA: { economy: 42_500, premium: 60_000, business: 90_000 }, // ~6,500 km DSS→GRU, Star Alliance
       MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 42_500 },
       ASIA:          { economy: 35_000, premium: 50_000, business: 90_000 },
       AFRICA_WEST:   { economy:  7_500, premium: 12_000, business: 25_000 },
@@ -269,6 +291,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_EAST: {
       EUROPE:        { economy: 25_000, premium: 37_500, business: 70_000 },
       NORTH_AMERICA: { economy: 45_000, premium: 65_000, business: 110_000 },
+      SOUTH_AMERICA: { economy: 50_000, premium: 72_500, business: 110_000 }, // ~11,500 km NBO→GRU, Star Alliance
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 37_500 },
       ASIA:          { economy: 30_000, premium: 45_000, business: 80_000 },
       AFRICA_EAST:   { economy:  5_000, premium: 10_000, business: 20_000 },
@@ -279,6 +302,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_SOUTH: {
       EUROPE:        { economy: 30_000, premium: 45_000, business: 80_000 },
       NORTH_AMERICA: { economy: 50_000, premium: 70_000, business: 115_000 },
+      SOUTH_AMERICA: { economy: 50_000, premium: 72_500, business: 110_000 }, // ~7,000 km JNB→GRU, Star Alliance
       AFRICA_EAST:   { economy: 10_000, premium: 15_000, business: 32_500 },
       AFRICA_WEST:   { economy: 15_000, premium: 22_500, business: 45_000 },
       AFRICA_SOUTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
@@ -286,6 +310,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 90_000 },
+      SOUTH_AMERICA: { economy: 40_000, premium: 60_000, business: 95_000 }, // via ADD, Star Alliance partners
       ASIA:          { economy: 37_500, premium: 55_000, business: 95_000 },
     },
   },
