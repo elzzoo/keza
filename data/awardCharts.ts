@@ -338,6 +338,9 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 35_000, premium: 55_000, business: 88_000 },
       EUROPE:        { economy: 35_000, premium: 55_000, business: 88_000 },
       MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_EAST:   { economy: 35_000, premium: 52_500, business: 88_000 },
+      AFRICA_SOUTH:  { economy: 40_000, premium: 60_000, business: 100_000 },
+      AFRICA_WEST:   { economy: 40_000, premium: 60_000, business: 100_000 },
       ASIA:          { economy: 10_000, premium: 15_000, business: 30_000 },
     },
     NORTH_AMERICA: {
@@ -347,6 +350,32 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     EUROPE: {
       ASIA:          { economy: 35_000, premium: 55_000, business: 88_000 },
       NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+      AFRICA_NORTH:  { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_WEST:   { economy: 25_000, premium: 40_000, business: 75_000 },
+      AFRICA_EAST:   { economy: 25_000, premium: 40_000, business: 75_000 },
+      AFRICA_SOUTH:  { economy: 30_000, premium: 47_500, business: 85_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_NORTH:  { economy: 15_000, premium: 22_500, business: 42_500 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 42_500 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 25_000, premium: 40_000, business: 75_000 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 100_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 25_000, premium: 40_000, business: 75_000 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 88_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 85_000 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 100_000 },
     },
   },
 
@@ -413,16 +442,41 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
       AFRICA_EAST:   { economy: 25_000, premium: 40_000, business: 75_000 },
       AFRICA_WEST:   { economy: 35_000, premium: 55_000, business: 90_000 },
+      AFRICA_SOUTH:  { economy: 30_000, premium: 47_500, business: 85_000 },  // JNB-SIN via Star Alliance
+      AFRICA_NORTH:  { economy: 20_000, premium: 32_500, business: 65_000 },
       ASIA:          { economy: 12_500, premium: 20_000, business: 40_000 },
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 30_000, premium: 47_500, business: 80_000 },
       ASIA:          { economy: 30_000, premium: 47_500, business: 80_000 },
       MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 25_000, premium: 40_000, business: 75_000 },
+      AFRICA_WEST:   { economy: 30_000, premium: 47_500, business: 85_000 },
+      AFRICA_SOUTH:  { economy: 35_000, premium: 55_000, business: 90_000 },
+      AFRICA_NORTH:  { economy: 17_500, premium: 27_500, business: 55_000 },
     },
     NORTH_AMERICA: {
       ASIA:          { economy: 35_000, premium: 55_000, business: 90_000 },
       EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+    },
+    AFRICA_EAST: {
+      ASIA:          { economy: 25_000, premium: 40_000, business: 75_000 },
+      EUROPE:        { economy: 25_000, premium: 40_000, business: 75_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+    },
+    AFRICA_WEST: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 90_000 },
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 85_000 },
+    },
+    AFRICA_SOUTH: {
+      ASIA:          { economy: 30_000, premium: 47_500, business: 85_000 },
+      EUROPE:        { economy: 35_000, premium: 55_000, business: 90_000 },
+      MIDDLE_EAST:   { economy: 22_500, premium: 35_000, business: 65_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 17_500, premium: 27_500, business: 55_000 },
+      MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
+      ASIA:          { economy: 20_000, premium: 32_500, business: 65_000 },
     },
   },
 
@@ -467,6 +521,8 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       EUROPE:        { economy: 41_000, premium: 61_500, business: 99_000 },
       ASIA:          { economy: 18_000, premium: 27_000, business: 54_000 },
       MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 67_500 },
+      AFRICA_EAST:   { economy: 30_000, premium: 45_000, business: 77_500 },
+      AFRICA_SOUTH:  { economy: 35_000, premium: 52_500, business: 85_000 },
     },
     NORTH_AMERICA: {
       ASIA:          { economy: 41_000, premium: 61_500, business: 99_000 },
@@ -476,10 +532,32 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 32_500, premium: 48_750, business: 82_500 },
       ASIA:          { economy: 41_000, premium: 61_500, business: 99_000 },
       MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_NORTH:  { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_WEST:   { economy: 25_000, premium: 37_500, business: 65_000 },
+      AFRICA_EAST:   { economy: 25_000, premium: 37_500, business: 65_000 },
+      AFRICA_SOUTH:  { economy: 30_000, premium: 45_000, business: 75_000 },
     },
     MIDDLE_EAST: {
       EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
       ASIA:          { economy: 25_000, premium: 37_500, business: 67_500 },
+      AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_NORTH:  { economy: 15_000, premium: 22_500, business: 45_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 45_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 65_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 65_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 30_000, premium: 45_000, business: 77_500 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 75_000 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 85_000 },
     },
   },
 
@@ -569,20 +647,49 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
   },
 
   // ─── Alaska Mileage Plan ──────────────────────────────────────────────────
-  // Oneworld partner awards (JAL/BA/AA/QR partners). One-way per pax.
+  // Oneworld partner awards (BA/QR/RAM/AA). One-way per pax.
+  // Africa routes bookable via BA/Royal Air Maroc (Oneworld). Source: Alaska award chart 2025.
   "Alaska Mileage Plan": {
     NORTH_AMERICA: {
       EUROPE:        { economy: 30_000, premium: 45_000, business: 57_500 },
       ASIA:          { economy: 30_000, premium: 45_000, business: 60_000 },
       MIDDLE_EAST:   { economy: 30_000, premium: 45_000, business: 57_500 },
+      AFRICA_NORTH:  { economy: 30_000, premium: 45_000, business: 57_500 },
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 57_500 },
       ASIA:          { economy: 40_000, premium: 60_000, business: 70_000 },
+      AFRICA_NORTH:  { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_WEST:   { economy: 30_000, premium: 45_000, business: 60_000 },
+      AFRICA_EAST:   { economy: 30_000, premium: 45_000, business: 60_000 },
+      AFRICA_SOUTH:  { economy: 35_000, premium: 52_500, business: 65_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+      AFRICA_NORTH:  { economy: 15_000, premium: 22_500, business: 40_000 },
     },
     ASIA: {
       NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 60_000 },
       EUROPE:        { economy: 40_000, premium: 60_000, business: 70_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 57_500 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 40_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 60_000 },
+      NORTH_AMERICA: { economy: 37_500, premium: 56_250, business: 70_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 60_000 },
+      NORTH_AMERICA: { economy: 37_500, premium: 56_250, business: 70_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 65_000 },
+      NORTH_AMERICA: { economy: 42_500, premium: 63_750, business: 80_000 },
     },
   },
 
