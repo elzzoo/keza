@@ -25,7 +25,7 @@ const SECURITY_HEADERS = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'", // Next.js 14 App Router requires unsafe-inline for hydration; unsafe-eval removed (not needed in production builds)
+      "script-src 'self' 'unsafe-inline'", // Next.js App Router requires unsafe-inline for hydration; unsafe-eval removed (not needed in production builds)
       "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline
       "img-src 'self' data: blob: https:", // allow HTTPS images (airline logos etc.)
       "connect-src 'self' https:", // Sentry, Vercel analytics, API calls
@@ -39,11 +39,9 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig = {
+  // Moved from experimental.serverComponentsExternalPackages in Next.js 15
+  serverExternalPackages: ["web-push"],
   experimental: {
-    // No serverActions.allowedOrigins restriction — admin forms use plain HTML POST,
-    // not Next.js Server Actions ("use server"). Restricting to localhost:3000 was
-    // blocking production admin on keza.app.
-    serverComponentsExternalPackages: ["web-push"],
     // Tree-shake large packages — only import what's used
     optimizePackageImports: ["lucide-react", "@heroicons/react", "date-fns"],
   },
