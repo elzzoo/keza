@@ -136,9 +136,9 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.0,
     taxProfile: "low",
     transferPartnersFrom: [
-      "Amex Membership Rewards",
-      "Capital One Miles",
-      "Marriott Bonvoy",
+      "Amex Membership Rewards",  // Amex MR → Aeromexico Club Premier confirmed 1:1
+      "Marriott Bonvoy",          // 3:1 ratio
+      // Capital One removed — Aeromexico not a current Capital One transfer partner
     ],
     accessibilityScore: 2,
   },
@@ -269,9 +269,9 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Capital One Miles",
       "Citi ThankYou",
-      "Bilt Rewards",
       "Marriott Bonvoy",
       "Brex Rewards",
+      // Bilt removed — Bilt Rewards does NOT transfer to LifeMiles (not in Bilt's partner list)
     ],
     accessibilityScore: 1,
   },
@@ -311,8 +311,8 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.1,
     taxProfile: "medium",
     transferPartnersFrom: [
-      "Amex Membership Rewards",
-      "Marriott Bonvoy",
+      "Marriott Bonvoy",  // 3:1 ratio
+      // Amex MR removed — Amex US does NOT transfer to Thai Royal Orchid Plus
     ],
     accessibilityScore: 2,
   },
@@ -493,8 +493,8 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.2,
     taxProfile: "high",
     transferPartnersFrom: [
-      "Amex Membership Rewards",
-      "Marriott Bonvoy",
+      "Marriott Bonvoy",  // 3:1 ratio
+      // Amex MR removed — Amex US does NOT transfer to Qantas (only Amex Australia does)
     ],
     accessibilityScore: 2,
   },
@@ -619,8 +619,8 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.3,
     taxProfile: "low",
     transferPartnersFrom: [
-      "Chase Ultimate Rewards",
-      "Amex Membership Rewards",
+      "Chase Ultimate Rewards",  // Chase UR → JetBlue 1:1 confirmed
+      // Amex removed — Amex MR does NOT transfer to JetBlue TrueBlue
     ],
     accessibilityScore: 2,
   },
@@ -648,8 +648,8 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.0,
     taxProfile: "low",
     transferPartnersFrom: [
-      "Amex Membership Rewards",
-      "Marriott Bonvoy",
+      "Marriott Bonvoy",  // 3:1 ratio
+      // Amex removed — Amex MR does NOT transfer to HawaiianMiles
     ],
     isBookable: false,
     accessibilityScore: 2,

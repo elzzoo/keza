@@ -112,7 +112,8 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "LifeMiles": {
     purchaseMileCostPer1000: 15,
     marketValueCents: 1.3,
-    transferPartnersFrom: ["Amex Membership Rewards", "Capital One Miles", "Citi ThankYou", "Bilt Rewards", "Marriott Bonvoy", "Brex Rewards"],
+    transferPartnersFrom: ["Amex Membership Rewards", "Capital One Miles", "Citi ThankYou", "Marriott Bonvoy", "Brex Rewards"],
+    // Bilt removed — Bilt does NOT transfer to LifeMiles
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Ethiopian ShebaMiles": {
@@ -185,7 +186,8 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Qantas Frequent Flyer": {
     purchaseMileCostPer1000: 28,
     marketValueCents: 1.2,
-    transferPartnersFrom: ["Amex Membership Rewards", "Marriott Bonvoy"],
+    transferPartnersFrom: ["Marriott Bonvoy"],
+    // Amex removed — Amex US does NOT transfer to Qantas (only Amex Australia does)
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
 };
@@ -367,3 +369,9 @@ export function isSupportedProgram(program: string): boolean {
 export function supportedPrograms(): string[] {
   return Object.keys(PROGRAM_DATA);
 }
+
+/**
+ * Read-only view of PROGRAM_DATA — exposed for consistency tests only.
+ * Do NOT use in production code; use calculateAcquisitionCost() instead.
+ */
+export const ACQUISITION_PROGRAM_DATA: Readonly<typeof PROGRAM_DATA> = PROGRAM_DATA;

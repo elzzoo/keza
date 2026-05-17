@@ -14,17 +14,20 @@ export interface TransferBonusRecord {
 
 export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   // Amex Membership Rewards
-  { from: "Amex MR", to: "Flying Blue",           baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "Emirates Skywards",     baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "Air Canada Aeroplan",   baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "British Airways Avios", baseRatio: 1.0, transferTime: "instant" },
-  { from: "Amex MR", to: "Ethiopian ShebaMiles",  baseRatio: 1.0, transferTime: "1-3 days" },
+  { from: "Amex MR", to: "Flying Blue",              baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Emirates Skywards",        baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Air Canada Aeroplan",      baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "British Airways Avios",    baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR", to: "Ethiopian ShebaMiles",     baseRatio: 1.0, transferTime: "1-3 days" },
+  { from: "Amex MR", to: "Aeromexico Club Premier",  baseRatio: 1.0, transferTime: "instant"  },
 
   // Chase Ultimate Rewards
-  { from: "Chase UR", to: "United MileagePlus",    baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR", to: "Flying Blue",           baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR", to: "British Airways Avios", baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR", to: "Emirates Skywards",     baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "United MileagePlus",      baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "Flying Blue",             baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "British Airways Avios",   baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "Emirates Skywards",       baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "JetBlue TrueBlue",        baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "Southwest Rapid Rewards", baseRatio: 1.0, transferTime: "instant" },
 
   // Citi ThankYou
   { from: "Citi ThankYou", to: "Turkish Miles&Smiles", baseRatio: 1.0, transferTime: "1-3 days" },
@@ -102,6 +105,15 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Marriott Bonvoy",  to: "AAdvantage",                    baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Ethiopian ShebaMiles",          baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Qantas Frequent Flyer",         baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Aeromexico Club Premier",       baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Thai Royal Orchid Plus",        baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "COPA ConnectMiles",             baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Asiana Club",                   baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "EVA Infinity MileageLands",     baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Malaysia Airlines Enrich",      baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Finnair Plus",                  baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Southwest Rapid Rewards",       baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Hawaiian Airlines HawaiianMiles", baseRatio: 0.333, transferTime: "3-5 days" },
 
   // Bilt Rewards — full partner list (confirmed 2025-2026, all 1:1 instant)
   { from: "Bilt Rewards",     to: "Flying Blue",                   baseRatio: 1.0, transferTime: "instant" },
