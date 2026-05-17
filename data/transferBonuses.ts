@@ -102,6 +102,10 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   // Alaska Mileage Plan + AAdvantage (Bilt Rewards)
   { from: "Bilt Rewards",     to: "Alaska Mileage Plan",           baseRatio: 1.0, transferTime: "instant" },
   { from: "Bilt Rewards",     to: "AAdvantage",                    baseRatio: 1.0, transferTime: "instant" },
+  // Additional Bilt Rewards transfer partners (confirmed 2025-2026)
+  { from: "Bilt Rewards",     to: "Virgin Atlantic Flying Club",   baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Korean Air SKYPASS",            baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Cathay Pacific Asia Miles",     baseRatio: 1.0, transferTime: "instant" },
 ];
 
 // Returns effective ratio (promo if set and not expired, else base).

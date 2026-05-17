@@ -58,4 +58,7 @@ export const TRANSFERS: TransferPartner[] = [
   { from: "Bilt Rewards", to: "Alaska Mileage Plan",          ratio: 1.0 },
   { from: "Bilt Rewards", to: "Emirates Skywards",            ratio: 1.0 },
   { from: "Bilt Rewards", to: "Qatar Privilege Club",         ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Virgin Atlantic Flying Club",  ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Korean Air SKYPASS",           ratio: 1.0 },
+  { from: "Bilt Rewards", to: "Cathay Pacific Asia Miles",    ratio: 1.0 },
 ];

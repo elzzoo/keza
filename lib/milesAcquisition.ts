@@ -116,13 +116,13 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   },
   "Ethiopian ShebaMiles": {
     purchaseMileCostPer1000: 30,
-    marketValueCents: 1.0,
+    marketValueCents: 1.2, // canonical: matches milesPrices.ts (was 1.0 — stale)
     transferPartnersFrom: ["Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "British Airways Avios": {
     purchaseMileCostPer1000: 25,
-    marketValueCents: 1.3,
+    marketValueCents: 1.5, // canonical: matches milesPrices.ts (was 1.3 — stale)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
@@ -158,25 +158,25 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   },
   "Emirates Skywards": {
     purchaseMileCostPer1000: 30,
-    marketValueCents: 1.0,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.0 — significant stale drift)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Citi ThankYou", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Etihad Guest": {
     purchaseMileCostPer1000: 28,
-    marketValueCents: 1.2,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.2 — stale)
     transferPartnersFrom: ["Amex Membership Rewards", "Citi ThankYou", "Capital One Miles", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Virgin Atlantic Flying Club": {
     purchaseMileCostPer1000: 25,
-    marketValueCents: 1.4,
+    marketValueCents: 1.5, // canonical: matches milesPrices.ts (was 1.4 — stale)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Citi ThankYou", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Lufthansa Miles & More": {
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.0,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.0 — stale)
     transferPartnersFrom: ["Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
