@@ -34,6 +34,7 @@ export const TRANSFERS: TransferPartner[] = [
   { from: "Citi ThankYou", to: "Flying Blue",                   ratio: 1.0 },
   { from: "Citi ThankYou", to: "Emirates Skywards",             ratio: 1.0 },
   { from: "Citi ThankYou", to: "Singapore KrisFlyer",           ratio: 1.0 },
+  { from: "Citi ThankYou", to: "LifeMiles",                     ratio: 1.0 },  // in transferBonuses.ts
   { from: "Citi ThankYou", to: "Cathay Pacific Asia Miles",     ratio: 1.0 },
   { from: "Citi ThankYou", to: "Virgin Atlantic Flying Club",   ratio: 1.0 },
   // Capital One Miles
@@ -61,4 +62,6 @@ export const TRANSFERS: TransferPartner[] = [
   { from: "Bilt Rewards", to: "Virgin Atlantic Flying Club",  ratio: 1.0 },
   { from: "Bilt Rewards", to: "Korean Air SKYPASS",           ratio: 1.0 },
   { from: "Bilt Rewards", to: "Cathay Pacific Asia Miles",    ratio: 1.0 },
+  // Brex Rewards (business card — transfers to LifeMiles 1:1)
+  { from: "Brex Rewards", to: "LifeMiles",                    ratio: 1.0 },
 ];
