@@ -40,6 +40,7 @@ export const ALLIANCES: Record<string, string> = {
   "LOT Polish Airlines": "Star Alliance",
   "SAS": "Star Alliance",
   "All Nippon Airways": "Star Alliance", // ANA — for ANA Mileage Club matching
+  "Air India": "Star Alliance",          // IATA: AI — rejoined Star Alliance 2014
   "Avianca": "Star Alliance",            // for LifeMiles matching
   "TAM Airlines": "Star Alliance",       // LATAM affiliate
   "Air China":       "Star Alliance",    // IATA: CA

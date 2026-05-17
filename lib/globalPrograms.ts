@@ -583,7 +583,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Etihad",
     alliance: "Independent",
     purchaseMileCostPer1000: 28,
-    marketValueCents: 1.2,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.2)
     taxProfile: "medium",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -599,7 +599,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Virgin Atlantic",
     alliance: "Independent",
     purchaseMileCostPer1000: 25,
-    marketValueCents: 1.4,
+    marketValueCents: 1.5, // canonical: matches milesPrices.ts (was 1.4)
     taxProfile: "medium",
     transferPartnersFrom: [
       "Amex Membership Rewards",

@@ -64,6 +64,9 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Chase UR",         to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
   { from: "Citi ThankYou",    to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "1-3 days" },
 
+  // Air Canada Aeroplan (Chase UR — one of Chase's most valuable partners)
+  { from: "Chase UR",         to: "Air Canada Aeroplan",  baseRatio: 1.0, transferTime: "instant" },
+
   // Korean Air SKYPASS
   { from: "Chase UR",         to: "Korean Air SKYPASS",   baseRatio: 1.0, transferTime: "instant" },
 
@@ -99,10 +102,17 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Marriott Bonvoy",  to: "Ethiopian ShebaMiles",          baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Qantas Frequent Flyer",         baseRatio: 0.333, transferTime: "3-5 days" },
 
-  // Alaska Mileage Plan + AAdvantage (Bilt Rewards)
-  { from: "Bilt Rewards",     to: "Alaska Mileage Plan",           baseRatio: 1.0, transferTime: "instant" },
+  // Bilt Rewards — full partner list (confirmed 2025-2026, all 1:1 instant)
+  { from: "Bilt Rewards",     to: "Flying Blue",                   baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Turkish Miles&Smiles",          baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Air Canada Aeroplan",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "United MileagePlus",            baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Singapore KrisFlyer",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "British Airways Avios",         baseRatio: 1.0, transferTime: "instant" },
   { from: "Bilt Rewards",     to: "AAdvantage",                    baseRatio: 1.0, transferTime: "instant" },
-  // Additional Bilt Rewards transfer partners (confirmed 2025-2026)
+  { from: "Bilt Rewards",     to: "Alaska Mileage Plan",           baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Emirates Skywards",             baseRatio: 1.0, transferTime: "instant" },
+  { from: "Bilt Rewards",     to: "Qatar Privilege Club",          baseRatio: 1.0, transferTime: "instant" },
   { from: "Bilt Rewards",     to: "Virgin Atlantic Flying Club",   baseRatio: 1.0, transferTime: "instant" },
   { from: "Bilt Rewards",     to: "Korean Air SKYPASS",            baseRatio: 1.0, transferTime: "instant" },
   { from: "Bilt Rewards",     to: "Cathay Pacific Asia Miles",     baseRatio: 1.0, transferTime: "instant" },
