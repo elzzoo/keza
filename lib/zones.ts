@@ -15,7 +15,7 @@ const ZONE_MAP: Record<string, Zone> = {
   // ── Africa North ──────────────────────────────────────────────────────────
   // Morocco
   CMN: "AFRICA_NORTH", RAK: "AFRICA_NORTH", FEZ: "AFRICA_NORTH",
-  TNG: "AFRICA_NORTH", OUD: "AFRICA_NORTH",
+  TNG: "AFRICA_NORTH", OUD: "AFRICA_NORTH", AGA: "AFRICA_NORTH",  // Agadir-Al Massira
   NDR: "AFRICA_NORTH", AHU: "AFRICA_NORTH", SMW: "AFRICA_NORTH",
   EUN: "AFRICA_NORTH", TTA: "AFRICA_NORTH", ERH: "AFRICA_NORTH",
   // Tunisia
@@ -80,7 +80,7 @@ const ZONE_MAP: Record<string, Zone> = {
   // Uganda / Rwanda / Burundi
   EBB: "AFRICA_EAST", KGL: "AFRICA_EAST", BJM: "AFRICA_EAST",
   // Somalia / Djibouti
-  MGQ: "AFRICA_EAST", DJI: "AFRICA_EAST", BBO: "AFRICA_EAST",
+  MGQ: "AFRICA_EAST", JIB: "AFRICA_EAST", BBO: "AFRICA_EAST",  // JIB = Djibouti-Ambouli (was DJI — wrong code)
   // South Sudan / Sudan
   JUB: "AFRICA_EAST", KRT: "AFRICA_EAST", PZU: "AFRICA_EAST",
   // Eritrea
