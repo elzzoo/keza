@@ -54,6 +54,7 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   // LifeMiles (Avianca)
   { from: "Amex MR",          to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
   { from: "Citi ThankYou",    to: "LifeMiles",            baseRatio: 1.0, transferTime: "1-3 days" },
+  { from: "Brex Rewards",     to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
 
   // Iberia Avios Plus
   { from: "Amex MR",          to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },

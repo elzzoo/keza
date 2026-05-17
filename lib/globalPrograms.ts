@@ -121,6 +121,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     taxProfile: "low",
     transferPartnersFrom: [
       "Chase Ultimate Rewards",
+      "Bilt Rewards",
       "Marriott Bonvoy",
     ],
     accessibilityScore: 1,
@@ -282,6 +283,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.0,
     taxProfile: "low",
     transferPartnersFrom: [
+      "Amex Membership Rewards",  // Amex MR → Ethiopian ShebaMiles is in transferBonuses.ts
       "Marriott Bonvoy",
     ],
     accessibilityScore: 2,
@@ -585,10 +587,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.2)
     taxProfile: "medium",
     transferPartnersFrom: [
-      "Amex Membership Rewards",
-      "Citi ThankYou",
-      "Capital One Miles",
-      "Marriott Bonvoy",
+      "Marriott Bonvoy",   // Amex MR, Citi TY, Cap One transfers to Etihad Guest were discontinued
     ],
     accessibilityScore: 1,
   },

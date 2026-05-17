@@ -75,7 +75,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Korean Air SKYPASS": {
     purchaseMileCostPer1000: 33,
     marketValueCents: 1.5,
-    transferPartnersFrom: ["Chase Ultimate Rewards", "Marriott Bonvoy"],
+    transferPartnersFrom: ["Chase Ultimate Rewards", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Turkish Miles&Smiles": {
@@ -117,7 +117,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Ethiopian ShebaMiles": {
     purchaseMileCostPer1000: 30,
     marketValueCents: 1.2, // canonical: matches milesPrices.ts (was 1.0 — stale)
-    transferPartnersFrom: ["Marriott Bonvoy"],
+    transferPartnersFrom: ["Amex Membership Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "British Airways Avios": {
@@ -165,7 +165,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Etihad Guest": {
     purchaseMileCostPer1000: 28,
     marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.2 — stale)
-    transferPartnersFrom: ["Amex Membership Rewards", "Citi ThankYou", "Capital One Miles", "Marriott Bonvoy"],
+    transferPartnersFrom: ["Marriott Bonvoy"],  // Amex MR / Citi TY / Cap One transfers discontinued
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Virgin Atlantic Flying Club": {
