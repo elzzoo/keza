@@ -209,6 +209,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_WEST:   { economy: 13_000, premium: 26_000, business: 47_750 },
       AFRICA_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
       AFRICA_NORTH:  { economy:  7_500, premium: 15_000, business: 30_000 },
+      NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
     },
     AFRICA_WEST: {
       EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },

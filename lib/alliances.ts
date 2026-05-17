@@ -5,6 +5,8 @@ export const ALLIANCES: Record<string, string> = {
   "Delta": "SkyTeam",
   "Korean Air": "SkyTeam",
   "China Southern": "SkyTeam",
+  "China Eastern":  "SkyTeam",    // IATA: MU
+  "Saudia":         "SkyTeam",    // IATA: SV
   "Aeromexico": "SkyTeam",
   "Air Europa": "SkyTeam",
   "ITA Airways": "SkyTeam",
@@ -40,6 +42,12 @@ export const ALLIANCES: Record<string, string> = {
   "All Nippon Airways": "Star Alliance", // ANA — for ANA Mileage Club matching
   "Avianca": "Star Alliance",            // for LifeMiles matching
   "TAM Airlines": "Star Alliance",       // LATAM affiliate
+  "Air China":       "Star Alliance",    // IATA: CA
+  "Thai Airways":    "Star Alliance",    // IATA: TG
+  "Asiana Airlines": "Star Alliance",    // IATA: OZ
+  "EVA Air":         "Star Alliance",    // IATA: BR
+  "Copa Airlines":   "Star Alliance",    // IATA: CM
+  "Garuda Indonesia":"Star Alliance",    // IATA: GA
   // Oneworld
   "British Airways": "Oneworld",
   "American Airlines": "Oneworld",
@@ -65,7 +73,9 @@ export const ALLIANCES: Record<string, string> = {
   "LATAM Perú":      "Oneworld",
   "LATAM Colombia":  "Oneworld",
   "LATAM":           "Oneworld",           // generic IATA code catch-all
+  "Royal Jordanian": "Oneworld",           // IATA: RJ
   // Independent
+  "Virgin Atlantic": "Independent",        // IATA: VS
   "Emirates": "Independent",
   "Etihad": "Independent",
   "Etihad Airways": "Independent",       // legacy alias — canonical name is "Etihad" (globalPrograms)

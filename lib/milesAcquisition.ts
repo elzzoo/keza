@@ -282,6 +282,8 @@ export function calculateAcquisitionCost(
       note:
         ratio < 1
           ? `Transfer ratio ${Math.round(1 / ratio)}:1 (${Math.round(1 / ratio)} bank points = 1 mile)`
+          : ratio > 1
+          ? `Transfer bonus ${Math.round((ratio - 1) * 100)}% (${ratio}× miles per point)`
           : "1:1 transfer",
     });
   }

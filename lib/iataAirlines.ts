@@ -59,6 +59,9 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   // ─── Independent (Keza-relevant) ───────────────────────────────────────────
   EK: "Emirates",
   EY: "Etihad",
+  FZ: "flydubai",              // Emirates group, key MENA/Africa carrier
+  G9: "Air Arabia",            // Major LCC, North Africa–Middle East
+  GA: "Garuda Indonesia",      // Star Alliance member
   WB: "RwandAir",
   HC: "Air Senegal",
   KQ: "Kenya Airways",

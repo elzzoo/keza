@@ -100,6 +100,7 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
+  "Virgin Atlantic Flying Club": "Virgin Atlantic",
 };
 
 // ─── Operator → flagship program (hard guarantees) ───────────────────────────
@@ -141,6 +142,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   // Independent
   "Emirates":            "Emirates Skywards",
   "Etihad":              "Etihad Guest",
+  "Virgin Atlantic":     "Virgin Atlantic Flying Club",
 };
 
 // Airlines whose native program is Flying Blue (Air France-KLM group).
@@ -320,9 +322,11 @@ function getCorridorGuarantees(originZone: string, destZone: string, airlines: s
     g.push({ program: "Emirates Skywards", type: "DIRECT", inferredAirline: "Emirates" });
   }
 
-  // Oneworld transatlantic / long-haul — BA Avios when Oneworld metal is operating
+  // Oneworld transatlantic / long-haul — BA Avios when Oneworld metal is confirmed operating.
+  // Do NOT fire on empty airline list: AF/KLM month-matrix searches pass [] and showing
+  // BA Avios on Air France metal would mislead users.
   const isLongHaulWithOneworld =
-    airlines.length === 0 || airlines.some((a) => BA_AVIOS_GUARANTEE_AIRLINES.has(a));
+    airlines.length > 0 && airlines.some((a) => BA_AVIOS_GUARANTEE_AIRLINES.has(a));
   const isLongHaul =
     (originZone === "EUROPE" && (destZone === "NORTH_AMERICA" || destZone === "ASIA")) ||
     (destZone === "EUROPE" && (originZone === "NORTH_AMERICA" || originZone === "ASIA")) ||

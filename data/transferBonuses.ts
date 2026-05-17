@@ -66,6 +66,28 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
 
   // Korean Air SKYPASS
   { from: "Chase UR",         to: "Korean Air SKYPASS",   baseRatio: 1.0, transferTime: "instant" },
+
+  // Delta SkyMiles
+  { from: "Amex MR",          to: "Delta SkyMiles",       baseRatio: 1.0, transferTime: "instant" },
+
+  // Cathay Pacific Asia Miles
+  { from: "Amex MR",          to: "Cathay Pacific Asia Miles", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Citi ThankYou",    to: "Cathay Pacific Asia Miles", baseRatio: 1.0, transferTime: "1-3 days" },
+  { from: "Capital One Miles",to: "Cathay Pacific Asia Miles", baseRatio: 1.0, transferTime: "instant" },
+
+  // Marriott Bonvoy transfers (3 points → 1 mile, ratio = 0.333)
+  { from: "Marriott Bonvoy",  to: "Delta SkyMiles",             baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Lufthansa Miles & More",     baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Japan Airlines Mileage Bank",baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Alaska Mileage Plan",        baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Korean Air SKYPASS",         baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "ANA Mileage Club",           baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Flying Blue",                baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "British Airways Avios",      baseRatio: 0.333, transferTime: "3-5 days" },
+  { from: "Marriott Bonvoy",  to: "Emirates Skywards",          baseRatio: 0.333, transferTime: "3-5 days" },
+
+  // Alaska Mileage Plan
+  { from: "Bilt Rewards",     to: "Alaska Mileage Plan",        baseRatio: 1.0, transferTime: "instant" },
 ];
 
 // Returns effective ratio (promo if set and not expired, else base).

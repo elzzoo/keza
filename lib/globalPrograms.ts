@@ -680,7 +680,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
   {
     name: "China Eastern Eastern Miles",
     airlineCode: "MU",
-    airline: "China Eastern Airlines",
+    airline: "China Eastern",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: null,
     marketValueCents: 1.0,   // raised: 0.7→1.0
