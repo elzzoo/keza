@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { PROMOS_KEY, PROMOS_TTL_SECONDS } from "@/lib/promotions/engine";
 import { hasCronSecret } from "@/lib/auth";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: Request) {
   // CRON_SECRET is mandatory — timing-safe comparison to prevent timing attacks
@@ -9,6 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-promotions", async () => {
   try {
     // validUntil = 30 days from now so promos auto-expire after each refresh cycle
     const validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -35,4 +37,5 @@ export async function GET(request: Request) {
     console.error("[cron/promotions] error:", err);
     return NextResponse.json({ error: "Failed to refresh promotions" }, { status: 500 });
   }
+  }, { schedule: { type: "crontab", value: "15 6 * * *" } });
 }

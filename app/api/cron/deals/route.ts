@@ -4,6 +4,7 @@ import { redis } from "@/lib/redis";
 import { sortDeals, type RawDeal } from "@/lib/dealsEngine";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import { hasCronSecret } from "@/lib/auth";
+import * as Sentry from "@sentry/nextjs";
 
 const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
 const LAST_CRON_KEY = "keza:admin:last_cron_at";
@@ -44,6 +45,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-deals", async () => {
   const token = process.env.TRAVELPAYOUTS_TOKEN;
   if (!token) {
     return NextResponse.json({ error: "TRAVELPAYOUTS_TOKEN not set" }, { status: 500 });
@@ -69,4 +71,5 @@ export async function GET(request: Request) {
   ]);
 
   return NextResponse.json({ ok: true, count: deals.length });
+  }, { schedule: { type: "crontab", value: "0 6 * * *" } });
 }

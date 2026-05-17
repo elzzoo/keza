@@ -9,6 +9,7 @@ import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { logError } from "@/lib/logger";
+import * as Sentry from "@sentry/nextjs";
 
 // GET /api/cron/onboarding — send J3 and J7 onboarding emails
 // Called by Vercel Cron daily at 11am UTC (after digest at 10am)
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-onboarding", async () => {
   const THIRTY_DAYS = 30 * 86400;
 
   let j3Sent = 0;
@@ -114,4 +116,5 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
+  }, { schedule: { type: "crontab", value: "0 11 * * *" } });
 }

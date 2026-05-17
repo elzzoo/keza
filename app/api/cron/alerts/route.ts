@@ -12,6 +12,7 @@ import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
+import * as Sentry from "@sentry/nextjs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
@@ -21,6 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-alerts", async () => {
   const routes = await getAllActiveRoutes();
   let checked = 0;
   let notified = 0;
@@ -138,4 +140,5 @@ export async function GET(req: NextRequest) {
     errors: errors.length > 0 ? errors : undefined,
     ts: new Date().toISOString(),
   });
+  }, { schedule: { type: "crontab", value: "0 8 * * *" } });
 }

@@ -1,6 +1,7 @@
 import "server-only";
 import { iataToAirline, VIRTUAL_IATA_CODES } from "./iataAirlines";
 import type { NormalizedFlight } from "./promotions/engine";
+import { redis } from "@/lib/redis";
 
 type Cabin = "economy" | "premium" | "business" | "first";
 
@@ -18,11 +19,12 @@ const CABIN_MAP: Record<Cabin, string> = {
 };
 
 /**
- * Approximate exchange rates to USD.
- * Used when Duffel returns prices in non-USD currencies.
- * Refreshed quarterly — accuracy sufficient for comparison purposes.
+ * Hardcoded fallback exchange rates to USD.
+ * Used when the live Redis cache (populated by /api/forex) is unavailable.
+ * The live rates (forex:usd:all key) are stored as units-per-USD, so we
+ * invert them here to get USD-per-unit.
  */
-const FX_TO_USD: Record<string, number> = {
+const FX_FALLBACK_TO_USD: Record<string, number> = {
   USD: 1.00,
   EUR: 1.08,
   GBP: 1.27,
@@ -31,10 +33,40 @@ const FX_TO_USD: Record<string, number> = {
   AUD: 0.65,
   CHF: 1.12,
   JPY: 0.0066,
+  MAD: 0.10,
+  NGN: 0.00065,
 };
 
-function toUsd(amount: string | number, currency: string): number | null {
-  const rate = FX_TO_USD[currency.toUpperCase()];
+/** Cached live rates — lazy-loaded once per Lambda warm start. */
+let _liveRatesCache: Record<string, number> | null = null;
+
+/**
+ * Return a map of currency → USD conversion rate.
+ * Tries the Redis cache (written by /api/forex every 12 h) first; falls
+ * back to the hardcoded table if Redis is unavailable.
+ */
+async function getFxRates(): Promise<Record<string, number>> {
+  if (_liveRatesCache) return _liveRatesCache;
+  try {
+    // /api/forex stores rates-from-USD (e.g. XOF: 605) → invert to get USD per unit
+    const fromUsd = await redis.get<Record<string, number>>("forex:usd:all");
+    if (fromUsd && typeof fromUsd === "object" && Object.keys(fromUsd).length > 5) {
+      const toUsdMap: Record<string, number> = { USD: 1.0 };
+      for (const [code, rate] of Object.entries(fromUsd)) {
+        if (typeof rate === "number" && rate > 0) toUsdMap[code] = 1 / rate;
+      }
+      _liveRatesCache = toUsdMap;
+      return toUsdMap;
+    }
+  } catch {
+    // Redis unavailable — use fallback
+  }
+  return FX_FALLBACK_TO_USD;
+}
+
+async function toUsd(amount: string | number, currency: string): Promise<number | null> {
+  const rates = await getFxRates();
+  const rate = rates[currency.toUpperCase()] ?? FX_FALLBACK_TO_USD[currency.toUpperCase()];
   if (!rate) return null; // unknown currency — skip this offer
   return Math.round(Number(amount) * rate * 100) / 100;
 }
@@ -182,7 +214,7 @@ export async function fetchFromDuffel(
     const flights: NormalizedFlight[] = [];
 
     for (const offer of offers.slice(0, 30)) {
-      const priceUsd = toUsd(offer.total_amount ?? "0", offer.total_currency ?? "USD");
+      const priceUsd = await toUsd(offer.total_amount ?? "0", offer.total_currency ?? "USD");
       if (!priceUsd || priceUsd <= 0) continue;
 
       const slice = offer.slices?.[0];

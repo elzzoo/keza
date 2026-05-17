@@ -3,6 +3,7 @@ import { redis } from "@/lib/redis";
 import { MILES_PRICE_MAP } from "@/data/milesPrices";
 import { recalibrate, getForexRate } from "@/lib/autoCalibrate";
 import { hasCronSecret } from "@/lib/auth";
+import * as Sentry from "@sentry/nextjs";
 
 // ─── Daily cron job: fully automatic data refresh ────────────────────────────
 // Runs every day at 03:00 UTC (configured in vercel.json)
@@ -20,6 +21,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-miles-prices", async () => {
   const report: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
   };
@@ -72,4 +74,5 @@ export async function GET(request: Request): Promise<NextResponse> {
     report.error = message;
     return NextResponse.json(report, { status: 500 });
   }
+  }, { schedule: { type: "crontab", value: "0 3 * * *" } });
 }

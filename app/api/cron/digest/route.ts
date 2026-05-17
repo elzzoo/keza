@@ -11,6 +11,7 @@ import { hasCronSecret } from "@/lib/auth";
 import { notifyCronSummary } from "@/lib/discord";
 import { logError } from "@/lib/logger";
 import { trackServerEvent } from "@/lib/analytics";
+import * as Sentry from "@sentry/nextjs";
 
 // GET /api/cron/digest — send daily/weekly digest emails
 // Called by Vercel Cron daily (separate schedule from /api/cron/alerts)
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-digest", async () => {
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
   // Only send weekly digests on Mondays (dayOfWeek === 1)
@@ -125,4 +127,5 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
+  }, { schedule: { type: "crontab", value: "0 10 * * *" } });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
+import * as Sentry from "@sentry/nextjs";
 
 const POPULAR_ROUTES = [
   // Africa ↔ Europe (original)
@@ -69,6 +70,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  return Sentry.withMonitor("cron-price-snapshot", async () => {
   let recorded = 0;
   const errors: string[] = [];
 
@@ -110,4 +112,5 @@ export async function GET(req: NextRequest) {
     total: POPULAR_ROUTES.length,
     errors,
   });
+  }, { schedule: { type: "crontab", value: "0 9 * * *" } });
 }
