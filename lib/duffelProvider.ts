@@ -2,6 +2,7 @@ import "server-only";
 import { iataToAirline, VIRTUAL_IATA_CODES } from "./iataAirlines";
 import type { NormalizedFlight } from "./promotions/engine";
 import { redis } from "@/lib/redis";
+import { logError, logWarn } from "@/lib/logger";
 
 type Cabin = "economy" | "premium" | "business" | "first";
 
@@ -191,7 +192,7 @@ export async function fetchFromDuffel(
         lastErr = err;
         const name = (err as Error).name;
         if (name === "AbortError") {
-          console.warn(`[duffel] timeout attempt ${attempt + 1} for ${from}→${to}`);
+          logWarn(`[duffel] timeout attempt ${attempt + 1} for ${from}→${to}`);
         }
       }
       if (attempt < MAX_RETRIES) {
@@ -203,7 +204,7 @@ export async function fetchFromDuffel(
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      console.error(`[duffel] ${res.status} for ${from}→${to}: ${body.slice(0, 200)}`);
+      logError(`[duffel] ${res.status} for ${from}→${to}: ${body.slice(0, 200)}`);
       return [];
     }
 
@@ -285,9 +286,9 @@ export async function fetchFromDuffel(
   } catch (err) {
     const name = (err as Error).name;
     if (name === "AbortError") {
-      console.warn(`[duffel] all attempts timed out (>${TIMEOUT_MS}ms) for ${from}→${to}`);
+      logWarn(`[duffel] all attempts timed out (>${TIMEOUT_MS}ms) for ${from}→${to}`);
     } else {
-      console.error(`[duffel] unexpected error for ${from}→${to}:`, err);
+      logError(`[duffel] unexpected error for ${from}→${to}:`, err);
     }
     return [];
   }

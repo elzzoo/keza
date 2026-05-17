@@ -1,6 +1,7 @@
 import "server-only";
 import { redis } from "./redis";
 import { Resend } from "resend";
+import { logError } from "@/lib/logger";
 import {
   createManageAlertsToken,
   createUnsubscribeAlertToken,
@@ -322,7 +323,7 @@ export async function sendDigestEmail(
     });
     return true;
   } catch (err) {
-    console.error("[alerts] digest email failed:", err);
+    logError("[alerts] digest email failed:", err);
     return false;
   }
 }
@@ -377,7 +378,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
     });
     return true;
   } catch (err) {
-    console.error("[alerts] email failed:", err);
+    logError("[alerts] email failed:", err);
     return false;
   }
 }
@@ -441,7 +442,7 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
     });
     return true;
   } catch (err) {
-    console.error("[alerts] confirmation email failed:", err);
+    logError("[alerts] confirmation email failed:", err);
     return false;
   }
 }
@@ -533,7 +534,7 @@ export async function sendOnboardingJ3Email(
     });
     return true;
   } catch (err) {
-    console.error("[alerts] onboarding j3 email failed:", err);
+    logError("[alerts] onboarding j3 email failed:", err);
     return false;
   }
 }
@@ -599,7 +600,7 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
     });
     return true;
   } catch (err) {
-    console.error("[alerts] onboarding j7 email failed:", err);
+    logError("[alerts] onboarding j7 email failed:", err);
     return false;
   }
 }
@@ -644,7 +645,7 @@ export async function sendManageAlertsEmail(email: string, alerts: PriceAlert[])
     });
     return true;
   } catch (err) {
-    console.error("[alerts] manage email failed:", err);
+    logError("[alerts] manage email failed:", err);
     return false;
   }
 }

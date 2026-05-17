@@ -8,6 +8,7 @@ import {
 import { sendPushToEmail } from "@/lib/push";
 import { createManageAlertsToken } from "@/lib/alertTokens";
 import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
+import { logError } from "@/lib/logger";
 import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
@@ -118,7 +119,7 @@ export async function GET(req: NextRequest) {
               title: `✈ Prix atteint — ${alert.from} → ${alert.to}`,
               body: `$${adjustedPrice} — votre cible de $${alert.targetPrice} est atteinte !`,
               url: `${BASE_URL}/alertes?email=${encodeURIComponent(alert.email)}&token=${encodeURIComponent(manageToken ?? "")}`,
-            }).catch((err: unknown) => console.error("[cron/alerts] push failed:", err));
+            }).catch((err: unknown) => logError("[cron/alerts] push failed:", err));
           }
         } else {
           await updateAlertAfterCheck(alert.id, adjustedPrice, false);

@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail } from "@/lib/validate";
+import { logError } from "@/lib/logger";
 import { sendDiscordAlert } from "@/lib/discord";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {
-    console.error("[api/contact] error:", err);
+    logError("[api/contact] error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

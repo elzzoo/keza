@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[api/unsplash] error:", err);
+    logError("[api/unsplash] error:", err);
     return NextResponse.json({ url: null, credit: "" });
   }
 }

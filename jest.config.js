@@ -8,6 +8,8 @@ const config = {
   },
   testMatch: ["**/__tests__/**/*.test.ts"],
   testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
+  modulePathIgnorePatterns: ["/.worktrees/"],
+  watchPathIgnorePatterns: ["/.worktrees/"],
   transform: {
     "^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json" }],
   },

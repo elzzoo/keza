@@ -1,5 +1,6 @@
 import { parseJsonPromos, type Promotion } from "./parsers";
 import { redis } from "@/lib/redis";
+import { logError } from "@/lib/logger";
 
 export const PROMOS_KEY = "keza:promotions";
 // 35-day TTL — cron refreshes every 30 days, giving a 5-day safety window
@@ -11,7 +12,7 @@ export async function loadPromotions(): Promise<Promotion[]> {
     if (!raw || !Array.isArray(raw)) return [];
     return parseJsonPromos(raw);
   } catch {
-    console.error("[promotions] failed to load from Redis, returning empty");
+    logError("[promotions] failed to load from Redis, returning empty");
     return [];
   }
 }

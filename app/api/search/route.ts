@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { searchEngine, type SearchParams, type FlightResult } from "@/lib/engine";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { logError } from "@/lib/logger";
+import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 
 // Max time to wait for a full search before returning with partial flag.
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
         }
       }
       partial = true;
-      console.warn(`[api/search] timeout for ${from}→${to}, returning ${results.length} cached results`);
+      logWarn(`[api/search] timeout for ${from}→${to}, returning ${results.length} cached results`);
     } else {
       results = engineResult;
     }

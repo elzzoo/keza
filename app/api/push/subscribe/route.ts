@@ -3,6 +3,7 @@ import { savePushSubscriptionForEmail, type PushSubscriptionRecord } from "@/lib
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidHttpsUrl } from "@/lib/validate";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
+import { logError } from "@/lib/logger";
 
 // POST /api/push/subscribe — save a Web Push subscription linked to a user email
 export async function POST(req: NextRequest) {
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
     await savePushSubscriptionForEmail(email, sub);
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {
-    console.error("[api/push/subscribe] POST error:", err);
+    logError("[api/push/subscribe] POST error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

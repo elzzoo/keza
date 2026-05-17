@@ -7,9 +7,10 @@ import { iataToAirline } from "./iataAirlines";
 import { metroFor } from "./metroCodes";
 import { recordObservation } from "./autoCalibrate";
 import { fetchFromDuffel } from "./duffelProvider";
+import { logError, logWarn } from "./logger";
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
-const CABIN_MULTIPLIER: Record<Cabin, number> = {
+export const CABIN_MULTIPLIER: Record<Cabin, number> = {
   economy:  1.0,
   premium:  1.8,
   business: 4.0,
@@ -142,12 +143,12 @@ async function fetchV3(
       headers: { Accept: "application/json" },
     }));
   } catch (err) {
-    console.error(`[engine] aviasales v3 network error for ${from}→${to}:`, err);
+    logError(`[engine] aviasales v3 network error for ${from}→${to}:`, err);
     return [];
   }
 
   if (!res.ok) {
-    console.error(`[engine] aviasales v3 ${res.status} for ${from}→${to}`);
+    logError(`[engine] aviasales v3 ${res.status} for ${from}→${to}`);
     return [];
   }
 
@@ -218,12 +219,12 @@ async function fetchMonthMatrix(
       headers: { Accept: "application/json" },
     }));
   } catch (err) {
-    console.error(`[engine] month-matrix network error for ${from}→${to}:`, err);
+    logError(`[engine] month-matrix network error for ${from}→${to}:`, err);
     return [];
   }
 
   if (!res.ok) {
-    console.error(`[engine] month-matrix ${res.status} for ${from}→${to}`);
+    logError(`[engine] month-matrix ${res.status} for ${from}→${to}`);
     return [];
   }
 
@@ -407,7 +408,7 @@ async function fetchFromTravelpayouts(
 ): Promise<NormalizedFlight[]> {
   const token = process.env.TRAVELPAYOUTS_TOKEN;
   if (!token || token === "xxx") {
-    console.warn("[engine] TRAVELPAYOUTS_TOKEN not configured — returning empty results");
+    logWarn("[engine] TRAVELPAYOUTS_TOKEN not configured — returning empty results");
     return [];
   }
 
@@ -457,7 +458,7 @@ async function fetchFromTravelpayouts(
 
     return mmFlights;
   } catch (err) {
-    console.error("[engine] fetch failed:", err);
+    logError("[engine] fetch failed:", err);
     return [];
   }
 }
@@ -705,12 +706,6 @@ function enrich(
   };
 
   const comparison  = buildCostOptions(flightInput, effectivePrices);
-
-  // DEBUG — remove once production activation confirmed (set KEZA_DEBUG_PROGRAMS=1)
-  if (process.env.KEZA_DEBUG_PROGRAMS === "1") {
-    const programs = comparison.milesOptions.map(o => `${o.program}(${o.type})`).join(", ");
-    console.log(`[KEZA_DEBUG] ${f.from}→${f.to} | airlines:${f.airlines.join("+")} | programs:[${programs}]`);
-  }
 
   const optimization = optimizeMiles(f.airlines, userPrograms);
 

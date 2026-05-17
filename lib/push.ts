@@ -1,6 +1,7 @@
 import "server-only";
 import { redis } from "./redis";
 import webpush from "web-push";
+import { logError } from "@/lib/logger";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ export async function sendPushToEmail(email: string, payload: PushPayload): Prom
       if (status === 410 || status === 404) {
         await removePushSubscriptionForEmail(email, sub.endpoint).catch(() => {});
       } else {
-        console.error("[push] sendPushToEmail failed:", (err as Error).message);
+        logError("[push] sendPushToEmail failed", err);
       }
     }
   }
@@ -161,7 +162,7 @@ export async function sendPushToAll(payload: PushPayload): Promise<number> {
       if (status === 410 || status === 404) {
         await removePushSubscription(sub.endpoint).catch(() => {});
       } else {
-        console.error("[push] sendNotification failed:", (err as Error).message);
+        logError("[push] sendNotification failed", err);
       }
     }
   }

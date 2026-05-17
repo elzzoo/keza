@@ -3,6 +3,7 @@ import { redis } from "@/lib/redis";
 import { PROMOS_KEY, PROMOS_TTL_SECONDS } from "@/lib/promotions/engine";
 import { hasCronSecret } from "@/lib/auth";
 import * as Sentry from "@sentry/nextjs";
+import { logError } from "@/lib/logger";
 
 export async function GET(request: Request) {
   // CRON_SECRET is mandatory — timing-safe comparison to prevent timing attacks
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, count: promos.length });
   } catch (err) {
-    console.error("[cron/promotions] error:", err);
+    logError("[cron/promotions] error:", err);
     return NextResponse.json({ error: "Failed to refresh promotions" }, { status: 500 });
   }
   }, { schedule: { type: "crontab", value: "15 6 * * *" } });

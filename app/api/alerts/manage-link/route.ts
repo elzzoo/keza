@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAlertsByEmail, sendManageAlertsEmail } from "@/lib/alerts";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Generic response to avoid leaking whether an email has alerts.
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[api/alerts/manage-link] POST error:", err);
+    logError("[api/alerts/manage-link] POST error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
