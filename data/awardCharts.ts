@@ -143,6 +143,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_WEST:   { economy: 22_500, premium: 32_500, business: 55_000 },
       AFRICA_EAST:   { economy: 20_000, premium: 30_000, business: 50_000 },
       AFRICA_SOUTH:  { economy: 22_500, premium: 32_500, business: 55_000 },
+      AFRICA_NORTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
     },
     AFRICA_WEST: {
       EUROPE:        { economy: 36_000, premium: 50_000, business: 85_000 },
@@ -202,8 +203,12 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_EAST: {
       EUROPE:        { economy: 27_500, premium: 40_000, business: 70_000 },
       MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 42_500 },
+      NORTH_AMERICA: { economy: 45_000, premium: 65_000, business: 110_000 }, // NBO/ADD → USA via DOH
+      ASIA:          { economy: 27_500, premium: 40_000, business: 72_500 },   // NBO → DEL/BKK/SIN via DOH
       AFRICA_EAST:   { economy: 10_000, premium: 17_500, business: 30_000 },
       AFRICA_SOUTH:  { economy: 15_000, premium: 22_500, business: 42_500 },
+      AFRICA_WEST:   { economy: 20_000, premium: 30_000, business: 55_000 },  // NBO → DKR/ABJ via DOH
+      AFRICA_NORTH:  { economy: 17_500, premium: 25_000, business: 45_000 },  // NBO → CMN/CAI via DOH
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
@@ -272,6 +277,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_NORTH: {
       EUROPE:        { economy: 17_500, premium: 27_500, business: 55_000 },
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 37_500 },
+      NORTH_AMERICA: { economy: 40_000, premium: 57_500, business: 100_000 }, // CMN/TUN/CAI→IAD/ORD/JFK via ADD
       SOUTH_AMERICA: { economy: 45_000, premium: 65_000, business: 95_000 }, // Star Alliance partners (United/Copa) via ADD hub
       AFRICA_WEST:   { economy: 10_000, premium: 15_000, business: 30_000 },
       AFRICA_EAST:   { economy: 10_000, premium: 15_000, business: 30_000 },
@@ -312,6 +318,10 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 90_000 },
       SOUTH_AMERICA: { economy: 40_000, premium: 60_000, business: 95_000 }, // via ADD, Star Alliance partners
       ASIA:          { economy: 37_500, premium: 55_000, business: 95_000 },
+      AFRICA_NORTH:  { economy: 17_500, premium: 27_500, business: 55_000 }, // LHR/CDG/FRA → CMN/TUN/CAI via ADD
+      AFRICA_WEST:   { economy: 20_000, premium: 30_000, business: 60_000 }, // LHR/CDG → DKR/ABJ/ACC via ADD
+      AFRICA_EAST:   { economy: 25_000, premium: 37_500, business: 70_000 }, // Europe → NBO/ADD/DAR via ADD
+      AFRICA_SOUTH:  { economy: 30_000, premium: 45_000, business: 80_000 }, // Europe → JNB/CPT via ADD
     },
   },
 
