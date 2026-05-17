@@ -101,13 +101,14 @@ describe("transferBonuses.ts → globalPrograms.ts program existence", () => {
   it("every destination program in transferBonuses.ts is a known program", () => {
     const programNames = new Set(GLOBAL_PROGRAMS.map(p => p.name));
 
-    const unknown = [
-      ...new Set(
-        TRANSFER_BONUSES
-          .map(b => b.to)
-          .filter(to => !programNames.has(to))
-      ),
-    ];
+    const seen = new Set<string>();
+    const unknown: string[] = [];
+    for (const b of TRANSFER_BONUSES) {
+      if (!programNames.has(b.to) && !seen.has(b.to)) {
+        seen.add(b.to);
+        unknown.push(b.to);
+      }
+    }
 
     if (unknown.length > 0) {
       throw new Error(
