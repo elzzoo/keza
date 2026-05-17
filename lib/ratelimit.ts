@@ -35,10 +35,13 @@ export async function checkRateLimit(
   const namespace = safeKeyPart(options.namespace);
   const key = `keza:ratelimit:${namespace}:${ip}`;
 
+  // Fix: SET NX EX creates the key with its TTL in a single atomic command,
+  // so the expiry is always set when the key is first created.  The old
+  // INCR-then-EXPIRE pattern had a race where a crash between the two calls
+  // could leave the key with no TTL, causing it to persist indefinitely.
+  // SET NX is a no-op when the key already exists, so live counters are safe.
+  await redis.set(key, "0", { ex: options.windowSeconds, nx: true });
   const count = await redis.incr(key);
-  if (count === 1) {
-    await redis.expire(key, options.windowSeconds);
-  }
 
   const ttl = await redis.ttl(key).catch(() => options.windowSeconds);
   const resetSeconds = typeof ttl === "number" && ttl > 0 ? ttl : options.windowSeconds;

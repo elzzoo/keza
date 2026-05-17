@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { currencyForCountry, type CurrencyCode } from "@/lib/currency";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 const CACHE_KEY = "forex:usd:all";
 const CACHE_TTL = 12 * 60 * 60; // 12h
@@ -49,6 +50,9 @@ async function fetchAllRates(): Promise<Record<string, number>> {
 
 // GET /api/forex — returns all exchange rates from USD + auto-detected currency
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  const limited = await rateLimitResponse(req, { namespace: "api:forex", limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
+
   try {
     const rates = await fetchAllRates();
 

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPriceHistory, computePriceTrend } from "@/lib/priceHistoryRedis";
 import { isValidIata } from "@/lib/validate";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // GET /api/price-history?from=DSS&to=CDG&days=30
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, { namespace: "api:price-history", limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
+
   const { searchParams } = new URL(req.url);
   const from = searchParams.get("from")?.toUpperCase() ?? "";
   const to = searchParams.get("to")?.toUpperCase() ?? "";

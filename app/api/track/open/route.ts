@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { logError } from "@/lib/logger";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // 1x1 transparent PNG (base64)
 const PIXEL = Buffer.from(
@@ -12,6 +13,9 @@ export const runtime = "edge";
 
 // GET /api/track/open?type=confirmation|price-drop|digest&email=...
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, { namespace: "api:track:open", limit: 120, windowSeconds: 60 });
+  if (limited) return limited;
+
   try {
     const type = req.nextUrl.searchParams.get("type") ?? "unknown";
     const email = req.nextUrl.searchParams.get("email") ?? "";

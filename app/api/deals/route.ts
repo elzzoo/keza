@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import type { LiveDeal } from "@/lib/dealsEngine";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,7 +17,10 @@ const FALLBACK_DEALS: LiveDeal[] = [
   { from: "CDG", to: "NRT", fromFlag: "🇫🇷", toFlag: "🇯🇵", cashPrice: 610, milesRequired: 55000, program: "Miles&Smiles", ratio: 1.11, recommendation: "NEUTRAL",   multiplier: "×1.1" },
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, { namespace: "api:deals", limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
+
   try {
     const cached = await redis.get<LiveDeal[]>(DEALS_KEY);
     if (cached && Array.isArray(cached) && cached.length > 0) {

@@ -2,12 +2,16 @@
 // Server-side proxy — keeps UNSPLASH_ACCESS_KEY out of the client bundle.
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 jours
 
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, { namespace: "api:unsplash", limit: 20, windowSeconds: 60 });
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query")?.trim();
 

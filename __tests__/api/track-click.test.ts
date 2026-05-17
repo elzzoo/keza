@@ -5,8 +5,10 @@ import { NextRequest } from "next/server";
 
 jest.mock("@/lib/redis", () => ({
   redis: {
+    set: jest.fn().mockResolvedValue("OK"),
     incr: jest.fn().mockResolvedValue(1),
     expire: jest.fn().mockResolvedValue(1),
+    ttl: jest.fn().mockResolvedValue(60),
   },
 }));
 

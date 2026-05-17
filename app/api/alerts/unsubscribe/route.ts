@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { deactivateAlert } from "@/lib/alerts";
 import { SITE_URL } from "@/lib/siteConfig";
 import { verifyUnsubscribeAlertToken } from "@/lib/alertTokens";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // GET /api/alerts/unsubscribe?id=alt_xxx — deactivate an alert (from email link)
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, { namespace: "api:alerts:unsubscribe", limit: 10, windowSeconds: 60 });
+  if (limited) return limited;
+
   const id = req.nextUrl.searchParams.get("id");
   const token = req.nextUrl.searchParams.get("token");
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import airportsFull from "@/data/airports-full.json";
 
 interface CompactAirport {
@@ -21,6 +22,9 @@ function iso2ToFlag(iso2: string): string {
 }
 
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, { namespace: "api:airports", limit: 60, windowSeconds: 60 });
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get("q") ?? "").trim().toLowerCase();

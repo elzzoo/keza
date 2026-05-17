@@ -1,11 +1,11 @@
+const mockSet = jest.fn();
 const mockIncr = jest.fn();
-const mockExpire = jest.fn();
 const mockTtl = jest.fn();
 
 jest.mock("@/lib/redis", () => ({
   redis: {
+    set: (...args: unknown[]) => mockSet(...args),
     incr: (...args: unknown[]) => mockIncr(...args),
-    expire: (...args: unknown[]) => mockExpire(...args),
     ttl: (...args: unknown[]) => mockTtl(...args),
   },
 }));
@@ -21,13 +21,13 @@ function makeRequest(ip = "203.0.113.10"): NextRequest {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSet.mockResolvedValue("OK");
   mockTtl.mockResolvedValue(60);
 });
 
 describe("checkRateLimit", () => {
-  it("increments a namespaced key and sets expiry on first hit", async () => {
+  it("uses SET NX EX to create the key with TTL, then increments", async () => {
     mockIncr.mockResolvedValue(1);
-    mockExpire.mockResolvedValue(1);
 
     const result = await checkRateLimit(makeRequest(), {
       namespace: "api:test",
@@ -37,8 +37,14 @@ describe("checkRateLimit", () => {
 
     expect(result.limited).toBe(false);
     expect(result.remaining).toBe(1);
+    // SET NX EX is called first to initialise the key with its TTL
+    expect(mockSet).toHaveBeenCalledWith(
+      "keza:ratelimit:api:test:203.0.113.10",
+      "0",
+      { ex: 60, nx: true }
+    );
+    // Then INCR is called to bump the counter
     expect(mockIncr).toHaveBeenCalledWith("keza:ratelimit:api:test:203.0.113.10");
-    expect(mockExpire).toHaveBeenCalledWith("keza:ratelimit:api:test:203.0.113.10", 60);
   });
 
   it("marks the request as limited when the count exceeds the limit", async () => {
@@ -52,7 +58,6 @@ describe("checkRateLimit", () => {
 
     expect(result.limited).toBe(true);
     expect(result.remaining).toBe(0);
-    expect(mockExpire).not.toHaveBeenCalled();
   });
 });
 

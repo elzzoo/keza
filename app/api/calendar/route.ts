@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { fetchCalendarPrices, type CalendarDay } from "@/lib/engine";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 const IATA_RE = /^[A-Z]{3}$/;
 const MONTH_RE = /^\d{4}-\d{2}$/;
 
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, { namespace: "api:calendar", limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
   const from  = (searchParams.get("from") ?? "").toUpperCase().trim();
   const to    = (searchParams.get("to") ?? "").toUpperCase().trim();

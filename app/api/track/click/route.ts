@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";  // Redis client requires Node.js
 
 export async function POST(request: Request) {
+  const limited = await rateLimitResponse(request, { namespace: "api:track:click", limit: 60, windowSeconds: 60 });
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();
