@@ -64,7 +64,7 @@ async function getFxRates(): Promise<Record<string, number>> {
   return FX_FALLBACK_TO_USD;
 }
 
-async function toUsd(amount: string | number, currency: string): Promise<number | null> {
+export async function toUsd(amount: string | number, currency: string): Promise<number | null> {
   const rates = await getFxRates();
   const rate = rates[currency.toUpperCase()] ?? FX_FALLBACK_TO_USD[currency.toUpperCase()];
   if (!rate) return null; // unknown currency — skip this offer
@@ -107,7 +107,7 @@ interface DuffelOfferRequestResponse {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Parse ISO 8601 duration string to minutes (e.g. "PT6H30M" → 390) */
-function parseDurationMinutes(iso: string): number {
+export function parseDurationMinutes(iso: string): number {
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
   if (!match) return 0;
   return (Number(match[1] ?? 0) * 60) + Number(match[2] ?? 0);
