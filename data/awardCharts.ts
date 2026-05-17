@@ -100,6 +100,9 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
     AFRICA_SOUTH: {
       EUROPE:        { economy: 22_500, premium: 35_000, business: 65_000 },
+      NORTH_AMERICA: { economy: 42_500, premium: 62_500, business: 92_500 },
+      ASIA:          { economy: 32_500, premium: 48_750, business: 80_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
       AFRICA_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
       AFRICA_WEST:   { economy: 17_500, premium: 27_500, business: 55_000 },
       AFRICA_SOUTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
@@ -108,6 +111,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 30_000, premium: 42_500, business: 70_000 },
       ASIA:          { economy: 35_000, premium: 50_000, business: 80_000 },
       MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 40_000 },
+      AFRICA_SOUTH:  { economy: 22_500, premium: 35_000, business: 65_000 },
     },
     MIDDLE_EAST: {
       EUROPE:        { economy: 12_500, premium: 20_000, business: 40_000 },
@@ -628,10 +632,52 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
+  // ─── Virgin Atlantic Flying Club ─────────────────────────────────────────
+  // Zone-based chart for Virgin Atlantic metal + Delta/ANA partner awards.
+  // VA is a key transfer target (Amex/Chase/Capital One/Bilt all transfer 1:1).
+  // One-way per pax. Source: Virgin Atlantic Flying Club award chart 2025-2026.
+  "Virgin Atlantic Flying Club": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 47_500, business: 72_500 },
+      AFRICA_WEST:   { economy: 30_000, premium: 45_000, business: 70_000 },
+      AFRICA_EAST:   { economy: 32_500, premium: 48_750, business: 75_000 },
+      AFRICA_SOUTH:  { economy: 40_000, premium: 60_000, business: 87_500 },
+      AFRICA_NORTH:  { economy: 15_000, premium: 22_500, business: 50_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 82_500 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 72_500 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 87_500 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 70_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 32_500, premium: 48_750, business: 75_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 40_000, premium: 60_000, business: 87_500 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 15_000, premium: 22_500, business: 50_000 },
+    },
+  },
+
   // ─── Korean Air SKYPASS ───────────────────────────────────────────────────
   // Zone-based chart for Korean Air and SkyTeam partners. One-way per pax.
   // Korean Air serves Africa via ICN hub; these are partner award rates.
   "Korean Air SKYPASS": {
+    AFRICA_NORTH: {
+      // North Africa (CMN, TUN, ALG, CAI) — shorter to Europe than sub-Saharan zones
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 45_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 70_000 },
+      MIDDLE_EAST:   { economy: 12_500, premium: 20_000, business: 35_000 },
+      ASIA:          { economy: 22_500, premium: 33_750, business: 55_000 },
+      AFRICA_NORTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
+      AFRICA_WEST:   { economy: 10_000, premium: 15_000, business: 30_000 },
+      AFRICA_EAST:   { economy: 12_500, premium: 20_000, business: 35_000 },
+    },
     AFRICA_EAST: {
       EUROPE:        { economy: 35_000, premium: 52_500, business: 70_000 },
       NORTH_AMERICA: { economy: 40_000, premium: 60_000, business: 80_000 },

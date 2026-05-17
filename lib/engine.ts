@@ -330,6 +330,26 @@ const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "JFK-DSS": ["Air Senegal", "Air France"],
   "LOS-JFK": ["United"],
   "JFK-LOS": ["United"],
+
+  // South Africa ↔ Europe
+  "JNB-CDG": ["Air France", "South African Airways"],
+  "CDG-JNB": ["Air France", "South African Airways"],
+  "JNB-FRA": ["Lufthansa", "South African Airways"],
+  "FRA-JNB": ["Lufthansa", "South African Airways"],
+
+  // East Africa ↔ Europe (additional routes)
+  "ADD-LHR": ["Ethiopian Airlines", "British Airways"],
+  "LHR-ADD": ["Ethiopian Airlines", "British Airways"],
+  "NBO-FRA": ["Lufthansa", "Kenya Airways"],
+  "FRA-NBO": ["Lufthansa", "Kenya Airways"],
+
+  // Kigali ↔ Europe (RwandAir hub)
+  "KGL-LHR": ["RwandAir", "British Airways"],
+  "LHR-KGL": ["RwandAir", "British Airways"],
+  "KGL-CDG": ["RwandAir", "Air France"],
+  "CDG-KGL": ["RwandAir", "Air France"],
+  "KGL-BRU": ["RwandAir", "Brussels Airlines"],
+  "BRU-KGL": ["RwandAir", "Brussels Airlines"],
 };
 
 /**

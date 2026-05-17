@@ -132,6 +132,8 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   { program: "Qantas Frequent Flyer",       valueCents: 1.2, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
   { program: "Japan Airlines Mileage Bank", valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
   { program: "Alaska Mileage Plan",         valueCents: 1.5, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
+  // Transferable currencies (bank points)
+  { program: "Bilt Rewards",               valueCents: 1.7, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
 ];
 
 // Fast lookup map: program name → market value in cents
