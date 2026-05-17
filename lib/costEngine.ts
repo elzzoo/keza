@@ -156,6 +156,9 @@ const AEROPLAN_GUARANTEE_AIRLINES = new Set([
   "Ethiopian Airlines", "Swiss", "South African Airways", "EgyptAir",
   "TAP Air Portugal", "All Nippon Airways", "Avianca",
   "Brussels Airlines", "Austrian Airlines", "LOT Polish Airlines", "SAS",
+  // Additional Star Alliance members — ensures Aeroplan surfaces on their routes
+  "Air India", "Air China", "Asiana Airlines", "EVA Air", "Thai Airways",
+  "Copa Airlines", "Garuda Indonesia", "Aegean Airlines",
 ]);
 
 // Airlines for which Singapore KrisFlyer should always be guaranteed
@@ -167,6 +170,9 @@ const KRISFLYER_GUARANTEE_AIRLINES = new Set([
 const BA_AVIOS_GUARANTEE_AIRLINES = new Set([
   "British Airways", "Iberia", "American Airlines", "Qatar Airways",
   "Japan Airlines", "Finnair", "Royal Air Maroc",
+  // Additional Oneworld members — ensures BA Avios surfaces on their routes
+  "Cathay Pacific", "Qantas", "Malaysia Airlines", "Alaska Airlines",
+  "LATAM Airlines", "LATAM Brasil", "Royal Jordanian", "SriLankan Airlines",
 ]);
 
 interface ProgramMatch {
