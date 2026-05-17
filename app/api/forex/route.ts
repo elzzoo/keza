@@ -56,8 +56,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     const rates = await fetchAllRates();
 
-    // Auto-detect currency from Vercel geo header
-    const country = req.headers.get("x-vercel-ip-country") ?? req.geo?.country ?? "";
+    // Auto-detect currency from Vercel geo header (req.geo removed in Next.js 15)
+    const country = req.headers.get("x-vercel-ip-country") ?? "";
     const detectedCurrency: CurrencyCode = country
       ? currencyForCountry(country)
       : "USD";

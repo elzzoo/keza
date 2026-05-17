@@ -6,7 +6,7 @@ import { getMonthlyPrices, type DestinationPriceHistory } from "@/lib/priceHisto
 import { DestinationPageClient } from "./DestinationPageClient";
 
 interface Props {
-  params: { iata: string };
+  params: Promise<{ iata: string }>;
 }
 
 import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
@@ -22,8 +22,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { iata } = await params;
   const dest = DESTINATIONS.find(
-    (d) => d.iata.toLowerCase() === params.iata.toLowerCase()
+    (d) => d.iata.toLowerCase() === iata.toLowerCase()
   );
   if (!dest) notFound();
 
@@ -45,9 +46,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function DestinationPage({ params }: Props) {
+export default async function DestinationPage({ params }: Props) {
+  const { iata } = await params;
   const dest = DESTINATIONS.find(
-    (d) => d.iata.toLowerCase() === params.iata.toLowerCase()
+    (d) => d.iata.toLowerCase() === iata.toLowerCase()
   );
   if (!dest) notFound();
 

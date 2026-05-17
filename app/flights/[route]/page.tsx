@@ -14,7 +14,7 @@ export const dynamicParams = true;
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface Props {
-  params: { route: string };
+  params: Promise<{ route: string }>;
 }
 
 // ─── Parse route param (DSS-CDG → { from: "DSS", to: "CDG" }) ──────────────
@@ -97,7 +97,8 @@ export async function generateStaticParams() {
 // ─── Metadata ───────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const parsed = parseRoute(params.route);
+  const { route } = await params;
+  const parsed = parseRoute(route);
   if (!parsed) return { title: "Route not found — KEZA" };
 
   const fromAirport = airportsMap[parsed.from];
@@ -114,14 +115,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
-      url: `${SITE_URL}/flights/${params.route}`,
+      url: `${SITE_URL}/flights/${route}`,
     },
     alternates: {
-      canonical: `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+      canonical: `${SITE_URL}/flights/${route.toUpperCase()}`,
       languages: {
-        'fr': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
-        'en': `${SITE_URL}/en/flights/${params.route.toUpperCase()}`,
-        'x-default': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+        'fr': `${SITE_URL}/flights/${route.toUpperCase()}`,
+        'en': `${SITE_URL}/en/flights/${route.toUpperCase()}`,
+        'x-default': `${SITE_URL}/flights/${route.toUpperCase()}`,
       },
     },
   };
@@ -130,7 +131,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default async function RoutePage({ params }: Props) {
-  const parsed = parseRoute(params.route);
+  const { route } = await params;
+  const parsed = parseRoute(route);
   if (!parsed) notFound();
 
   const fromAirport = airportsMap[parsed.from];
@@ -162,7 +164,7 @@ export default async function RoutePage({ params }: Props) {
 
   // Related routes: same origin, different destinations
   const relatedRoutes = POPULAR_ROUTES
-    .filter(r => r !== params.route.toUpperCase())
+    .filter(r => r !== route.toUpperCase())
     .filter(r => r.startsWith(parsed.from) || r.endsWith(parsed.to))
     .slice(0, 6);
 
@@ -170,7 +172,7 @@ export default async function RoutePage({ params }: Props) {
   if (relatedRoutes.length < 4) {
     for (const r of POPULAR_ROUTES) {
       if (relatedRoutes.length >= 6) break;
-      if (!relatedRoutes.includes(r) && r !== params.route.toUpperCase()) {
+      if (!relatedRoutes.includes(r) && r !== route.toUpperCase()) {
         relatedRoutes.push(r);
       }
     }
@@ -206,7 +208,7 @@ export default async function RoutePage({ params }: Props) {
         "@type": "ListItem",
         position: 3,
         name: `${fromCity} → ${toCity}`,
-        item: `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+        item: `${SITE_URL}/flights/${route.toUpperCase()}`,
       },
     ],
   };

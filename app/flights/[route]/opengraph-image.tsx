@@ -9,7 +9,7 @@ export const size = { width: OG_WIDTH, height: OG_HEIGHT };
 export const contentType = "image/png";
 
 interface Props {
-  params: { route: string };
+  params: Promise<{ route: string }>;
 }
 
 function parseRoute(route: string) {
@@ -19,7 +19,8 @@ function parseRoute(route: string) {
 }
 
 export default async function Image({ params }: Props) {
-  const parsed = parseRoute(params.route);
+  const { route } = await params;
+  const parsed = parseRoute(route);
 
   const from = parsed?.from ?? "???";
   const to = parsed?.to ?? "???";

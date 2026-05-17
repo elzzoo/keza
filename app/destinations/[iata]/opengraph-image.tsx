@@ -19,7 +19,7 @@ export const runtime = "edge";
 export const size = { width: OG_WIDTH, height: OG_HEIGHT };
 export const contentType = "image/png";
 
-type Props = { params: { iata: string } };
+type Props = { params: Promise<{ iata: string }> };
 
 /** Badge colors per deal recommendation */
 const BADGE_STYLES = {
@@ -44,8 +44,9 @@ const BADGE_STYLES = {
 } as const;
 
 export default async function Image({ params }: Props) {
+  const { iata } = await params;
   const dest = DESTINATIONS.find(
-    (d) => d.iata.toLowerCase() === params.iata.toLowerCase()
+    (d) => d.iata.toLowerCase() === iata.toLowerCase()
   );
 
   // Fallback to brand image if destination not found

@@ -10,7 +10,7 @@ export const revalidate = 21600;
 export const dynamicParams = true;
 
 interface Props {
-  params: { route: string };
+  params: Promise<{ route: string }>;
 }
 
 function parseRoute(route: string): { from: string; to: string } | null {
@@ -88,7 +88,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const parsed = parseRoute(params.route);
+  const { route } = await params;
+  const parsed = parseRoute(route);
   if (!parsed) return { title: "Route not found — KEZA" };
 
   const fromAirport = airportsMap[parsed.from];
@@ -102,20 +103,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    openGraph: { title, description, type: "website", url: `${SITE_URL}/en/flights/${params.route}` },
+    openGraph: { title, description, type: "website", url: `${SITE_URL}/en/flights/${route}` },
     alternates: {
-      canonical: `${SITE_URL}/en/flights/${params.route.toUpperCase()}`,
+      canonical: `${SITE_URL}/en/flights/${route.toUpperCase()}`,
       languages: {
-        'fr': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
-        'en': `${SITE_URL}/en/flights/${params.route.toUpperCase()}`,
-        'x-default': `${SITE_URL}/flights/${params.route.toUpperCase()}`,
+        'fr': `${SITE_URL}/flights/${route.toUpperCase()}`,
+        'en': `${SITE_URL}/en/flights/${route.toUpperCase()}`,
+        'x-default': `${SITE_URL}/flights/${route.toUpperCase()}`,
       },
     },
   };
 }
 
 export default async function EnRoutePage({ params }: Props) {
-  const parsed = parseRoute(params.route);
+  const { route } = await params;
+  const parsed = parseRoute(route);
   if (!parsed) notFound();
 
   const fromAirport = airportsMap[parsed.from];
@@ -144,14 +146,14 @@ export default async function EnRoutePage({ params }: Props) {
     : null;
 
   const relatedRoutes = POPULAR_ROUTES
-    .filter(r => r !== params.route.toUpperCase())
+    .filter(r => r !== route.toUpperCase())
     .filter(r => r.startsWith(parsed.from) || r.endsWith(parsed.to))
     .slice(0, 6);
 
   if (relatedRoutes.length < 4) {
     for (const r of POPULAR_ROUTES) {
       if (relatedRoutes.length >= 6) break;
-      if (!relatedRoutes.includes(r) && r !== params.route.toUpperCase()) relatedRoutes.push(r);
+      if (!relatedRoutes.includes(r) && r !== route.toUpperCase()) relatedRoutes.push(r);
     }
   }
 
@@ -172,7 +174,7 @@ export default async function EnRoutePage({ params }: Props) {
         "@type": "ListItem",
         position: 3,
         name: `${fromCity} → ${toCity}`,
-        item: `${SITE_URL}/en/flights/${params.route.toUpperCase()}`,
+        item: `${SITE_URL}/en/flights/${route.toUpperCase()}`,
       },
     ],
   };

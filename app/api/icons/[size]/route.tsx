@@ -5,9 +5,10 @@ export const runtime = "edge";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { size: string } }
+  { params }: { params: Promise<{ size: string }> }
 ) {
-  const size = parseInt(params.size) || 192;
+  const { size: sizeStr } = await params;
+  const size = parseInt(sizeStr) || 192;
   const clamped = size >= 512 ? 512 : 192;
   const fontSize = clamped >= 512 ? 156 : 58;
   const subFontSize = clamped >= 512 ? 120 : 44;
