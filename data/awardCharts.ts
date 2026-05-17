@@ -308,9 +308,10 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_WEST:   { economy: 15_000, premium: 22_500, business: 42_500 },
     },
     AFRICA_SOUTH: {
-      EUROPE:        { economy: 55_000, premium: 75_000, business: 110_000 },
-      NORTH_AMERICA: { economy: 55_000, premium: 75_000, business: 110_000 },
-      MIDDLE_EAST:   { economy: 30_000, premium: 45_000, business: 75_000 },
+      // Aeroplan Zone 7 (Southern Africa): JNB~9,000km to Europe, ~13,000km to NA
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 85_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 67_500, business: 100_000 },
+      MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 65_000 },
       AFRICA_SOUTH:  { economy:  7_500, premium: 12_500, business: 25_000 },
       AFRICA_EAST:   { economy: 12_500, premium: 20_000, business: 37_500 },
       AFRICA_WEST:   { economy: 20_000, premium: 30_000, business: 55_000 },
@@ -445,6 +446,9 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     AFRICA_EAST: {
       EUROPE:        { economy: 20_000, premium: 30_000, business: 50_000 },
     },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 60_000 },
+    },
   },
 
   // ─── Qantas Frequent Flyer ────────────────────────────────────────────────
@@ -504,12 +508,15 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
     AFRICA_WEST: {
       EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 70_000 },
     },
     AFRICA_EAST: {
       EUROPE:        { economy: 25_000, premium: 37_500, business: 55_000 },
+      NORTH_AMERICA: { economy: 40_000, premium: 60_000, business: 75_000 },
     },
     AFRICA_SOUTH: {
       EUROPE:        { economy: 35_000, premium: 52_500, business: 65_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 67_500, business: 85_000 },
     },
   },
 

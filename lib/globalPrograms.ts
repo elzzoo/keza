@@ -86,7 +86,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Air France",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: 30,
-    marketValueCents: 1.2,
+    marketValueCents: 1.5, // canonical: matches milesPrices.ts
     taxProfile: "medium",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -435,6 +435,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     taxProfile: "low",
     transferPartnersFrom: [
       "Marriott Bonvoy",
+      "Bilt Rewards",  // matches milesAcquisition.ts
     ],
     accessibilityScore: 2,
   },
@@ -564,7 +565,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Emirates",
     alliance: "Independent",
     purchaseMileCostPer1000: 30,
-    marketValueCents: 1.0,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.0)
     taxProfile: "medium",
     transferPartnersFrom: [
       "Amex Membership Rewards",
