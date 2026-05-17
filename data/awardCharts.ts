@@ -276,6 +276,7 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       AFRICA_EAST:   { economy: 10_000, premium: 15_000, business: 32_500 },
       AFRICA_WEST:   { economy: 15_000, premium: 22_500, business: 45_000 },
       AFRICA_SOUTH:  { economy:  7_500, premium: 12_000, business: 25_000 },
+      ASIA:          { economy: 30_000, premium: 45_000, business: 80_000 },
     },
     EUROPE: {
       NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 90_000 },
@@ -616,6 +617,50 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     MIDDLE_EAST: {
       NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 72_500 },
       EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+    AFRICA_SOUTH: {
+      // Delta doesn't serve southern Africa directly, but SkyTeam partners (KQ, AF) do
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 65_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 85_000 },
+    },
+  },
+
+  // ─── Korean Air SKYPASS ───────────────────────────────────────────────────
+  // Zone-based chart for Korean Air and SkyTeam partners. One-way per pax.
+  // Korean Air serves Africa via ICN hub; these are partner award rates.
+  "Korean Air SKYPASS": {
+    AFRICA_EAST: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 70_000 },
+      NORTH_AMERICA: { economy: 40_000, premium: 60_000, business: 80_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 45_000 },
+      ASIA:          { economy: 15_000, premium: 22_500, business: 40_000 },
+      AFRICA_EAST:   { economy:  7_500, premium: 12_000, business: 25_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 37_500, premium: 56_250, business: 75_000 },
+      NORTH_AMERICA: { economy: 42_500, premium: 63_750, business: 85_000 },
+      MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 55_000 },
+      AFRICA_WEST:   { economy:  7_500, premium: 12_000, business: 25_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 40_000, premium: 60_000, business: 80_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 67_500, business: 90_000 },
+      MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 55_000 },
+      ASIA:          { economy: 20_000, premium: 30_000, business: 50_000 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 70_000 },
+      ASIA:          { economy: 30_000, premium: 45_000, business: 65_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 26_250, business: 45_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 52_500, business: 70_000 },
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 70_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 65_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 70_000 },
+      MIDDLE_EAST:   { economy: 10_000, premium: 15_000, business: 30_000 },
     },
   },
 };
