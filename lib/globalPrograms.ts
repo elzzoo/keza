@@ -451,7 +451,6 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Amex Membership Rewards",
       "Chase Ultimate Rewards",
       "Capital One Miles",
-      "Bilt Rewards",
       "Marriott Bonvoy",
     ],
     accessibilityScore: 1,
