@@ -68,43 +68,43 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   },
   "Delta SkyMiles": {
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.1,
+    marketValueCents: 1.2, // canonical: matches milesPrices.ts (was 1.1)
     transferPartnersFrom: ["Amex Membership Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },  // 3:1
   },
   "Korean Air SKYPASS": {
     purchaseMileCostPer1000: 33,
-    marketValueCents: 1.5,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
     transferPartnersFrom: ["Chase Ultimate Rewards", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Turkish Miles&Smiles": {
     purchaseMileCostPer1000: null,
-    marketValueCents: 1.5,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
     transferPartnersFrom: ["Citi ThankYou", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Air Canada Aeroplan": {
     purchaseMileCostPer1000: 25,
-    marketValueCents: 1.5,
+    marketValueCents: 1.6, // canonical: matches milesPrices.ts (was 1.5)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "United MileagePlus": {
     purchaseMileCostPer1000: 22,
-    marketValueCents: 1.2,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.2)
     transferPartnersFrom: ["Chase Ultimate Rewards", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "ANA Mileage Club": {
     purchaseMileCostPer1000: null,
-    marketValueCents: 1.5,
+    marketValueCents: 1.6, // canonical: matches milesPrices.ts (was 1.5)
     transferPartnersFrom: ["Amex Membership Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Singapore KrisFlyer": {
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.5,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Citi ThankYou", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
@@ -146,8 +146,9 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   },
   "Iberia Avios Plus": {
     purchaseMileCostPer1000: 22,
-    marketValueCents: 1.3,
-    transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.3)
+    transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Capital One Miles", "Marriott Bonvoy"],
+    // Bilt Rewards does NOT transfer to Iberia — removed (no entry in transferBonuses.ts)
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Alaska Mileage Plan": {

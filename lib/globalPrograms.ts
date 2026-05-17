@@ -103,7 +103,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Delta",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.1,
+    marketValueCents: 1.2, // canonical: matches milesPrices.ts (was 1.1)
     taxProfile: "low",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -117,7 +117,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Korean Air",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: 33,
-    marketValueCents: 1.5,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
     taxProfile: "low",
     transferPartnersFrom: [
       "Chase Ultimate Rewards",
@@ -182,7 +182,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Turkish Airlines",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: null,  // not directly purchasable
-    marketValueCents: 1.5,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
     taxProfile: "low",
     transferPartnersFrom: [
       "Citi ThankYou",
@@ -198,7 +198,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Air Canada",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 25,
-    marketValueCents: 1.5,
+    marketValueCents: 1.6, // canonical: matches milesPrices.ts (was 1.5)
     taxProfile: "low",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -215,7 +215,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "United",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 22,
-    marketValueCents: 1.2,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.2)
     taxProfile: "low",
     transferPartnersFrom: [
       "Chase Ultimate Rewards",
@@ -230,7 +230,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "All Nippon Airways",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: null,  // only via transfer partners
-    marketValueCents: 1.5,
+    marketValueCents: 1.6, // canonical: matches milesPrices.ts (was 1.5)
     taxProfile: "low",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -244,7 +244,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Singapore Airlines",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.5,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
     taxProfile: "low",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -280,7 +280,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Ethiopian Airlines",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 30,
-    marketValueCents: 1.0,
+    marketValueCents: 1.2, // canonical: matches milesPrices.ts (was 1.0)
     taxProfile: "low",
     transferPartnersFrom: [
       "Amex Membership Rewards",  // Amex MR → Ethiopian ShebaMiles is in transferBonuses.ts
@@ -294,7 +294,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Lufthansa",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.0,
+    marketValueCents: 1.3, // canonical: matches milesPrices.ts (was 1.0)
     taxProfile: "high",
     transferPartnersFrom: [
       "Marriott Bonvoy",
@@ -384,7 +384,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "British Airways",
     alliance: "Oneworld",
     purchaseMileCostPer1000: 25,
-    marketValueCents: 1.3,
+    marketValueCents: 1.5, // canonical: matches milesPrices.ts (was 1.3)
     taxProfile: "high",   // notorious fuel surcharges on BA metal
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -447,7 +447,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Iberia",
     alliance: "Oneworld",
     purchaseMileCostPer1000: 22,
-    marketValueCents: 1.3,
+    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.3)
     taxProfile: "low",   // much lower surcharges than BA
     transferPartnersFrom: [
       "Amex Membership Rewards",
