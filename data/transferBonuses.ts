@@ -38,13 +38,45 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Capital One Miles", to: "Air Canada Aeroplan",  baseRatio: 1.0, transferTime: "instant" },
   { from: "Capital One Miles", to: "Emirates Skywards",    baseRatio: 1.0, transferTime: "instant" },
   { from: "Capital One Miles", to: "British Airways Avios",baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Singapore KrisFlyer",  baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
+
+  // Singapore KrisFlyer (Amex, Chase, Citi, Capital One already added)
+  { from: "Amex MR",          to: "Singapore KrisFlyer",  baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR",         to: "Singapore KrisFlyer",  baseRatio: 1.0, transferTime: "instant" },
+  { from: "Citi ThankYou",    to: "Singapore KrisFlyer",  baseRatio: 1.0, transferTime: "1-3 days" },
+
+  // ANA Mileage Club
+  { from: "Amex MR",          to: "ANA Mileage Club",     baseRatio: 1.0, transferTime: "instant" },
+
+  // LifeMiles (Avianca)
+  { from: "Amex MR",          to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
+  { from: "Citi ThankYou",    to: "LifeMiles",            baseRatio: 1.0, transferTime: "1-3 days" },
+
+  // Iberia Avios Plus
+  { from: "Amex MR",          to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR",         to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },
+
+  // Virgin Atlantic Flying Club
+  { from: "Amex MR",          to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR",         to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Citi ThankYou",    to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "1-3 days" },
+
+  // Korean Air SKYPASS
+  { from: "Chase UR",         to: "Korean Air SKYPASS",   baseRatio: 1.0, transferTime: "instant" },
 ];
 
-// Returns effective ratio (promo if valid and not expired, else base)
+// Returns effective ratio (promo if set and not expired, else base).
+// A promoRatio WITHOUT a promoValidUntil date is treated as indefinitely valid —
+// the caller must set promoValidUntil explicitly to enforce an expiry.
 export function getEffectiveRatio(record: TransferBonusRecord): number {
-  if (record.promoRatio && record.promoValidUntil) {
-    const expiry = new Date(record.promoValidUntil);
-    if (expiry >= new Date()) return record.promoRatio;
+  if (record.promoRatio) {
+    // If an expiry is set, check it; if absent, treat the promo as active
+    if (!record.promoValidUntil || new Date(record.promoValidUntil) >= new Date()) {
+      return record.promoRatio;
+    }
   }
   return record.baseRatio;
 }

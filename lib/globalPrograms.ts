@@ -83,7 +83,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
   {
     name: "Flying Blue",
     airlineCode: "AF",
-    airline: "Air France / KLM",
+    airline: "Air France",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: 30,
     marketValueCents: 1.2,
@@ -100,7 +100,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
   {
     name: "Delta SkyMiles",
     airlineCode: "DL",
-    airline: "Delta Air Lines",
+    airline: "Delta",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: 35,
     marketValueCents: 1.1,
@@ -211,7 +211,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
   {
     name: "United MileagePlus",
     airlineCode: "UA",
-    airline: "United Airlines",
+    airline: "United",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 22,
     marketValueCents: 1.2,
@@ -579,7 +579,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
   {
     name: "Etihad Guest",
     airlineCode: "EY",
-    airline: "Etihad Airways",
+    airline: "Etihad",
     alliance: "Independent",
     purchaseMileCostPer1000: 28,
     marketValueCents: 1.2,
@@ -669,7 +669,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
   {
     name: "China Southern Sky Pearl Club",
     airlineCode: "CZ",
-    airline: "China Southern Airlines",
+    airline: "China Southern",
     alliance: "SkyTeam",
     purchaseMileCostPer1000: null,
     marketValueCents: 0.8,

@@ -68,7 +68,7 @@ export const ALLIANCES: Record<string, string> = {
   // Independent
   "Emirates": "Independent",
   "Etihad": "Independent",
-  "Etihad Airways": "Independent",       // globalPrograms uses this full name
+  "Etihad Airways": "Independent",       // legacy alias — canonical name is "Etihad" (globalPrograms)
   "RwandAir": "Independent",
   "Air Senegal": "Independent",
   "Air Algérie": "Independent",

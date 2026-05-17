@@ -101,6 +101,10 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   // allowing the engine to skip or label them as "Multi-compagnies".
 };
 
+// Virtual/unresolved IATA codes — declared at module level so the Set is allocated
+// ONCE and reused across all calls (iataToAirline is called ~100+ times per search).
+export const VIRTUAL_IATA_CODES = new Set(["ZZ", "YP", "ZG", "DM", "Z0", "NI"]);
+
 /**
  * Map a Travelpayouts/Duffel IATA code to our canonical airline name.
  * Returns null for virtual/unresolved codes (ZZ, YP, ZG…) so callers can
@@ -108,9 +112,7 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
  */
 export function iataToAirline(code: string): string | null {
   const upper = code.toUpperCase();
-  // Known virtual/unresolved codes → return null so callers can skip them
-  const VIRTUAL_CODES = new Set(["ZZ", "YP", "ZG", "DM", "Z0", "NI"]);
-  if (VIRTUAL_CODES.has(upper)) return null;
+  if (VIRTUAL_IATA_CODES.has(upper)) return null;
   return IATA_TO_AIRLINE[upper] ?? null;
 }
 

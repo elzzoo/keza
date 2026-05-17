@@ -128,6 +128,9 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   { program: "Lufthansa Miles & More",      valueCents: 1.3, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "Korean Air SKYPASS",          valueCents: 1.4, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   { program: "Virgin Atlantic Flying Club", valueCents: 1.5, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "Qantas Frequent Flyer",       valueCents: 1.2, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
+  { program: "Japan Airlines Mileage Bank", valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
+  { program: "Alaska Mileage Plan",         valueCents: 1.5, confidence: "MEDIUM", lastUpdated: "2026-05-17" },
 ];
 
 // Fast lookup map: program name → market value in cents

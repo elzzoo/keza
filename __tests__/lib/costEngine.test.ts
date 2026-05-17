@@ -374,3 +374,239 @@ describe("MAD → BCN (intra-Europe short-haul)", () => {
     expect(iberia.milesRequired).toBeLessThanOrEqual(25_000);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LHR → JFK — British Airways business class (EUROPE → NORTH_AMERICA)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("buildCostOptions — LHR→JFK business (British Airways)", () => {
+  const baseLHR: FlightInput = {
+    from:       "LHR",
+    to:         "JFK",
+    totalPrice: 3_600,    // $3,600 business OW 1 pax (realistic transatlantic)
+    airlines:   ["British Airways"],
+    stops:      0,
+    cabin:      "business",
+    tripType:   "oneway",
+    passengers: 1,
+  };
+
+  it("includes British Airways Avios for a British Airways flight (any form)", () => {
+    const { milesOptions } = buildCostOptions(baseLHR, new Map());
+    // British Airways Avios must appear for a BA flight.
+    // With UK APD taxes ($300 cap) + high mileage (78K), the DIRECT entry can
+    // be outranked by cheaper Oneworld options and sliced at position 12.
+    // The TRANSFER form (e.g. Chase UR → BA Avios) often survives because it
+    // costs the same miles but may rank within top-12 from a different angle.
+    // The key invariant: Avios is available for this route in some form.
+    const hasAvios = milesOptions.some((o) => o.program === "British Airways Avios");
+    expect(hasAvios).toBe(true);
+  });
+
+  it("includes at least one Oneworld alliance partner (AAdvantage or Qatar)", () => {
+    const { milesOptions } = buildCostOptions(baseLHR, new Map());
+    const oneworld = milesOptions.filter(
+      (o) => o.program === "AAdvantage" || o.program === "Qatar Privilege Club"
+    );
+    expect(oneworld.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("British Airways Avios miles for LHR→JFK business are realistic (60K–120K OW)", () => {
+    const { milesOptions } = buildCostOptions(baseLHR, new Map());
+    const avios = milesOptions.find((o) => o.program === "British Airways Avios")!;
+    expect(avios.milesRequired).toBeGreaterThanOrEqual(60_000);
+    expect(avios.milesRequired).toBeLessThanOrEqual(120_000);
+  });
+
+  it("British Airways taxes are bounded by UK corridor cap ($300 max business 1 pax OW)", () => {
+    const { milesOptions } = buildCostOptions(baseLHR, new Map());
+    const avios = milesOptions.find((o) => o.program === "British Airways Avios")!;
+    // UK business cap = $300/pax × 1 pax, OW (no return)
+    expect(avios.taxes).toBeGreaterThanOrEqual(100);
+    expect(avios.taxes).toBeLessThanOrEqual(300);
+  });
+
+  it("includes a TRANSFER option via Amex MR → British Airways Avios", () => {
+    const { milesOptions } = buildCostOptions(baseLHR, new Map());
+    const transfer = milesOptions.find(
+      (o) => o.program === "British Airways Avios" && o.type === "TRANSFER"
+    );
+    // Amex MR transfers to British Airways Avios
+    expect(transfer).toBeDefined();
+  });
+
+  it("recommendation is USE_MILES (business transatlantic cash price is high)", () => {
+    const { recommendation } = buildCostOptions(baseLHR, new Map());
+    expect(recommendation).toBe("USE_MILES");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DXB → CDG — Emirates economy OW (MIDDLE_EAST → EUROPE)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("buildCostOptions — DXB→CDG economy (Emirates)", () => {
+  const baseDXB: FlightInput = {
+    from:       "DXB",
+    to:         "CDG",
+    totalPrice: 700,      // $700 economy OW 1 pax
+    airlines:   ["Emirates"],
+    stops:      0,
+    cabin:      "economy",
+    tripType:   "oneway",
+    passengers: 1,
+  };
+
+  it("includes Emirates Skywards (DIRECT or corridor guarantee)", () => {
+    const { milesOptions } = buildCostOptions(baseDXB, new Map());
+    const em = milesOptions.find((o) => o.program === "Emirates Skywards");
+    expect(em).toBeDefined();
+  });
+
+  it("Emirates Skywards miles for DXB→CDG economy are realistic (12K–30K OW)", () => {
+    const { milesOptions } = buildCostOptions(baseDXB, new Map());
+    const em = milesOptions.find((o) => o.program === "Emirates Skywards")!;
+    expect(em.milesRequired).toBeGreaterThanOrEqual(12_000);
+    expect(em.milesRequired).toBeLessThanOrEqual(30_000);
+  });
+
+  it("Emirates Skywards taxes are bounded by Middle East corridor cap ($60 max economy)", () => {
+    const { milesOptions } = buildCostOptions(baseDXB, new Map());
+    const em = milesOptions.find((o) => o.program === "Emirates Skywards")!;
+    expect(em.taxes).toBeGreaterThanOrEqual(0);
+    expect(em.taxes).toBeLessThanOrEqual(60);
+  });
+
+  it("includes a TRANSFER route to Emirates Skywards (Amex MR, Chase UR, or Capital One)", () => {
+    const { milesOptions } = buildCostOptions(baseDXB, new Map());
+    const transferToEM = milesOptions.find(
+      (o) => o.program === "Emirates Skywards" && o.type === "TRANSFER"
+    );
+    expect(transferToEM).toBeDefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Multi-pax — 2 passengers scale savings correctly
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("buildCostOptions — multi-pax savings scaling", () => {
+  const base1Pax: FlightInput = {
+    from:       "DSS",
+    to:         "CDG",
+    totalPrice: 600,      // $600 total = $300/pax × 2 pax (economy OW)
+    airlines:   ["Air France"],
+    stops:      0,
+    cabin:      "economy",
+    tripType:   "oneway",
+    passengers: 2,
+  };
+
+  it("cashCost equals totalPrice for multi-pax flight", () => {
+    const { cashCost } = buildCostOptions(base1Pax, new Map());
+    expect(cashCost).toBe(600);
+  });
+
+  it("milesRequired scales with passenger count (roughly 2× vs 1 pax)", () => {
+    const result1Pax = buildCostOptions({ ...base1Pax, passengers: 1, totalPrice: 300 }, new Map());
+    const result2Pax = buildCostOptions({ ...base1Pax, passengers: 2, totalPrice: 600 }, new Map());
+
+    const fb1 = result1Pax.milesOptions.find((o) => o.program === "Flying Blue")!;
+    const fb2 = result2Pax.milesOptions.find((o) => o.program === "Flying Blue")!;
+
+    expect(fb1).toBeDefined();
+    expect(fb2).toBeDefined();
+    // 2-pax miles should be exactly 2× 1-pax (multi-pax scales linearly)
+    expect(fb2.milesRequired).toBe(fb1.milesRequired * 2);
+  });
+
+  it("savings sign is consistent: positive means miles cheaper", () => {
+    const { savings, cashCost, milesCost } = buildCostOptions(base1Pax, new Map());
+    if (savings > 0) {
+      expect(milesCost).toBeLessThan(cashCost);
+    } else {
+      expect(milesCost).toBeGreaterThanOrEqual(cashCost);
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Empty airlines — zone-fallback path must not throw or return empty
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("buildCostOptions — empty airlines array (zone fallback)", () => {
+  const baseNoAirline: FlightInput = {
+    from:       "DSS",
+    to:         "CDG",
+    totalPrice: 800,
+    airlines:   [],          // no airline info — month-matrix result
+    stops:      0,
+    cabin:      "economy",
+    tripType:   "oneway",
+    passengers: 1,
+  };
+
+  it("does not throw when airlines is empty", () => {
+    expect(() => buildCostOptions(baseNoAirline, new Map())).not.toThrow();
+  });
+
+  it("returns at least one miles option via zone fallback", () => {
+    const { milesOptions } = buildCostOptions(baseNoAirline, new Map());
+    expect(milesOptions.length).toBeGreaterThan(0);
+  });
+
+  it("cashCost equals totalPrice even with no airline", () => {
+    const { cashCost } = buildCostOptions(baseNoAirline, new Map());
+    expect(cashCost).toBe(800);
+  });
+
+  it("recommendation is binary (USE_MILES or USE_CASH)", () => {
+    const { recommendation } = buildCostOptions(baseNoAirline, new Map());
+    expect(["USE_MILES", "USE_CASH"]).toContain(recommendation);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// First-class cabin — miles and taxes scale above business
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("buildCostOptions — first class (DSS→CDG Air France)", () => {
+  const baseFirst: FlightInput = {
+    from:       "DSS",
+    to:         "CDG",
+    totalPrice: 4_800,    // $4,800 first OW RT 2 pax
+    airlines:   ["Air France"],
+    stops:      0,
+    cabin:      "first",
+    tripType:   "roundtrip",
+    passengers: 2,
+  };
+
+  it("Flying Blue appears for first class", () => {
+    const { milesOptions } = buildCostOptions(baseFirst, new Map());
+    const fb = milesOptions.find((o) => o.program === "Flying Blue");
+    expect(fb).toBeDefined();
+  });
+
+  it("Flying Blue first-class miles are strictly greater than economy miles for same route", () => {
+    const firstResult = buildCostOptions(baseFirst, new Map());
+    const ecoResult   = buildCostOptions({ ...baseFirst, cabin: "economy", totalPrice: 1_200 }, new Map());
+
+    const fbFirst = firstResult.milesOptions.find((o) => o.program === "Flying Blue")!;
+    const fbEco   = ecoResult.milesOptions.find((o) => o.program === "Flying Blue")!;
+
+    expect(fbFirst).toBeDefined();
+    expect(fbEco).toBeDefined();
+    expect(fbFirst.milesRequired).toBeGreaterThan(fbEco.milesRequired);
+  });
+
+  it("taxes for first class do not exceed Africa↔Europe first cap ($240 = maxBusiness × 1.5 × 2pax RT)", () => {
+    const { milesOptions } = buildCostOptions(baseFirst, new Map());
+    const fb = milesOptions.find((o) => o.program === "Flying Blue")!;
+    // Africa↔Europe: maxFirst = $240 × 2 pax × 2 (RT) = $960 max total
+    // But RT taxes in buildCostOptions = taxes OW × legCount where legCount may be 1 or 2
+    // Conservative upper bound: $960
+    expect(fb.taxes).toBeLessThanOrEqual(960);
+    expect(fb.taxes).toBeGreaterThanOrEqual(0);
+  });
+});

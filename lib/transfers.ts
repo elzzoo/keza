@@ -7,7 +7,6 @@ export interface TransferPartner {
 export const TRANSFERS: TransferPartner[] = [
   { from: "Amex MR", to: "Flying Blue", ratio: 1.0 },
   { from: "Amex MR", to: "Emirates Skywards", ratio: 1.0 },
-  { from: "Amex MR", to: "Qatar Privilege Club", ratio: 1.0 },
   { from: "Amex MR", to: "British Airways Avios", ratio: 1.0 },
   { from: "Chase UR", to: "United MileagePlus", ratio: 1.0 },
   { from: "Chase UR", to: "British Airways Avios", ratio: 1.0 },

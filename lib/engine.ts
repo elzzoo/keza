@@ -774,7 +774,10 @@ function enrichSynthetic(
   // it already reflects the requested cabin — don't double-apply the multiplier.
   const multiplier    = f.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
   const outboundPrice = Math.round(f.price * multiplier * 100) / 100;
-  const totalPrice    = Math.round(outboundPrice * passengers * 100) / 100;
+  // For roundtrips, double the price (synthetic has no real return leg — we mirror
+  // the outbound as a best estimate). Same logic as real roundtrips in enrich().
+  const legCount      = tripType === "roundtrip" ? 2 : 1;
+  const totalPrice    = Math.round(outboundPrice * legCount * passengers * 100) / 100;
 
   const result: FlightResult = {
     from:    f.from,
@@ -874,18 +877,21 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   // results so they never displace a real flight in the ranking.
   const syntheticFlights: NormalizedFlight[] = [];
   {
-    const suppKey = `${from}-${to}`;
+    const suppKey = `${from.toUpperCase()}-${to.toUpperCase()}`;
     const suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
     const coveredAirlines = new Set(rawOutbound.flatMap(f => f.airlines));
-    const cheapestPrice = rawOutbound.length > 0
-      ? Math.min(...rawOutbound.map(f => f.price))
-      : 0;
+    const cheapestRaw = rawOutbound.length > 0
+      ? rawOutbound.reduce((best, f) => f.price < best.price ? f : best, rawOutbound[0])
+      : undefined;
+    const cheapestPrice = cheapestRaw?.price ?? 0;
+    const cheapestCabinResolved = cheapestRaw?.cabinResolved ?? false;
     if (cheapestPrice > 0) {
       for (const airline of suppAirlines) {
         if (!coveredAirlines.has(airline)) {
           syntheticFlights.push({
             from, to, price: cheapestPrice, airlines: [airline], stops: 0,
             isSupplemental: true, source: "SYNTHETIC", priceConfidence: "ESTIMATED",
+            cabinResolved: cheapestCabinResolved,
           });
         }
       }

@@ -8,7 +8,10 @@ import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME } from "./globalPrograms";
 import { calculateAcquisitionCost } from "./milesAcquisition";
-import { AIRPORTS } from "@/data/airports";
+import { AIRPORTS, type Airport } from "@/data/airports";
+
+// Pre-built Map for O(1) airport lookup (AIRPORTS has 410 entries — linear scan per call is wasteful)
+const AIRPORTS_BY_CODE: Map<string, Airport> = new Map(AIRPORTS.map(a => [a.code, a]));
 import type { Cabin, TripType } from "./engine";
 import { buildScenarios, type Scenario } from "./scenarioEngine";
 
@@ -51,7 +54,7 @@ export interface MilesOption {
 export interface CostComparison {
   cashCost: number;               // total flight price in cash
   milesCost: number;              // total cost of best miles option (0 if none)
-  savings: number;                // |cashCost - milesCost| = how much you save
+  savings: number;                // cashCost - milesCost: positive = miles cheaper, negative = cash cheaper
   recommendation: Recommendation; // USE_MILES or USE_CASH — binary, no ambiguity
   bestOption: MilesOption | null; // the cheapest miles scenario
   milesOptions: MilesOption[];    // all computed options for detail view
@@ -159,6 +162,12 @@ const KRISFLYER_GUARANTEE_AIRLINES = new Set([
   "Singapore Airlines", "All Nippon Airways",
 ]);
 
+// Airlines for which British Airways Avios should always be guaranteed (Oneworld metal)
+const BA_AVIOS_GUARANTEE_AIRLINES = new Set([
+  "British Airways", "Iberia", "American Airlines", "Qatar Airways",
+  "Japan Airlines", "Finnair", "Royal Air Maroc",
+]);
+
 interface ProgramMatch {
   program: string;
   type: "DIRECT" | "ALLIANCE";
@@ -205,17 +214,17 @@ function getProgramsForAirline(airlines: string[]): ProgramMatch[] {
   // is also in the list — Flying Blue must still be guaranteed.
 
   const fbMatch = airlines.find((a) => FLYING_BLUE_AIRLINES.has(a));
-  if (fbMatch && !results.some((r) => r.program === "Flying Blue")) {
+  if (fbMatch && PROGRAMS_BY_NAME["Flying Blue"]?.isBookable !== false && !results.some((r) => r.program === "Flying Blue")) {
     results.push({ program: "Flying Blue", type: fbMatch === "Air France" ? "DIRECT" : "ALLIANCE", matchedAirline: fbMatch });
   }
 
   const aeroplanMatch = airlines.find((a) => AEROPLAN_GUARANTEE_AIRLINES.has(a));
-  if (aeroplanMatch && !results.some((r) => r.program === "Air Canada Aeroplan")) {
+  if (aeroplanMatch && PROGRAMS_BY_NAME["Air Canada Aeroplan"]?.isBookable !== false && !results.some((r) => r.program === "Air Canada Aeroplan")) {
     results.push({ program: "Air Canada Aeroplan", type: aeroplanMatch === "Air Canada" ? "DIRECT" : "ALLIANCE", matchedAirline: aeroplanMatch });
   }
 
   const kfMatch = airlines.find((a) => KRISFLYER_GUARANTEE_AIRLINES.has(a));
-  if (kfMatch && !results.some((r) => r.program === "Singapore KrisFlyer")) {
+  if (kfMatch && PROGRAMS_BY_NAME["Singapore KrisFlyer"]?.isBookable !== false && !results.some((r) => r.program === "Singapore KrisFlyer")) {
     results.push({ program: "Singapore KrisFlyer", type: kfMatch === "Singapore Airlines" ? "DIRECT" : "ALLIANCE", matchedAirline: kfMatch });
   }
 
@@ -282,31 +291,45 @@ function getCorridorGuarantees(originZone: string, destZone: string, airlines: s
   // When airlines list is empty/unknown we still inject it (conservative: better
   // to show an extra option than silently hide it).
   const fbPresent = airlines.length === 0 || airlines.some((a) => FLYING_BLUE_AIRLINES.has(a));
-  if (isEuropeAfrica && fbPresent) {
+  const canBook = (name: string) => PROGRAMS_BY_NAME[name]?.isBookable !== false;
+
+  if (isEuropeAfrica && fbPresent && canBook("Flying Blue")) {
     g.push({ program: "Flying Blue", type: "DIRECT", inferredAirline: "Air France" });
   }
 
   // Asia ↔ North America — KrisFlyer + ANA + JAL (three primary programs)
   if (isAsiaNorthAmerica) {
-    g.push({ program: "Singapore KrisFlyer",       type: "DIRECT", inferredAirline: "Singapore Airlines" });
-    g.push({ program: "ANA Mileage Club",           type: "DIRECT", inferredAirline: "All Nippon Airways" });
-    g.push({ program: "Japan Airlines Mileage Bank",type: "DIRECT", inferredAirline: "Japan Airlines"     });
+    if (canBook("Singapore KrisFlyer"))        g.push({ program: "Singapore KrisFlyer",       type: "DIRECT", inferredAirline: "Singapore Airlines" });
+    if (canBook("ANA Mileage Club"))           g.push({ program: "ANA Mileage Club",           type: "DIRECT", inferredAirline: "All Nippon Airways" });
+    if (canBook("Japan Airlines Mileage Bank"))g.push({ program: "Japan Airlines Mileage Bank",type: "DIRECT", inferredAirline: "Japan Airlines"     });
   }
 
   // South America routes — LATAM Pass + LifeMiles (flagship programs for this corridor)
   if (involvesSouthAmerica) {
-    g.push({ program: "LATAM Pass", type: "DIRECT", inferredAirline: "LATAM Brasil" });
-    g.push({ program: "LifeMiles",  type: "DIRECT", inferredAirline: "Avianca"      });
+    if (canBook("LATAM Pass")) g.push({ program: "LATAM Pass", type: "DIRECT", inferredAirline: "LATAM Brasil" });
+    if (canBook("LifeMiles"))  g.push({ program: "LifeMiles",  type: "DIRECT", inferredAirline: "Avianca"      });
   }
 
   // Intra-Europe — Iberia Avios Plus (best short-haul value in Europe)
-  if (isEuropeIntra) {
+  if (isEuropeIntra && canBook("Iberia Avios Plus")) {
     g.push({ program: "Iberia Avios Plus", type: "DIRECT", inferredAirline: "Iberia" });
   }
 
   // Middle East ↔ Europe / North America — Emirates Skywards (flagship hub carrier)
-  if (isMiddleEastLongHaul) {
+  if (isMiddleEastLongHaul && canBook("Emirates Skywards")) {
     g.push({ program: "Emirates Skywards", type: "DIRECT", inferredAirline: "Emirates" });
+  }
+
+  // Oneworld transatlantic / long-haul — BA Avios when Oneworld metal is operating
+  const isLongHaulWithOneworld =
+    airlines.length === 0 || airlines.some((a) => BA_AVIOS_GUARANTEE_AIRLINES.has(a));
+  const isLongHaul =
+    (originZone === "EUROPE" && (destZone === "NORTH_AMERICA" || destZone === "ASIA")) ||
+    (destZone === "EUROPE" && (originZone === "NORTH_AMERICA" || originZone === "ASIA")) ||
+    (originZone.startsWith("AFRICA_") && destZone === "EUROPE") ||
+    (destZone.startsWith("AFRICA_") && originZone === "EUROPE");
+  if (isLongHaul && isLongHaulWithOneworld && canBook("British Airways Avios")) {
+    g.push({ program: "British Airways Avios", type: "DIRECT", inferredAirline: "British Airways" });
   }
 
   return g;
@@ -401,6 +424,34 @@ function buildOptionExplanation(
   return `${program} (${typeLabel}) · ${milesFormatted} miles + $${taxes} taxes${promoNote}`;
 }
 
+// ─── Dynamic engine: per-program regional zone filter ────────────────────────
+// Declared at module level (NOT inside the per-program loop) so the object is
+// allocated ONCE and reused across all calls.
+// Programs not listed here are allowed on any route.
+const DYNAMIC_PROGRAM_SERVED_ZONES: Partial<Record<string, string[]>> = {
+  "Air India Flying Returns":      ["ASIA", "EUROPE", "NORTH_AMERICA", "MIDDLE_EAST"],
+  "Korean Air SKYPASS":            ["ASIA", "NORTH_AMERICA", "EUROPE"],
+  "Thai Royal Orchid Plus":        ["ASIA", "EUROPE", "MIDDLE_EAST"],
+  "Garuda GarudaMiles":            ["ASIA", "EUROPE", "MIDDLE_EAST"],
+  "Vietnam Airlines Lotusmiles":   ["ASIA"],
+  "China Southern Sky Pearl Club": ["ASIA", "NORTH_AMERICA", "EUROPE"],
+  "China Eastern Eastern Miles":   ["ASIA", "NORTH_AMERICA", "EUROPE"],
+  "Hainan Fortune Wings Club":     ["ASIA"],
+  "Aeromexico Club Premier":       ["NORTH_AMERICA", "SOUTH_AMERICA", "EUROPE"],
+  "LATAM Pass":                    ["SOUTH_AMERICA", "NORTH_AMERICA", "EUROPE"],
+};
+
+// ─── Dynamic engine: per-program home-airport filter ─────────────────────────
+// Prevents niche programs from appearing on routes with no home-country endpoint.
+// Declared at module level — NOT inside the per-program loop.
+const DYNAMIC_PROGRAM_HOME_AIRPORTS: Partial<Record<string, Set<string>>> = {
+  "Air India Flying Returns": new Set([
+    "DEL","BOM","CCU","MAA","HYD","BLR","AMD","GOI","COK","TRV",
+    "IXC","ATQ","IXR","IXD","SXR","LKO","BBI","NAG","PAT","IXB",
+    "GAU","VGA","VTZ","IXM","IXZ","CNN","IXE","IXA","DIB","IMF",
+  ]),
+};
+
 // ─── Accessibility penalty ────────────────────────────────────────────────────
 
 const ACCESSIBILITY_MULTIPLIER: Record<1 | 2 | 3, number> = {
@@ -431,8 +482,8 @@ export function buildCostOptions(
   const milesOptions: MilesOption[] = [];
 
   // ── Pre-compute airport coordinates (used for dynamic global options) ───────
-  const fromAirport = AIRPORTS.find(a => a.code === from);
-  const toAirport   = AIRPORTS.find(a => a.code === to);
+  const fromAirport = AIRPORTS_BY_CODE.get(from);
+  const toAirport   = AIRPORTS_BY_CODE.get(to);
 
   // ── Direct + Alliance options ──────────────────────────────────────────────
   // Pass the FULL airlines array so multi-airline routes (month-matrix +
@@ -567,7 +618,7 @@ export function buildCostOptions(
 
       // Skip programs where the airline doesn't match alliance of operating airline
       // (they wouldn't have award space on this airline)
-      const operatingAlliance = ALLIANCES[operatingAirline];
+      // Note: operatingAlliance already computed above (line 449) — re-use it, no re-declare.
       if (
         operatingAirline &&
         operatingAlliance &&
@@ -578,19 +629,8 @@ export function buildCostOptions(
 
       // Strict regional filter: exclude programs whose airlines don't serve these zones.
       // Prevents showing Air India on MIA-GRU, Korean Air on SA routes, etc.
-      const PROGRAM_SERVED_ZONES: Partial<Record<string, string[]>> = {
-        "Air India Flying Returns":    ["ASIA", "EUROPE", "NORTH_AMERICA", "MIDDLE_EAST"],
-        "Korean Air SKYPASS":          ["ASIA", "NORTH_AMERICA", "EUROPE"],
-        "Thai Royal Orchid Plus":      ["ASIA", "EUROPE", "MIDDLE_EAST"],
-        "Garuda GarudaMiles":          ["ASIA", "EUROPE", "MIDDLE_EAST"],
-        "Vietnam Airlines Lotusmiles": ["ASIA"],
-        "China Southern Sky Pearl Club": ["ASIA", "NORTH_AMERICA", "EUROPE"],
-        "China Eastern Eastern Miles": ["ASIA", "NORTH_AMERICA", "EUROPE"],
-        "Hainan Fortune Wings Club":   ["ASIA"],
-        "Aeromexico Club Premier":     ["NORTH_AMERICA", "SOUTH_AMERICA", "EUROPE"],
-        "LATAM Pass":                  ["SOUTH_AMERICA", "NORTH_AMERICA", "EUROPE"],
-      };
-      const servedZones = PROGRAM_SERVED_ZONES[prog.name];
+      // IMPORTANT: declared at module level (DYNAMIC_PROGRAM_SERVED_ZONES) — NOT inside this loop.
+      const servedZones = DYNAMIC_PROGRAM_SERVED_ZONES[prog.name];
       if (servedZones && originZone && destZone) {
         if (!servedZones.includes(originZone) || !servedZones.includes(destZone)) continue;
       }
@@ -599,15 +639,8 @@ export function buildCostOptions(
       // endpoint is in the airline's home country. Without this, Air India
       // appears on NRT→LAX and SIN→LAX (Star Alliance match) even though no
       // India connection exists — which misleads users.
-      // Add more programs here as needed (key = program name, value = home IATA codes).
-      const PROGRAM_HOME_AIRPORTS: Partial<Record<string, Set<string>>> = {
-        "Air India Flying Returns": new Set([
-          "DEL","BOM","CCU","MAA","HYD","BLR","AMD","GOI","COK","TRV",
-          "IXC","ATQ","IXR","IXD","SXR","LKO","BBI","NAG","PAT","IXB",
-          "GAU","VGA","VTZ","IXM","IXZ","CNN","IXE","IXA","DIB","IMF",
-        ]),
-      };
-      const homeAirports = PROGRAM_HOME_AIRPORTS[prog.name];
+      // IMPORTANT: declared at module level (DYNAMIC_PROGRAM_HOME_AIRPORTS) — NOT inside this loop.
+      const homeAirports = DYNAMIC_PROGRAM_HOME_AIRPORTS[prog.name];
       if (homeAirports && !homeAirports.has(from) && !homeAirports.has(to)) continue;
 
       // Score-3 "Independent" programs (Hainan, niche carriers) have no partner
@@ -663,7 +696,7 @@ export function buildCostOptions(
     }
 
     // ── Acquisition options: "Buy miles and use them" ───────────────────────
-    // For the top 3 cheapest programs, check if BUYING miles is still cheaper than cash
+    // For the top 5 cheapest programs, check if BUYING miles is still cheaper than cash
     const sortedForAcquisition = [...milesOptions]
       .sort((a, b) => a.totalMilesCost - b.totalMilesCost)
       .slice(0, 5);
@@ -781,8 +814,8 @@ export function buildCostOptions(
     ? recommendation === "USE_MILES"
       ? `Économisez ${Math.round(savings)} en utilisant ${bestOption.program}${bestOption.via ? ` via ${bestOption.via}` : ""} (${bestOption.milesRequired.toLocaleString()} miles + ${bestOption.taxes} taxes = ${bestMilesCost} vs ${cashTotal} cash)`
       : signedSavings < 0
-        ? `Le cash est moins cher de ${Math.round(savings)}. Miles coûteraient ${bestMilesCost} vs ${cashTotal} cash.`
-        : `Quasi identique — cash légèrement avantageux de ${Math.round(savings)}.`
+        ? `Le cash est moins cher de ${Math.round(Math.abs(savings))}. Miles coûteraient ${bestMilesCost} vs ${cashTotal} cash.`
+        : `Quasi identique — cash légèrement avantageux de ${Math.round(Math.abs(savings))}.`
     : `Aucune option miles disponible. Payez en cash (${cashTotal}).`;
 
   return {

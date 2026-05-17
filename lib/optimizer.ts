@@ -24,6 +24,8 @@ const AIRLINE_TO_PROGRAM: Record<string, string> = {
   "Japan Airlines":     "Japan Airlines Mileage Bank",
   "Emirates":           "Emirates Skywards",
   "Etihad":             "Etihad Guest",
+  "LATAM Brasil":       "LATAM Pass",
+  "LATAM Airlines":     "LATAM Pass",
 };
 
 export type OptimizerDecision =

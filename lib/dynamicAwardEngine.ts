@@ -68,7 +68,8 @@ export const PROGRAM_RATE_OVERRIDES: Record<string, number> = {
 };
 
 /** Cabin class multipliers applied on top of the economy base rate.
- *  first = 4.0 → business × 1.6, matching cash ratio (CABIN_MULTIPLIER: 6.5/4.0). */
+ *  first = 4.0 (= business 2.5 × 1.6). Cash ratio first/business = 6.5/4.0 = 1.625.
+ *  Miles convention is 1.5× but 4.0 = 2.5 × 1.6 is the calibrated value here. */
 export const CABIN_MULTIPLIERS: Record<CabinClass, number> = {
   economy:         1.0,
   premium_economy: 1.5,

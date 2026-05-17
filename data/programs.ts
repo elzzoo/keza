@@ -49,7 +49,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
   },
   {
     id: "aeroplan",
-    name: "Aeroplan",
+    name: "Air Canada Aeroplan",
     company: "Air Canada",
     type: "airline",
     alliance: "star",
@@ -144,7 +144,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
   },
   {
     id: "krisflyer",
-    name: "KrisFlyer",
+    name: "Singapore KrisFlyer",
     company: "Singapore Airlines",
     type: "airline",
     alliance: "star",
@@ -185,7 +185,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
   },
   {
     id: "british-avios",
-    name: "Avios",
+    name: "British Airways Avios",
     company: "British Airways",
     type: "airline",
     alliance: "oneworld",

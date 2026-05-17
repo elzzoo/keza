@@ -1,5 +1,5 @@
 import "server-only";
-import { iataToAirline } from "./iataAirlines";
+import { iataToAirline, VIRTUAL_IATA_CODES } from "./iataAirlines";
 import type { NormalizedFlight } from "./promotions/engine";
 
 type Cabin = "economy" | "premium" | "business" | "first";
@@ -202,12 +202,12 @@ export async function fetchFromDuffel(
         if (name && !resolvedAirlines.includes(name)) resolvedAirlines.push(name);
       }
       // Fallback: use first segment code as-is when ALL segments were unresolved.
-      // Skip virtual/unresolved codes (ZZ, YP, ZG) even in fallback — caller would
-      // display a raw unintelligible code. Better to skip the offer entirely.
+      // Skip virtual/unresolved codes (ZZ, YP, ZG, DM, Z0, NI) even in fallback
+      // — better to skip the offer than display a raw unintelligible code.
+      // Uses VIRTUAL_IATA_CODES from iataAirlines.ts (module-level, not re-allocated here).
       if (resolvedAirlines.length === 0) {
         const firstCode = segments[0]?.operating_carrier?.iata_code ?? segments[0]?.marketing_carrier?.iata_code;
-        const VIRTUAL_CODES = new Set(["ZZ", "YP", "ZG"]);
-        if (firstCode && !VIRTUAL_CODES.has(firstCode.toUpperCase())) {
+        if (firstCode && !VIRTUAL_IATA_CODES.has(firstCode.toUpperCase())) {
           resolvedAirlines.push(firstCode.toUpperCase());
         }
       }
