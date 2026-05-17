@@ -92,11 +92,11 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Iberia Avios Plus":       "Iberia",
   "Japan Airlines Mileage Bank": "Japan Airlines",
   "LATAM Pass":              "LATAM Brasil",
-  // Cathay Pacific Asia Miles + Qantas Frequent Flyer intentionally omitted:
-  // neither has a static award chart → they would silently use distanceFallback and
-  // produce a duplicate vs the dynamic engine estimate. They surface correctly via
-  // OPERATOR_TO_PROGRAM (corridor guarantee when CX/QF flies the route) and
-  // globalPrograms (dynamic engine for all searches).
+  "Qantas Frequent Flyer":   "Qantas",           // has static chart since audit-10
+  // Cathay Pacific Asia Miles intentionally omitted (no static chart — see comment above).
+  // Cathay Pacific Asia Miles intentionally omitted: no static chart → would silently
+  // use distanceFallback and duplicate the dynamic engine estimate. Surfaces via
+  // OPERATOR_TO_PROGRAM when CX flies the route, and via globalPrograms (dynamic engine).
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -526,10 +526,13 @@ export function buildCostOptions(
             // A niche/LCC carrier with no alliance should not silently suppress miles options —
             // the user may still hold miles from any program regardless of the operating airline.
             if (!operatingAirline || !operatingAlliance) return true;
-            // Independent airlines: only show Independent-alliance programs
-            if (operatingAlliance === "Independent") {
-              return ALLIANCES[programAirline] === "Independent";
-            }
+            // Independent carriers (Air Senegal, RwandAir, niche LCCs): allow ALL programs.
+            // These airlines often have codeshares or sell seats on alliance-metal flights.
+            // Restricting to Independent-only would hide Flying Blue, Turkish, etc. for routes
+            // like DSS→CDG on Air Senegal, where Flying Blue awards are absolutely valid.
+            // Major Independent hubs (Emirates, Etihad) will already have been matched by
+            // getProgramsForAirline as DIRECT, so zone-fallback doesn't fire for them.
+            if (operatingAlliance === "Independent") return true;
             // Alliance airline: only show same-alliance programs
             return ALLIANCES[programAirline] === operatingAlliance;
           })
