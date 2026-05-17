@@ -92,11 +92,9 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Iberia Avios Plus":       "Iberia",
   "Japan Airlines Mileage Bank": "Japan Airlines",
   "LATAM Pass":              "LATAM Brasil",
-  "Qantas Frequent Flyer":   "Qantas",           // has static chart since audit-10
-  // Cathay Pacific Asia Miles intentionally omitted (no static chart — see comment above).
-  // Cathay Pacific Asia Miles intentionally omitted: no static chart → would silently
-  // use distanceFallback and duplicate the dynamic engine estimate. Surfaces via
-  // OPERATOR_TO_PROGRAM when CX flies the route, and via globalPrograms (dynamic engine).
+  "Qantas Frequent Flyer":   "Qantas",
+  "Alaska Mileage Plan":     "Alaska Airlines",  // Oneworld — bookable on BA/QR/AA partners
+  "Cathay Pacific Asia Miles": "Cathay Pacific", // static chart added in audit-21
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -284,10 +282,10 @@ function getCorridorGuarantees(originZone: string, destZone: string, airlines: s
 
   const isEuropeIntra = originZone === "EUROPE" && destZone === "EUROPE";
 
-  // Middle East ↔ Europe or North America — Emirates Skywards is the flagship program
+  // Middle East ↔ Europe, North America, or Africa — Emirates/Etihad are the flagship carriers
   const isMiddleEastLongHaul =
-    (originZone === "MIDDLE_EAST" && (destZone === "EUROPE" || destZone === "NORTH_AMERICA")) ||
-    (destZone === "MIDDLE_EAST" && (originZone === "EUROPE" || originZone === "NORTH_AMERICA"));
+    (originZone === "MIDDLE_EAST" && (destZone === "EUROPE" || destZone === "NORTH_AMERICA" || destZone.startsWith("AFRICA_"))) ||
+    (destZone === "MIDDLE_EAST" && (originZone === "EUROPE" || originZone === "NORTH_AMERICA" || originZone.startsWith("AFRICA_")));
 
   // Europe ↔ Africa — Flying Blue only when AF/KLM metal is involved.
   // Flying Blue cannot be redeemed on unrelated carriers (e.g. Ethiopian, Turkish).

@@ -920,6 +920,60 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       MIDDLE_EAST:   { economy: 10_000, premium: 15_000, business: 30_000 },
     },
   },
+
+  // ─── Cathay Pacific Asia Miles ────────────────────────────────────────────
+  // Published award chart for Oneworld and CX partners. One-way per pax.
+  // CX serves JNB and ADD (Africa South/East) via HKG hub.
+  "Cathay Pacific Asia Miles": {
+    ASIA: {
+      NORTH_AMERICA: { economy: 35_000, premium: 55_000, business: 90_000 },
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 45_000, premium: 67_500, business: 110_000 },
+      AFRICA_SOUTH:  { economy: 45_000, premium: 67_500, business: 110_000 },
+      AFRICA_WEST:   { economy: 50_000, premium: 75_000, business: 120_000 },
+      AFRICA_NORTH:  { economy: 32_500, premium: 48_750, business: 82_500 },
+      ASIA:          { economy: 10_000, premium: 15_000, business: 30_000 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 47_500, business: 80_000 },
+      ASIA:          { economy: 30_000, premium: 47_500, business: 80_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_NORTH:  { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_WEST:   { economy: 30_000, premium: 47_500, business: 80_000 },
+      AFRICA_EAST:   { economy: 30_000, premium: 47_500, business: 80_000 },
+      AFRICA_SOUTH:  { economy: 35_000, premium: 52_500, business: 87_500 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 90_000 },
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+    },
+    MIDDLE_EAST: {
+      ASIA:          { economy: 17_500, premium: 27_500, business: 55_000 },
+      EUROPE:        { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 22_500, premium: 35_000, business: 65_000 },
+      AFRICA_NORTH:  { economy: 15_000, premium: 22_500, business: 45_000 },
+    },
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 17_500, premium: 27_500, business: 55_000 },
+      ASIA:          { economy: 32_500, premium: 48_750, business: 82_500 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 45_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+      ASIA:          { economy: 45_000, premium: 67_500, business: 110_000 },
+      MIDDLE_EAST:   { economy: 22_500, premium: 35_000, business: 65_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 80_000 },
+      ASIA:          { economy: 50_000, premium: 75_000, business: 120_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 87_500 },
+      ASIA:          { economy: 45_000, premium: 67_500, business: 110_000 },
+      MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 70_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.
