@@ -2,6 +2,8 @@ const mockSearchEngine = jest.fn();
 const mockGetForexRate = jest.fn();
 const mockRedisGet = jest.fn();
 const mockRedisSet = jest.fn();
+const mockRedisIncr = jest.fn();
+const mockRedisExpire = jest.fn();
 const mockRateLimitResponse = jest.fn();
 
 jest.mock("@/lib/engine", () => ({
@@ -16,6 +18,8 @@ jest.mock("@/lib/redis", () => ({
   redis: {
     get: (...args: unknown[]) => mockRedisGet(...args),
     set: (...args: unknown[]) => mockRedisSet(...args),
+    incr: (...args: unknown[]) => mockRedisIncr(...args),
+    expire: (...args: unknown[]) => mockRedisExpire(...args),
   },
 }));
 
@@ -66,6 +70,8 @@ describe("POST /api/search", () => {
     mockGetForexRate.mockResolvedValue(605);
     mockRedisGet.mockResolvedValue(null);
     mockRedisSet.mockResolvedValue("OK");
+    mockRedisIncr.mockResolvedValue(1);
+    mockRedisExpire.mockResolvedValue(1);
   });
 
   describe("input validation", () => {
