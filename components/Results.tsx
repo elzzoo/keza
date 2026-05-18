@@ -243,13 +243,21 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
       )}
 
       {/* Recommendation tabs */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-none">
+      <div
+        role="tablist"
+        aria-label={lang === "fr" ? "Filtrer les résultats" : "Filter results"}
+        className="flex gap-2 overflow-x-auto scrollbar-none"
+      >
         {(["all", "miles", "cash"] as const).map(k => {
           const count = k === "all" ? stopsFiltered.length : counts[k as keyof typeof counts];
           const s = tabStyles[k];
           return (
             <button
               key={k}
+              id={`results-tab-${k}`}
+              role="tab"
+              aria-selected={tab === k}
+              aria-controls="results-tabpanel"
               onClick={() => setTab(k)}
               className={clsx(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 whitespace-nowrap",
@@ -257,10 +265,16 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
               )}
             >
               {t[k]}
-              <span className={clsx(
-                "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
-                tab === k ? "bg-white/15" : "bg-surface-2 text-muted"
-              )}>{count}</span>
+              <span
+                aria-hidden="true"
+                className={clsx(
+                  "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+                  tab === k ? "bg-white/15" : "bg-surface-2 text-muted"
+                )}
+              >
+                {count}
+              </span>
+              <span className="sr-only">({count})</span>
             </button>
           );
         })}
@@ -278,6 +292,11 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
       )}
 
       {/* Cards */}
+      <div
+        id="results-tabpanel"
+        role="tabpanel"
+        aria-labelledby={`results-tab-${tab}`}
+      >
       {filtered.length === 0 ? (
         <div className="bg-surface rounded-2xl border border-border py-12 px-6 flex flex-col items-center gap-3 max-w-md mx-auto">
           <span className="text-5xl animate-float">✈️</span>
@@ -303,6 +322,7 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

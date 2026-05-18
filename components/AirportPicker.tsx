@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback, useId } from "react";
 import { AIRPORTS } from "@/data/airports";
 import type { Airport } from "@/data/airports";
 import clsx from "clsx";
@@ -27,9 +27,17 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [apiResults, setApiResults] = useState<Airport[]>([]);
   const [searching, setSearching] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Stable unique IDs for ARIA relationships
+  const uid = useId();
+  const listboxId = `airport-listbox-${uid}`;
+  const labelId = `airport-label-${uid}`;
 
   const selected = AIRPORTS.find((a) => a.code === value);
   const displayLabel = lang === "fr" ? label : labelEn;
@@ -101,6 +109,10 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
     return [...localResults, ...extra].slice(0, 12);
   }, [localResults, apiResults, exclude]);
 
+  // Reset active index when results change
+  useEffect(() => { setActiveIndex(-1); }, [filtered]);
+
+  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -111,29 +123,76 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Focus the search input whenever the dropdown opens.
-  // useEffect runs after React commits the DOM, so the input is guaranteed
-  // to exist. A setTimeout-based focus fails on iOS Safari because it's
-  // no longer inside the synchronous user-gesture event handler.
+  // Focus the search input whenever the dropdown opens
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
 
-  const openDropdown = () => {
-    setOpen(true); setQuery("");
-  };
+  // Scroll active option into view
+  useEffect(() => {
+    if (activeIndex < 0 || !listboxRef.current) return;
+    const option = listboxRef.current.querySelector<HTMLElement>(
+      `[id="${listboxId}-option-${activeIndex}"]`
+    );
+    option?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, listboxId]);
+
+  const openDropdown = () => { setOpen(true); setQuery(""); };
+
+  const closeDropdown = () => { setOpen(false); setQuery(""); setActiveIndex(-1); };
 
   const selectAirport = (airport: Airport) => {
-    onChange(airport.code); setOpen(false); setQuery("");
+    onChange(airport.code);
+    closeDropdown();
   };
+
+  // Keyboard navigation inside the search input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!open) return;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex(i => Math.min(i + 1, filtered.length - 1));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex(i => Math.max(i - 1, 0));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (activeIndex >= 0 && filtered[activeIndex]) {
+          selectAirport(filtered[activeIndex]);
+        }
+        break;
+      case "Escape":
+        e.preventDefault();
+        closeDropdown();
+        break;
+      case "Tab":
+        closeDropdown();
+        break;
+    }
+  };
+
+  const activeOptionId = activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined;
 
   return (
     <div className="relative" ref={containerRef}>
-      <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+      {/* Visually-hidden label so the button has an accessible name */}
+      <p
+        id={labelId}
+        className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5"
+      >
         {displayLabel}
       </p>
+
+      {/* Trigger button — announces state to screen readers */}
       <button
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-labelledby={labelId}
         onClick={openDropdown}
         className={clsx(
           "w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all duration-150",
@@ -144,7 +203,9 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
       >
         {selected ? (
           <>
-            <span className="text-2xl flex-shrink-0 leading-none">{selected.flag}</span>
+            <span className="text-2xl flex-shrink-0 leading-none" aria-hidden="true">
+              {selected.flag}
+            </span>
             <div className="min-w-0 flex-1">
               <div className="font-bold text-fg text-lg leading-tight">{selected.code}</div>
               <div className="text-xs text-muted truncate">
@@ -162,32 +223,55 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
 
       {open && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-surface border border-border rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
-          {/* Search */}
+          {/* Search input — combobox role, controls the listbox */}
           <div className="p-2 border-b border-border">
             <div className="relative">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none">
+              <svg
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none"
+                aria-hidden="true"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
               <input
                 ref={inputRef}
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={open}
+                aria-controls={listboxId}
+                aria-activedescendant={activeOptionId}
+                aria-label={lang === "fr" ? `Rechercher un aéroport — ${displayLabel}` : `Search airport — ${displayLabel}`}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder={lang === "fr" ? "Ville, pays ou code IATA…" : "City, country or IATA code…"}
                 className="w-full pl-9 pr-3 py-2 bg-surface-2 border border-border rounded-lg text-fg text-sm placeholder-muted/50 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/40"
               />
             </div>
           </div>
 
-          {/* Results */}
-          <div className="max-h-64 overflow-y-auto">
+          {/* Listbox */}
+          <div
+            ref={listboxRef}
+            id={listboxId}
+            role="listbox"
+            aria-label={displayLabel}
+            className="max-h-64 overflow-y-auto"
+          >
             {filtered.length === 0 ? (
-              <div className="text-center py-6 text-muted text-sm">
+              <div
+                role="status"
+                aria-live="polite"
+                className="text-center py-6 text-muted text-sm"
+              >
                 {searching ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                    <span
+                      className="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin"
+                      aria-hidden="true"
+                    />
                     {lang === "fr" ? "Recherche…" : "Searching…"}
                   </span>
                 ) : (
@@ -195,14 +279,22 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
                 )}
               </div>
             ) : (
-              filtered.map((airport) => (
+              filtered.map((airport, index) => (
                 <button
                   key={airport.code}
+                  id={`${listboxId}-option-${index}`}
+                  role="option"
+                  aria-selected={airport.code === value}
                   type="button"
                   onClick={() => selectAirport(airport)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-2 transition-colors duration-100 text-left"
+                  className={clsx(
+                    "w-full flex items-center gap-3 px-4 py-2.5 transition-colors duration-100 text-left",
+                    index === activeIndex
+                      ? "bg-primary/10 text-fg"
+                      : "hover:bg-surface-2"
+                  )}
                 >
-                  <span className="text-xl flex-shrink-0">{airport.flag}</span>
+                  <span className="text-xl flex-shrink-0" aria-hidden="true">{airport.flag}</span>
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-sm text-fg">{airport.code}</span>
                     <span className="text-muted text-sm">
@@ -215,7 +307,11 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
               ))
             )}
             {searching && filtered.length > 0 && (
-              <div className="text-center py-2 text-[10px] text-subtle">
+              <div
+                role="status"
+                aria-live="polite"
+                className="text-center py-2 text-[10px] text-subtle"
+              >
                 {lang === "fr" ? "Recherche d'autres aéroports…" : "Searching more airports…"}
               </div>
             )}
