@@ -3,6 +3,7 @@ import { savePushSubscriptionForEmail, type PushSubscriptionRecord } from "@/lib
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidHttpsUrl } from "@/lib/validate";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
+import { getAlertById } from "@/lib/alerts";
 import { logError } from "@/lib/logger";
 
 // POST /api/push/subscribe — save a Web Push subscription linked to a user email
@@ -17,10 +18,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Support { subscription: { endpoint, keys }, email, token }
+    // Support { subscription: { endpoint, keys }, email, token, alertId }
     const subscription = body?.subscription ?? body;
     const email: unknown = body?.email;
     const token: unknown = body?.token;
+    const alertId: unknown = body?.alertId;
 
     // Validate email
     if (typeof email !== "string" || !email.includes("@")) {
@@ -30,8 +32,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate token
-    if (!verifyManageAlertsToken(email, typeof token === "string" ? token : null)) {
+    // Authorize via EITHER a valid manage token OR a freshly created alertId
+    // that belongs to this email. The latter allows the post-creation push
+    // opt-in flow without requiring the user to click the email magic link.
+    let authorized = false;
+
+    if (typeof token === "string" && verifyManageAlertsToken(email, token)) {
+      authorized = true;
+    }
+
+    if (!authorized && typeof alertId === "string" && alertId.length > 0) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const alert = await getAlertById(alertId);
+      if (alert && alert.email === normalizedEmail && alert.active) {
+        authorized = true;
+      }
+    }
+
+    if (!authorized) {
       return NextResponse.json(
         { error: "Invalid or expired token" },
         { status: 401 }
