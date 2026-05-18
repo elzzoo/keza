@@ -21,21 +21,8 @@ const SECURITY_HEADERS = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'", // Next.js App Router requires unsafe-inline for hydration; unsafe-eval removed (not needed in production builds)
-      "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline
-      "img-src 'self' data: blob: https:", // allow HTTPS images (airline logos etc.)
-      "connect-src 'self' https:", // Sentry, Vercel analytics, API calls
-      "font-src 'self' data:",
-      "frame-ancestors 'none'", // belt+suspenders with X-Frame-Options
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
-  },
+  // Content-Security-Policy is set dynamically per-request in middleware.ts
+  // (nonce-based CSP — see middleware.ts).
 ];
 
 const nextConfig = {

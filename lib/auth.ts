@@ -5,9 +5,12 @@ export const ADMIN_SESSION_COOKIE = "keza_admin_session";
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 hours
 
 export function safeCompare(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a.padEnd(256));
-  const bBuf = Buffer.from(b.padEnd(256));
-  return timingSafeEqual(aBuf, bBuf) && a.length === b.length;
+  // Length must match first — leaking length is acceptable (it's visible in protocol),
+  // but we must not let length differences cause variable-time content comparison.
+  if (a.length !== b.length) return false;
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  return timingSafeEqual(aBuf, bBuf);
 }
 
 export function hasBearerSecret(request: Request, secret: string | undefined): boolean {
@@ -21,14 +24,15 @@ export function hasCronSecret(request: Request): boolean {
 }
 
 export function hasAdminSecret(request: Request): boolean {
-  return hasBearerSecret(
-    request,
-    process.env.ADMIN_SECRET ?? process.env.CRON_SECRET
-  );
+  return hasBearerSecret(request, process.env.ADMIN_SECRET);
 }
 
 function getAdminSecret(): string | undefined {
-  return process.env.ADMIN_SECRET ?? process.env.CRON_SECRET;
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret && process.env.NODE_ENV === "production") {
+    console.error("[auth] ADMIN_SECRET is not set — admin login disabled");
+  }
+  return secret;
 }
 
 function signAdminSession(exp: number, secret: string): string {

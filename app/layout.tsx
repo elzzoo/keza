@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { headers } from "next/headers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { Toaster } from "sonner";
@@ -49,7 +50,9 @@ export const viewport: Viewport = {
   themeColor: "#3b82f6",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? "";
   return (
     <html lang="fr" className={inter.variable} suppressHydrationWarning>
       <head>
@@ -57,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://api.keza.app" />
         <link rel="dns-prefetch" href="https://helpful-chicken-97678.upstash.io" />
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("keza_theme");if(!t)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
           }}
@@ -66,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* WebSite structured data — enables Google sitelinks search box */}
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
@@ -87,6 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Organization structured data */}
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
@@ -122,13 +128,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ProfileProvider>
         <Script
           async
+          nonce={nonce}
           src="https://plausible.io/js/pa--f94oxZFO8yrXtN46QpIJ.js"
           strategy="afterInteractive"
         />
-        <Script id="plausible-init" strategy="afterInteractive">
+        <Script id="plausible-init" nonce={nonce} strategy="afterInteractive">
           {`window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init();`}
         </Script>
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
