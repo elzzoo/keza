@@ -4,15 +4,20 @@ import { NextRequest } from "next/server";
 export const runtime = "edge";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ size: string }> }
 ) {
   const { size: sizeStr } = await params;
   const size = parseInt(sizeStr) || 192;
   const clamped = size >= 512 ? 512 : 192;
-  const fontSize = clamped >= 512 ? 156 : 58;
-  const subFontSize = clamped >= 512 ? 120 : 44;
-  const radius = clamped >= 512 ? 110 : 38;
+
+  // Maskable icons must NOT have rounded corners — the OS applies its own
+  // shape mask. Content must stay inside the "safe zone" (center 80% circle).
+  const maskable = req.nextUrl.searchParams.get("maskable") === "1";
+
+  const fontSize = clamped >= 512 ? 156 : maskable ? 52 : 58;
+  const subFontSize = clamped >= 512 ? 120 : maskable ? 40 : 44;
+  const radius = maskable ? 0 : clamped >= 512 ? 110 : 38;
 
   return new ImageResponse(
     (
