@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { Resend } from "resend";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { isValidEmail } from "@/lib/validate";
 import { logError } from "@/lib/logger";
 import { sendDiscordAlert } from "@/lib/discord";
 import { SITE_URL } from "@/lib/siteConfig";
@@ -13,13 +13,15 @@ const FROM = process.env.RESEND_FROM_EMAIL ?? "KEZA Alerts <onboarding@resend.de
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-interface ContactPayload {
-  name: string;
-  company: string;
-  email: string;
-  teamSize: string;
-  message?: string;
-}
+const ContactSchema = z.object({
+  name:     z.string().min(1).max(100),
+  company:  z.string().min(1).max(100),
+  email:    z.string().email(),
+  teamSize: z.string().min(1),
+  message:  z.string().max(2000).optional(),
+});
+
+type ContactPayload = z.infer<typeof ContactSchema>;
 
 export async function POST(request: Request) {
   const limited = await rateLimitResponse(request, {
@@ -30,27 +32,20 @@ export async function POST(request: Request) {
   if (limited) return limited;
 
   try {
-    const body = (await request.json()) as ContactPayload;
+    const raw = await request.json();
+    const result = ContactSchema.safeParse(raw);
 
-    // Basic validation
-    if (!body.name || !body.company || !body.email || !body.teamSize) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    if (!isValidEmail(body.email)) {
-      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
-    }
-    if (body.name.length > 100 || body.company.length > 100) {
-      return NextResponse.json({ error: "name and company must be under 100 characters" }, { status: 400 });
-    }
-    if (body.message && body.message.length > 2000) {
-      return NextResponse.json({ error: "message must be under 2000 characters" }, { status: 400 });
+    if (!result.success) {
+      const first = result.error.issues[0];
+      const message = first
+        ? `${first.path.join(".")}: ${first.message}`
+        : "Invalid input";
+      return NextResponse.json({ error: message }, { status: 400 });
     }
 
-    const entry = {
-      ...body,
-      receivedAt: new Date().toISOString(),
-    };
+    const body: ContactPayload = result.data;
+
+    const entry = { ...body, receivedAt: new Date().toISOString() };
 
     // Store in Redis list — keep last 500 leads
     const key = "keza:b2b:leads";

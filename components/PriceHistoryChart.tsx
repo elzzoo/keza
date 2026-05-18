@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import type { PricePoint, PriceTrend } from "@/lib/priceHistory";
 
 interface Props {
@@ -28,7 +28,7 @@ const TREND_LABEL: Record<PriceTrend, { fr: string; en: string }> = {
   unknown: { fr: "Données insuffisantes", en: "Insufficient data" },
 };
 
-export function PriceHistoryChart({ from, to, lang = "fr" }: Props) {
+export const PriceHistoryChart = memo(function PriceHistoryChart({ from, to, lang = "fr" }: Props) {
   const [history, setHistory] = useState<PricePoint[]>([]);
   const [trend, setTrend] = useState<PriceTrend>("unknown");
   const [loading, setLoading] = useState(true);
@@ -136,4 +136,4 @@ export function PriceHistoryChart({ from, to, lang = "fr" }: Props) {
       </div>
     </div>
   );
-}
+});

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
@@ -55,7 +55,7 @@ function priceSize(formatted: string): string {
   return "text-2xl";
 }
 
-export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: Props) {
+export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: Props) {
   const fr = lang === "fr";
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [variant, setVariant] = useState<"A" | "B">("A");
@@ -414,4 +414,4 @@ export function FlightCard({ flight, lang, formatPrice, isGlobalBest = false }: 
       )}
     </div>
   );
-}
+});
