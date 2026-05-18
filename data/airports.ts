@@ -838,3 +838,9 @@ export const REGION: Record<string, string> = {
 };
 
 export const airportsMap = Object.fromEntries(AIRPORTS.map(a => [a.code, a]));
+
+// Top priority airports shown by default when no query is typed (major global hubs)
+const PRIORITY_ORDER = ["DSS","CDG","JFK","LHR","DXB","IST","NBO","ABJ","LOS","ACC","CMN","CAI","JNB","ADD","BKK","SIN","NRT","SYD","GRU","MEX"];
+export const PRIORITY_AIRPORTS = AIRPORTS.filter(a =>
+  PRIORITY_ORDER.includes(a.code)
+).sort((a, b) => PRIORITY_ORDER.indexOf(a.code) - PRIORITY_ORDER.indexOf(b.code));

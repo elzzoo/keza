@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback, useId } from "react";
-import { AIRPORTS } from "@/data/airports";
+import { AIRPORTS, PRIORITY_AIRPORTS } from "@/data/airports";
 import type { Airport } from "@/data/airports";
 import clsx from "clsx";
 
@@ -15,11 +15,7 @@ interface Props {
   placeholder?: string;
 }
 
-// Default priority airports shown when picker opens (global top destinations)
-const PRIORITY = [
-  "DSS","CDG","JFK","LHR","DXB","IST","NBO","ABJ","LOS","ACC",
-  "CMN","CAI","JNB","ADD","BKK","SIN","NRT","SYD","GRU","MEX",
-];
+// PRIORITY_AIRPORTS is imported from @/data/airports — shared source of truth
 
 export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, placeholder }: Props) {
   const [open, setOpen] = useState(false);
@@ -51,9 +47,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
   const localResults = useMemo(() => {
     const lq = debouncedQuery.toLowerCase().trim();
     if (!lq) {
-      return AIRPORTS.filter((a) => a.code !== exclude && PRIORITY.includes(a.code))
-        .sort((a, b) => PRIORITY.indexOf(a.code) - PRIORITY.indexOf(b.code))
-        .slice(0, 12);
+      return PRIORITY_AIRPORTS.filter((a) => a.code !== exclude).slice(0, 12);
     }
     return AIRPORTS.filter(
       (a) =>
