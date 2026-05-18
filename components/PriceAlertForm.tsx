@@ -49,6 +49,8 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed" | "limitReached">("idle");
   const [frequency, setFrequency] = useState<"instant" | "daily" | "weekly">("instant");
+  const [createdAlertId, setCreatedAlertId] = useState<string | null>(null);
+  const [pushState, setPushState] = useState<"idle" | "loading" | "granted" | "denied" | "unsupported">("idle");
 
   const targetPrice = Math.round(currentPrice * 0.9);
 
@@ -72,6 +74,10 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         setStatus("success");
         toast.success(t.success);
         trackAlertCreated({ from, to, cabin, currentPrice });
+        try {
+          const data = await res.clone().json();
+          if (data?.alert?.id) setCreatedAlertId(data.alert.id);
+        } catch { /* ignore — push button just won't render */ }
         // Remember email so /alertes can pre-fill it
         try {
           localStorage.setItem("keza:alertes:email", email.trim().toLowerCase());
@@ -98,15 +104,103 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
     }
   }
 
+  async function handleEnablePush() {
+    if (typeof window === "undefined") return;
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setPushState("unsupported");
+      return;
+    }
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!vapidKey) {
+      console.warn("[PriceAlertForm] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set");
+      setPushState("unsupported");
+      return;
+    }
+
+    setPushState("loading");
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        setPushState("denied");
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as ArrayBuffer,
+      });
+      const json = sub.toJSON() as { keys?: { p256dh?: string; auth?: string } };
+
+      const res = await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscription: {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: json.keys?.p256dh ?? "",
+              auth: json.keys?.auth ?? "",
+            },
+          },
+          email,
+          alertId: createdAlertId,
+        }),
+      });
+
+      if (res.ok || res.status === 201) {
+        try { localStorage.setItem("keza:push:status:" + email.toLowerCase(), "1"); } catch { /* ignore */ }
+        setPushState("granted");
+        toast.success(lang === "fr" ? "Notifications activées" : "Notifications enabled");
+      } else {
+        setPushState("idle");
+        toast.error(lang === "fr" ? "Impossible d'activer les notifications" : "Could not enable notifications");
+      }
+    } catch (err) {
+      console.error("[PriceAlertForm] push subscribe failed:", err);
+      setPushState("idle");
+    }
+  }
+
   if (status === "success") {
+    const canShowPush =
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      Notification.permission !== "granted" &&
+      pushState !== "granted";
+
     return (
       <div className="bg-success/10 border border-success/30 rounded-2xl p-4 flex items-start gap-3">
         <span className="text-xl">🔔</span>
-        <div>
+        <div className="flex-1">
           <p className="text-sm font-bold text-success">{t.success}</p>
           <p className="text-xs text-muted mt-1">
             {from} → {to} · {t.target} {fmt(targetPrice)}
           </p>
+          {pushState === "granted" && (
+            <p className="mt-3 text-xs text-success">
+              ✓ {lang === "fr" ? "Notifications push activées" : "Push notifications enabled"}
+            </p>
+          )}
+          {pushState === "denied" && (
+            <p className="mt-3 text-xs text-muted">
+              {lang === "fr"
+                ? "Permission refusée — activez-la dans les réglages du navigateur"
+                : "Permission denied — enable it in your browser settings"}
+            </p>
+          )}
+          {canShowPush && pushState !== "denied" && (
+            <button
+              type="button"
+              onClick={handleEnablePush}
+              disabled={pushState === "loading"}
+              className="mt-3 w-full text-xs text-muted border border-border rounded-xl py-2 px-4 hover:border-primary/50 transition-colors disabled:opacity-50"
+            >
+              🔔 {pushState === "loading"
+                ? lang === "fr" ? "Activation…" : "Enabling…"
+                : lang === "fr" ? "Activer les notifications push" : "Enable push notifications"}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -215,4 +309,13 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       )}
     </form>
   );
+}
+
+// ─── Utility ──────────────────────────────────────────────────────────────────
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from(Array.from(rawData, (c) => c.charCodeAt(0)));
 }
