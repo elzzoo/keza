@@ -1,5 +1,7 @@
 // @ts-check
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from "@next/bundle-analyzer";
+const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
 
 /** @type {import('next').NextConfig} */
 
@@ -45,7 +47,7 @@ const nextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withBundleAnalyzer(withSentryConfig(nextConfig, {
   // Sentry organization and project are read from SENTRY_ORG and SENTRY_PROJECT env vars.
   // Source maps are uploaded automatically on build.
   silent: true, // suppress "Creating release" logs
@@ -61,4 +63,4 @@ export default withSentryConfig(nextConfig, {
   // Tree-shake Sentry logger statements to keep bundle small
   hideSourceMaps: true,
   widenClientFileUpload: false,
-});
+}));
