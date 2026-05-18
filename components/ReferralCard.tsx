@@ -37,6 +37,14 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function shareWhatsApp() {
+    if (!data) return;
+    const text = lang === "fr"
+      ? `Utilise KEZA pour comparer les prix de vols cash vs miles ✈️ ${data.url}`
+      : `Use KEZA to compare flight prices cash vs miles ✈️ ${data.url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  }
+
   if (!data) return null;
 
   const t = {
@@ -44,10 +52,11 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
     desc: lang === "fr"
       ? "Partagez votre lien. Quand un ami crée sa première alerte, vous débloquez tous les deux une alerte bonus."
       : "Share your link. When a friend creates their first alert, you both unlock a bonus alert.",
-    copy: lang === "fr" ? "Copier le lien" : "Copy link",
+    copy: lang === "fr" ? "Copier" : "Copy",
     copied: lang === "fr" ? "Copié !" : "Copied!",
     friends: lang === "fr" ? "ami(s) parrainé(s)" : "friend(s) referred",
     bonus: lang === "fr" ? "alerte(s) bonus débloquée(s)" : "bonus alert(s) unlocked",
+    whatsapp: lang === "fr" ? "Partager sur WhatsApp" : "Share on WhatsApp",
   };
 
   return (
@@ -89,6 +98,15 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
           {copied ? t.copied : t.copy}
         </button>
       </div>
+
+      {/* WhatsApp share */}
+      <button
+        onClick={shareWhatsApp}
+        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold hover:bg-green-500/20 transition-colors"
+      >
+        <span>📱</span>
+        {t.whatsapp}
+      </button>
     </div>
   );
 }

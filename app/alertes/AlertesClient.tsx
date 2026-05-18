@@ -289,21 +289,27 @@ export function AlertesClient() {
         {/* Results */}
         {alerts !== null && (
           alerts.length === 0 ? (
-            <div className="text-center py-12 space-y-3">
-              <p className="text-muted text-sm">
-                {fr
-                  ? `Aucune alerte active pour ${email.trim().toLowerCase()}.`
-                  : `No active alerts for ${email.trim().toLowerCase()}.`}
-              </p>
-              <Link
-                href="/"
-                className="inline-block text-sm text-primary hover:underline"
-              >
-                {fr ? "Rechercher un vol →" : "Search a flight →"}
-              </Link>
-              <Link href="/deals" className="inline-block text-sm text-muted hover:text-primary hover:underline">
-                {fr ? "Voir les deals du moment →" : "Browse current deals →"}
-              </Link>
+            <div className="py-8 space-y-6">
+              <div className="text-center space-y-3">
+                <p className="text-muted text-sm">
+                  {fr
+                    ? `Aucune alerte active pour ${email.trim().toLowerCase()}.`
+                    : `No active alerts for ${email.trim().toLowerCase()}.`}
+                </p>
+                <Link
+                  href="/"
+                  className="inline-block text-sm text-primary hover:underline"
+                >
+                  {fr ? "Rechercher un vol →" : "Search a flight →"}
+                </Link>
+                <Link href="/deals" className="inline-block text-sm text-muted hover:text-primary hover:underline">
+                  {fr ? "Voir les deals du moment →" : "Browse current deals →"}
+                </Link>
+              </div>
+              {/* Show referral even with 0 alerts — users can still earn credits */}
+              {manageToken && (
+                <ReferralCard email={email} token={manageToken} lang={lang} />
+              )}
             </div>
           ) : (
             <div className="space-y-3">

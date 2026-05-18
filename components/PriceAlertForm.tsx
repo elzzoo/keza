@@ -201,6 +201,15 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
                 : lang === "fr" ? "Activer les notifications push" : "Enable push notifications"}
             </button>
           )}
+          <p className="text-xs text-muted mt-3">
+            🎁{" "}
+            {lang === "fr"
+              ? "Invitez un ami et gagnez une alerte bonus →"
+              : "Invite a friend and earn a bonus alert →"}{" "}
+            <Link href="/alertes" className="text-primary hover:underline">
+              {lang === "fr" ? "Mon espace alertes" : "My alerts"}
+            </Link>
+          </p>
         </div>
       </div>
     );
@@ -293,18 +302,23 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         <p className="text-xs text-red-400">{t.error}</p>
       )}
       {status === "limitReached" && (
-        <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+        <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
           <p className="text-sm font-semibold text-amber-400">
-            🔒 Limite gratuite atteinte — 3 alertes max
+            🔒 {lang === "fr" ? "Limite gratuite atteinte — 3 alertes max" : "Free limit reached — 3 alerts max"}
           </p>
-          <p className="text-xs text-muted mt-1">
+          <p className="text-xs text-muted">
             {lang === "fr"
-              ? "Rejoignez la liste d'attente Pro pour des alertes illimitées, notifications multi-devices et historique de prix."
-              : "Join the Pro waitlist for unlimited alerts, multi-device notifications and price history."}
+              ? "Rejoignez la liste d'attente Pro pour des alertes illimitées, ou parrainez un ami pour débloquer une alerte supplémentaire."
+              : "Join the Pro waitlist for unlimited alerts, or refer a friend to unlock an extra alert slot."}
           </p>
-          <Link href="/pro" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">
-            Rejoindre la liste d&apos;attente Pro →
-          </Link>
+          <div className="flex flex-col gap-2">
+            <Link href="/pro" className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">
+              {lang === "fr" ? "Rejoindre la liste d'attente Pro →" : "Join the Pro waitlist →"}
+            </Link>
+            <Link href="/alertes" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
+              🎁 {lang === "fr" ? "Parrainer un ami (+1 alerte gratuite) →" : "Refer a friend (+1 free alert) →"}
+            </Link>
+          </div>
         </div>
       )}
     </form>
