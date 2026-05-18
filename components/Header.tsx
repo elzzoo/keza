@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 import { CurrencyPicker } from "./CurrencyPicker";
 import { ThemeToggle } from "./ThemeToggle";
@@ -44,7 +45,7 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-border">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
           <span className="font-black text-xl tracking-tight leading-none">
             <span className="text-primary">KE</span>
             <span className="text-fg">ZA</span>
@@ -52,7 +53,7 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
           <span className="hidden sm:block text-[11px] text-muted font-medium border-l border-border pl-2 ml-0.5 min-w-0 overflow-hidden">
             {lang === "fr" ? "Cash ou Miles ?" : "Cash or Miles?"}
           </span>
-        </a>
+        </Link>
 
         {/* Nav — desktop */}
         <nav className="hidden md:flex items-center gap-1 flex-1 justify-center overflow-hidden">
