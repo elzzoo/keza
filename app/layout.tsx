@@ -61,6 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="preconnect" href="https://api.keza.app" />
+        <link rel="alternate" type="application/rss+xml" title="KEZA Deals" href="/api/feed" />
 <script
           nonce={nonce}
           dangerouslySetInnerHTML={{
