@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { MILES_PRICES } from "@/data/milesPrices";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { CalculateurClient } from "./CalculateurClient";
@@ -15,7 +16,7 @@ export default async function CalculateurPage() {
     <div className="min-h-screen bg-bg">
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="mb-8">
-          <a href="/" className="text-xs text-muted hover:text-fg transition-colors">← Retour</a>
+          <Link href="/" className="text-xs text-muted hover:text-fg transition-colors">← Retour</Link>
           <h1 className="text-3xl font-black mt-4 mb-2">
             <span className="text-primary">Calculateur</span> de valeur miles
           </h1>
