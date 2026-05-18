@@ -5,6 +5,7 @@ import {
   createAdminSessionToken,
   safeCompare,
 } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 function redirectToAdmin(req: NextRequest): NextResponse {
   return NextResponse.redirect(new URL("/admin", req.url), { status: 303 });
@@ -28,6 +29,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     clearAdminSession(res);
     return res;
   }
+
+  // Protect against brute-force: 5 attempts per 15 minutes per IP
+  const limited = await rateLimitResponse(req, {
+    namespace: "admin:session",
+    limit: 5,
+    windowSeconds: 15 * 60,
+  });
+  if (limited) return limited;
 
   const form = await req.formData();
   const submittedSecret = String(form.get("secret") ?? "");

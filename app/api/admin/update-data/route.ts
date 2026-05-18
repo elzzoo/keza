@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { hasAdminSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // ── Admin endpoint to update miles values dynamically ────────────────────────
 // POST /api/admin/update-data
@@ -31,6 +32,14 @@ const VALID_PROGRAMS = [
 const TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export async function POST(request: Request): Promise<NextResponse> {
+  // Rate limit: 20 requests per hour per IP
+  const limited = await rateLimitResponse(request, {
+    namespace: "admin:update-data",
+    limit: 20,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   // Auth check
   if (!hasAdminSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
@@ -84,6 +93,14 @@ export async function POST(request: Request): Promise<NextResponse> {
 
 // GET: show current effective prices (static + overrides)
 export async function GET(request: Request): Promise<NextResponse> {
+  // Rate limit: 20 requests per hour per IP
+  const limited = await rateLimitResponse(request, {
+    namespace: "admin:update-data",
+    limit: 20,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   if (!hasAdminSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
