@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { Toaster } from "sonner";
@@ -53,15 +54,17 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const nonce = headersList.get("x-nonce") ?? "";
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("keza_theme")?.value ?? "dark";
   return (
-    <html lang="fr" className={inter.variable} suppressHydrationWarning>
+    <html lang="fr" className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="preconnect" href="https://api.keza.app" />
 <script
           nonce={nonce}
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("keza_theme");if(!t)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("keza_theme");if(!t)t="dark";document.cookie="keza_theme="+t+"; path=/; max-age=31536000; SameSite=Lax";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.classList.remove("dark");document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
           }}
         />
       </head>
