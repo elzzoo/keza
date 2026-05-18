@@ -20,6 +20,11 @@ export const metadata: Metadata = {
     description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
     images: [{ url: "/deals/opengraph-image" }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Deals cash vs miles | KEZA",
+    description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
+  },
 };
 
 // Fallback statique si le cron n'a pas encore tourné

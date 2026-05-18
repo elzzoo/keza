@@ -17,6 +17,11 @@ export const metadata: Metadata = {
     description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA : miles gagnent, cash gagne.",
     url: `${SITE_URL}/carte`,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Carte des destinations miles | KEZA",
+    description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA.",
+  },
 };
 
 // Compute recommendations server-side at build time

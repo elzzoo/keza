@@ -10,6 +10,11 @@ export const metadata: Metadata = {
     description: "Alertes illimitées · push multi-devices · historique 6 mois",
     url: `${SITE_URL}/pro`,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "KEZA Pro — Alertes illimitées",
+    description: "Alertes illimitées · push multi-devices · historique 6 mois",
+  },
   robots: "index, follow",
 };
 

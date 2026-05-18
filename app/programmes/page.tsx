@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     description: "Classement KEZA des 33 meilleurs programmes de fidélité — valeur du mile, partenaires, meilleur usage.",
     url: `${SITE_URL}/programmes`,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Meilleurs programmes miles & points 2026 | KEZA",
+    description: "Classement KEZA des 33 meilleurs programmes de fidélité — valeur du mile, partenaires, meilleur usage.",
+  },
 };
 
 export default function ProgrammesPage() {

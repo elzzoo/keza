@@ -1,6 +1,8 @@
 // Sentry instrumentation for Next.js
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
+import * as Sentry from "@sentry/nextjs";
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     await import("./sentry.server.config");
@@ -9,3 +11,6 @@ export async function register() {
     await import("./sentry.edge.config");
   }
 }
+
+// Capture errors from nested React Server Components and route handlers
+export const onRequestError = Sentry.captureRequestError;

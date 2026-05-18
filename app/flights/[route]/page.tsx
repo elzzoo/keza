@@ -59,6 +59,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       url: `${SITE_URL}/flights/${route}`,
     },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
     alternates: {
       canonical: `${SITE_URL}/flights/${route.toUpperCase()}`,
       languages: {

@@ -15,6 +15,11 @@ export const metadata: Metadata = {
       "20 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
     url: `${SITE_URL}/prix`,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Meilleur moment pour voyager | KEZA",
+    description: "20 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
+  },
 };
 
 export default function PrixPage() {
