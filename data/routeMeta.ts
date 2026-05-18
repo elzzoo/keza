@@ -669,6 +669,248 @@ export const ROUTE_META = new Map<string, RouteMeta>([
     isNonstop: true,
   }],
 
+  // ── New priority Africa routes ────────────────────────────────────────────
+
+  ["DKR-CDG", {
+    durationMin: 420,
+    airlines: ["Air Sénégal", "Air France", "Transavia"],
+    bestPrograms: ["Flying Blue", "Miles&Smiles", "Avios"],
+    seasonTip: {
+      fr: "Évitez juillet-août et décembre (haute saison, prix élevés). Octobre-novembre offre le meilleur rapport qualité/prix.",
+      en: "Avoid July-August and December (peak season, high prices). October-November offers the best value.",
+    },
+    milesToEconomy: 25000,
+    milesToBusiness: 70000,
+    isNonstop: true,
+  }],
+
+  ["CMN-LHR", {
+    durationMin: 210,
+    airlines: ["Royal Air Maroc", "British Airways"],
+    bestPrograms: ["Avios", "Safar", "Flying Blue"],
+    seasonTip: {
+      fr: "Printemps (avril-mai) et automne (septembre-octobre) sont idéaux. Évitez l'été touristique et le Ramadan pour les meilleurs tarifs.",
+      en: "Spring (April-May) and autumn (September-October) are ideal. Avoid peak tourist summer and Ramadan for the best fares.",
+    },
+    milesToEconomy: 14000,
+    milesToBusiness: 38000,
+    isNonstop: true,
+  }],
+
+  ["TUN-CDG", {
+    durationMin: 150,
+    airlines: ["Tunisair", "Air France", "Transavia"],
+    bestPrograms: ["Flying Blue", "Avios", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Évitez juillet-août (forte demande estivale). Avril-juin et septembre-octobre offrent les meilleurs tarifs au départ de Tunis.",
+      en: "Avoid July-August (high summer demand). April-June and September-October offer the best fares from Tunis.",
+    },
+    milesToEconomy: 10000,
+    milesToBusiness: 30000,
+    isNonstop: true,
+  }],
+
+  ["ALG-CDG", {
+    durationMin: 160,
+    airlines: ["Air Algérie", "Air France"],
+    bestPrograms: ["Flying Blue", "Avios", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Évitez l'été (juillet-août) et le Ramadan. Septembre-octobre et avril-mai sont les meilleures périodes pour les tarifs.",
+      en: "Avoid summer (July-August) and Ramadan. September-October and April-May are the best periods for fares.",
+    },
+    milesToEconomy: 10000,
+    milesToBusiness: 30000,
+    isNonstop: true,
+  }],
+
+  ["NBO-LHR", {
+    durationMin: 510,
+    airlines: ["Kenya Airways", "British Airways"],
+    bestPrograms: ["Avios", "Flying Blue", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Janvier-février et juin-septembre (saison sèche) sont parfaits. Évitez décembre et les vacances scolaires britanniques pour les tarifs.",
+      en: "January-February and June-September (dry season) are perfect. Avoid December and British school holidays for fares.",
+    },
+    milesToEconomy: 25000,
+    milesToBusiness: 70000,
+    isNonstop: true,
+  }],
+
+  ["ADD-CDG", {
+    durationMin: 480,
+    airlines: ["Ethiopian Airlines", "Air France"],
+    bestPrograms: ["Flying Blue", "ShebaMiles", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Octobre-janvier (saison sèche en Éthiopie) est le meilleur moment. Les miles Ethiopian ShebaMiles offrent une bonne valeur sur cette route.",
+      en: "October-January (dry season in Ethiopia) is the best time. Ethiopian ShebaMiles offer good value on this route.",
+    },
+    milesToEconomy: 28000,
+    milesToBusiness: 65000,
+    isNonstop: true,
+  }],
+
+  ["DKR-DXB", {
+    durationMin: 600,
+    airlines: ["Air Sénégal", "Emirates"],
+    bestPrograms: ["Emirates Skywards", "Flying Blue", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Partez de Dakar en automne ou hiver. Dubai est idéal d'octobre à avril (temps agréable, haute saison touristique).",
+      en: "Depart Dakar in autumn or winter. Dubai is ideal from October to April (pleasant weather, peak tourist season).",
+    },
+    milesToEconomy: 30000,
+    milesToBusiness: 70000,
+    isNonstop: false,
+    hub: "CMN/ADD",
+  }],
+
+  ["CMN-DXB", {
+    durationMin: 420,
+    airlines: ["Royal Air Maroc", "Emirates"],
+    bestPrograms: ["Emirates Skywards", "Safar", "Flying Blue"],
+    seasonTip: {
+      fr: "Octobre-avril est la haute saison pour Dubai. Au départ de Casablanca, voyagez en hiver pour profiter des deux destinations.",
+      en: "October-April is peak season for Dubai. Departing from Casablanca, travel in winter to enjoy both destinations.",
+    },
+    milesToEconomy: 20000,
+    milesToBusiness: 55000,
+    isNonstop: true,
+  }],
+
+  ["ACC-JFK", {
+    durationMin: 780,
+    airlines: ["Delta", "British Airways"],
+    bestPrograms: ["SkyMiles", "Avios", "Flying Blue"],
+    seasonTip: {
+      fr: "Évitez l'été américain (juin-août) et Noël. Janvier-mars et septembre-octobre offrent les meilleurs tarifs sur cette route.",
+      en: "Avoid American summer (June-August) and Christmas. January-March and September-October offer the best fares on this route.",
+    },
+    milesToEconomy: 35000,
+    milesToBusiness: 75000,
+    isNonstop: false,
+    hub: "LHR/ATL",
+  }],
+
+  ["DKR-ABJ", {
+    durationMin: 120,
+    airlines: ["Air Sénégal", "Air Côte d'Ivoire"],
+    bestPrograms: ["Flying Blue", "Miles&Smiles", "Avios"],
+    seasonTip: {
+      fr: "Cette route intra-africaine est fréquentée toute l'année. Évitez décembre-janvier (fêtes et haute saison) pour de meilleurs tarifs.",
+      en: "This intra-African route is busy year-round. Avoid December-January (holidays and peak season) for better fares.",
+    },
+    milesToEconomy: 8000,
+    milesToBusiness: 22000,
+    isNonstop: true,
+  }],
+
+  ["NBO-JNB", {
+    durationMin: 240,
+    airlines: ["Kenya Airways", "South African Airways"],
+    bestPrograms: ["Flying Blue", "Avios", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Route d'affaires fréquentée toute l'année. Voyagez hors périodes de vacances scolaires d'Afrique du Sud (juin-juillet, déc-jan) pour les meilleurs tarifs.",
+      en: "Busy business route year-round. Travel outside South African school holidays (June-July, Dec-Jan) for the best fares.",
+    },
+    milesToEconomy: 12000,
+    milesToBusiness: 32000,
+    isNonstop: true,
+  }],
+
+  ["ADD-NBO", {
+    durationMin: 120,
+    airlines: ["Ethiopian Airlines", "Kenya Airways"],
+    bestPrograms: ["ShebaMiles", "Flying Blue", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Route régionale fréquentée. Combinez avec un safari au Kenya (juin-octobre, saison sèche) pour un voyage optimal.",
+      en: "Busy regional route. Combine with a Kenyan safari (June-October, dry season) for an optimal trip.",
+    },
+    milesToEconomy: 8000,
+    milesToBusiness: 22000,
+    isNonstop: true,
+  }],
+
+  ["CMN-DKR", {
+    durationMin: 210,
+    airlines: ["Royal Air Maroc", "Air Sénégal"],
+    bestPrograms: ["Safar", "Flying Blue", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Route intra-africaine pratique. Évitez le Ramadan et l'été (juillet-août) pour les meilleurs tarifs au départ de Casablanca.",
+      en: "Convenient intra-African route. Avoid Ramadan and summer (July-August) for the best fares from Casablanca.",
+    },
+    milesToEconomy: 12000,
+    milesToBusiness: 32000,
+    isNonstop: true,
+  }],
+
+  // ── Indian Ocean / DOM-TOM ────────────────────────────────────────────────
+
+  ["CDG-RUN", {
+    durationMin: 660,
+    airlines: ["Air France", "Corsair"],
+    bestPrograms: ["Flying Blue", "Avios", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Évitez juillet-août et décembre-janvier (haute saison, prix élevés). Mai-juin et septembre-octobre offrent le meilleur rapport qualité/prix.",
+      en: "Avoid July-August and December-January (peak season, high prices). May-June and September-October offer the best value.",
+    },
+    milesToEconomy: 30000,
+    milesToBusiness: 70000,
+    isNonstop: true,
+  }],
+
+  ["CDG-MRU", {
+    durationMin: 690,
+    airlines: ["Air France", "Air Mauritius"],
+    bestPrograms: ["Flying Blue", "Avios", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Octobre-novembre et juin-juillet sont les meilleures périodes. Évitez décembre-janvier (haute saison des vacances) pour les tarifs.",
+      en: "October-November and June-July are the best periods. Avoid December-January (holiday peak season) for fares.",
+    },
+    milesToEconomy: 30000,
+    milesToBusiness: 70000,
+    isNonstop: true,
+  }],
+
+  ["CDG-PTP", {
+    durationMin: 510,
+    airlines: ["Air France", "Corsair"],
+    bestPrograms: ["Flying Blue", "Avios", "Miles&Smiles"],
+    seasonTip: {
+      fr: "Évitez les vacances scolaires françaises (juillet-août, décembre). Avril-mai et septembre-octobre offrent les meilleurs tarifs en miles.",
+      en: "Avoid French school holidays (July-August, December). April-May and September-October offer the best miles fares.",
+    },
+    milesToEconomy: 25000,
+    milesToBusiness: 60000,
+    isNonstop: true,
+  }],
+
+  ["CDG-TNR", {
+    durationMin: 660,
+    airlines: ["Air Madagascar", "Air France"],
+    bestPrograms: ["Flying Blue", "Miles&Smiles", "Avios"],
+    seasonTip: {
+      fr: "Avril-novembre (saison sèche) est idéal à Madagascar. Évitez décembre-mars (saison cyclonique et vacances scolaires françaises).",
+      en: "April-November (dry season) is ideal in Madagascar. Avoid December-March (cyclone season and French school holidays).",
+    },
+    milesToEconomy: 32000,
+    milesToBusiness: 75000,
+    isNonstop: true,
+  }],
+
+  // ── Paris / London ↔ Dubai (high-volume hub) ──────────────────────────────
+
+  ["CDG-DXB", {
+    durationMin: 390,
+    airlines: ["Air France", "Emirates"],
+    bestPrograms: ["Flying Blue", "Emirates Skywards", "Avios"],
+    seasonTip: {
+      fr: "Octobre-avril est la haute saison pour Dubai (temps agréable). Les miles offrent une excellente valeur en Business sur cette route.",
+      en: "October-April is peak season for Dubai (pleasant weather). Miles offer excellent value in Business on this route.",
+    },
+    milesToEconomy: 22000,
+    milesToBusiness: 55000,
+    isNonstop: true,
+  }],
+
 ]);
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
