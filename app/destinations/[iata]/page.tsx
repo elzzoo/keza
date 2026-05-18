@@ -5,6 +5,7 @@ import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices, type DestinationPriceHistory } from "@/lib/priceHistory";
 import { DestinationPageClient } from "./DestinationPageClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { logError } from "@/lib/logger";
 
 interface Props {
   params: Promise<{ iata: string }>;
@@ -31,6 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `Vols Dakar → ${dest.city} — Cash ou Miles ? | KEZA`;
   const description = `Vols depuis Dakar (DSS) vers ${dest.city} (${dest.iata}). KEZA calcule si tes miles valent plus que le prix cash — estimation instantanée + recherche live.`;
+  const url = `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`;
 
   return {
     title,
@@ -39,10 +41,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
-      url: `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`,
+      url,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
     alternates: {
-      canonical: `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`,
+      canonical: url,
     },
   };
 }
@@ -60,7 +67,7 @@ export default async function DestinationPage({ params }: Props) {
   try {
     history = getMonthlyPrices(dest);
   } catch (err) {
-    console.error(`[/destinations/${dest.iata}] getMonthlyPrices failed:`, err);
+    logError(`[/destinations/${dest.iata}] getMonthlyPrices failed:`, err);
     // Flat-price fallback so the page renders without crashing
     const MONTH_LABELS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
     history = {

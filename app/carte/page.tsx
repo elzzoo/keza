@@ -3,7 +3,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
-import { WorldMap, type DestinationWithRec } from "./WorldMap";
+import dynamic from "next/dynamic";
+import type { DestinationWithRec } from "./WorldMap";
+
+// react-simple-maps bundles ~150 KB of D3/topojson — lazy-load it so the
+// route's initial JS stays small. SSR disabled: the SVG map is interactive.
+const WorldMap = dynamic(() => import("./WorldMap").then(m => m.WorldMap), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-96 rounded-2xl bg-surface border border-border animate-pulse" />
+  ),
+});
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
