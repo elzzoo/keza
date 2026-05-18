@@ -12,33 +12,71 @@ const FEATURES = [
   { icon: "✈️", title: "Alertes multi-passagers", desc: "Prix pour 2, 3 ou 4 passagers directement dans l'alerte." },
 ];
 
+type CheckoutStatus = "idle" | "loading" | "waitlisted";
+
 export function ProClient({ upgraded }: { upgraded?: boolean }) {
   const [lang] = useState<"fr" | "en">("fr");
   const [email, setEmail] = useState("");
-  const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "loading">("idle");
+  const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
   const [checkoutError, setCheckoutError] = useState("");
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
+  const [paymentsAvailable, setPaymentsAvailable] = useState(true);
+
+  async function joinWaitlist(emailValue: string): Promise<boolean> {
+    try {
+      const res = await fetch("/api/pro/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailValue }),
+      });
+      const data = await res.json().catch(() => ({})) as { position?: number; error?: string };
+      if (res.ok) {
+        setWaitlistPosition(data.position ?? null);
+        setCheckoutStatus("waitlisted");
+        return true;
+      }
+      setCheckoutError(data.error ?? "Impossible de rejoindre la liste d'attente.");
+      setCheckoutStatus("idle");
+      return false;
+    } catch {
+      setCheckoutError("Erreur réseau. Réessaie.");
+      setCheckoutStatus("idle");
+      return false;
+    }
+  }
 
   async function handleCheckout(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim() || checkoutStatus === "loading") return;
+    const trimmed = email.trim();
+    if (!trimmed || checkoutStatus === "loading") return;
     setCheckoutStatus("loading");
     setCheckoutError("");
+
+    // If we've already detected payments aren't live, skip straight to waitlist.
+    if (!paymentsAvailable) {
+      await joinWaitlist(trimmed);
+      return;
+    }
+
     try {
       const res = await fetch("/api/pro/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: trimmed }),
       });
       const data = await res.json() as { url?: string; error?: string };
       if (res.ok && data.url) {
         window.location.href = data.url;
-      } else if (res.status === 503) {
-        setCheckoutError("Le paiement arrive bientôt — merci de ta patience !");
-        setCheckoutStatus("idle");
-      } else {
-        setCheckoutError(data.error ?? "Une erreur est survenue.");
-        setCheckoutStatus("idle");
+        return;
       }
+      if (res.status === 503) {
+        // Payments not yet configured — auto-fallback to waitlist signup.
+        setPaymentsAvailable(false);
+        await joinWaitlist(trimmed);
+        return;
+      }
+      setCheckoutError(data.error ?? "Une erreur est survenue.");
+      setCheckoutStatus("idle");
     } catch {
       setCheckoutError("Erreur réseau. Réessaie.");
       setCheckoutStatus("idle");
@@ -98,36 +136,67 @@ export function ProClient({ upgraded }: { upgraded?: boolean }) {
           ))}
         </div>
 
-        {/* Checkout form */}
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
-          <p className="font-semibold text-fg mb-1">Passer en Pro — 9$ / mois</p>
-          <p className="text-xs text-muted mb-4">
-            Annulable à tout moment. Paiement sécurisé via Lemon Squeezy.
-          </p>
-          <form onSubmit={handleCheckout} className="flex gap-2">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ton@email.com"
-              className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-primary"
-            />
-            <button
-              type="submit"
-              disabled={checkoutStatus === "loading" || !email.trim()}
-              className="rounded-lg bg-amber-500 text-black text-sm font-bold px-4 py-2 hover:bg-amber-400 transition-colors disabled:opacity-50 whitespace-nowrap"
+        {/* Checkout / waitlist form */}
+        {checkoutStatus === "waitlisted" ? (
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
+            <p className="text-3xl mb-2">✅</p>
+            <p className="font-semibold text-fg mb-1">Tu es sur la liste !</p>
+            <p className="text-xs text-muted">
+              {waitlistPosition
+                ? `Tu es n°${waitlistPosition} sur la liste. On te contactera dès l'ouverture des paiements.`
+                : "On te contactera dès l'ouverture des paiements KEZA Pro."}
+            </p>
+            <p className="mt-3 text-xs text-muted/60">
+              En attendant, profite des 3 alertes gratuites + parrainage pour en débloquer plus.
+            </p>
+            <Link
+              href="/alertes"
+              className="mt-4 inline-block rounded-lg bg-primary text-white text-sm font-bold px-5 py-2 hover:bg-primary/90 transition-colors"
             >
-              {checkoutStatus === "loading" ? "…" : "Payer 9$ →"}
-            </button>
-          </form>
-          {checkoutError && (
-            <p className="mt-2 text-xs text-amber-400">{checkoutError}</p>
-          )}
-          <p className="mt-3 text-xs text-muted/60 text-center">
-            Tu seras redirigé vers Lemon Squeezy pour finaliser le paiement.
-          </p>
-        </div>
+              Créer une alerte gratuite →
+            </Link>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
+            <p className="font-semibold text-fg mb-1">
+              {paymentsAvailable ? "Passer en Pro — 9$ / mois" : "Rejoindre la liste d'attente Pro"}
+            </p>
+            <p className="text-xs text-muted mb-4">
+              {paymentsAvailable
+                ? "Annulable à tout moment. Paiement sécurisé via Lemon Squeezy."
+                : "Les paiements ouvriront très bientôt — laisse ton email pour être prévenu en premier."}
+            </p>
+            <form onSubmit={handleCheckout} className="flex gap-2">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ton@email.com"
+                className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={checkoutStatus === "loading" || !email.trim()}
+                className="rounded-lg bg-amber-500 text-black text-sm font-bold px-4 py-2 hover:bg-amber-400 transition-colors disabled:opacity-50 whitespace-nowrap"
+              >
+                {checkoutStatus === "loading"
+                  ? "…"
+                  : paymentsAvailable
+                    ? "Payer 9$ →"
+                    : "Rejoindre →"}
+              </button>
+            </form>
+            {checkoutError && (
+              <p className="mt-2 text-xs text-amber-400">{checkoutError}</p>
+            )}
+            <p className="mt-3 text-xs text-muted/60 text-center">
+              {paymentsAvailable
+                ? "Tu seras redirigé vers Lemon Squeezy pour finaliser le paiement."
+                : "Inscription gratuite — aucun engagement."}
+            </p>
+          </div>
+        )}
 
         {/* Comparison table */}
         <div className="mt-8 rounded-xl border border-border overflow-hidden">
