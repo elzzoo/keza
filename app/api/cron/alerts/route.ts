@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         const adjustedPrice = Math.round(cheapest * cabinMultiplier);
 
         // Check if price dropped below target
-        if (adjustedPrice < alert.targetPrice) {
+        if (adjustedPrice <= alert.targetPrice) {
           // Skip daily/weekly alerts — they are handled by /api/cron/digest
           if (alert.notifFrequency !== "instant") {
             await updateAlertAfterCheck(alert.id, adjustedPrice, false);
