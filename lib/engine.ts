@@ -9,6 +9,11 @@ import { recordObservation } from "./autoCalibrate";
 import { fetchFromDuffel } from "./duffelProvider";
 import { logError, logWarn } from "./logger";
 
+// ─── Cache version ───────────────────────────────────────────────────────────
+// Single source of truth — imported by app/api/search/route.ts so both sides
+// always agree on the key schema. Bump whenever FlightResult shape changes.
+export const CACHE_VERSION = "v21";
+
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
 export const CABIN_MULTIPLIER: Record<Cabin, number> = {
   economy:  1.0,
@@ -141,6 +146,7 @@ async function fetchV3(
     res = await withRetry(() => fetch(url.toString(), {
       next: { revalidate: 3600 },
       headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(4000),
     }));
   } catch (err) {
     logError(`[engine] aviasales v3 network error for ${from}→${to}:`, err);
@@ -217,6 +223,7 @@ async function fetchMonthMatrix(
     res = await withRetry(() => fetch(url.toString(), {
       next: { revalidate: 3600 },
       headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(4000),
     }));
   } catch (err) {
     logError(`[engine] month-matrix network error for ${from}→${to}:`, err);
@@ -381,6 +388,7 @@ async function discoverRouteAirlines(
       const res = await fetch(url.toString(), {
         next: { revalidate: 86400 },          // cache 24h — airline roster changes slowly
         headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(4000),
       });
       if (!res.ok) continue;
       const json = (await res.json()) as { data?: Array<{ airline: string }> };
@@ -498,6 +506,7 @@ async function fetchMonthMatrixFull(
   const res = await fetch(url.toString(), {
     next: { revalidate: 3600 },
     headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(4000),
   });
 
   if (!res.ok) return [];
@@ -557,6 +566,7 @@ async function fetchV3Calendar(
   const res = await fetch(url.toString(), {
     next: { revalidate: 3600 },
     headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(4000),
   });
 
   if (!res.ok) return [];
@@ -850,7 +860,7 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   const directOnly = stops === "direct";
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:v21:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey   = `keza:${CACHE_VERSION}:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
   // 1. Cache check
   // Each caller gets a fresh searchId — the cached results share flight/price

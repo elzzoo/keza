@@ -3,6 +3,8 @@ import { fetchCalendarPrices, type CalendarDay } from "@/lib/engine";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
+export const maxDuration = 25;
+
 const IATA_RE = /^[A-Z]{3}$/;
 const MONTH_RE = /^\d{4}-\d{2}$/;
 

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { searchEngine, type SearchParams, type FlightResult } from "@/lib/engine";
+import { searchEngine, CACHE_VERSION, type SearchParams, type FlightResult } from "@/lib/engine";
+
+export const maxDuration = 25;
 import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError, logWarn } from "@/lib/logger";
@@ -13,10 +15,9 @@ const SEARCH_TIMEOUT_MS = 18_000;
 
 /**
  * Build the versioned cache key that searchEngine uses.
- * Bump the version constant here AND in lib/engine.ts together whenever
- * the FlightResult shape or miles-engine logic changes.
+ * Bump CACHE_VERSION in lib/engine.ts — it is re-exported and imported here
+ * so the version is always in sync between the engine and the search route.
  */
-const CACHE_VERSION = "v21";
 const CACHE_VERSION_FALLBACKS = ["v20", "v19", "v18"] as const;
 
 function buildCacheKey(
