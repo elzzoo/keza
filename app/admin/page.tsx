@@ -90,6 +90,39 @@ async function fetchStats() {
   const estimatedBookings = Math.round(activeAlerts * 0.1); // 10% of alerts convert to booking
   const estimatedRevenue = estimatedBookings * 18; // $18 avg affiliate commission
 
+  // Engine stats — last 7 days
+  const engineStats: Array<{
+    date: string;
+    searches: number;
+    cacheHits: number;
+    cacheMisses: number;
+    duffelWins: number;
+    tpWins: number;
+  }> = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+
+    const [searches, cacheHits, cacheMisses, duffelWins, tpWins] = await Promise.all([
+      redis.get<number>(`keza:stats:searches:${dateStr}`),
+      redis.get<number>(`keza:stats:cache:hits:${dateStr}`),
+      redis.get<number>(`keza:stats:cache:misses:${dateStr}`),
+      redis.get<number>(`keza:stats:provider:duffel:${dateStr}`),
+      redis.get<number>(`keza:stats:provider:tp:${dateStr}`),
+    ]);
+
+    engineStats.push({
+      date: dateStr,
+      searches: searches ?? 0,
+      cacheHits: cacheHits ?? 0,
+      cacheMisses: cacheMisses ?? 0,
+      duffelWins: duffelWins ?? 0,
+      tpWins: tpWins ?? 0,
+    });
+  }
+
   return {
     activeAlerts,
     activeRoutes: routes.length,
@@ -105,6 +138,7 @@ async function fetchStats() {
     totalDigestOpens: emailOpensByDay.reduce((s, d) => s + d.digest, 0),
     estimatedRevenue,
     estimatedBookings,
+    engineStats,
   };
 }
 
@@ -310,6 +344,81 @@ export default async function AdminPage() {
                   sub="à $18 de commission moy."
                   color="green"
                 />
+              </div>
+            </div>
+
+            {/* Engine Observability — 7 days */}
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                Moteur de recherche — 7 derniers jours
+              </h2>
+
+              {/* Today's summary cards */}
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-4">
+                <StatCard
+                  label="Recherches aujourd'hui"
+                  value={stats.engineStats[0]?.searches ?? 0}
+                  sub="requêtes /api/search"
+                  color="blue"
+                />
+                <StatCard
+                  label="Cache hit rate"
+                  value={(() => {
+                    const s = stats.engineStats[0];
+                    const total = (s?.cacheHits ?? 0) + (s?.cacheMisses ?? 0);
+                    return total > 0 ? `${Math.round((s.cacheHits / total) * 100)}%` : "—";
+                  })()}
+                  sub="résultats depuis Redis"
+                  color="green"
+                />
+                <StatCard
+                  label="Duffel wins"
+                  value={stats.engineStats[0]?.duffelWins ?? 0}
+                  sub="résultats haute confiance"
+                  color="purple"
+                />
+                <StatCard
+                  label="TP wins"
+                  value={stats.engineStats[0]?.tpWins ?? 0}
+                  sub="résultats Travelpayouts"
+                  color="amber"
+                />
+              </div>
+
+              {/* 7-day table */}
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Recherches</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Cache %</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Duffel</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">TP</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {stats.engineStats.map((row) => {
+                      const total = row.cacheHits + row.cacheMisses;
+                      const hitRate = total > 0 ? Math.round((row.cacheHits / total) * 100) : null;
+                      return (
+                        <tr key={row.date} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 font-mono text-xs text-gray-500">{row.date}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-gray-900">{row.searches || "—"}</td>
+                          <td className="px-4 py-3 text-right">
+                            {hitRate !== null ? (
+                              <span className={`font-semibold ${hitRate >= 50 ? "text-green-600" : "text-amber-600"}`}>
+                                {hitRate}%
+                              </span>
+                            ) : "—"}
+                          </td>
+                          <td className="px-4 py-3 text-right text-purple-600">{row.duffelWins || "—"}</td>
+                          <td className="px-4 py-3 text-right text-amber-600">{row.tpWins || "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
 

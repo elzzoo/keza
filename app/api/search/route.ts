@@ -95,6 +95,7 @@ export async function POST(request: Request) {
 
     let results: FlightResult[];
     let partial = false;
+    let fromCache = false;
 
     if (timedOut || engineResult === null) {
       // Try current version first, then fall back through older versions.
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
         const cached = await redis.get<FlightResult[]>(buildCacheKey(ver, keyParams)).catch(() => null);
         if (cached && cached.length > 0) {
           results = cached;
+          fromCache = true;
           break;
         }
       }
@@ -122,10 +124,25 @@ export async function POST(request: Request) {
       results = engineResult;
     }
 
+    // Fire-and-forget engine observability stats
+    const today = new Date().toISOString().slice(0, 10);
+    Promise.all([
+      redis.incr(`keza:stats:searches:${today}`),
+      fromCache
+        ? redis.incr(`keza:stats:cache:hits:${today}`)
+        : redis.incr(`keza:stats:cache:misses:${today}`),
+      ...(results.slice(0, 1).map((r) =>
+        r?.source === "DUFFEL"
+          ? redis.incr(`keza:stats:provider:duffel:${today}`)
+          : redis.incr(`keza:stats:provider:tp:${today}`)
+      )),
+      redis.expire(`keza:stats:searches:${today}`, 30 * 24 * 60 * 60),
+    ]).catch(() => {});
+
     // Fetch forex rate (non-blocking, fallback to 600 if fails)
     const forexRate = await getForexRate().catch(() => 600);
 
-    const response = NextResponse.json({ results, count: results.length, forexRate, partial });
+    const response = NextResponse.json({ results, count: results.length, forexRate, partial, fromCache });
     response.headers.set("x-request-id", requestId);
     return response;
   } catch (err) {
