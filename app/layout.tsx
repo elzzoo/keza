@@ -85,6 +85,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 target: {
                   "@type": "EntryPoint",
                   urlTemplate: `${SITE_URL}/?from={from}&to={to}`,
+                  description: "Search flights by IATA airport code",
                 },
                 "query-input": ["required name=from", "required name=to"],
               },
