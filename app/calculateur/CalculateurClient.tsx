@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import type { MilesPriceRecord } from "@/data/milesPrices";
 
-export function CalculateurClient({ programs }: { programs: MilesPriceRecord[]; forexRate?: number }) {
+export function CalculateurClient({ programs, lang = "fr" }: { programs: MilesPriceRecord[]; forexRate?: number; lang?: "fr" | "en" }) {
   const [miles, setMiles] = useState(50000);
   const [idx, setIdx]     = useState(0);
   const program           = programs[idx];
@@ -13,7 +13,7 @@ export function CalculateurClient({ programs }: { programs: MilesPriceRecord[]; 
     <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
       <div>
         <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
-          Nombre de miles
+          {lang === "en" ? "Number of miles" : "Nombre de miles"}
         </label>
         <input
           type="range" min={1000} max={500000} step={1000}
@@ -28,7 +28,7 @@ export function CalculateurClient({ programs }: { programs: MilesPriceRecord[]; 
         </div>
       </div>
       <div>
-        <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">Programme</label>
+        <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">{lang === "en" ? "Program" : "Programme"}</label>
         <select
           value={idx}
           onChange={(e) => setIdx(parseInt(e.target.value, 10))}
@@ -40,7 +40,7 @@ export function CalculateurClient({ programs }: { programs: MilesPriceRecord[]; 
         </select>
       </div>
       <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 text-center">
-        <p className="text-xs text-muted mb-1">{miles.toLocaleString()} {program.program} miles valent environ</p>
+        <p className="text-xs text-muted mb-1">{miles.toLocaleString()} {program.program} {lang === "en" ? "miles are worth approximately" : "miles valent environ"}</p>
         <p className="text-4xl font-black text-primary">${valueUsd}</p>
         <div className="flex flex-wrap justify-center gap-2 mt-2">
           {[
@@ -53,7 +53,7 @@ export function CalculateurClient({ programs }: { programs: MilesPriceRecord[]; 
             </span>
           ))}
         </div>
-        <p className="text-xs text-muted mt-3">Basé sur {program.valueCents.toFixed(1)}¢ / mile · Confiance : {program.confidence}</p>
+        <p className="text-xs text-muted mt-3">{lang === "en" ? `Based on ${program.valueCents.toFixed(1)}¢ / mile · Confidence: ${program.confidence}` : `Basé sur ${program.valueCents.toFixed(1)}¢ / mile · Confiance : ${program.confidence}`}</p>
       </div>
     </div>
   );

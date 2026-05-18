@@ -1,29 +1,31 @@
-// app/carte/page.tsx
+// app/en/carte/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
-import type { DestinationWithRec } from "./WorldMap";
-import { WorldMapDynamic } from "./WorldMapDynamic";
+import type { DestinationWithRec } from "@/app/carte/WorldMap";
+import { WorldMapDynamic } from "@/app/carte/WorldMapDynamic";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Carte des destinations miles | KEZA",
+  title: "Flight Price Map — Find Cheap Destinations | KEZA",
   description:
-    "Explorez 20 destinations en avion — carte interactive cash vs miles. Trouvez où vos points valent le plus.",
+    "Explore cheap flights from your city on an interactive map. Compare cash prices and miles redemptions.",
   openGraph: {
-    title: "Carte des destinations miles | KEZA",
-    description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA : miles gagnent, cash gagne.",
-    url: `${SITE_URL}/carte`,
+    title: "Flight Price Map — Find Cheap Destinations | KEZA",
+    description:
+      "Explore cheap flights from your city on an interactive map. Compare cash prices and miles redemptions.",
+    url: `${SITE_URL}/en/carte`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Carte des destinations miles | KEZA",
-    description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA.",
+    title: "Flight Price Map — Find Cheap Destinations | KEZA",
+    description:
+      "Explore cheap flights from your city on an interactive map. Compare cash prices and miles redemptions.",
   },
   alternates: {
-    canonical: `${SITE_URL}/carte`,
+    canonical: `${SITE_URL}/en/carte`,
     languages: {
       fr: `${SITE_URL}/carte`,
       en: `${SITE_URL}/en/carte`,
@@ -49,14 +51,14 @@ const CASH_COUNT = DESTINATIONS_WITH_REC.filter(
   (d) => d.recommendation === "USE_CASH"
 ).length;
 
-export default function CartePage() {
+export default function EnCartePage() {
   return (
     <div className="min-h-screen bg-bg">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Back link */}
-        <Link href="/" className="text-xs text-muted hover:text-fg transition-colors">
-          ← Retour
+        <Link href="/en" className="text-xs text-muted hover:text-fg transition-colors">
+          ← Back
         </Link>
 
         {/* Hero */}
@@ -65,31 +67,31 @@ export default function CartePage() {
             <span className="bg-gradient-to-br from-blue-300 via-primary to-blue-500 bg-clip-text text-transparent">
               Explore
             </span>
-            <span className="text-fg"> le monde en miles</span>
+            <span className="text-fg"> the world with miles</span>
           </h1>
           <p className="text-sm text-muted mt-2">
-            {DESTINATIONS.length} destinations · clique pour voir les prix cash &amp; miles
+            {DESTINATIONS.length} destinations · click to see cash &amp; miles prices
           </p>
         </div>
 
         {/* Map */}
-        <ErrorBoundary lang="fr">
-          <WorldMapDynamic destinations={DESTINATIONS_WITH_REC} lang="fr" />
+        <ErrorBoundary lang="en">
+          <WorldMapDynamic destinations={DESTINATIONS_WITH_REC} lang="en" />
         </ErrorBoundary>
 
         {/* Stats bar */}
         <div className="grid grid-cols-3 gap-3 mt-6">
           <div className="bg-surface border border-border rounded-xl p-4 text-center">
             <div className="text-2xl font-black text-primary">{MILES_COUNT}</div>
-            <div className="text-[11px] text-muted mt-0.5">Miles gagnent</div>
+            <div className="text-[11px] text-muted mt-0.5">Miles win</div>
           </div>
           <div className="bg-surface border border-border rounded-xl p-4 text-center">
             <div className="text-2xl font-black text-success">{NEUTRAL_COUNT}</div>
-            <div className="text-[11px] text-muted mt-0.5">Si tu as les miles</div>
+            <div className="text-[11px] text-muted mt-0.5">If you have miles</div>
           </div>
           <div className="bg-surface border border-border rounded-xl p-4 text-center">
             <div className="text-2xl font-black text-warning">{CASH_COUNT}</div>
-            <div className="text-[11px] text-muted mt-0.5">Cash gagne</div>
+            <div className="text-[11px] text-muted mt-0.5">Cash wins</div>
           </div>
         </div>
 
@@ -99,7 +101,7 @@ export default function CartePage() {
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
           >
-            ✈ Rechercher un vol
+            ✈ Search a flight
           </Link>
         </div>
 

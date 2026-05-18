@@ -8,11 +8,18 @@ import { SITE_URL } from "@/lib/siteConfig";
 
 type Filter = "all" | DealRecommendation;
 
-const FILTER_LABELS: Record<Filter, string> = {
+const FILTER_LABELS_FR: Record<Filter, string> = {
   all:        "Tous",
   USE_MILES:  "✈ Miles gagnent",
   USE_CASH:   "💰 Cash gagne",
   NEUTRAL:    "Neutre",
+};
+
+const FILTER_LABELS_EN: Record<Filter, string> = {
+  all:        "All",
+  USE_MILES:  "✈ Miles win",
+  USE_CASH:   "💰 Cash wins",
+  NEUTRAL:    "Neutral",
 };
 
 const RECOMMENDATION_COLORS: Record<DealRecommendation, { badge: string; border: string }> = {
@@ -21,12 +28,14 @@ const RECOMMENDATION_COLORS: Record<DealRecommendation, { badge: string; border:
   NEUTRAL:   { badge: "bg-slate-500/15 text-slate-400 border-slate-500/25", border: "border-slate-500/20" },
 };
 
-function ShareDealButton({ deal }: { deal: LiveDeal }) {
+function ShareDealButton({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | "en" }) {
   const [state, setState] = useState<"idle" | "copied" | "shared">("idle");
 
   const handleShare = async () => {
     const url = `${SITE_URL}/?from=${deal.from}&to=${deal.to}&utm_source=share&utm_medium=deal`;
-    const text = `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via KEZA`;
+    const text = lang === "en"
+      ? `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired.toLocaleString("en-US")} miles (${deal.program}) via KEZA`
+      : `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via KEZA`;
 
     trackDealShare({ from: deal.from, to: deal.to, program: deal.program });
 
@@ -67,26 +76,26 @@ function ShareDealButton({ deal }: { deal: LiveDeal }) {
           ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
           : "bg-surface-2 border-border text-subtle hover:text-fg hover:border-primary/40"
       }`}
-      aria-label={`Partager le deal ${deal.from} → ${deal.to}`}
+      aria-label={lang === "en" ? `Share deal ${deal.from} → ${deal.to}` : `Partager le deal ${deal.from} → ${deal.to}`}
     >
       {state === "copied" ? (
-        <><span>✓</span><span>Copié !</span></>
+        <><span>✓</span><span>{lang === "en" ? "Copied!" : "Copié !"}</span></>
       ) : state === "shared" ? (
-        <><span>✓</span><span>Partagé !</span></>
+        <><span>✓</span><span>{lang === "en" ? "Shared!" : "Partagé !"}</span></>
       ) : (
         <>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
-          <span>Partager</span>
+          <span>{lang === "en" ? "Share" : "Partager"}</span>
         </>
       )}
     </button>
   );
 }
 
-function DealCard({ deal }: { deal: LiveDeal }) {
+function DealCard({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | "en" }) {
   const colors = RECOMMENDATION_COLORS[deal.recommendation];
   const searchUrl = `/?from=${deal.from}&to=${deal.to}`;
 
@@ -105,8 +114,8 @@ function DealCard({ deal }: { deal: LiveDeal }) {
           {deal.recommendation === "USE_MILES"
             ? `✈ ${deal.multiplier} / mile`
             : deal.recommendation === "USE_CASH"
-            ? "💰 Cash optimal"
-            : "≈ Équivalent"}
+            ? (lang === "en" ? "💰 Cash optimal" : "💰 Cash optimal")
+            : (lang === "en" ? "≈ Equivalent" : "≈ Équivalent")}
         </div>
       </div>
 
@@ -118,13 +127,13 @@ function DealCard({ deal }: { deal: LiveDeal }) {
         </div>
         <div className="bg-[#0a0a0f] rounded-xl p-3">
           <p className="text-[10px] text-subtle uppercase tracking-wider mb-1">Miles</p>
-          <p className="text-lg font-black text-fg">{deal.milesRequired.toLocaleString("fr-FR")}</p>
+          <p className="text-lg font-black text-fg">{deal.milesRequired.toLocaleString(lang === "en" ? "en-US" : "fr-FR")}</p>
         </div>
       </div>
 
       {/* CPM ratio */}
       <div className="flex items-center justify-between text-xs text-subtle">
-        <span>Valeur / mile</span>
+        <span>{lang === "en" ? "Value / mile" : "Valeur / mile"}</span>
         <span className="font-bold text-fg">{deal.ratio.toFixed(2)} ¢/mile</span>
       </div>
 
@@ -134,15 +143,15 @@ function DealCard({ deal }: { deal: LiveDeal }) {
           href={searchUrl}
           className="flex-1 block text-center bg-primary/10 hover:bg-primary/20 text-blue-400 border border-primary/20 rounded-xl py-2.5 text-sm font-semibold transition-colors"
         >
-          Analyser →
+          {lang === "en" ? "Analyze →" : "Analyser →"}
         </Link>
-        <ShareDealButton deal={deal} />
+        <ShareDealButton deal={deal} lang={lang} />
       </div>
     </div>
   );
 }
 
-export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) {
+export function DealsPageClient({ initialDeals, lang = "fr" }: { initialDeals: LiveDeal[]; lang?: "fr" | "en" }) {
   const [filter, setFilter] = useState<Filter>("all");
 
   const filtered = filter === "all"
@@ -150,6 +159,7 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
     : initialDeals.filter((d) => d.recommendation === filter);
 
   const filters: Filter[] = ["all", "USE_MILES", "USE_CASH", "NEUTRAL"];
+  const FILTER_LABELS = lang === "en" ? FILTER_LABELS_EN : FILTER_LABELS_FR;
 
   return (
     <div>
@@ -183,9 +193,15 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
             🔍
           </div>
           <div className="text-center">
-            <p className="font-semibold text-fg">Aucun deal dans cette catégorie</p>
+            <p className="font-semibold text-fg">{lang === "en" ? "No deals in this category" : "Aucun deal dans cette catégorie"}</p>
             <p className="text-sm text-muted mt-1">
-              {filter === "USE_MILES"
+              {lang === "en"
+                ? filter === "USE_MILES"
+                  ? "Miles don't win on any route right now."
+                  : filter === "USE_CASH"
+                  ? "Cash is not optimal on these routes currently."
+                  : "No neutral deals available."
+                : filter === "USE_MILES"
                 ? "Les miles ne gagnent sur aucune route pour l'instant."
                 : filter === "USE_CASH"
                 ? "Le cash n'est pas optimal sur ces routes actuellement."
@@ -196,28 +212,30 @@ export function DealsPageClient({ initialDeals }: { initialDeals: LiveDeal[] }) 
             onClick={() => setFilter("all")}
             className="px-4 py-2 rounded-xl border border-border text-sm font-semibold text-muted hover:text-fg hover:border-primary/40 transition-colors"
           >
-            ← Voir tous les deals
+            {lang === "en" ? "← See all deals" : "← Voir tous les deals"}
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
           {filtered.map((deal) => (
-            <DealCard key={`${deal.from}-${deal.to}-${deal.program}`} deal={deal} />
+            <DealCard key={`${deal.from}-${deal.to}-${deal.program}`} deal={deal} lang={lang} />
           ))}
         </div>
       )}
 
       {/* Alert CTA */}
       <div className="mt-12 bg-surface border border-border rounded-2xl p-6 text-center">
-        <p className="text-fg font-semibold mb-1">Un vol vous intéresse ?</p>
+        <p className="text-fg font-semibold mb-1">{lang === "en" ? "Interested in a flight?" : "Un vol vous intéresse ?"}</p>
         <p className="text-sm text-subtle mb-4">
-          Créez une alerte prix — KEZA vous prévient dès qu&apos;il baisse de 10 %.
+          {lang === "en"
+            ? "Create a price alert — KEZA notifies you as soon as it drops 10%."
+            : "Créez une alerte prix — KEZA vous prévient dès qu'il baisse de 10 %."}
         </p>
         <Link
           href="/"
           className="inline-block bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
-          Créer une alerte →
+          {lang === "en" ? "Create an alert →" : "Créer une alerte →"}
         </Link>
       </div>
     </div>

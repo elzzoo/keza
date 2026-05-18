@@ -1,7 +1,8 @@
+// app/en/deals/page.tsx
 import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { DealsPageClient } from "./DealsPageClient";
+import { DealsPageClient } from "@/app/deals/DealsPageClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
@@ -9,24 +10,26 @@ import { sortDeals } from "@/lib/dealsEngine";
 import type { LiveDeal, RawDeal } from "@/lib/dealsEngine";
 import { SITE_URL } from "@/lib/siteConfig";
 
-export const revalidate = 3600; // Re-fetch every hour
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Deals cash vs miles du moment | KEZA",
+  title: "Flight Deals — Best Cash & Miles Offers | KEZA",
   description:
-    "Comparez les meilleurs deals vols en cash et en miles. KEZA calcule en temps réel quand payer cash ou utiliser vos miles.",
+    "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
   openGraph: {
-    title: "Deals cash vs miles | KEZA",
-    description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
+    title: "Flight Deals — Best Cash & Miles Offers | KEZA",
+    description:
+      "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
     images: [{ url: "/deals/opengraph-image" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deals cash vs miles | KEZA",
-    description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
+    title: "Flight Deals — Best Cash & Miles Offers | KEZA",
+    description:
+      "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
   },
   alternates: {
-    canonical: `${SITE_URL}/deals`,
+    canonical: `${SITE_URL}/en/deals`,
     languages: {
       fr: `${SITE_URL}/deals`,
       en: `${SITE_URL}/en/deals`,
@@ -35,7 +38,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Fallback statique si le cron n'a pas encore tourné
 const FALLBACK_DEALS: RawDeal[] = [
   { from: "DSS", to: "CDG", fromFlag: "🇸🇳", toFlag: "🇫🇷", cashPrice: 680, milesRequired: 35000, program: "Flying Blue" },
   { from: "JFK", to: "LHR", fromFlag: "🇺🇸", toFlag: "🇬🇧", cashPrice: 520, milesRequired: 26000, program: "Aeroplan" },
@@ -52,20 +54,20 @@ async function getDeals(): Promise<LiveDeal[]> {
       return cached;
     }
   } catch (e) {
-    console.error("[deals] Redis unavailable, using fallback:", e);
+    console.error("[deals/en] Redis unavailable, using fallback:", e);
   }
   return sortDeals(FALLBACK_DEALS);
 }
 
-export default async function DealsPage() {
+export default async function EnDealsPage() {
   const deals = await getDeals();
 
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Deals cash vs miles du moment",
-    description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
-    url: `${SITE_URL}/deals`,
+    name: "Best flight deals — cash & miles",
+    description: "The best flight deals — cash or miles — updated continuously.",
+    url: `${SITE_URL}/en/deals`,
     numberOfItems: Math.min(deals.length, 10),
     itemListElement: deals.slice(0, 10).map((deal, i) => ({
       "@type": "ListItem",
@@ -81,30 +83,29 @@ export default async function DealsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
       />
-      <Header lang="fr" />
+      <Header lang="en" />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
-        {/* Hero */}
         <div className="mb-8 animate-fade-up">
           <div className="flex items-center gap-2 mb-2">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             <span className="text-xs font-bold text-muted uppercase tracking-wider">Live</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-fg mb-2">
-            Deals cash vs miles du moment
+            Best flight deals — cash &amp; miles
           </h1>
           <p className="text-sm text-subtle max-w-xl">
-            KEZA calcule en temps réel la valeur de vos miles sur chaque route.
-            Payez au meilleur prix — cash ou miles.
+            KEZA calculates in real time the value of your miles on each route.
+            Pay the best price — cash or miles.
           </p>
         </div>
 
-        <ErrorBoundary lang="fr">
-          <DealsPageClient initialDeals={deals} />
+        <ErrorBoundary lang="en">
+          <DealsPageClient initialDeals={deals} lang="en" />
         </ErrorBoundary>
       </main>
 
-      <Footer lang="fr" />
+      <Footer lang="en" />
     </div>
   );
 }

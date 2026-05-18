@@ -89,6 +89,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
+  // EN static pages
+  const enStaticPages = [
+    { path: "/en/programmes", priority: 0.85, changeFrequency: "monthly" as const },
+    { path: "/en/carte",      priority: 0.75, changeFrequency: "monthly" as const },
+    { path: "/en/alertes",    priority: 0.55, changeFrequency: "monthly" as const },
+    { path: "/en/comparer",   priority: 0.55, changeFrequency: "monthly" as const },
+    { path: "/en/deals",      priority: 0.85, changeFrequency: "daily"   as const },
+    { path: "/en/calculateur",priority: 0.75, changeFrequency: "monthly" as const },
+    { path: "/en/prix",       priority: 0.65, changeFrequency: "monthly" as const },
+  ];
+
+  for (const p of enStaticPages) {
+    pages.push({
+      url: `${BASE_URL}${p.path}`,
+      lastModified: now,
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    });
+  }
+
   // City-slug SEO URLs for long-tail search traffic
   const CITY_SLUG_ROUTES = [
     ["paris", "dakar"],

@@ -1,14 +1,15 @@
+// app/en/comparer/page.tsx
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ComparateurClient } from "./ComparateurClient";
+import { ComparateurClient } from "@/app/comparer/ComparateurClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Comparer des destinations — Cash ou Miles ? | KEZA",
+  title: "Compare Destinations — 3 Routes Side by Side | KEZA",
   description:
-    "Comparez 2 ou 3 destinations depuis Dakar : cash, miles, CPM et meilleurs mois côte-à-côte.",
+    "Compare up to 3 flight routes side by side. Cash price vs miles for each destination.",
   alternates: {
-    canonical: `${SITE_URL}/comparer`,
+    canonical: `${SITE_URL}/en/comparer`,
     languages: {
       fr: `${SITE_URL}/comparer`,
       en: `${SITE_URL}/en/comparer`,
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ComparateurPage() {
+export default function EnComparateurPage() {
   return (
     <Suspense fallback={null}>
       <ComparateurClient />
