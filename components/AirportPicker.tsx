@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback, useId } from "react";
-import { AIRPORTS, PRIORITY_AIRPORTS } from "@/data/airports";
+import { PRIORITY_AIRPORTS } from "@/data/airports";
 import type { Airport } from "@/data/airports";
 import clsx from "clsx";
 
@@ -35,21 +35,43 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
   const listboxId = `airport-listbox-${uid}`;
   const labelId = `airport-label-${uid}`;
 
-  const selected = AIRPORTS.find((a) => a.code === value);
+  // Track recently-selected airports so the trigger button can display them
+  // without shipping the full airport list to the client.
+  const [knownAirports, setKnownAirports] = useState<Airport[]>(PRIORITY_AIRPORTS);
+  const selected = knownAirports.find((a) => a.code === value);
   const displayLabel = lang === "fr" ? label : labelEn;
+
+  // If `value` points to an airport we don't yet have in memory (e.g. set via
+  // URL param or restored from profile), fetch its details from the API.
+  useEffect(() => {
+    if (!value) return;
+    if (knownAirports.some((a) => a.code === value)) return;
+    let cancelled = false;
+    fetch(`/api/airports?q=${encodeURIComponent(value)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { results?: Airport[] } | null) => {
+        if (cancelled || !data?.results) return;
+        const match = data.results.find((a) => a.code === value);
+        if (match) setKnownAirports((prev) => [...prev, match]);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [value, knownAirports]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 200);
     return () => clearTimeout(t);
   }, [query]);
 
-  // Client-side search (410 airports — instant)
+  // Client-side prefix match over PRIORITY_AIRPORTS only — keeps the bundle
+  // tiny. The full 7914-airport list lives on the server and is reached
+  // through `/api/airports` (see `searchAPI` below).
   const localResults = useMemo(() => {
     const lq = debouncedQuery.toLowerCase().trim();
     if (!lq) {
       return PRIORITY_AIRPORTS.filter((a) => a.code !== exclude).slice(0, 12);
     }
-    return AIRPORTS.filter(
+    return PRIORITY_AIRPORTS.filter(
       (a) =>
         a.code !== exclude &&
         (a.code.toLowerCase().startsWith(lq) ||
@@ -57,7 +79,7 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
           a.cityEn.toLowerCase().includes(lq) ||
           a.country.toLowerCase().includes(lq) ||
           a.countryEn.toLowerCase().includes(lq))
-    ).slice(0, 10);
+    ).slice(0, 6);
   }, [debouncedQuery, exclude]);
 
   // Server-side search for airports not in client bundle (7914 total)
@@ -86,15 +108,17 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
     }
   }, []);
 
-  // Trigger API search when local results are sparse
+  // Trigger API search as soon as the user types — PRIORITY_AIRPORTS only
+  // covers 20 hubs, so the API (which has the full 7914-airport list) does
+  // the heavy lifting for everything else.
   useEffect(() => {
     const lq = debouncedQuery.trim();
-    if (lq.length >= 2 && localResults.length < 3) {
+    if (lq.length >= 2) {
       searchAPI(lq);
     } else {
       setApiResults([]);
     }
-  }, [debouncedQuery, localResults.length, searchAPI]);
+  }, [debouncedQuery, searchAPI]);
 
   // Merge local + API results (deduplicate by code)
   const filtered = useMemo(() => {
@@ -136,6 +160,11 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
   const closeDropdown = () => { setOpen(false); setQuery(""); setActiveIndex(-1); };
 
   const selectAirport = (airport: Airport) => {
+    // Remember the picked airport so the trigger button can render it
+    // immediately without a round-trip to /api/airports.
+    setKnownAirports((prev) =>
+      prev.some((a) => a.code === airport.code) ? prev : [...prev, airport]
+    );
     onChange(airport.code);
     closeDropdown();
   };
