@@ -4,6 +4,7 @@ import {
   getAlertsByRoute,
   updateAlertAfterCheck,
   sendPriceDropEmail,
+  deactivateAlert,
 } from "@/lib/alerts";
 import { sendPushToEmail } from "@/lib/push";
 import { createManageAlertsToken } from "@/lib/alertTokens";
@@ -96,6 +97,15 @@ export async function GET(req: NextRequest) {
           await updateAlertAfterCheck(alert.id, adjustedPrice, sent);
           if (sent) {
             notified++;
+            // Auto-deactivate when the notification cap is reached so the
+            // alert stops showing as active on /alertes. notifCount was just
+            // incremented inside updateAlertAfterCheck, so check against the
+            // post-increment value (alert.notifCount is the pre-increment).
+            if (alert.notifCount + 1 >= 5) {
+              deactivateAlert(alert.id).catch((err: unknown) =>
+                logError("[cron/alerts] deactivate on cap failed:", err)
+              );
+            }
             // Track alert triggered (server-side analytics)
             trackServerEvent("Alert Triggered", {
               from: alert.from,
