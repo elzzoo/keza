@@ -76,11 +76,11 @@ export async function GET(req: NextRequest) {
             continue;
           }
 
-          // Rate limit: max 1 email per alert per 24h
+          // Rate limit: max 1 email per alert per 1h (cron runs hourly)
           if (alert.lastCheckedAt) {
             const lastCheck = new Date(alert.lastCheckedAt).getTime();
             const hoursSince = (Date.now() - lastCheck) / (1000 * 60 * 60);
-            if (hoursSince < 24) {
+            if (hoursSince < 1) {
               await updateAlertAfterCheck(alert.id, adjustedPrice, false);
               continue;
             }
