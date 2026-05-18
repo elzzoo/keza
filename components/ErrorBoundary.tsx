@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode, type ErrorInfo } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 interface Props {
   children: ReactNode;
@@ -24,9 +25,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Silent catch — don't crash the app
+    if (process.env.NODE_ENV !== "development") {
+      Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
+    }
+    // keep existing console.error for dev
     if (process.env.NODE_ENV === "development") {
-      console.error("[ErrorBoundary]", error, info.componentStack);
+      console.error("[ErrorBoundary]", error, info);
     }
   }
 
