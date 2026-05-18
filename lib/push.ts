@@ -19,11 +19,21 @@ const PUSH_SUBS_KEY = "keza:push:subscriptions";
 
 // ─── VAPID setup ────────────────────────────────────────────────────────────
 
+let vapidMissingWarned = false;
+
 function setupVapid(): boolean {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
   const email = process.env.VAPID_EMAIL ?? "mailto:contact@keza.app";
-  if (!publicKey || !privateKey) return false;
+  if (!publicKey || !privateKey) {
+    if (!vapidMissingWarned) {
+      console.error(
+        "[push] VAPID keys not configured — push notifications disabled. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY."
+      );
+      vapidMissingWarned = true;
+    }
+    return false;
+  }
   webpush.setVapidDetails(email, publicKey, privateKey);
   return true;
 }
