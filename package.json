@@ -11,7 +11,8 @@
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
     "prepare": "node scripts/install-hook.mjs",
-    "analyze": "ANALYZE=true npm run build"
+    "analyze": "ANALYZE=true npm run build",
+    "bundle:check": "next build && node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.50.0",

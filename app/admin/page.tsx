@@ -488,9 +488,23 @@ export default async function AdminPage() {
                 <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
                   Leads B2B Entreprises
                 </h2>
-                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                  {leads.length} lead{leads.length !== 1 ? "s" : ""}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                    {leads.length} lead{leads.length !== 1 ? "s" : ""}
+                  </span>
+                  {leads.length > 0 && (
+                    <a
+                      href="/api/admin/export/leads"
+                      download
+                      className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Exporter CSV
+                    </a>
+                  )}
+                </div>
               </div>
               {leads.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
