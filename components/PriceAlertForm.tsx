@@ -247,7 +247,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
               }`}
             >
               {f === "instant"
-                ? lang === "fr" ? "Immédiat" : "Instant"
+                ? lang === "fr" ? "Quotidien" : "Daily"
                 : f === "daily"
                 ? lang === "fr" ? "Quotidien" : "Daily"
                 : lang === "fr" ? "Hebdo" : "Weekly"}
@@ -256,7 +256,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         </div>
         <p className="text-[11px] text-muted mt-1">
           {frequency === "instant"
-            ? lang === "fr" ? "Dès qu'une baisse est détectée" : "As soon as a drop is detected"
+            ? lang === "fr" ? "Un récap quotidien si prix bas" : "Daily recap when prices drop"
             : frequency === "daily"
             ? lang === "fr" ? "Un récap quotidien si prix bas" : "Daily recap when prices are low"
             : lang === "fr" ? "Un récap chaque lundi" : "A recap every Monday"}
