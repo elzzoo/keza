@@ -57,6 +57,7 @@ export default function GlobalError({ error, reset }: Props) {
             >
               ↻ Réessayer
             </button>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/"
               style={{ padding: "0.625rem 1.5rem", borderRadius: 12, background: "#0f172a", color: "#e2e8f0", border: "1px solid #1e293b", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none" }}
