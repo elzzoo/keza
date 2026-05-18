@@ -1,5 +1,5 @@
 import "server-only";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { redis } from "@/lib/redis";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
@@ -15,7 +15,7 @@ interface B2BLead {
 
 // GET /api/admin/export/leads — download B2B leads as CSV
 // Protected by admin session cookie (same auth as /admin page)
-export async function GET(_req: NextRequest) {
+export async function GET() {
   // Auth: verify admin session cookie
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
