@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { DealsPageClient } from "./DealsPageClient";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import { sortDeals } from "@/lib/dealsEngine";
@@ -85,7 +86,9 @@ export default async function DealsPage() {
           </p>
         </div>
 
-        <DealsPageClient initialDeals={deals} />
+        <ErrorBoundary lang="fr">
+          <DealsPageClient initialDeals={deals} />
+        </ErrorBoundary>
       </main>
 
       <Footer lang="fr" />

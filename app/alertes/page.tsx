@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AlertesClient } from "./AlertesClient";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Mes alertes prix | KEZA",
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function AlertesPage() {
-  return <AlertesClient />;
+  return (
+    <ErrorBoundary lang="fr">
+      <AlertesClient />
+    </ErrorBoundary>
+  );
 }

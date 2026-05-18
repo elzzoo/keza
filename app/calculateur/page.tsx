@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MILES_PRICES } from "@/data/milesPrices";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { CalculateurClient } from "./CalculateurClient";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Calculateur de valeur miles — KEZA",
@@ -23,7 +24,9 @@ export default async function CalculateurPage() {
           </p>
         </div>
 
-        <CalculateurClient programs={MILES_PRICES} forexRate={forexRate} />
+        <ErrorBoundary lang="fr">
+          <CalculateurClient programs={MILES_PRICES} forexRate={forexRate} />
+        </ErrorBoundary>
 
         <div className="mt-10 bg-surface border border-border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border">

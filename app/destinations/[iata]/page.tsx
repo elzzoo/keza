@@ -4,6 +4,7 @@ import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices, type DestinationPriceHistory } from "@/lib/priceHistory";
 import { DestinationPageClient } from "./DestinationPageClient";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface Props {
   params: Promise<{ iata: string }>;
@@ -104,12 +105,14 @@ export default async function DestinationPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <DestinationPageClient
-        dest={dest}
-        cpm={cpm}
-        recommendation={recommendation}
-        history={history}
-      />
+      <ErrorBoundary lang="fr">
+        <DestinationPageClient
+          dest={dest}
+          cpm={cpm}
+          recommendation={recommendation}
+          history={history}
+        />
+      </ErrorBoundary>
     </>
   );
 }

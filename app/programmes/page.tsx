@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ProgramsTable } from "./ProgramsTable";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
@@ -43,7 +44,9 @@ export default function ProgrammesPage() {
         </div>
 
         {/* Table */}
-        <ProgramsTable lang="fr" />
+        <ErrorBoundary lang="fr">
+          <ProgramsTable lang="fr" />
+        </ErrorBoundary>
 
         {/* Editorial note */}
         <div className="mt-10 bg-surface border border-border rounded-2xl p-5">

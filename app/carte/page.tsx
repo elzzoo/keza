@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { WorldMap, type DestinationWithRec } from "./WorldMap";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
@@ -58,7 +59,9 @@ export default function CartePage() {
         </div>
 
         {/* Map */}
-        <WorldMap destinations={DESTINATIONS_WITH_REC} lang="fr" />
+        <ErrorBoundary lang="fr">
+          <WorldMap destinations={DESTINATIONS_WITH_REC} lang="fr" />
+        </ErrorBoundary>
 
         {/* Stats bar */}
         <div className="grid grid-cols-3 gap-3 mt-6">
