@@ -101,7 +101,8 @@ describe("POST /api/search", () => {
       const res = await POST(makeRequest({ ...VALID_BODY, from: "cdg", to: "dss" }));
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ from: "CDG", to: "DSS" })
+        expect.objectContaining({ from: "CDG", to: "DSS" }),
+        expect.any(String)
       );
     });
 
@@ -110,7 +111,8 @@ describe("POST /api/search", () => {
       const res = await POST(makeRequest({ ...VALID_BODY, passengers: 99 }));
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ passengers: 9 })
+        expect.objectContaining({ passengers: 9 }),
+        expect.any(String)
       );
     });
 
@@ -119,7 +121,8 @@ describe("POST /api/search", () => {
       const res = await POST(makeRequest({ ...VALID_BODY, cabin: "helicopter" }));
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
-        expect.objectContaining({ cabin: "economy" })
+        expect.objectContaining({ cabin: "economy" }),
+        expect.any(String)
       );
     });
   });

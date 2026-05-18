@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { searchEngine, CACHE_VERSION, type SearchParams, type FlightResult } from "@/lib/engine";
 
 export const maxDuration = 25;
@@ -42,6 +43,8 @@ function sanitizeCode(raw: unknown): string | null {
 }
 
 export async function POST(request: Request) {
+  const requestId = randomUUID();
+
   const limited = await rateLimitResponse(request, {
     namespace: "api:search:post",
     limit: 30,
@@ -86,7 +89,7 @@ export async function POST(request: Request) {
     );
 
     const engineResult = await Promise.race([
-      searchEngine(searchParams).then(r => r),
+      searchEngine(searchParams, requestId).then(r => r),
       timeoutSignal,
     ]) as FlightResult[] | null;
 
@@ -122,7 +125,9 @@ export async function POST(request: Request) {
     // Fetch forex rate (non-blocking, fallback to 600 if fails)
     const forexRate = await getForexRate().catch(() => 600);
 
-    return NextResponse.json({ results, count: results.length, forexRate, partial });
+    const response = NextResponse.json({ results, count: results.length, forexRate, partial });
+    response.headers.set("x-request-id", requestId);
+    return response;
   } catch (err) {
     logError("[api/search]", err);
     return NextResponse.json(

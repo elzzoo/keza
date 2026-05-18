@@ -9,13 +9,15 @@ import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
 import { ROUTE_AIRLINE_SUPPLEMENTS, enrichSynthetic } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
+import { logError } from "../logger";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
 // always agree on the key schema. Bump whenever FlightResult shape changes.
 export const CACHE_VERSION = "v21";
 
-export async function searchEngine(params: SearchParams): Promise<FlightResult[]> {
+export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
+  try {
   const {
     from, to, date,
     returnDate,
@@ -222,9 +224,15 @@ export async function searchEngine(params: SearchParams): Promise<FlightResult[]
   ).catch(() => null);
 
   // 6. Cache (real + synthetic results together)
-  await redis.set(cacheKey, allResults, { ex: 3600 }).catch(() => null);
+  await redis.set(cacheKey, allResults, { ex: 3600 }).catch((err) => {
+    logError("[engine] cache write failed", err, { requestId });
+  });
 
   return allResults;
+  } catch (err) {
+    logError("[engine] unhandled error", err, { requestId });
+    throw err;
+  }
 }
 
 // Re-export everything consumers may need from sub-modules
