@@ -58,8 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="preconnect" href="https://api.keza.app" />
-        <link rel="dns-prefetch" href="https://helpful-chicken-97678.upstash.io" />
-        <script
+<script
           nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("keza_theme");if(!t)t="dark";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark")}else{document.documentElement.setAttribute("data-theme","light")}}catch(e){}})();`,
