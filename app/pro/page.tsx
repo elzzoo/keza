@@ -13,10 +13,11 @@ export const metadata: Metadata = {
   robots: "index, follow",
 };
 
-export default function ProPage({
+export default async function ProPage({
   searchParams,
 }: {
-  searchParams?: { upgraded?: string };
+  searchParams?: Promise<{ upgraded?: string }>;
 }) {
-  return <ProClient upgraded={searchParams?.upgraded === "1"} />;
+  const sp = await searchParams;
+  return <ProClient upgraded={sp?.upgraded === "1"} />;
 }
