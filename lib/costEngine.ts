@@ -17,7 +17,7 @@ import { buildScenarios, type Scenario } from "./scenarioEngine";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
-export type Recommendation = "USE_MILES" | "USE_CASH";
+export type Recommendation = "USE_MILES" | "USE_CASH" | "IF_HAVE_MILES";
 
 export interface FlightInput {
   from: string;

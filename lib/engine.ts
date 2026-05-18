@@ -58,7 +58,11 @@ export interface FlightResult {
   cashCost: number;                       // total cash price
   milesCost: number;                      // total cost of best miles option
   savings: number;                        // |cashCost - milesCost|
-  recommendation: "USE_MILES" | "USE_CASH";
+  recommendation: "USE_MILES" | "USE_CASH" | "IF_HAVE_MILES";
+  /** True when cashCost was estimated via CABIN_MULTIPLIER (no real cabin price
+   *  from Duffel). In that case the miles-vs-cash comparison is unreliable, so
+   *  recommendation is forced to "IF_HAVE_MILES" and the UI must show a disclaimer. */
+  priceIsEstimate?: boolean;
   bestOption: MilesOption | null;         // cheapest miles scenario
   milesOptions: MilesOption[];            // all options for detail view
   explanation: string;                    // human-readable reason
@@ -719,6 +723,13 @@ function enrich(
 
   const optimization = optimizeMiles(f.airlines, userPrograms);
 
+  // When cash price is estimated (no real Duffel cabin price), the miles-vs-cash
+  // comparison is unreliable — downgrade USE_MILES/USE_CASH to the neutral
+  // IF_HAVE_MILES so the UI doesn't show a confident "save XXX€" claim built
+  // on a multiplied economy fare.
+  const priceIsEstimate = !f.cabinResolved && cabin !== "economy";
+  const safeRecommendation = priceIsEstimate ? "IF_HAVE_MILES" : comparison.recommendation;
+
   const result: FlightResult = {
     from: f.from,
     to: f.to,
@@ -733,7 +744,7 @@ function enrich(
     cashCost:            comparison.cashCost,
     milesCost:           comparison.milesCost,
     savings:             comparison.savings,
-    recommendation:      comparison.recommendation,
+    recommendation:      safeRecommendation,
     bestOption:          comparison.bestOption,
     milesOptions:        comparison.milesOptions,
     explanation:         comparison.explanation,
@@ -741,10 +752,12 @@ function enrich(
     disclaimer:          comparison.disclaimer,
     // cabinPriceEstimated: true only when we applied a multiplier estimate.
     // Duffel flights (cabinResolved) already carry the real cabin price.
-    cabinPriceEstimated: !f.cabinResolved && cabin !== "economy",
+    cabinPriceEstimated: priceIsEstimate,
     searchId:            "",   // filled by caller; placeholder here
     optimization,
   };
+
+  if (priceIsEstimate) result.priceIsEstimate = true;
 
   if (f.isSupplemental)    result.isSupplemental    = true;
   if (f.source)            result.source            = f.source;
