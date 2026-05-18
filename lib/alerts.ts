@@ -287,6 +287,21 @@ export async function sendDigestEmail(
       from: FROM_EMAIL,
       to: email,
       subject,
+      text: [
+        `✈ KEZA — Récap de tes alertes`,
+        ``,
+        ...items.map(({ alert: a, currentPrice: cp }) =>
+          `${a.from} → ${a.to} (${CABIN_LABELS[a.cabin]}) — cible $${a.targetPrice}${
+            cp ? ` | prix actuel : $${cp}` : ""
+          }`
+        ),
+        ``,
+        `Voir les offres :`,
+        ctaUrl,
+        ``,
+        `Gérer mes alertes :`,
+        manageUrl,
+      ].join("\n"),
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
@@ -342,6 +357,19 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ ${alert.from}→${alert.to} : -${drop}% ($${newPrice})`,
+      text: [
+        `✈ KEZA — Prix atteint !`,
+        ``,
+        `${alert.from} → ${alert.to} (${alert.cabin})`,
+        `Prix actuel : $${newPrice}  (votre cible : $${alert.targetPrice})`,
+        `Économie : -$${savings} (-${drop}%)`,
+        ``,
+        `Comparer cash vs miles :`,
+        searchUrl,
+        ``,
+        `Se désabonner de cette alerte :`,
+        unsubUrl,
+      ].join("\n"),
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
@@ -400,6 +428,19 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ Alerte active : ${alert.from} → ${alert.to} | KEZA`,
+      text: [
+        `✈ KEZA — Alerte créée !`,
+        ``,
+        `Route : ${alert.from} → ${alert.to} (${CABIN_LABELS[alert.cabin]})`,
+        `Prix de référence : $${alert.basePrice}`,
+        `On t'écrit dès que le prix descend sous $${alert.targetPrice} (−10 %)`,
+        ``,
+        `Gérer mes alertes :`,
+        manageUrl,
+        ``,
+        `Se désabonner :`,
+        unsubUrl,
+      ].join("\n"),
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
@@ -485,6 +526,20 @@ export async function sendOnboardingJ3Email(
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ Mise à jour KEZA — ta route ${alert.from} → ${alert.to}`,
+      text: [
+        `✈ KEZA — 3 jours de surveillance`,
+        ``,
+        `Route : ${fromCity} → ${toCity} (${alert.from} → ${alert.to}, ${CABIN_LABELS[alert.cabin]})`,
+        currentPrice !== null
+          ? `Prix actuel : $${currentPrice} | Cible : $${alert.targetPrice}`
+          : `Aucun prix disponible pour le moment — surveillance en cours.`,
+        ``,
+        `Voir les offres :`,
+        ctaUrl,
+        ``,
+        `Gérer mes alertes :`,
+        manageUrl,
+      ].join("\n"),
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
@@ -555,6 +610,21 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
       from: FROM_EMAIL,
       to: alert.email,
       subject: `🎯 KEZA — invite un ami et débloquez des avantages`,
+      text: [
+        `KEZA — Ta route est surveillée depuis 7 jours`,
+        ``,
+        `Partage KEZA avec un ami qui voyage et accède en avant-première à KEZA Pro`,
+        `(alertes illimitées, digest personnalisé).`,
+        ``,
+        `Partager KEZA :`,
+        shareUrl,
+        ``,
+        `Découvrir KEZA Pro :`,
+        proUrl,
+        ``,
+        `Gérer mes alertes :`,
+        manageUrl,
+      ].join("\n"),
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
@@ -622,6 +692,14 @@ export async function sendManageAlertsEmail(email: string, alerts: PriceAlert[])
       from: FROM_EMAIL,
       to: normalizedEmail,
       subject: `Gérer tes alertes prix | KEZA`,
+      text: [
+        `KEZA — Accéder à tes alertes`,
+        ``,
+        `Tu as ${alerts.length} alerte${alerts.length > 1 ? "s" : ""} active${alerts.length > 1 ? "s" : ""}.`,
+        ``,
+        `Gérer mes alertes (lien valable 7 jours) :`,
+        manageUrl,
+      ].join("\n"),
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">

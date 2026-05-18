@@ -69,6 +69,9 @@ export function middleware(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
+  // Locale detection for root layout lang attribute
+  const isEn = path === "/en" || path.startsWith("/en/");
+  requestHeaders.set("x-locale", isEn ? "en" : "fr");
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);

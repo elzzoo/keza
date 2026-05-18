@@ -54,10 +54,11 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const nonce = headersList.get("x-nonce") ?? "";
+  const locale = headersList.get("x-locale") ?? "fr";
   const cookieStore = await cookies();
   const theme = cookieStore.get("keza_theme")?.value ?? "dark";
   return (
-    <html lang="fr" className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="preconnect" href="https://api.keza.app" />

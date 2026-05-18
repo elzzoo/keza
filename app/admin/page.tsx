@@ -83,12 +83,17 @@ async function fetchStats() {
   }
   const totalEmailOpens = emailOpensByDay.reduce((s, d) => s + d.confirmation + d.priceDrop + d.digest, 0);
 
-  // Estimated revenue: affiliate bookings × avg commission
-  // We can't track actual bookings without server-side affiliate API
-  // Estimate: total Book Click events × 3% conversion × $18 avg commission
-  // Store in Redis when we have better data — for now use a placeholder
-  const estimatedBookings = Math.round(activeAlerts * 0.1); // 10% of alerts convert to booking
-  const estimatedRevenue = estimatedBookings * 18; // $18 avg affiliate commission
+  // Real click stats from Redis (incremented by /api/track/click)
+  const todayStr = today.toISOString().slice(0, 10);
+  const [clicksToday, clicksTotal] = await Promise.all([
+    redis.get<number>(`keza:stats:clicks:${todayStr}`).catch(() => null),
+    redis.get<number>(`keza:stats:clicks:total`).catch(() => null),
+  ]);
+
+  // Estimated revenue: real clicks × 3% booking conversion × $18 avg affiliate commission
+  const totalClicks = Number(clicksTotal ?? 0);
+  const estimatedBookings = Math.round(totalClicks * 0.03);
+  const estimatedRevenue = estimatedBookings * 18;
 
   // Engine stats — last 7 days
   const engineStats: Array<{
@@ -138,6 +143,8 @@ async function fetchStats() {
     totalDigestOpens: emailOpensByDay.reduce((s, d) => s + d.digest, 0),
     estimatedRevenue,
     estimatedBookings,
+    clicksToday: Number(clicksToday ?? 0),
+    clicksTotal: Number(clicksTotal ?? 0),
     engineStats,
   };
 }
@@ -326,16 +333,28 @@ export default async function AdminPage() {
               </div>
             </div>
 
-            {/* Revenue estimate */}
+            {/* Affiliate clicks + revenue */}
             <div className="mt-8">
               <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
-                Revenu Estimé (Affiliation)
+                Clicks Affiliés &amp; Revenu
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <StatCard
+                  label="Clicks aujourd'hui"
+                  value={stats.clicksToday}
+                  sub="bouton Réserver"
+                  color="blue"
+                />
+                <StatCard
+                  label="Clicks total"
+                  value={stats.clicksTotal}
+                  sub="depuis le lancement"
+                  color="purple"
+                />
                 <StatCard
                   label="Réservations estimées"
                   value={stats.estimatedBookings}
-                  sub="10% des alertes actives"
+                  sub="3% conversion × clicks"
                   color="amber"
                 />
                 <StatCard

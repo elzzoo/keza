@@ -25,18 +25,22 @@ export async function POST(request: Request) {
 
   const { searchId, route, program } = body as { searchId: string; route: string; program?: string };
 
-  // Fire-and-forget: increment click counter, expire after 30 days
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Fire-and-forget: per-search click counter, expires after 30 days
   const key = `keza:clicks:${searchId}:${route}`;
   redis.incr(key).then(() => redis.expire(key, 60 * 60 * 24 * 30)).catch(() => {});
 
-  // Also increment aggregate counter per route (all time)
-  const aggKey = `keza:clicks:route:${route}`;
-  redis.incr(aggKey).catch(() => {});
+  // Aggregate counter per route (all time)
+  redis.incr(`keza:clicks:route:${route}`).catch(() => {});
 
   if (program) {
-    const progKey = `keza:clicks:program:${program}`;
-    redis.incr(progKey).catch(() => {});
+    redis.incr(`keza:clicks:program:${program}`).catch(() => {});
   }
+
+  // Daily + total stats (for admin dashboard)
+  redis.incr(`keza:stats:clicks:${today}`).catch(() => {});
+  redis.incr(`keza:stats:clicks:total`).catch(() => {});
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
