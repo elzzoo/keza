@@ -43,6 +43,84 @@ interface Props {
   defaultLang?: "fr" | "en";
 }
 
+// ─── Route Health Badge ───────────────────────────────────────────────────────
+// Visual coverage indicator: shows how many loyalty programs are active on this
+// route. Pre-search: derived from routeMeta.bestPrograms + priceCount (static).
+// Post-search: dynamically computed from actual milesOptions in results.
+
+type HealthStatus = "green" | "orange" | "red";
+
+function RouteHealthBadge({
+  bestPrograms,
+  results,
+  hasSearched,
+  priceCount,
+  fr,
+}: {
+  bestPrograms: string[];
+  results: FlightResult[];
+  hasSearched: boolean;
+  priceCount: number;
+  fr: boolean;
+}) {
+  let status: HealthStatus;
+  let label: string;
+
+  if (hasSearched) {
+    // Count distinct programs that actually returned miles options
+    const programsFound = new Set(
+      results.flatMap((r) => r.milesOptions?.map((m) => m.program) ?? [])
+    ).size;
+    const expected = Math.max(bestPrograms.length, 1);
+
+    if (programsFound >= expected) {
+      status = "green";
+      label = fr
+        ? `${programsFound} programme${programsFound > 1 ? "s" : ""} actif${programsFound > 1 ? "s" : ""}`
+        : `${programsFound} program${programsFound > 1 ? "s" : ""} active`;
+    } else if (programsFound > 0) {
+      status = "orange";
+      label = fr
+        ? `${programsFound}/${expected} programmes`
+        : `${programsFound}/${expected} programs`;
+    } else {
+      status = "red";
+      label = fr ? "Aucun programme actif" : "No programs active";
+    }
+  } else {
+    // Static: based on data quality indicators
+    const hasPrograms = bestPrograms.length >= 2;
+    const hasPrices = priceCount >= 10;
+
+    if (hasPrograms && hasPrices) {
+      status = "green";
+      label = fr ? "Couverture complète" : "Full coverage";
+    } else if (bestPrograms.length >= 1 || priceCount > 0) {
+      status = "orange";
+      label = fr ? "Couverture partielle" : "Partial coverage";
+    } else {
+      status = "red";
+      label = fr ? "Données limitées" : "Limited data";
+    }
+  }
+
+  const colorMap: Record<HealthStatus, string> = {
+    green: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+    orange: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    red:   "bg-red-500/15 text-red-400 border-red-500/20",
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${colorMap[status]}`}
+      title={fr ? "Couverture des programmes de fidélité" : "Loyalty program coverage"}
+    >
+      <span className="text-[8px] leading-none">●</span>
+      {label}
+    </span>
+  );
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatDuration(minutes: number): string {
@@ -115,6 +193,17 @@ export function RoutePageClient({
                   : "KEZA calculates whether your miles are worth more than cash — in real time."
                 }
               </p>
+              {routeMeta && (
+                <div className="mt-2">
+                  <RouteHealthBadge
+                    bestPrograms={routeMeta.bestPrograms}
+                    results={results}
+                    hasSearched={hasSearched}
+                    priceCount={priceCount}
+                    fr={fr}
+                  />
+                </div>
+              )}
             </div>
             {toFlag && <span className="text-3xl ml-auto">{toFlag}</span>}
           </div>
