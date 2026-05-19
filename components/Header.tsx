@@ -23,6 +23,7 @@ const NAV = {
     { label: "Alertes", href: "/alertes" },
     { label: "Comparer", href: "/comparer" },
     { label: "Programmes", href: "/programmes" },
+    { label: "Portefeuille", href: "/portefeuille" },
     { label: "Pour les entreprises", href: "/entreprises" },
   ],
   en: [
@@ -33,6 +34,7 @@ const NAV = {
     { label: "Alerts", href: "/alertes" },
     { label: "Compare", href: "/comparer" },
     { label: "Programs", href: "/programmes" },
+    { label: "Portfolio", href: "/portefeuille" },
     { label: "For Business", href: "/entreprises" },
   ],
 };
