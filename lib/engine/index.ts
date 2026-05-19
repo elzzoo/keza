@@ -7,7 +7,7 @@ import { recordObservation } from "../autoCalibrate";
 import { fetchFromDuffel } from "../duffelProvider";
 import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
-import { ROUTE_AIRLINE_SUPPLEMENTS, enrichSynthetic } from "./supplements";
+import { ROUTE_AIRLINE_SUPPLEMENTS } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
 import { logError } from "../logger";
 
@@ -194,11 +194,17 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     return diff !== 0 ? diff : (a.totalPrice ?? 0) - (b.totalPrice ?? 0);
   });
 
-  // Enrich synthetic flights (no miles engine) and append AFTER sorted real results.
-  // Synthetics represent airlines we know serve the route but whose real prices
-  // are not available — they surface as "Vol direct disponible" with indicative pricing.
+  // Enrich synthetic flights WITH the miles engine so programs (KrisFlyer, ANA,
+  // JAL, etc.) surface even when the provider has no live prices for the carrier.
+  // Pass a mirrored return leg for roundtrips so the price doubling stays correct.
+  // Synthetics are still appended AFTER sorted real results — isSupplemental flag
+  // lets the UI keep them visually distinct (indicative price badge).
   const syntheticResults: FlightResult[] = syntheticFlights.map((f) => {
-    const r = enrichSynthetic(f, cabin, passengers, tripType, date, returnDate);
+    const syntheticReturn: NormalizedFlight | undefined =
+      tripType === "roundtrip"
+        ? { ...f, from: f.to ?? "", to: f.from ?? "" }
+        : undefined;
+    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, syntheticReturn, date, returnDate);
     r.searchId = searchId;
     return r;
   });
