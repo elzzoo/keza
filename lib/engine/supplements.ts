@@ -5,6 +5,57 @@ import { TP_BASE, AVIASALES_BASE_URL, TP_MARKER } from "./travelpayouts";
 import type { Cabin, TripType, FlightResult } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
 
+// ─── Home Carrier Guarantee ──────────────────────────────────────────────────
+// Last-resort guarantee: after all providers are processed, if NONE of the
+// listed programs appear in ANY result's milesOptions, the engine injects a
+// synthetic entry for the home airline so the miles calculation still runs.
+//
+// Fixes B2/B3/B4: Duffel test data is randomized — SQ/NH/JL/EK may or may not
+// appear in any given request. This map ensures their programs are ALWAYS present
+// on the corridors where they dominate, regardless of provider data quality.
+//
+// Key format: "ORIGIN-DEST" (uppercase). Both directions listed.
+// airline: exact name in iataAirlines.ts. programs: program names to check.
+export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: string[] }[]> = {
+  // Singapore Airlines — KrisFlyer (SIN hub)
+  "SIN-LAX": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "LAX-SIN": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "SIN-JFK": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "JFK-SIN": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "SIN-SFO": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "SFO-SIN": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "SIN-LHR": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "LHR-SIN": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+
+  // ANA + JAL — NRT/HND hub outbound
+  "NRT-LAX": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "LAX-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "HND-LAX": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "LAX-HND": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "NRT-JFK": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "JFK-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "NRT-SFO": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "SFO-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "NRT-ORD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+  "ORD-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["JAL Mileage Bank"] }],
+
+  // Emirates Skywards — DXB hub
+  "DXB-LHR": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "LHR-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-JFK": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "JFK-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-CDG": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "CDG-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-FRA": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "FRA-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-LAX": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "LAX-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-SYD": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "SYD-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-BKK": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "BKK-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+};
+
 // ─── Static airline supplements ──────────────────────────────────────────────
 // Travelpayouts doesn't index many African/regional carriers (Air Senegal,
 // Transair, etc.) because they don't distribute through GDS/OTAs.

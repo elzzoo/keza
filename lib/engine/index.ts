@@ -7,7 +7,7 @@ import { recordObservation } from "../autoCalibrate";
 import { fetchFromDuffel } from "../duffelProvider";
 import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
-import { ROUTE_AIRLINE_SUPPLEMENTS } from "./supplements";
+import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
 import { logError } from "../logger";
 
@@ -209,6 +209,48 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     return r;
   });
   const allResults = [...results, ...syntheticResults];
+
+  // ── Home Carrier Guarantee ────────────────────────────────────────────────────
+  // After all providers are merged, ensure signature programs (KrisFlyer, ANA,
+  // JAL, Emirates Skywards) are present on their home corridors.
+  // Only injects if the program is completely absent from ALL results — avoids
+  // duplicating when the provider already returned the carrier normally.
+  // Uses the cheapest real outbound as the price anchor for the synthetic.
+  {
+    const routeKey = `${from.toUpperCase()}-${to.toUpperCase()}`;
+    const guarantees = HOME_CARRIER_PROGRAMS[routeKey] ?? [];
+    if (guarantees.length > 0 && allResults.length > 0) {
+      const presentPrograms = new Set(
+        allResults.flatMap(r => r.milesOptions?.map(m => m.program) ?? [])
+      );
+      const priceAnchor = outbound.length > 0
+        ? outbound.reduce((best, f) => f.price < best.price ? f : best, outbound[0])
+        : undefined;
+      if (priceAnchor) {
+        for (const { airline, programs } of guarantees) {
+          if (!programs.some(p => presentPrograms.has(p))) {
+            const gf: NormalizedFlight = {
+              from, to,
+              price:           priceAnchor.price,
+              airlines:        [airline],
+              stops:           0,
+              isSupplemental:  true,
+              source:          "SYNTHETIC" as const,
+              priceConfidence: "ESTIMATED" as const,
+              cabinResolved:   priceAnchor.cabinResolved ?? false,
+            };
+            const gr = enrich(
+              gf, cabin, passengers, userPrograms, tripType, effectivePrices,
+              tripType === "roundtrip" ? { ...gf, from: to, to: from } : undefined,
+              date, returnDate,
+            );
+            gr.searchId = searchId;
+            allResults.push(gr);
+          }
+        }
+      }
+    }
+  }
 
   // 5b. Auto-calibrate: record observations for self-learning mile values
   // Only record HIGH-confidence prices (Duffel real-time) — TP cached prices
