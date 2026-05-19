@@ -144,6 +144,13 @@ export function RoutePageClient({
                 <p className="text-xs text-subtle">
                   {priceCount} {fr ? "dates analysées" : "dates analyzed"}
                 </p>
+                {priceCount < 10 && priceCount > 0 && (
+                  <p className="text-xs text-amber-500/80 mt-0.5">
+                    {fr
+                      ? "⚠️ Couverture partielle — plus de dates à venir"
+                      : "⚠️ Partial coverage — more dates coming"}
+                  </p>
+                )}
               </div>
             </div>
           )}

@@ -206,6 +206,10 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                 – {fmt(Math.round(cashCost * 1.3))}
               </div>
             </>
+          ) : cashCost === 0 ? (
+            <div className="text-[10px] text-muted/60 leading-tight mt-1">
+              {fr ? "Disponible via miles uniquement" : "Miles-only option"}
+            </div>
           ) : (
             <div className={clsx(
               "font-black tabular-nums",

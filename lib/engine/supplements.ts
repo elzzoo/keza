@@ -70,6 +70,50 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "CDG-KGL": ["RwandAir", "Air France"],
   "KGL-BRU": ["RwandAir", "Brussels Airlines"],
   "BRU-KGL": ["RwandAir", "Brussels Airlines"],
+
+  // ── Asia–Americas (B2 fix: KrisFlyer absent on SIN→LAX) ──────────────────
+  // Singapore Airlines operates SIN-LAX direct (SQ37/SQ38).
+  // KrisFlyer is the primary program but rarely surfaces via Travelpayouts.
+  "SIN-LAX": ["Singapore Airlines"],
+  "LAX-SIN": ["Singapore Airlines"],
+  "SIN-JFK": ["Singapore Airlines"],
+  "JFK-SIN": ["Singapore Airlines"],
+  "SIN-SFO": ["Singapore Airlines"],
+  "SFO-SIN": ["Singapore Airlines"],
+
+  // ── Japan–Americas (B3 fix: ANA + JAL absent on NRT→LAX) ─────────────────
+  // ANA (NH) and JAL (JL) are the two primary Japanese carriers.
+  // Both operate NRT/HND–LAX/JFK/SFO and codeshare extensively on Star/Oneworld.
+  "NRT-LAX": ["All Nippon Airways", "Japan Airlines"],
+  "LAX-NRT": ["All Nippon Airways", "Japan Airlines"],
+  "NRT-JFK": ["All Nippon Airways", "Japan Airlines"],
+  "JFK-NRT": ["All Nippon Airways", "Japan Airlines"],
+  "NRT-SFO": ["All Nippon Airways", "Japan Airlines"],
+  "SFO-NRT": ["All Nippon Airways", "Japan Airlines"],
+  "NRT-ORD": ["All Nippon Airways", "Japan Airlines"],
+  "ORD-NRT": ["All Nippon Airways", "Japan Airlines"],
+  "HND-LAX": ["All Nippon Airways", "Japan Airlines"],
+  "LAX-HND": ["All Nippon Airways", "Japan Airlines"],
+  "HND-JFK": ["All Nippon Airways", "Japan Airlines"],
+  "JFK-HND": ["All Nippon Airways", "Japan Airlines"],
+
+  // ── Gulf–Europe/Americas (B4 fix: Emirates Skywards absent on DXB routes) ──
+  // Emirates operates DXB→LHR, DXB→JFK, DXB→CDG etc. directly (EK).
+  // Skywards is the dominant redemption program in the Gulf region.
+  "DXB-LHR": ["Emirates"],
+  "LHR-DXB": ["Emirates"],
+  "DXB-JFK": ["Emirates"],
+  "JFK-DXB": ["Emirates"],
+  "DXB-CDG": ["Emirates", "Air France"],
+  "CDG-DXB": ["Emirates", "Air France"],
+  "DXB-FRA": ["Emirates", "Lufthansa"],
+  "FRA-DXB": ["Emirates", "Lufthansa"],
+  "DXB-LAX": ["Emirates"],
+  "LAX-DXB": ["Emirates"],
+  "DXB-SYD": ["Emirates"],
+  "SYD-DXB": ["Emirates"],
+  "DXB-BKK": ["Emirates"],
+  "BKK-DXB": ["Emirates"],
 };
 
 /**

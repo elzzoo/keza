@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import { PriceCalendar } from "./PriceCalendar";
@@ -86,17 +86,18 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
   const canGo = !!from && !!to && from !== to;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
 
-  const submit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy || !canGo) return;
-    setError(null); setBusy(true); onLoading(true);
-    setShowCalendar(null); // close calendar on search
-    onSearchStart?.({ from, to, date: depDate, cabin, tripType });
-    trackSearch({ from, to, cabin, tripType, pax: passengers });
+  // ── Track whether the user has performed at least one search ────────────────
+  const hasSearchedRef = useRef(false);
 
-    // Client-side guard: if the server doesn't respond within 10s,
-    // stop the spinner. Do NOT wipe existing results — keep them visible
-    // and show a non-blocking warning instead.
+  // ── Core fetch logic — takes explicit cabin so it works from both submit
+  //    handler and the cabin-change auto-refire effect ─────────────────────────
+  const fetchResults = useCallback(async (searchCabin: Cabin) => {
+    setError(null); setBusy(true); onLoading(true);
+    setShowCalendar(null);
+    onSearchStart?.({ from, to, date: depDate, cabin: searchCabin, tripType });
+    trackSearch({ from, to, cabin: searchCabin, tripType, pax: passengers });
+
+    // Client-side guard: abort if server doesn't respond within 10s
     const CLIENT_TIMEOUT_MS = 10_000;
     const controller = new AbortController();
     const clientTimer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
@@ -108,7 +109,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         body: JSON.stringify({
           from, to, date: depDate,
           returnDate: tripType === "roundtrip" ? retDate : undefined,
-          tripType, cabin, passengers,
+          tripType, cabin: searchCabin, passengers,
           userPrograms: programs ? programs.split(",").map(p => p.trim()).filter(Boolean) : [],
         }),
         signal: controller.signal,
@@ -121,20 +122,40 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
       clearTimeout(clientTimer);
       const isAbort = (err as Error).name === "AbortError";
       if (isAbort) {
-        // Timeout: stop spinner, keep previous results, show non-blocking warning
         const msg = lang === "fr"
           ? "⚠️ Résultats partiels affichés — certaines sources indisponibles"
           : "⚠️ Partial results — some sources unavailable";
         toast.warning(msg, { duration: 6000 });
-        // Do NOT call onResults([]) — keep whatever was displayed before
       } else {
         const msg = err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error");
         setError(msg);
         toast.error(msg);
-        // Do NOT wipe results on error either — keep previous display intact
       }
     } finally { setBusy(false); onLoading(false); }
-  }, [from, to, depDate, retDate, tripType, cabin, passengers, programs, busy, canGo, onResults, onLoading, onSearchStart, lang]);
+  }, [from, to, depDate, retDate, tripType, passengers, programs, onResults, onLoading, onSearchStart, lang]);
+
+  // Keep a stable ref so the cabin-change effect always calls the latest version
+  const fetchResultsRef = useRef(fetchResults);
+  useEffect(() => { fetchResultsRef.current = fetchResults; }, [fetchResults]);
+
+  const submit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (busy || !canGo) return;
+    hasSearchedRef.current = true;
+    await fetchResults(cabin);
+  }, [fetchResults, busy, canGo, cabin]);
+
+  // ── Auto-refire when cabin changes — only if the user already ran a search ──
+  // Using a ref for the previous cabin to skip the initial mount.
+  const prevCabinRef = useRef<Cabin | null>(null);
+  useEffect(() => {
+    // Skip first render (prevCabinRef is null on mount)
+    if (prevCabinRef.current === null) { prevCabinRef.current = cabin; return; }
+    if (prevCabinRef.current === cabin) return;
+    prevCabinRef.current = cabin;
+    if (!hasSearchedRef.current || !canGo) return;
+    fetchResultsRef.current(cabin);
+  }, [cabin, canGo]);
 
   const fr = lang === "fr";
 
