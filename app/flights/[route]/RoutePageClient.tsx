@@ -8,6 +8,7 @@ import { SearchForm } from "@/components/SearchForm";
 import { Results } from "@/components/Results";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
+import { PriceHeatmap } from "@/components/PriceHeatmap";
 import type { FlightResult } from "@/lib/engine";
 import { airportsMap } from "@/data/airports";
 
@@ -271,6 +272,14 @@ export function RoutePageClient({
         {/* SEO editorial content — shown before any search */}
         {!hasSearched && (
           <div className="space-y-8 mt-4">
+
+            {/* ── Price Heatmap ── */}
+            <PriceHeatmap
+              from={from}
+              to={to}
+              lang={lang}
+              cabin="economy"
+            />
 
             {/* ── Route Analysis ── */}
             {routeMeta && (
