@@ -12,6 +12,9 @@ import { notifyCronSummary } from "@/lib/discord";
 import { logError } from "@/lib/logger";
 import { trackServerEvent } from "@/lib/analytics";
 import * as Sentry from "@sentry/nextjs";
+import { redis } from "@/lib/redis";
+import { DEALS_KEY } from "@/lib/redisKeys";
+import type { LiveDeal } from "@/lib/dealsEngine";
 
 // GET /api/cron/digest — send daily/weekly digest emails
 // Called by Vercel Cron daily (separate schedule from /api/cron/alerts)
@@ -27,6 +30,26 @@ export async function GET(req: NextRequest) {
   const isMonday = dayOfWeek === 1;
 
   try {
+    // Fetch top deals from Redis cache (only used in weekly Monday digest)
+    let topDeals: LiveDeal[] = [];
+    if (isMonday) {
+      try {
+        const cached = await redis.get<LiveDeal[]>(DEALS_KEY);
+        if (cached && Array.isArray(cached)) {
+          // Top 5 USE_MILES deals by ratio (CPP), then top USE_CASH as filler
+          const milesDeals = cached
+            .filter((d) => d.recommendation === "USE_MILES")
+            .sort((a, b) => b.ratio - a.ratio)
+            .slice(0, 5);
+          topDeals = milesDeals.length >= 3
+            ? milesDeals
+            : cached.sort((a, b) => b.ratio - a.ratio).slice(0, 5);
+        }
+      } catch {
+        // Non-fatal — digest still goes out without deal section
+      }
+    }
+
     const routes = await getAllActiveRoutes();
 
     // 1. Fetch prices for all routes
@@ -92,7 +115,7 @@ export async function GET(req: NextRequest) {
 
     for (const [email, items] of Array.from(byEmail)) {
       try {
-        const ok = await sendDigestEmail(email, items);
+        const ok = await sendDigestEmail(email, items, isMonday ? topDeals : []);
         if (ok) {
           sent++;
           // 6. Update lastCheckedAt for each alert

@@ -8,6 +8,7 @@ import {
 } from "@/lib/alertTokens";
 import { SITE_URL } from "@/lib/siteConfig";
 import { airportsMap } from "@/data/airports";
+import type { LiveDeal } from "@/lib/dealsEngine";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -252,9 +253,11 @@ function getResend() {
 
 export async function sendDigestEmail(
   email: string,
-  items: Array<{ alert: PriceAlert; currentPrice: number }>
+  items: Array<{ alert: PriceAlert; currentPrice: number }>,
+  /** Top deals of the week from the deals engine — shown at top of weekly digest */
+  topDeals: LiveDeal[] = [],
 ): Promise<boolean> {
-  if (items.length === 0) return false;
+  if (items.length === 0 && topDeals.length === 0) return false;
 
   const manageToken = createManageAlertsToken(email);
   const manageUrl = withUtm(
@@ -262,36 +265,194 @@ export async function sendDigestEmail(
     "keza",
     "digest"
   );
+  const homeUrl = withUtm(`${BASE_URL}/`, "keza", "digest");
 
-  const firstItem = items[0];
-  const ctaUrl = withUtm(
-    `${BASE_URL}/?from=${firstItem.alert.from}&to=${firstItem.alert.to}`,
-    "keza",
-    "digest"
-  );
+  const isWeekly = topDeals.length > 0;
+  const weekStr  = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
 
-  const rows = items
-    .map(({ alert, currentPrice }) => {
-      const belowTarget = currentPrice <= alert.targetPrice;
-      const priceColor = belowTarget ? "#10b981" : "#94a3b8";
-      return `
-      <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <p style="margin:0;font-size:14px;font-weight:700;color:#e2e8f0;">${alert.from} → ${alert.to}</p>
-            <p style="margin:2px 0 0;font-size:11px;color:#64748b;">${CABIN_LABELS[alert.cabin]}</p>
-          </div>
-          <div style="text-align:right;">
-            <p style="margin:0;font-size:18px;font-weight:900;color:${priceColor};">$${currentPrice}</p>
-            <p style="margin:0;font-size:10px;color:#64748b;">cible : $${alert.targetPrice}</p>
-          </div>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
+  /* ── Deal cards (weekly only) ─────────────────────────────────────────────── */
+  const dealCards = topDeals.slice(0, 3).map(deal => {
+    const savingPct = Math.round((1 - (deal.milesRequired * deal.ratio / 100) / deal.cashPrice) * 100);
+    const cpp       = deal.ratio.toFixed(1);
+    const searchUrl = withUtm(`${BASE_URL}/?from=${deal.from}&to=${deal.to}`, "keza", "digest-deal");
+    return `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#131c35;border-radius:12px;margin-bottom:10px;overflow:hidden;">
+        <tr>
+          <td style="padding:14px 16px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <p style="margin:0;font-size:13px;color:#94a3b8;">
+                    ${deal.fromFlag} ${deal.from} <span style="color:#3b82f6;">→</span> ${deal.to} ${deal.toFlag}
+                  </p>
+                  <p style="margin:2px 0 0;font-size:15px;font-weight:700;color:#e2e8f0;">${deal.program}</p>
+                  <p style="margin:2px 0 0;font-size:11px;color:#f59e0b;">${deal.milesRequired.toLocaleString("fr-FR")} pts · ${cpp}¢/mile</p>
+                </td>
+                <td style="text-align:right;vertical-align:top;padding-left:12px;">
+                  <p style="margin:0;font-size:13px;color:#64748b;text-decoration:line-through;">$${deal.cashPrice}</p>
+                  ${savingPct > 0 ? `<p style="margin:2px 0 0;font-size:14px;font-weight:900;color:#10b981;">-${savingPct}%</p>` : ""}
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding-top:10px;">
+                  <a href="${searchUrl}" style="display:inline-block;background:#1e3a5f;color:#60a5fa;text-decoration:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #2d4a6f;">
+                    Comparer ce vol →
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>`;
+  }).join("");
 
-  const subject = `✈ Récap KEZA — ${items.length} route${items.length > 1 ? "s" : ""} surveillée${items.length > 1 ? "s" : ""}`;
+  /* ── Alert rows ──────────────────────────────────────────────────────────── */
+  const alertRows = items.map(({ alert, currentPrice }) => {
+    const belowTarget = currentPrice > 0 && currentPrice <= alert.targetPrice;
+    const priceColor  = belowTarget ? "#10b981" : "#94a3b8";
+    const badge       = belowTarget
+      ? `<span style="background:#052e16;color:#10b981;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid #166534;">🎯 OBJECTIF ATTEINT</span>`
+      : "";
+    const fromApt = airportsMap[alert.from];
+    const toApt   = airportsMap[alert.to];
+    const fromFlag = fromApt?.flag ?? "";
+    const toFlag   = toApt?.flag   ?? "";
+    const searchUrl = withUtm(`${BASE_URL}/?from=${alert.from}&to=${alert.to}`, "keza", "digest-alert");
+    return `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#131c35;border-radius:12px;margin-bottom:8px;">
+        <tr>
+          <td style="padding:14px 16px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <p style="margin:0;font-size:15px;font-weight:700;color:#e2e8f0;">
+                    ${fromFlag} ${alert.from} <span style="color:#3b82f6;">→</span> ${alert.to} ${toFlag}
+                  </p>
+                  <p style="margin:2px 0 0;font-size:11px;color:#64748b;">${CABIN_LABELS[alert.cabin]} · cible $${alert.targetPrice}</p>
+                  ${badge ? `<p style="margin:4px 0 0;">${badge}</p>` : ""}
+                </td>
+                <td style="text-align:right;padding-left:12px;white-space:nowrap;">
+                  <p style="margin:0;font-size:20px;font-weight:900;color:${priceColor};">${currentPrice > 0 ? `$${currentPrice}` : "—"}</p>
+                  <a href="${searchUrl}" style="font-size:11px;color:#60a5fa;text-decoration:none;">Voir →</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>`;
+  }).join("");
+
+  /* ── Subject + preheader ─────────────────────────────────────────────────── */
+  const subject = isWeekly
+    ? `🔥 Top deals miles de la semaine + tes alertes — KEZA`
+    : `✈ Récap KEZA — ${items.length} route${items.length > 1 ? "s" : ""} surveillée${items.length > 1 ? "s" : ""}`;
+
+  const preheader = isWeekly && topDeals[0]
+    ? `${topDeals[0].program} à ${topDeals[0].ratio.toFixed(1)}¢/mile · ${topDeals[0].from}→${topDeals[0].to}`
+    : `${items.length} route${items.length > 1 ? "s" : ""} surveillée${items.length > 1 ? "s" : ""}`;
+
+  /* ── Plain-text fallback ─────────────────────────────────────────────────── */
+  const plainText = [
+    isWeekly ? `🔥 TOP DEALS MILES — semaine du ${weekStr}` : `✈ KEZA — Récap alertes`,
+    "",
+    ...(isWeekly && topDeals.length > 0 ? [
+      "MEILLEURS DEALS CETTE SEMAINE :",
+      ...topDeals.slice(0, 3).map(d =>
+        `${d.from}→${d.to} · ${d.program} · ${d.ratio.toFixed(1)}¢/mile · ${d.milesRequired.toLocaleString()} pts`
+      ),
+      "",
+    ] : []),
+    ...(items.length > 0 ? [
+      "TES ALERTES :",
+      ...items.map(({ alert: a, currentPrice: cp }) =>
+        `${a.from}→${a.to} (${CABIN_LABELS[a.cabin]}) — cible $${a.targetPrice}${cp ? ` | actuel : $${cp}` : ""}`
+      ),
+      "",
+    ] : []),
+    `Comparer les vols :`,
+    homeUrl,
+    "",
+    `Gérer tes alertes :`,
+    manageUrl,
+  ].join("\n");
+
+  /* ── HTML ────────────────────────────────────────────────────────────────── */
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:16px;background:#06090f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<!-- preheader -->
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
+
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#0d1117;border-radius:20px;overflow:hidden;border:1px solid #1e293b;">
+
+  <!-- HEADER -->
+  <tr><td style="background:linear-gradient(135deg,#0f2340 0%,#0d1117 100%);padding:28px 32px;">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td>
+        <p style="margin:0;font-size:26px;font-weight:900;letter-spacing:-1px;">
+          <span style="color:#3b82f6;">KE</span><span style="color:#f1f5f9;">ZA</span>
+        </p>
+        <p style="margin:2px 0 0;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
+          ${isWeekly ? `digest · semaine du ${weekStr}` : `récap alertes · ${weekStr}`}
+        </p>
+      </td>
+      <td style="text-align:right;">
+        <span style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;border:1px solid #2d4a6f;">
+          ${isWeekly ? "📬 Digest hebdo" : "✈ Recap alertes"}
+        </span>
+      </td>
+    </tr></table>
+  </td></tr>
+
+  <!-- BODY -->
+  <tr><td style="padding:24px 32px;">
+
+    ${isWeekly && topDeals.length > 0 ? `
+    <!-- DEALS SECTION -->
+    <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.08em;">🔥 Meilleurs deals miles cette semaine</p>
+    <p style="margin:0 0 16px;font-size:13px;color:#64748b;">Les routes avec la meilleure valeur mile actuellement</p>
+    ${dealCards}
+    <div style="height:24px;"></div>
+    ` : ""}
+
+    ${items.length > 0 ? `
+    <!-- ALERTS SECTION -->
+    <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;">📊 Tes alertes actives</p>
+    <p style="margin:0 0 16px;font-size:13px;color:#64748b;">Prix actuel vs ton objectif</p>
+    ${alertRows}
+    <div style="height:16px;"></div>
+    ` : ""}
+
+    <!-- CTA -->
+    <a href="${homeUrl}"
+       style="display:block;text-align:center;background:#3b82f6;color:#fff;text-decoration:none;padding:15px 24px;border-radius:12px;font-weight:700;font-size:15px;margin-top:8px;">
+      Comparer cash vs miles →
+    </a>
+
+    <a href="${manageUrl}"
+       style="display:block;text-align:center;background:#131c35;color:#64748b;text-decoration:none;padding:12px 24px;border-radius:12px;font-size:13px;border:1px solid #1e293b;margin-top:8px;">
+      Gérer mes alertes
+    </a>
+
+  </td></tr>
+
+  <!-- FOOTER -->
+  <tr><td style="padding:16px 32px;border-top:1px solid #1e293b;">
+    <p style="margin:0;font-size:10px;color:#334155;text-align:center;">
+      Tu reçois cet email car tu as des alertes actives sur
+      <a href="${homeUrl}" style="color:#475569;text-decoration:none;">keza.app</a>.
+      &nbsp;·&nbsp;
+      <a href="${manageUrl}" style="color:#475569;text-decoration:none;">Se désabonner</a>
+    </p>
+  </td></tr>
+
+</table>
+</td></tr></table>
+<img src="${emailOpenPixelUrl("digest", email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
+</body></html>`;
 
   try {
     const resend = getResend();
@@ -299,54 +460,8 @@ export async function sendDigestEmail(
       from: FROM_EMAIL,
       to: email,
       subject,
-      text: [
-        `✈ KEZA — Récap de tes alertes`,
-        ``,
-        ...items.map(({ alert: a, currentPrice: cp }) =>
-          `${a.from} → ${a.to} (${CABIN_LABELS[a.cabin]}) — cible $${a.targetPrice}${
-            cp ? ` | prix actuel : $${cp}` : ""
-          }`
-        ),
-        ``,
-        `Voir les offres :`,
-        ctaUrl,
-        ``,
-        `Gérer mes alertes :`,
-        manageUrl,
-      ].join("\n"),
-      html: `
-        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
-          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
-            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Récap alertes</p>
-          </div>
-
-          <div style="padding:24px;">
-            <p style="margin:0 0 20px;font-size:15px;color:#e2e8f0;font-weight:600;">
-              Tes alertes actives ✈
-            </p>
-
-            ${rows}
-
-            <a href="${ctaUrl}"
-               style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;margin-top:8px;">
-              Voir les offres →
-            </a>
-
-            <a href="${manageUrl}"
-               style="display:block;text-align:center;background:#1e3a5f;color:#94a3b8;text-decoration:none;padding:12px;border-radius:12px;font-size:13px;border:1px solid #2d4a6f;margin-top:8px;">
-              Gérer mes alertes →
-            </a>
-          </div>
-
-          <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
-            <p style="margin:0;font-size:10px;color:#334155;">
-              Tu reçois cet email car tu as des alertes actives sur KEZA.
-            </p>
-          </div>
-          <img src="${emailOpenPixelUrl("digest", email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
-        </div>
-      `,
+      text: plainText,
+      html,
     });
     return true;
   } catch (err) {
