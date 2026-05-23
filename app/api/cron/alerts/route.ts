@@ -4,11 +4,14 @@ import {
   getAlertsByRoute,
   updateAlertAfterCheck,
   sendPriceDropEmail,
+  sendMilesAlertEmail,
   deactivateAlert,
 } from "@/lib/alerts";
 import { sendPushToEmail } from "@/lib/push";
 import { createManageAlertsToken } from "@/lib/alertTokens";
 import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
+import { buildCostOptions } from "@/lib/costEngine";
+import { getEffectivePrices } from "@/lib/costEngine";
 import { logError } from "@/lib/logger";
 import { hasCronSecret } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/analytics";
@@ -29,6 +32,8 @@ export async function GET(req: NextRequest) {
   let checked = 0;
   let notified = 0;
   const errors: string[] = [];
+  // Load effective miles prices once — shared across all routes in this cron run
+  const effectivePrices = await getEffectivePrices().catch(() => new Map<string, number>());
 
   for (const routeKey of routes) {
     const [from, to] = routeKey.split(":");
@@ -133,6 +138,46 @@ export async function GET(req: NextRequest) {
           }
         } else {
           await updateAlertAfterCheck(alert.id, adjustedPrice, false);
+        }
+
+        // ── Miles CPP check (independent of cash price trigger) ──────────────
+        // If this alert has a milesAlert config, also check whether the CPP for
+        // the target program is ≥ targetCpp. Uses the same cheapest calendar price
+        // as the cash check — no extra API calls required.
+        if (alert.milesAlert && alert.notifFrequency === "instant") {
+          try {
+            const milesOptions = buildCostOptions(
+              {
+                from,
+                to,
+                totalPrice: adjustedPrice,
+                airlines: [],  // no airline filter — check all programs
+                stops: 0,
+                cabin: alert.cabin,
+                tripType: "oneway",
+                passengers: 1,
+              },
+              effectivePrices,
+            );
+            const option = milesOptions.milesOptions.find(
+              (o) => o.program === alert.milesAlert!.program
+            );
+            if (option && option.valuePerMile >= alert.milesAlert.targetCpp) {
+              // Same rate-limit as cash alerts: max 1 email per 24h
+              const hoursSinceMilesCheck = alert.lastCheckedAt
+                ? (Date.now() - new Date(alert.lastCheckedAt).getTime()) / 3_600_000
+                : 25;
+              if (hoursSinceMilesCheck >= 24 && alert.notifCount < 5) {
+                const sent = await sendMilesAlertEmail(alert, option.valuePerMile, adjustedPrice);
+                if (sent) {
+                  notified++;
+                  await updateAlertAfterCheck(alert.id, adjustedPrice, true);
+                }
+              }
+            }
+          } catch (milesErr) {
+            logError(`[cron/alerts] miles CPP check failed for ${routeKey}:`, milesErr);
+          }
         }
       }
     } catch (err) {

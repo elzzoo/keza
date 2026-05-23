@@ -31,6 +31,16 @@ export interface PriceAlert {
   active: boolean;
   /** How often to notify. "instant" = as soon as price drops (max 1/24h). "daily" = daily digest. "weekly" = weekly digest. */
   notifFrequency: "instant" | "daily" | "weekly";
+  /**
+   * Optional miles-value alert. When set, the cron also checks whether the
+   * given program's CPP (cents per point / per mile) on this corridor is ≥
+   * targetCpp. Fires independently of the cash price trigger.
+   */
+  milesAlert?: {
+    program: string;    // e.g. "Singapore KrisFlyer"
+    targetCpp: number;  // e.g. 1.5 (meaning ≥1.5¢ per mile/point)
+    baseCpp: number;    // CPP at time of alert creation (context)
+  };
 }
 
 // ─── Redis keys ─────────────────────────────────────────────────────────────
@@ -84,6 +94,7 @@ export async function createAlert(params: {
   cabin: string;
   currentPrice: number;
   notifFrequency?: "instant" | "daily" | "weekly";
+  milesAlert?: { program: string; targetCpp: number; baseCpp: number };
 }): Promise<PriceAlert> {
   const id = generateId();
   const alert: PriceAlert = {
@@ -98,6 +109,7 @@ export async function createAlert(params: {
     notifCount: 0,
     active: true,
     notifFrequency: params.notifFrequency ?? "instant",
+    ...(params.milesAlert ? { milesAlert: params.milesAlert } : {}),
   };
 
   await redis.set(ALERT_KEY(id), alert, { ex: INDEX_TTL });
@@ -407,6 +419,73 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
     return true;
   } catch (err) {
     logError("[alerts] email failed:", err);
+    return false;
+  }
+}
+
+/**
+ * Send an email notifying the user that a miles-value alert fired.
+ * Triggered when CPP for their chosen program on this corridor reaches the target.
+ */
+export async function sendMilesAlertEmail(
+  alert: PriceAlert,
+  currentCpp: number,
+  cashPrice: number,
+): Promise<boolean> {
+  if (!alert.milesAlert) return false;
+  const { program, targetCpp } = alert.milesAlert;
+  const unsubToken = createUnsubscribeAlertToken(alert.id);
+  const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${encodeURIComponent(alert.id)}&token=${encodeURIComponent(unsubToken ?? "")}`;
+  const searchUrl = withUtm(`${BASE_URL}/?from=${alert.from}&to=${alert.to}`, "keza", "miles-alert");
+  const cppDisplay = currentCpp.toFixed(2);
+  const targetDisplay = targetCpp.toFixed(2);
+
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: alert.email,
+      subject: `✈ ${alert.from}→${alert.to} : ${program} vaut ${cppDisplay}¢/pt maintenant !`,
+      text: [
+        `✈ KEZA — Alerte Miles déclenchée !`,
+        ``,
+        `${alert.from} → ${alert.to} (${alert.cabin})`,
+        `Programme : ${program}`,
+        `Valeur actuelle : ${cppDisplay}¢ par point`,
+        `Votre cible : ${targetDisplay}¢ par point`,
+        `Prix cash de référence : $${Math.round(cashPrice)}`,
+        ``,
+        `Comparez et réservez :`,
+        searchUrl,
+        ``,
+        `Se désabonner de cette alerte :`,
+        unsubUrl,
+      ].join("\n"),
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Miles Alert</p>
+          </div>
+          <div style="padding:24px;">
+            <div style="background:#1a1a2e;border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">
+              <p style="margin:0;font-size:14px;color:#94a3b8;">${alert.from} → ${alert.to} · ${program}</p>
+              <p style="margin:8px 0 0;font-size:36px;font-weight:900;color:#f59e0b;">${cppDisplay}¢<span style="font-size:16px;color:#94a3b8;">/pt</span></p>
+              <p style="margin:4px 0 0;font-size:13px;color:#94a3b8;">Votre cible : ≥${targetDisplay}¢/pt · Prix cash : $${Math.round(cashPrice)}</p>
+            </div>
+            <a href="${searchUrl}" style="display:block;text-align:center;background:#f59e0b;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;">
+              Voir les options miles →
+            </a>
+            <p style="margin:16px 0 0;text-align:center;font-size:12px;color:#64748b;">
+              <a href="${unsubUrl}" style="color:#64748b;">Se désabonner</a>
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    logError("[alerts] miles alert email failed:", err);
     return false;
   }
 }

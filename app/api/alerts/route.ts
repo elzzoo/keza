@@ -24,8 +24,21 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, from, to, cabin, currentPrice, ref, notifFrequency } = body;
+    const { email, from, to, cabin, currentPrice, ref, notifFrequency, milesAlert } = body;
     const freq = (["instant", "daily", "weekly"] as const).includes(notifFrequency) ? notifFrequency as "instant" | "daily" | "weekly" : "instant";
+
+    // Validate optional milesAlert payload
+    const validatedMilesAlert = (
+      milesAlert &&
+      typeof milesAlert.program === "string" &&
+      milesAlert.program.length > 0 &&
+      typeof milesAlert.targetCpp === "number" &&
+      milesAlert.targetCpp > 0 &&
+      milesAlert.targetCpp <= 20 &&
+      typeof milesAlert.baseCpp === "number"
+    )
+      ? { program: milesAlert.program as string, targetCpp: milesAlert.targetCpp as number, baseCpp: milesAlert.baseCpp as number }
+      : undefined;
 
     if (!email || !from || !to || !currentPrice) {
       return NextResponse.json(
@@ -87,6 +100,7 @@ export async function POST(req: NextRequest) {
       cabin: cabin || "economy",
       currentPrice: Number(currentPrice),
       notifFrequency: freq,
+      ...(validatedMilesAlert ? { milesAlert: validatedMilesAlert } : {}),
     });
 
     // Fire-and-forget: confirmation email — do not await, must not block the response

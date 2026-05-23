@@ -7,6 +7,7 @@ import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
+import { MilesAlertButton } from "@/components/MilesAlertButton";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
@@ -279,8 +280,22 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               </span>
             )}
           </div>
-          <div className="text-[11px] text-muted leading-relaxed">
-            {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}{bestOption.type === "TRANSFER" ? "¢/pt" : "¢/mile"} + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="text-[11px] text-muted leading-relaxed">
+              {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}{bestOption.type === "TRANSFER" ? "¢/pt" : "¢/mile"} + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
+            </div>
+            {/* Show miles alert CTA only when CPP is ≥ 1.0¢ — below that it's not worth alerting */}
+            {bestOption.valuePerMile >= 1.0 && (
+              <MilesAlertButton
+                from={flight.from}
+                to={flight.to}
+                cabin={flight.cabin}
+                program={bestOption.program}
+                currentCpp={bestOption.valuePerMile}
+                currentPrice={flight.cashCost}
+                lang={lang}
+              />
+            )}
           </div>
         </div>
       )}
