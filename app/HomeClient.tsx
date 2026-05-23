@@ -9,6 +9,7 @@ import { TrustBar }      from "@/components/TrustBar";
 import { SearchForm }    from "@/components/SearchForm";
 
 // Below-the-fold homepage components — lazy loaded
+const OnboardingWizard = dynamic(() => import("@/components/OnboardingWizard").then(m => m.OnboardingWizard), { ssr: false });
 const DealsStrip       = dynamic(() => import("@/components/DealsStrip").then(m => m.DealsStrip), { ssr: false });
 const DestinationsGrid = dynamic(() => import("@/components/DestinationsGrid").then(m => m.DestinationsGrid), { ssr: false });
 // Results path — only rendered after a search; lazy-load to keep initial JS small
@@ -116,6 +117,8 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
+      {/* Onboarding wizard — shown once to new users, lazy-loaded */}
+      <OnboardingWizard lang={lang} />
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
 

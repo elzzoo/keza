@@ -24,6 +24,8 @@ export interface UserProfile {
   balances: Record<string, number>;
   /** Bank transfer points/miles (e.g., {"Amex MR": 80000}) */
   bankPoints: Record<string, number>;
+  /** Whether user has completed the onboarding wizard */
+  hasOnboarded?: boolean;
 }
 
 export interface RecentSearch {
