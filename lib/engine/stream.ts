@@ -137,7 +137,7 @@ export async function searchEngineStream(
     const tpReturn   = tpReturnRaw.map(f =>  ({ ...f, source: "TP" as const, priceConfidence: "LOW"  as const }));
 
     // Merge: Duffel wins on duplicate routes (higher confidence)
-    let rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
+    const rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
 
     // ROUTE_AIRLINE_SUPPLEMENTS: synthetic entries for carriers not in any provider
     const syntheticFlights: NormalizedFlight[] = [];
@@ -181,7 +181,7 @@ export async function searchEngineStream(
     // Return leg (roundtrip)
     let returnFlights: NormalizedFlight[] = [];
     if (isRoundtrip) {
-      let rawReturn = mergeFlights(tpReturn, duffelReturn);
+      const rawReturn = mergeFlights(tpReturn, duffelReturn);
       if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
         const directReturn = await fetchFromTravelpayouts(to, from, returnDate!, true);
         if (directReturn.length > 0) {
