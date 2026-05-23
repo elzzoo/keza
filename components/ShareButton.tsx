@@ -14,9 +14,15 @@ interface ShareButtonProps {
     tripType: "oneway" | "roundtrip";
     pax?: number;
   };
+  /** Best savings amount in user's currency (e.g. "$450") — enriches OG preview */
+  savings?: string;
+  /** Best cash price (e.g. "$1 200") — enriches OG preview */
+  bestPrice?: string;
+  /** Best miles program name — enriches OG preview */
+  bestProgram?: string;
 }
 
-export function ShareButton({ lang, searchParams }: ShareButtonProps) {
+export function ShareButton({ lang, searchParams, savings, bestPrice, bestProgram }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = useCallback(async () => {
@@ -27,6 +33,10 @@ export function ShareButton({ lang, searchParams }: ShareButtonProps) {
     url.searchParams.set("cabin", searchParams.cabin);
     url.searchParams.set("tripType", searchParams.tripType);
     url.searchParams.set("pax", String(searchParams.pax ?? 1));
+    // OG enrichment params — picked up by /api/og for social previews
+    if (savings)     url.searchParams.set("savings",  savings);
+    if (bestPrice)   url.searchParams.set("price",    bestPrice);
+    if (bestProgram) url.searchParams.set("program",  bestProgram);
 
     trackShare({ from: searchParams.from, to: searchParams.to });
     try {

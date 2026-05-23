@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { DESTINATIONS } from "@/data/destinations";
 import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 import { POPULAR_ROUTES } from "@/data/popularRoutes";
+import { ROUTE_META } from "@/data/routeMeta";
+import { iataToSlug } from "@/lib/routeSlug";
 
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -183,6 +185,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.75,
+    });
+  }
+
+  // ── /vol/[route] corridor SEO pages ─────────────────────────────────────────
+  pages.push({
+    url: `${BASE_URL}/vol`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.85,
+  });
+  for (const key of ROUTE_META.keys()) {
+    const [from, to] = key.split("-");
+    pages.push({
+      url: `${BASE_URL}/vol/${iataToSlug(from!, to!)}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.85,
     });
   }
 

@@ -30,11 +30,13 @@ export const metadata: Metadata = {
     siteName: "KEZA",
     locale: "fr_FR",
     type: "website",
+    images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630, alt: "KEZA — Cash ou Miles ?" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "KEZA — Cash ou Miles ?",
     description: "Cash, miles ou transfert ? KEZA compare en temps réel et vous dit quoi choisir.",
+    images: [`${SITE_URL}/api/og`],
   },
   appleWebApp: {
     capable: true,
