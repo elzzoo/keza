@@ -8,10 +8,8 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { JsonLd } from "@/components/JsonLd";
 import { RouteAlertCta } from "@/components/RouteAlertCta";
 
-// ISR: revalidate every 24h — route metadata rarely changes
 export const revalidate = 86400;
 
-// Pre-generate all routes present in ROUTE_META at build time
 export function generateStaticParams() {
   return Array.from(ROUTE_META.keys()).map(key => {
     const [from, to] = key.split("-");
@@ -42,29 +40,33 @@ export async function generateMetadata(
   const toApt   = getAirport(to);
   if (!meta || !fromApt || !toApt) return {};
 
-  const fromCity = fromApt.city;
-  const toCity   = toApt.city;
-  const title    = `Vols ${fromCity} → ${toCity} — Cash ou Miles ? | KEZA`;
+  const fromCity = fromApt.cityEn ?? fromApt.city;
+  const toCity   = toApt.cityEn   ?? toApt.city;
+  const title    = `${fromCity} to ${toCity} Flights — Cash or Miles? | KEZA`;
   const description =
-    `Comparez prix cash vs miles sur le vol ${from}→${to} (${fromCity}–${toCity}). ` +
-    `${meta.airlines.slice(0, 2).join(", ")} · Meilleurs programmes : ${meta.bestPrograms.slice(0, 2).join(", ")}. ` +
-    meta.seasonTip.fr.slice(0, 100) + "…";
+    `Compare cash price vs miles on ${from}→${to} (${fromCity}–${toCity}). ` +
+    `${meta.airlines.slice(0, 2).join(", ")} · Best programs: ${meta.bestPrograms.slice(0, 2).join(", ")}. ` +
+    (meta.seasonTip.en ?? meta.seasonTip.fr).slice(0, 100) + "…";
 
-  const ogUrl    = `${SITE_URL}/api/og?from=${from}&to=${to}&lang=fr`;
-  const canonical = `${SITE_URL}/vol/${route}`;
+  const ogUrl    = `${SITE_URL}/api/og?from=${from}&to=${to}&lang=en`;
+  const canonical = `${SITE_URL}/en/vol/${route}`;
+  const frUrl     = `${SITE_URL}/vol/${route}`;
 
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: { fr: frUrl, en: canonical },
+    },
     openGraph: {
       title,
       description,
       url: canonical,
       siteName: "KEZA",
-      locale: "fr_FR",
+      locale: "en_US",
       type: "website",
-      images: [{ url: ogUrl, width: 1200, height: 630, alt: `Vol ${fromCity} → ${toCity}` }],
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: `${fromCity} to ${toCity} flights` }],
     },
     twitter: {
       card: "summary_large_image",
@@ -75,7 +77,7 @@ export async function generateMetadata(
   };
 }
 
-export default async function RoutePage(
+export default async function EnRoutePage(
   { params }: { params: Promise<{ route: string }> }
 ) {
   const { route } = await params;
@@ -88,13 +90,14 @@ export default async function RoutePage(
   const toApt   = getAirport(to);
   if (!meta || !fromApt || !toApt) notFound();
 
-  const fromCity    = fromApt.city;
-  const toCity      = toApt.city;
-  const fromCountry = fromApt.country;
-  const toCountry   = toApt.country;
+  const fromCity    = fromApt.cityEn   ?? fromApt.city;
+  const toCity      = toApt.cityEn     ?? toApt.city;
+  const fromCountry = fromApt.countryEn ?? fromApt.country;
+  const toCountry   = toApt.countryEn  ?? toApt.country;
   const fromFlag    = fromApt.flag;
   const toFlag      = toApt.flag;
-  const searchUrl   = `/?from=${from}&to=${to}`;
+  const searchUrl   = `/en/?from=${from}&to=${to}`;
+  const seasonTip   = meta.seasonTip.en ?? meta.seasonTip.fr;
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -102,15 +105,15 @@ export default async function RoutePage(
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: "Vols", item: `${SITE_URL}/vol` },
-          { "@type": "ListItem", position: 3, name: `${fromCity} → ${toCity}`, item: `${SITE_URL}/vol/${route}` },
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Flights", item: `${SITE_URL}/en/vol` },
+          { "@type": "ListItem", position: 3, name: `${fromCity} → ${toCity}`, item: `${SITE_URL}/en/vol/${route}` },
         ],
       },
       {
         "@type": "Product",
-        name: `Vol ${fromCity} → ${toCity}`,
-        description: `Comparaison cash vs miles pour le vol ${from}→${to}. Meilleurs programmes : ${meta.bestPrograms.join(", ")}.`,
+        name: `${fromCity} to ${toCity} Flights`,
+        description: `Cash vs miles comparison for ${from}→${to}. Best programs: ${meta.bestPrograms.join(", ")}.`,
         brand: { "@type": "Brand", name: "KEZA" },
         offers: {
           "@type": "AggregateOffer",
@@ -123,13 +126,12 @@ export default async function RoutePage(
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Inject JSON-LD after hydration */}
       <JsonLd data={structuredData} />
 
       {/* Header */}
       <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg">
+          <Link href="/en" className="font-black text-lg">
             <span className="text-primary">KE</span>
             <span className="text-fg">ZA</span>
           </Link>
@@ -137,7 +139,7 @@ export default async function RoutePage(
             href={searchUrl}
             className="text-xs font-semibold px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors"
           >
-            Comparer ce vol →
+            Compare this flight →
           </Link>
         </div>
       </header>
@@ -146,9 +148,9 @@ export default async function RoutePage(
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs font-semibold text-muted uppercase tracking-wider">
-          <Link href="/" className="hover:text-fg transition-colors">Accueil</Link>
+          <Link href="/en" className="hover:text-fg transition-colors">Home</Link>
           <span>›</span>
-          <span>Vols</span>
+          <span>Flights</span>
           <span>›</span>
           <span>{from}–{to}</span>
         </nav>
@@ -162,29 +164,29 @@ export default async function RoutePage(
             <span className="text-2xl mr-2">{toFlag}</span>
             {toCity}
             <br />
-            <span className="text-muted text-xl font-semibold">Cash ou Miles ?</span>
+            <span className="text-muted text-xl font-semibold">Cash or Miles?</span>
           </h1>
 
           <p className="text-muted text-base leading-relaxed max-w-2xl">
-            Comparez le vrai coût du vol {from}→{to} entre {fromCity} ({fromCountry}) et {toCity} ({toCountry}) —
-            prix cash en temps réel vs valeur de vos miles sur {meta.bestPrograms.slice(0, 2).join(", ")} et plus.
+            Compare the true cost of {from}→{to} flights between {fromCity} ({fromCountry}) and {toCity} ({toCountry}) —
+            live cash prices vs the value of your miles on {meta.bestPrograms.slice(0, 2).join(", ")} and more.
           </p>
 
           <Link
             href={searchUrl}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all hover:scale-[1.02] shadow-lg shadow-primary/20"
           >
-            ✈ Comparer cash vs miles maintenant
+            ✈ Compare cash vs miles now
           </Link>
         </div>
 
         {/* Route stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Durée vol",       value: formatDuration(meta.durationMin),              icon: "⏱" },
-            { label: "Vol direct",      value: meta.isNonstop ? "Oui ✓" : `Via ${meta.hub ?? "hub"}`, icon: "✈" },
-            { label: "Éco (miles)",     value: meta.milesToEconomy.toLocaleString("fr-FR"),   icon: "💺" },
-            { label: "Business (miles)",value: meta.milesToBusiness.toLocaleString("fr-FR"),  icon: "🛋" },
+            { label: "Flight time",      value: formatDuration(meta.durationMin),             icon: "⏱" },
+            { label: "Nonstop",          value: meta.isNonstop ? "Yes ✓" : `Via ${meta.hub ?? "hub"}`, icon: "✈" },
+            { label: "Economy (miles)",  value: meta.milesToEconomy.toLocaleString("en-US"),  icon: "💺" },
+            { label: "Business (miles)", value: meta.milesToBusiness.toLocaleString("en-US"), icon: "🛋" },
           ].map(stat => (
             <div key={stat.label} className="bg-surface rounded-xl border border-border p-4 text-center">
               <div className="text-xl mb-1">{stat.icon}</div>
@@ -198,7 +200,7 @@ export default async function RoutePage(
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
             <h2 className="text-[11px] font-black uppercase tracking-widest text-muted">
-              Compagnies principales
+              Main airlines
             </h2>
             <ul className="space-y-2">
               {meta.airlines.map(airline => (
@@ -212,7 +214,7 @@ export default async function RoutePage(
 
           <div className="bg-surface rounded-2xl border border-border p-5 space-y-3">
             <h2 className="text-[11px] font-black uppercase tracking-widest text-muted">
-              Meilleurs programmes miles
+              Best miles programs
             </h2>
             <ul className="space-y-2">
               {meta.bestPrograms.map((prog, i) => (
@@ -235,32 +237,32 @@ export default async function RoutePage(
         <div className="bg-primary/8 rounded-2xl border border-primary/15 p-5 flex items-start gap-4">
           <span className="text-2xl flex-shrink-0 mt-0.5">📅</span>
           <div>
-            <h2 className="text-sm font-bold text-fg mb-1">Meilleure période pour voyager</h2>
-            <p className="text-sm text-muted leading-relaxed">{meta.seasonTip.fr}</p>
+            <h2 className="text-sm font-bold text-fg mb-1">Best time to fly</h2>
+            <p className="text-sm text-muted leading-relaxed">{seasonTip}</p>
           </div>
         </div>
 
         {/* Miles explainer */}
         <div className="bg-surface rounded-2xl border border-border p-5 space-y-4">
           <h2 className="text-sm font-black text-fg">
-            Comment utiliser vos miles sur {fromCity} → {toCity} ?
+            How to use miles on {fromCity} → {toCity}?
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted leading-relaxed">
             <div>
-              <p className="font-semibold text-fg mb-1">💺 Classe économique</p>
+              <p className="font-semibold text-fg mb-1">💺 Economy</p>
               <p>
-                Comptez environ{" "}
-                <strong className="text-fg">{meta.milesToEconomy.toLocaleString("fr-FR")} miles</strong>{" "}
-                aller simple avec les meilleurs programmes.
-                KEZA compare automatiquement les taxes et frais.
+                Expect around{" "}
+                <strong className="text-fg">{meta.milesToEconomy.toLocaleString("en-US")} miles</strong>{" "}
+                one-way with the best programs.
+                KEZA automatically compares all taxes and fees.
               </p>
             </div>
             <div>
-              <p className="font-semibold text-fg mb-1">🛋 Business / Première</p>
+              <p className="font-semibold text-fg mb-1">🛋 Business / First</p>
               <p>
-                À partir de{" "}
-                <strong className="text-fg">{meta.milesToBusiness.toLocaleString("fr-FR")} miles</strong>{" "}
-                aller simple — souvent 4–8× plus de valeur par mile qu&apos;en économique.
+                From{" "}
+                <strong className="text-fg">{meta.milesToBusiness.toLocaleString("en-US")} miles</strong>{" "}
+                one-way — often 4–8× more value per mile than economy.
               </p>
             </div>
           </div>
@@ -272,25 +274,32 @@ export default async function RoutePage(
         {/* Bottom CTA */}
         <div className="bg-gradient-to-br from-primary/10 to-surface rounded-2xl border border-primary/20 p-6 text-center space-y-3">
           <p className="text-lg font-black text-fg">
-            Prêt à comparer {fromCity} → {toCity} ?
+            Ready to compare {fromCity} → {toCity}?
           </p>
           <p className="text-sm text-muted">
-            KEZA récupère les prix en temps réel et calcule si vos miles valent plus que le prix cash.
+            KEZA pulls live prices and tells you whether your miles are worth more than the cash price.
           </p>
           <Link
             href={searchUrl}
             className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all hover:scale-[1.02] shadow-lg shadow-primary/20"
           >
-            ✈ Comparer maintenant — gratuit
+            ✈ Compare now — free
           </Link>
         </div>
+
+        {/* FR version link */}
+        <p className="text-center text-xs text-subtle">
+          <Link href={`/vol/${route}`} className="hover:text-muted transition-colors">
+            Voir la version française →
+          </Link>
+        </p>
       </main>
 
       <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted">
-        <Link href="/" className="hover:text-fg transition-colors">KEZA</Link>
-        {" · "}Cash ou Miles ?{" · "}
+        <Link href="/en" className="hover:text-fg transition-colors">KEZA</Link>
+        {" · "}Cash or Miles?{" · "}
         <Link href={searchUrl} className="hover:text-fg transition-colors">
-          Rechercher {from}→{to}
+          Search {from}→{to}
         </Link>
       </footer>
     </div>

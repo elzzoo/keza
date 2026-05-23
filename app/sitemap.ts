@@ -188,21 +188,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // ── /vol/[route] corridor SEO pages ─────────────────────────────────────────
-  pages.push({
-    url: `${BASE_URL}/vol`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 0.85,
-  });
+  // ── /vol/[route] corridor SEO pages (FR + EN) ────────────────────────────────
+  pages.push(
+    {
+      url: `${BASE_URL}/vol`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+      alternates: { languages: { fr: `${BASE_URL}/vol`, en: `${BASE_URL}/en/vol` } },
+    },
+    {
+      url: `${BASE_URL}/en/vol`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.80,
+      alternates: { languages: { fr: `${BASE_URL}/vol`, en: `${BASE_URL}/en/vol` } },
+    },
+  );
   for (const key of ROUTE_META.keys()) {
     const [from, to] = key.split("-");
-    pages.push({
-      url: `${BASE_URL}/vol/${iataToSlug(from!, to!)}`,
-      lastModified: now,
-      changeFrequency: "daily" as const,
-      priority: 0.85,
-    });
+    const slug = iataToSlug(from!, to!);
+    const frUrl = `${BASE_URL}/vol/${slug}`;
+    const enUrl = `${BASE_URL}/en/vol/${slug}`;
+    const alts  = { languages: { fr: frUrl, en: enUrl } };
+    pages.push(
+      { url: frUrl, lastModified: now, changeFrequency: "daily" as const, priority: 0.85, alternates: alts },
+      { url: enUrl, lastModified: now, changeFrequency: "daily" as const, priority: 0.80, alternates: alts },
+    );
   }
 
   // Destination pages

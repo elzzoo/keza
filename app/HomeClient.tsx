@@ -242,6 +242,21 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
                     tripType: lastSearch.tripType,
                     pax: 1,
                   }}
+                  savings={(() => {
+                    if (results.length === 0) return undefined;
+                    const best = results.reduce((a, b) => b.savings > a.savings ? b : a, results[0]!);
+                    return best.savings > 0 ? formatPrice(best.savings) : undefined;
+                  })()}
+                  bestPrice={(() => {
+                    if (results.length === 0) return undefined;
+                    const cheapest = results.reduce((a, b) => b.cashCost < a.cashCost ? b : a, results[0]!);
+                    return formatPrice(cheapest.cashCost);
+                  })()}
+                  bestProgram={(() => {
+                    if (results.length === 0) return undefined;
+                    const best = results.reduce((a, b) => b.savings > a.savings ? b : a, results[0]!);
+                    return best.bestOption?.program ?? undefined;
+                  })()}
                 />
               </div>
             )}
