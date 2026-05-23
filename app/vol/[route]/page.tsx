@@ -7,6 +7,7 @@ import { slugToIata, iataToSlug, routeKey } from "@/lib/routeSlug";
 import { SITE_URL } from "@/lib/siteConfig";
 import { JsonLd } from "@/components/JsonLd";
 import { RouteAlertCta } from "@/components/RouteAlertCta";
+import { PriceSparkline } from "@/components/PriceSparkline";
 
 // ISR: revalidate every 24h — route metadata rarely changes
 export const revalidate = 86400;
@@ -265,6 +266,9 @@ export default async function RoutePage(
             </div>
           </div>
         </div>
+
+        {/* Price history sparkline */}
+        <PriceSparkline from={from} to={to} lang="fr" />
 
         {/* Alert CTA */}
         <RouteAlertCta from={from} to={to} fromCity={fromCity} toCity={toCity} />
