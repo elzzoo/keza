@@ -54,6 +54,56 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "SYD-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
   "DXB-BKK": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
   "BKK-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+
+  // Etihad Guest — AUH (Abu Dhabi) hub
+  "AUH-LHR": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "LHR-AUH": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "AUH-JFK": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "JFK-AUH": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "AUH-CDG": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "CDG-AUH": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+
+  // Qatar Privilege Club — DOH hub
+  "DOH-LHR": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "LHR-DOH": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "DOH-JFK": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "JFK-DOH": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "DOH-CDG": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "CDG-DOH": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "DOH-LAX": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "LAX-DOH": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+
+  // Korean Air SKYPASS — ICN (Seoul) hub
+  "ICN-LAX": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "LAX-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "ICN-JFK": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "JFK-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+
+  // Cathay Pacific Asia Miles — HKG hub
+  "HKG-LHR": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "LHR-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "HKG-JFK": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "JFK-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "HKG-LAX": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "LAX-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "HKG-SYD": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "SYD-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+
+  // Turkish Miles&Smiles — IST hub
+  "IST-JFK": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "JFK-IST": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "IST-LAX": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "LAX-IST": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "IST-LHR": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "LHR-IST": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "IST-CDG": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+  "CDG-IST": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
+
+  // Malaysia Airlines Enrich — KUL hub
+  "KUL-LHR": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
+  "LHR-KUL": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
+  "KUL-LAX": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
+  "LAX-KUL": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -165,6 +215,70 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "SYD-DXB": ["Emirates"],
   "DXB-BKK": ["Emirates"],
   "BKK-DXB": ["Emirates"],
+
+  // ── Etihad (AUH hub) ─────────────────────────────────────────────────────
+  "AUH-LHR": ["Etihad"],
+  "LHR-AUH": ["Etihad"],
+  "AUH-JFK": ["Etihad"],
+  "JFK-AUH": ["Etihad"],
+  "AUH-CDG": ["Etihad"],
+  "CDG-AUH": ["Etihad"],
+
+  // ── Qatar Airways (DOH hub) ──────────────────────────────────────────────
+  "DOH-LHR": ["Qatar Airways"],
+  "LHR-DOH": ["Qatar Airways"],
+  "DOH-JFK": ["Qatar Airways"],
+  "JFK-DOH": ["Qatar Airways"],
+  "DOH-CDG": ["Qatar Airways"],
+  "CDG-DOH": ["Qatar Airways"],
+  "DOH-LAX": ["Qatar Airways"],
+  "LAX-DOH": ["Qatar Airways"],
+
+  // ── Korean Air (ICN hub) ─────────────────────────────────────────────────
+  "ICN-LAX": ["Korean Air"],
+  "LAX-ICN": ["Korean Air"],
+  "ICN-JFK": ["Korean Air"],
+  "JFK-ICN": ["Korean Air"],
+
+  // ── Cathay Pacific (HKG hub) ─────────────────────────────────────────────
+  "HKG-LHR": ["Cathay Pacific"],
+  "LHR-HKG": ["Cathay Pacific"],
+  "HKG-JFK": ["Cathay Pacific"],
+  "JFK-HKG": ["Cathay Pacific"],
+  "HKG-LAX": ["Cathay Pacific"],
+  "LAX-HKG": ["Cathay Pacific"],
+  "HKG-SYD": ["Cathay Pacific"],
+  "SYD-HKG": ["Cathay Pacific"],
+
+  // ── Turkish Airlines (IST hub) ───────────────────────────────────────────
+  "IST-JFK": ["Turkish Airlines"],
+  "JFK-IST": ["Turkish Airlines"],
+  "IST-LAX": ["Turkish Airlines"],
+  "LAX-IST": ["Turkish Airlines"],
+  "IST-LHR": ["Turkish Airlines"],
+  "LHR-IST": ["Turkish Airlines"],
+  "IST-CDG": ["Turkish Airlines"],
+  "CDG-IST": ["Turkish Airlines"],
+
+  // ── Malaysia Airlines (KUL hub) ──────────────────────────────────────────
+  "KUL-LHR": ["Malaysia Airlines"],
+  "LHR-KUL": ["Malaysia Airlines"],
+  "KUL-LAX": ["Malaysia Airlines"],
+  "LAX-KUL": ["Malaysia Airlines"],
+
+  // ── Royal Air Maroc (CMN hub) ────────────────────────────────────────────
+  "CMN-JFK": ["Royal Air Maroc"],
+  "JFK-CMN": ["Royal Air Maroc"],
+  "CMN-LAX": ["Royal Air Maroc"],
+  "LAX-CMN": ["Royal Air Maroc"],
+
+  // ── Asia–Europe additional ───────────────────────────────────────────────
+  "CDG-BKK": ["Air France", "Thai Airways"],
+  "BKK-CDG": ["Air France", "Thai Airways"],
+  "NRT-SYD": ["All Nippon Airways", "Japan Airlines"],
+  "SYD-NRT": ["All Nippon Airways", "Japan Airlines"],
+  "NRT-BKK": ["Japan Airlines"],
+  "BKK-NRT": ["Japan Airlines"],
 };
 
 /**

@@ -28,14 +28,22 @@ const KNOWN_PROGRAMS = new Set([
   "Avianca LifeMiles",
   "Alaska Airlines Mileage Plan",
   "Iberia Avios Plus",
+  // P3 additions
+  "Turkish Miles&Smiles",
 ]);
 
 describe("HOME_CARRIER_PROGRAMS", () => {
-  it("has entries for all key hub corridors (SIN, NRT, HND, DXB)", () => {
+  it("has entries for all key hub corridors (SIN, NRT, HND, DXB, DOH, AUH, IST, ICN, HKG, KUL)", () => {
     const keys = Object.keys(HOME_CARRIER_PROGRAMS);
     expect(keys.some(k => k.startsWith("SIN-"))).toBe(true);
     expect(keys.some(k => k.startsWith("NRT-"))).toBe(true);
     expect(keys.some(k => k.startsWith("DXB-"))).toBe(true);
+    // P3 new hubs
+    expect(keys.some(k => k.startsWith("DOH-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("AUH-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("IST-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("ICN-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("HKG-"))).toBe(true);
   });
 
   it("includes both directions for every corridor", () => {
