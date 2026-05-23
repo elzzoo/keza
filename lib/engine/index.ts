@@ -17,7 +17,6 @@ import { logError } from "../logger";
 export const CACHE_VERSION = "v22"; // bumped: Home Carrier Guarantee + JAL name fix
 
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
-  const _t0 = Date.now();
   try {
   const {
     from, to, date,
