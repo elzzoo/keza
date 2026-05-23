@@ -911,6 +911,113 @@ export const ROUTE_META = new Map<string, RouteMeta>([
     isNonstop: true,
   }],
 
+  // ── P3 new hubs ─────────────────────────────────────────────────────────
+
+  ["ICN-LAX", {
+    durationMin: 615,
+    airlines: ["Korean Air", "Asiana Airlines"],
+    bestPrograms: ["Korean Air SKYPASS", "United MileagePlus", "Alaska Airlines Mileage Plan"],
+    seasonTip: {
+      fr: "Mars-mai (printemps coréen) et septembre-novembre sont idéaux. Évitez les vacances du Nouvel An coréen (Chuseok).",
+      en: "March-May (Korean spring) and September-November are ideal. Avoid Korean New Year (Chuseok) holidays.",
+    },
+    milesToEconomy: 35000,
+    milesToBusiness: 80000,
+    isNonstop: true,
+  }],
+
+  ["ICN-JFK", {
+    durationMin: 840,
+    airlines: ["Korean Air", "Asiana Airlines"],
+    bestPrograms: ["Korean Air SKYPASS", "Delta SkyMiles", "Flying Blue"],
+    seasonTip: {
+      fr: "Avril-mai et octobre sont les meilleures périodes. L'été est cher côté américain.",
+      en: "April-May and October are the best periods. Summer is expensive on the US side.",
+    },
+    milesToEconomy: 40000,
+    milesToBusiness: 90000,
+    isNonstop: true,
+  }],
+
+  ["AUH-LHR", {
+    durationMin: 425,
+    airlines: ["Etihad Airways"],
+    bestPrograms: ["Etihad Guest", "British Airways Executive Club"],
+    seasonTip: {
+      fr: "Novembre-mars est la meilleure saison à Abu Dhabi (temps frais). Les miles Etihad offrent une valeur exceptionnelle en Apartements.",
+      en: "November-March is best for Abu Dhabi (cool weather). Etihad miles offer exceptional value in Apartments (first class).",
+    },
+    milesToEconomy: 25000,
+    milesToBusiness: 60000,
+    isNonstop: true,
+  }],
+
+  ["DOH-LAX", {
+    durationMin: 960,
+    airlines: ["Qatar Airways"],
+    bestPrograms: ["Qatar Privilege Club", "American AAdvantage", "British Airways Executive Club"],
+    seasonTip: {
+      fr: "Octobre-avril est la meilleure période pour Doha (températures agréables). Qatar Business est régulièrement élu meilleure classe affaires au monde.",
+      en: "October-April is best for Doha (comfortable temperatures). Qatar Business is regularly named the world's best business class.",
+    },
+    milesToEconomy: 40000,
+    milesToBusiness: 85000,
+    isNonstop: true,
+  }],
+
+  ["IST-LAX", {
+    durationMin: 750,
+    airlines: ["Turkish Airlines"],
+    bestPrograms: ["Turkish Miles&Smiles", "United MileagePlus", "Flying Blue"],
+    seasonTip: {
+      fr: "Avril-mai et septembre-octobre sont parfaits pour Istanbul. Été très touristique. Miles&Smiles offre d'excellents tarifs en Business sur long-courrier.",
+      en: "April-May and September-October are perfect for Istanbul. Summer is very touristy. Miles&Smiles offers great Business rates on long-haul.",
+    },
+    milesToEconomy: 30000,
+    milesToBusiness: 65000,
+    isNonstop: true,
+  }],
+
+  ["HKG-SYD", {
+    durationMin: 540,
+    airlines: ["Cathay Pacific", "Qantas"],
+    bestPrograms: ["Cathay Pacific Asia Miles", "Qantas Frequent Flyer", "American AAdvantage"],
+    seasonTip: {
+      fr: "Sydney : octobre-mars (été austral). Hong Kong : octobre-décembre (automne frais). Évitez le Nouvel An chinois pour Hong Kong.",
+      en: "Sydney: October-March (austral summer). Hong Kong: October-December (cool autumn). Avoid Chinese New Year in Hong Kong.",
+    },
+    milesToEconomy: 30000,
+    milesToBusiness: 65000,
+    isNonstop: true,
+  }],
+
+  ["KUL-LAX", {
+    durationMin: 1050,
+    airlines: ["Malaysia Airlines", "ANA", "Japan Airlines"],
+    bestPrograms: ["Malaysia Airlines Enrich", "ANA Mileage Club", "United MileagePlus"],
+    seasonTip: {
+      fr: "Évitez la mousson (mai-septembre). Décembre-avril est la meilleure période pour Kuala Lumpur.",
+      en: "Avoid monsoon season (May-September). December-April is the best period for Kuala Lumpur.",
+    },
+    milesToEconomy: 42000,
+    milesToBusiness: 90000,
+    isNonstop: false,
+    hub: "Tokyo NRT / Seoul ICN",
+  }],
+
+  ["CMN-JFK", {
+    durationMin: 435,
+    airlines: ["Royal Air Maroc", "American Airlines"],
+    bestPrograms: ["American AAdvantage", "Flying Blue", "British Airways Executive Club"],
+    seasonTip: {
+      fr: "Mars-mai et septembre-novembre sont idéaux pour Casablanca. Évitez le Ramadan pour les voyages d'affaires.",
+      en: "March-May and September-November are ideal for Casablanca. Avoid Ramadan for business travel.",
+    },
+    milesToEconomy: 22000,
+    milesToBusiness: 50000,
+    isNonstop: true,
+  }],
+
 ]);
 
 // ─── Helper ──────────────────────────────────────────────────────────────────

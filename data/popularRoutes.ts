@@ -310,6 +310,18 @@ export const POPULAR_ROUTES: string[] = [
   "HKG-LAX", "LAX-HKG",
   "KUL-LHR", "LHR-KUL",
   "KUL-CDG", "CDG-KUL",
+  "KUL-LAX", "LAX-KUL",
+  "ICN-LAX", "LAX-ICN",
+  "ICN-JFK", "JFK-ICN",
+  "ICN-LHR", "LHR-ICN",
+  "ICN-CDG", "CDG-ICN",
+  "HKG-SYD", "SYD-HKG",
+  "DOH-LAX", "LAX-DOH",
+  "IST-LAX", "LAX-IST",
+  "CMN-JFK", "JFK-CMN",
+  "CMN-LAX", "LAX-CMN",
+  "NRT-SYD", "SYD-NRT",
+  "NRT-BKK", "BKK-NRT",
 
   // ── Europe ↔ Asia ─────────────────────────────────────────────────────────
   "LHR-SIN", "SIN-LHR",

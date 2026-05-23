@@ -10,6 +10,7 @@ import { SearchForm }    from "@/components/SearchForm";
 
 // Below-the-fold homepage components — lazy loaded
 const OnboardingWizard = dynamic(() => import("@/components/OnboardingWizard").then(m => m.OnboardingWizard), { ssr: false });
+const DealSpotlight    = dynamic(() => import("@/components/DealSpotlight").then(m => m.DealSpotlight), { ssr: false });
 const DealsStrip       = dynamic(() => import("@/components/DealsStrip").then(m => m.DealsStrip), { ssr: false });
 const DestinationsGrid = dynamic(() => import("@/components/DestinationsGrid").then(m => m.DestinationsGrid), { ssr: false });
 // Results path — only rendered after a search; lazy-load to keep initial JS small
@@ -122,9 +123,17 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
 
-      {/* -- Deals du moment -- */}
+      {/* -- Deal Spotlight + Deals strip -- */}
       {!hasSearched && (
-        <div className="max-w-5xl mx-auto w-full px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 space-y-3">
+          <DealSpotlight
+            lang={lang}
+            onDealClick={(from, to) => {
+              setPrefillFrom(from);
+              setPrefillTo(to);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
           <DealsStrip
             lang={lang}
             onDealClick={(from, to) => {
