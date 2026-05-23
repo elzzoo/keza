@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
@@ -133,12 +133,71 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
     return r;
   }, [stopsFiltered, tab, sortBy]);
 
+  // Animated progress loader state
+  const loadingSteps = lang === "fr"
+    ? [
+        { icon: "📡", msg: "Connexion aux sources de prix en temps réel…" },
+        { icon: "✈️",  msg: "Données de vol récupérées, analyse en cours…" },
+        { icon: "🧮",  msg: "Calcul des options miles & cash…" },
+        { icon: "🏆",  msg: "Tri des meilleures offres pour vous…" },
+      ]
+    : [
+        { icon: "📡", msg: "Connecting to live pricing sources…" },
+        { icon: "✈️",  msg: "Flight data retrieved, analysing…" },
+        { icon: "🧮",  msg: "Computing miles & cash options…" },
+        { icon: "🏆",  msg: "Ranking the best offers for you…" },
+      ];
+
+  const [loadStep, setLoadStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!loading) { setLoadStep(0); setProgress(0); return; }
+    setLoadStep(0);
+    setProgress(0);
+    // Cycle messages every 1.8s
+    const stepTimer = setInterval(() => {
+      setLoadStep(s => Math.min(s + 1, loadingSteps.length - 1));
+    }, 1800);
+    // Progress bar fills over 8s (matches typical search time)
+    const start = Date.now();
+    const DURATION = 8000;
+    const progTimer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      setProgress(Math.min(Math.round((elapsed / DURATION) * 100), 95));
+    }, 80);
+    return () => { clearInterval(stepTimer); clearInterval(progTimer); };
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (loading) {
+    const step = loadingSteps[loadStep];
     return (
       <div className="space-y-4 animate-fade-up">
+        {/* Step message */}
         <div className="flex items-center gap-3">
-          <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <span className="text-sm text-muted font-medium">{t.loading}</span>
+          <span className="text-lg leading-none">{step.icon}</span>
+          <span className="text-sm text-muted font-medium flex-1">{step.msg}</span>
+        </div>
+        {/* Progress bar */}
+        <div className="h-1.5 bg-surface-2 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-100 ease-linear"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        {/* Step dots */}
+        <div className="flex items-center gap-1.5">
+          {loadingSteps.map((s, i) => (
+            <div
+              key={i}
+              className={clsx(
+                "h-1 rounded-full transition-all duration-300",
+                i <= loadStep
+                  ? "bg-primary w-4"
+                  : "bg-surface-2 w-1"
+              )}
+            />
+          ))}
         </div>
         {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
       </div>
