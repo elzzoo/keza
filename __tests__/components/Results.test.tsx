@@ -69,8 +69,8 @@ describe("Results", () => {
     render(
       <Results results={[]} loading={true} lang="en" onBack={noop} />
     );
-    // The spinner element has animate-spin class; the loading text is also shown
-    expect(screen.getByText(/Searching/i)).toBeInTheDocument();
+    // Animated loader shows first step message
+    expect(screen.getByText(/Connecting to live pricing sources/i)).toBeInTheDocument();
   });
 
   it("shows skeleton cards when loading=true", () => {
@@ -146,6 +146,6 @@ describe("Results", () => {
     render(
       <Results results={[]} loading={true} lang="fr" onBack={noop} />
     );
-    expect(screen.getByText(/Recherche en cours/i)).toBeInTheDocument();
+    expect(screen.getByText(/Connexion aux sources de prix/i)).toBeInTheDocument();
   });
 });
