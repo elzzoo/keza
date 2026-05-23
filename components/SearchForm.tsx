@@ -26,6 +26,8 @@ interface Props {
   initialDate?: string;
   initialTripType?: "oneway" | "roundtrip";
   initialPax?: number;
+  /** Called with true while streaming partial results, false when final results arrive */
+  onLiveRefreshing?: (v: boolean) => void;
 }
 
 type TripType = "oneway" | "roundtrip";
@@ -37,7 +39,7 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
-export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax }: Props) {
+export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax, onLiveRefreshing }: Props) {
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");
   const [tripType,   setTripType]   = useState<TripType>(initialTripType ?? "roundtrip");
@@ -97,42 +99,109 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     onSearchStart?.({ from, to, date: depDate, cabin: searchCabin, tripType });
     trackSearch({ from, to, cabin: searchCabin, tripType, pax: passengers });
 
-    // Client-side guard: abort if server doesn't respond within 10s
-    const CLIENT_TIMEOUT_MS = 10_000;
+    // Hard abort after 14s — ensures UI never hangs even if stream stalls
+    const CLIENT_TIMEOUT_MS = 14_000;
     const controller = new AbortController();
     const clientTimer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
 
+    const requestBody = JSON.stringify({
+      from, to, date: depDate,
+      returnDate: tripType === "roundtrip" ? retDate : undefined,
+      tripType, cabin: searchCabin, passengers,
+      userPrograms: programs ? programs.split(",").map(p => p.trim()).filter(Boolean) : [],
+    });
+
+    let partialReceived = false;
+
     try {
-      const res = await fetch("/api/search", {
+      const res = await fetch("/api/search/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from, to, date: depDate,
-          returnDate: tripType === "roundtrip" ? retDate : undefined,
-          tripType, cabin: searchCabin, passengers,
-          userPrograms: programs ? programs.split(",").map(p => p.trim()).filter(Boolean) : [],
-        }),
+        body: requestBody,
         signal: controller.signal,
       });
+
+      if (!res.ok || !res.body) {
+        // Non-200 or no body — fall through to JSON error handling
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(json.error ?? (lang === "fr" ? "Erreur de recherche" : "Search error"));
+      }
+
+      // ── Consume SSE stream ──────────────────────────────────────────────────
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer    = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // SSE events are separated by double newlines
+        const chunks = buffer.split("\n\n");
+        buffer = chunks.pop() ?? ""; // keep incomplete trailing chunk
+
+        for (const chunk of chunks) {
+          if (!chunk.startsWith("data: ")) continue;
+          let event: { type: string; results?: FlightResult[]; forexRate?: number; message?: string };
+          try { event = JSON.parse(chunk.slice(6)); } catch { continue; }
+
+          if (event.type === "partial" && event.results && event.results.length > 0) {
+            partialReceived = true;
+            // Show Duffel results immediately — hide the loading spinner
+            onLoading(false);
+            setBusy(false);
+            onResults(event.results, false);
+            // Signal parent that final results are still incoming
+            onLiveRefreshing?.(true);
+
+          } else if (event.type === "final" && event.results) {
+            // Merge in full Duffel+TP results — update silently (no loader)
+            onLiveRefreshing?.(false);
+            onResults(event.results, false);
+
+          } else if (event.type === "error") {
+            // Server error after stream started — if we already have partial, keep them
+            if (!partialReceived) {
+              throw new Error(event.message ?? (lang === "fr" ? "Erreur de recherche" : "Search error"));
+            } else {
+              onLiveRefreshing?.(false);
+            }
+          }
+        }
+      }
       clearTimeout(clientTimer);
-      const json = await res.json() as { results: FlightResult[]; partial?: boolean; error?: string };
-      if (!res.ok) throw new Error(json.error ?? (lang === "fr" ? "Erreur de recherche" : "Search error"));
-      onResults(json.results, json.partial);
+
+      // If we never got any results (e.g. cache miss + both providers returned empty)
+      // the Results component handles the empty state gracefully.
+      if (!partialReceived) {
+        // Final event never came through — mark loading done
+        onLoading(false);
+      }
+
     } catch (err) {
       clearTimeout(clientTimer);
+      onLiveRefreshing?.(false);
       const isAbort = (err as Error).name === "AbortError";
       if (isAbort) {
-        const msg = lang === "fr"
-          ? "⚠️ Résultats partiels affichés — certaines sources indisponibles"
-          : "⚠️ Partial results — some sources unavailable";
-        toast.warning(msg, { duration: 6000 });
+        if (!partialReceived) {
+          const msg = lang === "fr"
+            ? "⚠️ Résultats partiels affichés — certaines sources indisponibles"
+            : "⚠️ Partial results — some sources unavailable";
+          toast.warning(msg, { duration: 6000 });
+        }
+        // If partial was received, we already showed results — just stop quietly
       } else {
         const msg = err instanceof Error ? err.message : (lang === "fr" ? "Erreur de recherche" : "Search error");
         setError(msg);
         toast.error(msg);
       }
-    } finally { setBusy(false); onLoading(false); }
-  }, [from, to, depDate, retDate, tripType, passengers, programs, onResults, onLoading, onSearchStart, lang]);
+    } finally {
+      setBusy(false);
+      onLoading(false);
+    }
+  }, [from, to, depDate, retDate, tripType, passengers, programs, onResults, onLoading, onSearchStart, onLiveRefreshing, lang]);
 
   // Keep a stable ref so the cabin-change effect always calls the latest version
   const fetchResultsRef = useRef(fetchResults);

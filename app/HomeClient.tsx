@@ -9,9 +9,10 @@ import { TrustBar }      from "@/components/TrustBar";
 import { SearchForm }    from "@/components/SearchForm";
 
 // Below-the-fold homepage components — lazy loaded
-const OnboardingWizard = dynamic(() => import("@/components/OnboardingWizard").then(m => m.OnboardingWizard), { ssr: false });
-const DealSpotlight    = dynamic(() => import("@/components/DealSpotlight").then(m => m.DealSpotlight), { ssr: false });
-const DealsStrip       = dynamic(() => import("@/components/DealsStrip").then(m => m.DealsStrip), { ssr: false });
+const OnboardingWizard     = dynamic(() => import("@/components/OnboardingWizard").then(m => m.OnboardingWizard), { ssr: false });
+const DealSpotlight        = dynamic(() => import("@/components/DealSpotlight").then(m => m.DealSpotlight), { ssr: false });
+const CheapestRouteBanner  = dynamic(() => import("@/components/CheapestRouteBanner").then(m => m.CheapestRouteBanner), { ssr: false });
+const DealsStrip           = dynamic(() => import("@/components/DealsStrip").then(m => m.DealsStrip), { ssr: false });
 const DestinationsGrid = dynamic(() => import("@/components/DestinationsGrid").then(m => m.DestinationsGrid), { ssr: false });
 // Results path — only rendered after a search; lazy-load to keep initial JS small
 const Results          = dynamic(() => import("@/components/Results").then(m => m.Results), { ssr: false });
@@ -37,11 +38,12 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
   const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
   const { currency, setCurrency, formatPrice } = useCurrency();
 
-  const [lang,       setLang]       = useState<"fr" | "en">(defaultLang);
-  const [results,    setResults]    = useState<FlightResult[]>([]);
-  const [partial,    setPartial]    = useState(false);
-  const [loading,    setLoading]    = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [lang,            setLang]           = useState<"fr" | "en">(defaultLang);
+  const [results,         setResults]        = useState<FlightResult[]>([]);
+  const [partial,         setPartial]        = useState(false);
+  const [loading,         setLoading]        = useState(false);
+  const [liveRefreshing,  setLiveRefreshing] = useState(false);
+  const [hasSearched,     setHasSearched]    = useState(false);
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo,   setPrefillTo]   = useState<string | undefined>();
   const [lastSearch, setLastSearch]   = useState<{from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"} | null>(null);
@@ -113,7 +115,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
   }, []);
 
   const handleBack = () => {
-    setResults([]); setHasSearched(false);
+    setResults([]); setHasSearched(false); setLiveRefreshing(false);
   };
 
   return (
@@ -123,11 +125,20 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
 
-      {/* -- Deal Spotlight + Deals strip -- */}
+      {/* -- Deal Spotlight + Cheapest Route + Deals strip -- */}
       {!hasSearched && (
-        <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 space-y-3">
+        <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 space-y-2">
           <DealSpotlight
             lang={lang}
+            onDealClick={(from, to) => {
+              setPrefillFrom(from);
+              setPrefillTo(to);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+          <CheapestRouteBanner
+            lang={lang}
+            formatPrice={formatPrice}
             onDealClick={(from, to) => {
               setPrefillFrom(from);
               setPrefillTo(to);
@@ -202,6 +213,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
             onResults={handleResults}
             onLoading={setLoading}
             onSearchStart={handleSearchStart}
+            onLiveRefreshing={setLiveRefreshing}
             lang={lang}
             initialFrom={prefillFrom}
             initialTo={prefillTo}
@@ -240,6 +252,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
                 lang={lang}
                 onBack={handleBack}
                 partial={partial}
+                liveRefreshing={liveRefreshing}
                 searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
                 formatPrice={formatPrice}
               />

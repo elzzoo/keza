@@ -16,6 +16,8 @@ interface Props {
   lang: "fr" | "en";
   onBack: () => void;
   partial?: boolean;
+  /** True while final results are still streaming in after partial were shown */
+  liveRefreshing?: boolean;
   searchMeta?: { from: string; to: string; cabin: string };
   formatPrice?: (usd: number) => string;
 }
@@ -92,7 +94,7 @@ function SkeletonCard() {
   );
 }
 
-export function Results({ results, loading, lang, onBack, partial, searchMeta, formatPrice }: Props) {
+export function Results({ results, loading, lang, onBack, partial, liveRefreshing, searchMeta, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
@@ -220,7 +222,15 @@ export function Results({ results, loading, lang, onBack, partial, searchMeta, f
         >
           {t.back}
         </button>
-        <span className="text-xs text-subtle">{t.found(results.length)}</span>
+        <div className="flex items-center gap-2">
+          {liveRefreshing && (
+            <span className="flex items-center gap-1.5 text-[11px] text-muted animate-pulse">
+              <span className="w-2 h-2 rounded-full border border-primary border-t-transparent animate-spin" />
+              {lang === "fr" ? "Mise à jour…" : "Updating…"}
+            </span>
+          )}
+          <span className="text-xs text-subtle">{t.found(results.length)}</span>
+        </div>
       </div>
 
       {/* Stat tiles */}
