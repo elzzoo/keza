@@ -17,6 +17,7 @@ import { logError } from "../logger";
 export const CACHE_VERSION = "v22"; // bumped: Home Carrier Guarantee + JAL name fix
 
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
+  const _t0 = Date.now();
   try {
   const {
     from, to, date,
@@ -29,35 +30,36 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   } = params;
 
   const directOnly = stops === "direct";
+  const isRoundtrip = tripType === "roundtrip" && !!returnDate;
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
   const cacheKey   = `keza:${CACHE_VERSION}:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
 
-  // 1. Cache check
+  // 1. Cache check + effectivePrices in parallel
   // Each caller gets a fresh searchId — the cached results share flight/price
   // data but click-tracking must be per-session, not shared across users.
-  const cached = await redis.get<FlightResult[]>(cacheKey).catch(() => null);
+  const [cached, effectivePrices] = await Promise.all([
+    redis.get<FlightResult[]>(cacheKey).catch(() => null),
+    getEffectivePrices().catch(() => new Map<string, number>()),
+  ]);
   if (cached) {
     const freshId = crypto.randomUUID();
     return cached.map((r) => ({ ...r, searchId: freshId }));
   }
 
-  // Fetch effective miles prices once (Redis → static fallback)
-  const effectivePrices = await getEffectivePrices().catch(() => {
-    // If Redis is unreachable and static fallback also fails, use empty map
-    // buildCostOptions will still work — it falls back to acquisition cost = 0
-    return new Map<string, number>();
-  });
-
-  // 2. Fetch outbound flights — Travelpayouts + Duffel in parallel
+  // 2. Fetch outbound + return flights — ALL four provider calls in parallel.
   //    Duffel is the PRIMARY source (real-time, HIGH confidence).
   //    Travelpayouts is the fallback (cache-based, LOW confidence).
-  //    When stops=any, also try a direct-only TP fetch to catch nonstops that the
-  //    main query sometimes misses (Travelpayouts may rank them lower than
-  //    connections priced cheaper). Merge & dedupe by airline+stops.
-  const [tpOutboundRaw, duffelOutboundRaw] = await Promise.all([
+  //    For roundtrips we fire both legs simultaneously to halve total latency.
+  const [tpOutboundRaw, duffelOutboundRaw, tpReturnRaw, duffelReturnRaw] = await Promise.all([
     fetchFromTravelpayouts(from, to, date, directOnly),
     fetchFromDuffel(from, to, date, cabin, passengers).catch((): NormalizedFlight[] => []),
+    isRoundtrip
+      ? fetchFromTravelpayouts(to, from, returnDate!, directOnly)
+      : Promise.resolve([] as NormalizedFlight[]),
+    isRoundtrip
+      ? fetchFromDuffel(to, from, returnDate!, cabin, passengers).catch((): NormalizedFlight[] => [])
+      : Promise.resolve([] as NormalizedFlight[]),
   ]);
   // Tag by source so mergeFlights can prefer Duffel over TP for same key
   const tpOutbound     = tpOutboundRaw.map(f => ({ ...f, source: "TP"     as const, priceConfidence: "LOW"  as const }));
@@ -112,20 +114,16 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
 
   const outbound = filterByStops(rawOutbound, stops);
 
-  // 3. Fetch return flights (two separate legs) — Travelpayouts + Duffel in parallel
+  // 3. Process return flights using the pre-fetched data (fetched in parallel with outbound in step 2)
   let returnFlights: NormalizedFlight[] = [];
-  if (tripType === "roundtrip" && returnDate) {
-    const [tpReturnRaw, duffelReturnRaw] = await Promise.all([
-      fetchFromTravelpayouts(to, from, returnDate, directOnly),
-      fetchFromDuffel(to, from, returnDate, cabin, passengers).catch((): NormalizedFlight[] => []),
-    ]);
+  if (isRoundtrip) {
     const tpReturn     = tpReturnRaw.map(f => ({ ...f, source: "TP"     as const, priceConfidence: "LOW"  as const }));
     const duffelReturn = duffelReturnRaw.map(f => ({ ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
     const rawReturn = mergeFlights(tpReturn, duffelReturn);
 
     // Same direct-flight recovery for return leg (TP only — Duffel already included all)
     if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
-      const directReturn = await fetchFromTravelpayouts(to, from, returnDate, true);
+      const directReturn = await fetchFromTravelpayouts(to, from, returnDate!, true);
       if (directReturn.length > 0) {
         const existingKeys = new Set(rawReturn.map(f => `${f.airlines.join(",")}:${f.stops}`));
         for (const df of directReturn) {
@@ -141,7 +139,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     returnFlights = filterByStops(rawReturn, stops);
   }
 
-  // 4. Apply promotions
+  // 4. Apply promotions (load in parallel with cache write — fire first to keep critical path tight)
   const promotions     = await loadPromotions();
   const withPromos     = applyPromotions(outbound, promotions);
   const returnWithPromos = returnFlights.length

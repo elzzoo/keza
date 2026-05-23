@@ -44,6 +44,7 @@ function sanitizeCode(raw: unknown): string | null {
 
 export async function POST(request: Request) {
   const requestId = randomUUID();
+  const _t0 = Date.now();
 
   const limited = await rateLimitResponse(request, {
     namespace: "api:search:post",
@@ -144,6 +145,7 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ results, count: results.length, forexRate, partial, fromCache });
     response.headers.set("x-request-id", requestId);
+    response.headers.set("x-response-time", `${Date.now() - _t0}ms`);
     return response;
   } catch (err) {
     logError("[api/search]", err);
