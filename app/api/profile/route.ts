@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getServerProfile, saveServerProfile } from "@/lib/serverProfile";
 import type { UserProfile } from "@/lib/userProfile";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
