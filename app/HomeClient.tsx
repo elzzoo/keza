@@ -29,6 +29,8 @@ const HowItWorks          = dynamic(() => import("@/components/HowItWorks").then
 const PromoBanner         = dynamic(() => import("@/components/PromoBanner").then(m => m.PromoBanner), { ssr: false });
 const MilesCalculatorWidget = dynamic(() => import("@/components/MilesCalculatorWidget").then(m => m.MilesCalculatorWidget), { ssr: false });
 const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").then(m => m.ProgramsWidget), { ssr: false });
+const SocialProofBar      = dynamic(() => import("@/components/SocialProofBar").then(m => m.SocialProofBar), { ssr: false });
+const PwaInstallBanner    = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
 
 interface HomeClientProps {
   defaultLang?: "fr" | "en";
@@ -44,6 +46,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
   const [loading,         setLoading]        = useState(false);
   const [liveRefreshing,  setLiveRefreshing] = useState(false);
   const [hasSearched,     setHasSearched]    = useState(false);
+  const [searchCount,     setSearchCount]    = useState(0);
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo,   setPrefillTo]   = useState<string | undefined>();
   const [lastSearch, setLastSearch]   = useState<{from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"} | null>(null);
@@ -97,6 +100,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
     setResults(r);
     setPartial(isPartial ?? false);
     setHasSearched(true);
+    if (!isPartial) setSearchCount(c => c + 1);
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
     // Record search in profile
@@ -124,6 +128,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <OnboardingWizard lang={lang} />
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
+      <SocialProofBar lang={lang} />
 
       {/* -- Deal Spotlight + Cheapest Route + Deals strip -- */}
       {!hasSearched && (
@@ -386,6 +391,8 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       </main>
 
       {!hasSearched && <Footer lang={lang} />}
+      {/* PWA install banner — shown after 2 searches if browser supports it */}
+      <PwaInstallBanner lang={lang} searchCount={searchCount} />
     </div>
   );
 }

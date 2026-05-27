@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { trackAlertCreated } from "@/lib/analytics";
@@ -51,6 +51,13 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
   const [frequency, setFrequency] = useState<"instant" | "daily" | "weekly">("instant");
   const [createdAlertId, setCreatedAlertId] = useState<string | null>(null);
   const [pushState, setPushState] = useState<"idle" | "loading" | "granted" | "denied" | "unsupported">("idle");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("keza:alertes:email");
+      if (saved) setEmail(saved);
+    } catch { /* localStorage unavailable */ }
+  }, []);
 
   const targetPrice = Math.round(currentPrice * 0.9);
 
@@ -256,7 +263,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
               }`}
             >
               {f === "instant"
-                ? lang === "fr" ? "Quotidien" : "Daily"
+                ? lang === "fr" ? "Instantané" : "Instant"
                 : f === "daily"
                 ? lang === "fr" ? "Quotidien" : "Daily"
                 : lang === "fr" ? "Hebdo" : "Weekly"}
@@ -265,7 +272,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         </div>
         <p className="text-[11px] text-muted mt-1">
           {frequency === "instant"
-            ? lang === "fr" ? "Un récap quotidien si prix bas" : "Daily recap when prices drop"
+            ? lang === "fr" ? "Dès qu'un prix bas est détecté" : "As soon as a low price is detected"
             : frequency === "daily"
             ? lang === "fr" ? "Un récap quotidien si prix bas" : "Daily recap when prices are low"
             : lang === "fr" ? "Un récap chaque lundi" : "A recap every Monday"}

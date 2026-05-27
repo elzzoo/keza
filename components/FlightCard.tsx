@@ -8,6 +8,7 @@ import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
 import { MilesAlertButton } from "@/components/MilesAlertButton";
+import { toggleFavoriteRoute, isFavoriteRoute } from "@/lib/userProfile";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
@@ -74,7 +75,14 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   const isNearParity = savingsRatio < 0.05 && bestOption !== null;
   const isBusinessMode = checkBusinessMode(flight.cabin);
 
-  const [showAlts, setShowAlts] = useState(false);
+  const [showAlts,   setShowAlts]   = useState(false);
+  const [isFav,      setIsFav]      = useState(false);
+  useEffect(() => { setIsFav(isFavoriteRoute(flight.from, flight.to)); }, [flight.from, flight.to]);
+  function handleFav(e: React.MouseEvent) {
+    e.stopPropagation();
+    const nowFav = toggleFavoriteRoute(flight.from, flight.to);
+    setIsFav(nowFav);
+  }
   const alternatives = (flight.milesOptions ?? [])
     .filter(o => !o.isBestDeal)
     .slice(0, 3);
@@ -109,6 +117,23 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
             🥇 {fr ? "Meilleure offre" : "Best deal"}
           </div>
         )}
+
+        {/* Favourite button — top-left */}
+        <button
+          type="button"
+          onClick={handleFav}
+          title={isFav
+            ? (fr ? "Retirer des favoris" : "Remove from favourites")
+            : (fr ? "Ajouter aux favoris" : "Add to favourites")}
+          className={clsx(
+            "absolute top-3 left-3 w-6 h-6 flex items-center justify-center rounded-full transition-all",
+            isFav
+              ? "text-red-400 hover:text-red-500"
+              : "text-muted/40 hover:text-muted"
+          )}
+        >
+          {isFav ? "❤️" : "🤍"}
+        </button>
 
         {/* Primary message — generated client-side so it uses the user's currency */}
         <div className={clsx(

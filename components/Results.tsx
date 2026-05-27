@@ -6,6 +6,7 @@ import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
 import { CardRecommendation } from "./CardRecommendation";
 import { PriceAlertForm } from "./PriceAlertForm";
+import { PriceTrendBadge } from "./PriceTrendBadge";
 import PortfolioCheck from "@/components/PortfolioCheck";
 import clsx from "clsx";
 import { isBusinessMode } from "@/lib/businessMode";
@@ -251,6 +252,11 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
           </div>
         </div>
+      )}
+
+      {/* Price trend badge */}
+      {results.length > 0 && searchMeta && (
+        <PriceTrendBadge from={searchMeta.from} to={searchMeta.to} lang={lang} />
       )}
 
       {/* No direct flights info banner */}

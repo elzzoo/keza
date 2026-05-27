@@ -275,6 +275,51 @@ export default async function EnRoutePage(
         {/* Alert CTA */}
         <RouteAlertCta from={from} to={to} fromCity={fromCity} toCity={toCity} />
 
+        {/* Related routes */}
+        {(() => {
+          const related = Array.from(ROUTE_META.entries())
+            .filter(([k]) => {
+              if (k === routeKey(from, to)) return false;
+              const [f, t] = k.split("-");
+              return f === from || t === to;
+            })
+            .slice(0, 6)
+            .map(([k]) => {
+              const [f, t] = k.split("-");
+              const fApt = AIRPORTS.find(a => a.code === f);
+              const tApt = AIRPORTS.find(a => a.code === t);
+              return {
+                slug: iataToSlug(f!, t!),
+                fromFlag: fApt?.flag ?? "",
+                toFlag: tApt?.flag ?? "",
+                fromCity: fApt?.cityEn ?? fApt?.city ?? f,
+                toCity: tApt?.cityEn ?? tApt?.city ?? t,
+              };
+            });
+          if (related.length === 0) return null;
+          return (
+            <div className="space-y-3">
+              <h2 className="text-[11px] font-black uppercase tracking-widest text-muted">Similar routes</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {related.map(r => (
+                  <Link
+                    key={r.slug}
+                    href={`/en/vol/${r.slug}`}
+                    className="group flex items-center gap-2 px-4 py-3 bg-surface rounded-xl border border-border hover:border-primary/30 hover:bg-surface-2 transition-all text-sm"
+                  >
+                    <span>{r.fromFlag}</span>
+                    <span className="font-semibold text-fg">{r.fromCity}</span>
+                    <span className="text-primary">→</span>
+                    <span>{r.toFlag}</span>
+                    <span className="font-semibold text-fg">{r.toCity}</span>
+                    <span className="ml-auto text-[10px] text-muted group-hover:text-primary">→</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Bottom CTA */}
         <div className="bg-gradient-to-br from-primary/10 to-surface rounded-2xl border border-primary/20 p-6 text-center space-y-3">
           <p className="text-lg font-black text-fg">
