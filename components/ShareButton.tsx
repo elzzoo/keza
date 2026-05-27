@@ -56,7 +56,7 @@ export function ShareButton({ lang, searchParams, savings, bestPrice, bestProgra
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  }, [searchParams]);
+  }, [searchParams, savings, bestPrice, bestProgram]);
 
   return (
     <button
