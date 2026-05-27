@@ -26,6 +26,7 @@ const NAV = {
     { label: "Programmes", href: "/programmes" },
     { label: "Portefeuille", href: "/portefeuille" },
     { label: "Pour les entreprises", href: "/entreprises" },
+    { label: "Mon compte", href: "/compte" },
   ],
   en: [
     { label: "How it works", href: "/#how" },
@@ -37,6 +38,7 @@ const NAV = {
     { label: "Programs", href: "/programmes" },
     { label: "Portfolio", href: "/portefeuille" },
     { label: "For Business", href: "/entreprises" },
+    { label: "My account", href: "/compte" },
   ],
 };
 
