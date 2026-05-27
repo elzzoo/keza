@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 
@@ -10,9 +11,12 @@ interface Props {
 export function AuthButton({ lang }: Props) {
   const { data: session, status } = useSession();
   const fr = lang === "fr";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  if (status === "loading") {
-    return <div className="w-8 h-8 rounded-full bg-surface-2 animate-pulse" />;
+  // Avoid hydration mismatch: render nothing until client-side session is known
+  if (!mounted || status === "loading") {
+    return <div className="w-8 h-8 rounded-full bg-surface-2 animate-pulse" suppressHydrationWarning />;
   }
 
   if (session?.user) {
