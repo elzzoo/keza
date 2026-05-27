@@ -7,6 +7,7 @@ import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
+import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
 
 // Max time to wait for a full search before returning with partial flag.
 // 18s gives Duffel's full first attempt (8s) + TP time on Vercel cloud-to-cloud.
@@ -127,6 +128,10 @@ export async function POST(request: Request) {
 
     // Fire-and-forget engine observability stats
     const today = new Date().toISOString().slice(0, 10);
+    // Tally savings: best USE_MILES result savings (USD), rounded to avoid float drift
+    const bestSaving = results
+      .filter(r => r.recommendation === "USE_MILES" && r.savings > 0)
+      .reduce((max, r) => Math.max(max, r.savings), 0);
     Promise.all([
       redis.incr(`keza:stats:searches:${today}`),
       fromCache
@@ -138,6 +143,10 @@ export async function POST(request: Request) {
           : redis.incr(`keza:stats:provider:tp:${today}`)
       )),
       redis.expire(`keza:stats:searches:${today}`, 30 * 24 * 60 * 60),
+      // Track cumulative savings so SocialProofBar can show "$Xk saved"
+      ...(bestSaving > 0 && !fromCache
+        ? [redis.incrby(TOTAL_SAVINGS_KEY, Math.round(bestSaving))]
+        : []),
     ]).catch(() => {});
 
     // Fetch forex rate (non-blocking, fallback to 600 if fails)

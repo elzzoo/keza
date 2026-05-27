@@ -201,6 +201,9 @@ export function ProfilClient() {
     Object.values(profile.balances).reduce((a, b) => a + b, 0) +
     Object.values(profile.bankPoints).reduce((a, b) => a + b, 0);
 
+  // Estimated cash value at ~1.5 cpp (conservative industry average)
+  const estimatedUsd = Math.round(totalMiles * 0.015);
+
   const affordable = computeAffordable(profile);
 
   return (
@@ -225,6 +228,11 @@ export function ProfilClient() {
             <div className="flex-1 min-w-0">
               <p className="text-xs text-muted">Total miles &amp; points</p>
               <p className="text-2xl font-black text-primary">{fmt(totalMiles)}</p>
+              {totalMiles > 0 && (
+                <p className="text-[11px] text-muted mt-0.5">
+                  ≈ <span className="text-success font-semibold">${fmt(estimatedUsd)}</span> USD estimés
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-xs text-muted">Programmes</p>
