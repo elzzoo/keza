@@ -9,7 +9,6 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const DISMISSED_KEY = "keza:pwa:install:dismissed";
-const SEARCHES_KEY  = "keza:pwa:searches";
 
 interface Props {
   lang: "fr" | "en";
