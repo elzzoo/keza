@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { RouteAlertCta } from "@/components/RouteAlertCta";
 import { PriceSparkline } from "@/components/PriceSparkline";
 import { CheapestDatesCalendar } from "@/components/CheapestDatesCalendar";
+import { PriceHeatmap } from "@/components/PriceHeatmap";
 
 export const revalidate = 86400;
 
@@ -271,6 +272,9 @@ export default async function EnRoutePage(
         </div>
 
         <CheapestDatesCalendar from={from} to={to} lang="en" />
+
+        {/* 6-month price heatmap */}
+        <PriceHeatmap from={from} to={to} lang="en" />
 
         {/* Price history sparkline */}
         <PriceSparkline from={from} to={to} lang="en" />

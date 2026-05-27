@@ -13,7 +13,7 @@ interface Props {
   from: string;
   to: string;
   lang: "fr" | "en";
-  cabin: string;
+  cabin?: string;
   onSelectMonth?: (month: string) => void;
   formatPrice?: (usd: number) => string;
 }
@@ -54,7 +54,7 @@ function priceColor(ratio: number): string {
 export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice }: Props) {
   const fr = lang === "fr";
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
-  const mult = CABIN_MULT[cabin] ?? 1;
+  const mult = CABIN_MULT[cabin ?? "economy"] ?? 1;
   const monthNames = fr ? MONTHS_SHORT_FR : MONTHS_SHORT_EN;
 
   const [monthData, setMonthData] = useState<MonthData[]>([]);
