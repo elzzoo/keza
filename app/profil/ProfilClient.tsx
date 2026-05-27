@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   loadProfile,
   saveProfile,
@@ -135,9 +136,39 @@ export function ProfilClient() {
   const [editBank, setEditBank] = useState<string>(BANK_CURRENCIES[0].key);
   const [editBankAmount, setEditBankAmount] = useState("");
 
+  const { data: session } = useSession();
+
+  const syncToServer = useCallback(() => {
+    if (!session?.user?.email) return;
+    fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loadProfile()),
+    }).catch(() => {});
+  }, [session?.user?.email]);
+
   useEffect(() => {
-    setProfile(loadProfile());
-  }, []);
+    const local = loadProfile();
+    setProfile(local);
+
+    if (session?.user?.email) {
+      fetch("/api/profile")
+        .then(r => r.ok ? r.json() : null)
+        .then((d: { profile?: Partial<UserProfile> } | null) => {
+          if (d?.profile) {
+            setProfile(prev => prev ? {
+              ...prev,
+              balances:       d.profile!.balances       ?? prev.balances,
+              bankPoints:     d.profile!.bankPoints      ?? prev.bankPoints,
+              favoriteRoutes: d.profile!.favoriteRoutes  ?? prev.favoriteRoutes,
+              recentSearches: d.profile!.recentSearches  ?? prev.recentSearches,
+            } : prev);
+          }
+        })
+        .catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.email]);
 
   const reload = useCallback(() => setProfile(loadProfile()), []);
 
@@ -151,6 +182,7 @@ export function ProfilClient() {
     setEditProgram("");
     setEditAmount("");
     reload();
+    syncToServer();
   }
 
   function removeBalance(prog: string) {
@@ -158,6 +190,7 @@ export function ProfilClient() {
     const rest = Object.fromEntries(Object.entries(profile.balances).filter(([k]) => k !== prog));
     saveProfile({ ...profile, balances: rest });
     reload();
+    syncToServer();
   }
 
   function addBankPoints() {
@@ -168,6 +201,7 @@ export function ProfilClient() {
     saveProfile(next);
     setEditBankAmount("");
     reload();
+    syncToServer();
   }
 
   function removeBankPoints(key: string) {
@@ -175,12 +209,14 @@ export function ProfilClient() {
     const rest = Object.fromEntries(Object.entries(profile.bankPoints).filter(([k]) => k !== key));
     saveProfile({ ...profile, bankPoints: rest });
     reload();
+    syncToServer();
   }
 
   function clearRecents() {
     if (!profile) return;
     saveProfile({ ...profile, recentSearches: [] });
     reload();
+    syncToServer();
   }
 
   function removeFavorite(from: string, to: string) {
@@ -188,6 +224,7 @@ export function ProfilClient() {
     const favoriteRoutes = profile.favoriteRoutes.filter(r => !(r.from === from && r.to === to));
     saveProfile({ ...profile, favoriteRoutes });
     reload();
+    syncToServer();
   }
 
   if (!profile) {
@@ -242,6 +279,13 @@ export function ProfilClient() {
               </p>
             </div>
           </div>
+
+          {session?.user && (
+            <div className="flex items-center gap-2 text-[11px] text-success mt-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              <span>Synchronisé avec {session.user.email}</span>
+            </div>
+          )}
 
           {/* Quick stats */}
           <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
