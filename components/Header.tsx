@@ -5,6 +5,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { CurrencyPicker } from "./CurrencyPicker";
 import { ThemeToggle } from "./ThemeToggle";
+import { AuthButton } from "@/components/AuthButton";
 import type { CurrencyCode } from "@/lib/currency";
 
 interface Props {
@@ -92,6 +93,9 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
           {currency && onCurrencyChange && (
             <CurrencyPicker currency={currency} onCurrencyChange={onCurrencyChange} />
           )}
+
+          {/* Auth button */}
+          <AuthButton lang={lang} />
 
           {/* Profile link */}
           <Link
