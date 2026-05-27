@@ -8,6 +8,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { JsonLd } from "@/components/JsonLd";
 import { RouteAlertCta } from "@/components/RouteAlertCta";
 import { PriceSparkline } from "@/components/PriceSparkline";
+import { CheapestDatesCalendar } from "@/components/CheapestDatesCalendar";
 
 // ISR: revalidate every 24h — route metadata rarely changes
 export const revalidate = 86400;
@@ -266,6 +267,8 @@ export default async function RoutePage(
             </div>
           </div>
         </div>
+
+        <CheapestDatesCalendar from={from} to={to} lang="fr" />
 
         {/* Price history sparkline */}
         <PriceSparkline from={from} to={to} lang="fr" />

@@ -8,6 +8,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { JsonLd } from "@/components/JsonLd";
 import { RouteAlertCta } from "@/components/RouteAlertCta";
 import { PriceSparkline } from "@/components/PriceSparkline";
+import { CheapestDatesCalendar } from "@/components/CheapestDatesCalendar";
 
 export const revalidate = 86400;
 
@@ -268,6 +269,8 @@ export default async function EnRoutePage(
             </div>
           </div>
         </div>
+
+        <CheapestDatesCalendar from={from} to={to} lang="en" />
 
         {/* Price history sparkline */}
         <PriceSparkline from={from} to={to} lang="en" />
