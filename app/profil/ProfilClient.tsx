@@ -12,6 +12,7 @@ import {
 } from "@/lib/userProfile";
 import { ROUTE_META } from "@/data/routeMeta";
 import { airportsMap } from "@/data/airports";
+import { TRANSFER_BONUSES } from "@/data/transferBonuses";
 
 // ── Canonical list of miles programs ──────────────────────────────────────
 const LOYALTY_PROGRAMS = [
@@ -396,6 +397,40 @@ export function ProfilClient() {
                 </button>
               </div>
             </section>
+
+            {/* Active transfer bonuses */}
+            {(() => {
+              const today = new Date().toISOString().slice(0, 10);
+              const activePromos = TRANSFER_BONUSES.filter(
+                b => b.promoRatio && b.promoValidUntil && b.promoValidUntil >= today
+              );
+              if (activePromos.length === 0) return null;
+              return (
+                <section className="bg-surface rounded-2xl border border-amber-500/30 p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎁</span>
+                    <h2 className="text-sm font-black text-fg">Bonus de transfert actifs</h2>
+                  </div>
+                  <div className="space-y-2">
+                    {activePromos.map((b, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-fg">
+                            {b.from} → {b.to}
+                          </p>
+                          <p className="text-[11px] text-muted">
+                            Jusqu&apos;au {b.promoValidUntil}
+                          </p>
+                        </div>
+                        <span className="text-xs font-black text-amber-500">
+                          +{Math.round((b.promoRatio! - 1) * 100)}% bonus
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
           </div>
         )}
 
