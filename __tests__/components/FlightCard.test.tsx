@@ -8,6 +8,10 @@ import { FlightCard } from "@/components/FlightCard";
 import type { FlightResult } from "@/lib/engine";
 
 // Mock external dependencies
+jest.mock("@/hooks/useProfile", () => ({
+  useProfile: jest.fn(() => ({ profile: null, isLoaded: false })),
+}));
+
 jest.mock("@/lib/analytics", () => ({
   trackBookClick: jest.fn(),
 }));

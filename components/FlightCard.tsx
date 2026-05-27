@@ -9,6 +9,8 @@ import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
 import { MilesAlertButton } from "@/components/MilesAlertButton";
 import { toggleFavoriteRoute, isFavoriteRoute } from "@/lib/userProfile";
+import dynamic from "next/dynamic";
+const PortfolioCheck = dynamic(() => import("@/components/PortfolioCheck"), { ssr: false });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatMiles(n: number): string {
@@ -419,6 +421,13 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               {a}
             </span>
           ))}
+        </div>
+      )}
+
+      {/* Portfolio check — shown for USE_MILES when user has miles data */}
+      {isUseMiles && flight.milesOptions && flight.milesOptions.length > 0 && (
+        <div className="px-4 pt-3">
+          <PortfolioCheck milesOptions={flight.milesOptions} lang={fr ? "fr" : "en"} />
         </div>
       )}
 
