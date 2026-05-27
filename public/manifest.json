@@ -53,6 +53,13 @@
   ],
   "shortcuts": [
     {
+      "name": "Mon profil",
+      "short_name": "Profil",
+      "description": "Wallet miles, favoris, routes abordables",
+      "url": "/profil",
+      "icons": [{ "src": "/api/icons/192", "sizes": "192x192" }]
+    },
+    {
       "name": "Mes alertes",
       "short_name": "Alertes",
       "description": "Gérer mes alertes prix",
