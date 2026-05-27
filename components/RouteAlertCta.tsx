@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface Props {
   from: string;
@@ -16,6 +17,7 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
   const [targetPrice, setTargetPrice] = useState("");
   const [step,        setStep]        = useState<Step>("idle");
   const [errorMsg,    setErrorMsg]    = useState("");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,6 +47,14 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
       } else if (res.status === 409) {
         setErrorMsg("Une alerte existe déjà pour ce vol.");
         setStep("error");
+      } else if (res.status === 429) {
+        const body = await res.json().catch(() => ({})) as { code?: string };
+        if (body.code === "FREE_LIMIT_REACHED") {
+          setShowUpgrade(true);
+        } else {
+          setErrorMsg("Trop de requêtes — réessaie dans quelques secondes.");
+          setStep("error");
+        }
       } else {
         const body = await res.json().catch(() => ({}));
         setErrorMsg((body as { error?: string }).error ?? "Erreur — réessaie plus tard.");
@@ -69,6 +79,7 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
   }
 
   return (
+    <>
     <div className="bg-surface rounded-2xl border border-border p-5 space-y-4">
       <div className="flex items-start gap-3">
         <span className="text-2xl flex-shrink-0">🔔</span>
@@ -120,5 +131,10 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
         </button>
       </form>
     </div>
+
+    {showUpgrade && (
+      <UpgradeModal lang="fr" onClose={() => setShowUpgrade(false)} prefillEmail={email} />
+    )}
+    </>
   );
 }

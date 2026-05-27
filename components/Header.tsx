@@ -80,6 +80,14 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
             Prix Live
           </span>
 
+          {/* Pro upgrade CTA — small persistent pill */}
+          <Link
+            href="/pro"
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] font-bold text-amber-400 hover:bg-amber-500/20 transition-colors"
+          >
+            💎 Pro
+          </Link>
+
           {/* Currency picker */}
           {currency && onCurrencyChange && (
             <CurrencyPicker currency={currency} onCurrencyChange={onCurrencyChange} />

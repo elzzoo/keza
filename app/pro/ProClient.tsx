@@ -158,43 +158,49 @@ export function ProClient({ upgraded }: { upgraded?: boolean }) {
           </div>
         ) : (
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
-            <p className="font-semibold text-fg mb-1">
-              {paymentsAvailable ? "Passer en Pro — 9$ / mois" : "Rejoindre la liste d'attente Pro"}
-            </p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-semibold text-fg">
+                {paymentsAvailable ? "Passer en Pro" : "Rejoindre la liste d'attente"}
+              </p>
+              <span className="text-lg font-black text-amber-400">9$ <span className="text-xs font-normal text-muted">/ mois</span></span>
+            </div>
             <p className="text-xs text-muted mb-4">
               {paymentsAvailable
-                ? "Annulable à tout moment. Paiement sécurisé via Lemon Squeezy."
-                : "Les paiements ouvriront très bientôt — laisse ton email pour être prévenu en premier."}
+                ? "Sans engagement · Annulable à tout moment · Paiement via Lemon Squeezy"
+                : "Les paiements ouvriront très bientôt — sois prévenu en premier."}
             </p>
-            <form onSubmit={handleCheckout} className="flex gap-2">
+            <form onSubmit={handleCheckout} className="space-y-2">
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ton@email.com"
-                className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-primary"
+                className="w-full rounded-xl border border-border bg-bg px-4 py-3 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-amber-500/50"
               />
               <button
                 type="submit"
                 disabled={checkoutStatus === "loading" || !email.trim()}
-                className="rounded-lg bg-amber-500 text-black text-sm font-bold px-4 py-2 hover:bg-amber-400 transition-colors disabled:opacity-50 whitespace-nowrap"
+                className="w-full rounded-xl bg-amber-500 text-black text-sm font-black py-3 hover:bg-amber-400 transition-colors disabled:opacity-50"
               >
                 {checkoutStatus === "loading"
                   ? "…"
                   : paymentsAvailable
-                    ? "Payer 9$ →"
-                    : "Rejoindre →"}
+                    ? "💎 Passer en Pro — 9$ / mois →"
+                    : "Rejoindre la liste →"}
               </button>
             </form>
             {checkoutError && (
               <p className="mt-2 text-xs text-amber-400">{checkoutError}</p>
             )}
-            <p className="mt-3 text-xs text-muted/60 text-center">
-              {paymentsAvailable
-                ? "Tu seras redirigé vers Lemon Squeezy pour finaliser le paiement."
-                : "Inscription gratuite — aucun engagement."}
-            </p>
+            <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-muted/60">
+              <span>🔒</span>
+              <span>
+                {paymentsAvailable
+                  ? "Paiement sécurisé · Facture email automatique"
+                  : "Inscription gratuite — aucun engagement."}
+              </span>
+            </div>
           </div>
         )}
 

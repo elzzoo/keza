@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { trackAlertCreated } from "@/lib/analytics";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 interface Props {
   from: string;
@@ -50,6 +51,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed" | "limitReached">("idle");
   const [frequency, setFrequency] = useState<"instant" | "daily" | "weekly">("instant");
   const [createdAlertId, setCreatedAlertId] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [pushState, setPushState] = useState<"idle" | "loading" | "granted" | "denied" | "unsupported">("idle");
 
   useEffect(() => {
@@ -96,6 +98,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         const data = await res.json().catch(() => ({}));
         if (data.code === "FREE_LIMIT_REACHED") {
           setStatus("limitReached");
+          setShowUpgradeModal(true);
           toast.warning(t.maxed);
         } else {
           setStatus("maxed");
@@ -223,6 +226,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
   }
 
   return (
+    <>
     <form
       onSubmit={handleSubmit}
       className="bg-gradient-to-br from-primary/5 to-blue-500/5 border border-primary/20 rounded-2xl p-4 space-y-3"
@@ -313,15 +317,14 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
           <p className="text-sm font-semibold text-amber-400">
             🔒 {lang === "fr" ? "Limite gratuite atteinte — 3 alertes max" : "Free limit reached — 3 alerts max"}
           </p>
-          <p className="text-xs text-muted">
-            {lang === "fr"
-              ? "Rejoignez la liste d'attente Pro pour des alertes illimitées, ou parrainez un ami pour débloquer une alerte supplémentaire."
-              : "Join the Pro waitlist for unlimited alerts, or refer a friend to unlock an extra alert slot."}
-          </p>
           <div className="flex flex-col gap-2">
-            <Link href="/pro" className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">
-              {lang === "fr" ? "Rejoindre la liste d'attente Pro →" : "Join the Pro waitlist →"}
-            </Link>
+            <button
+              type="button"
+              onClick={() => setShowUpgradeModal(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              💎 {lang === "fr" ? "Passer en Pro — alertes illimitées →" : "Upgrade to Pro — unlimited alerts →"}
+            </button>
             <Link href="/alertes" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
               🎁 {lang === "fr" ? "Parrainer un ami (+1 alerte gratuite) →" : "Refer a friend (+1 free alert) →"}
             </Link>
@@ -329,6 +332,16 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         </div>
       )}
     </form>
+
+    {/* Upgrade modal — shown when free limit is hit */}
+    {showUpgradeModal && (
+      <UpgradeModal
+        lang={lang}
+        onClose={() => setShowUpgradeModal(false)}
+        prefillEmail={email}
+      />
+    )}
+    </>
   );
 }
 
