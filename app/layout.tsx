@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { SITE_URL } from "@/lib/siteConfig";
 import { ProfileProvider } from "@/contexts/ProfileContext";
+import { AuthSessionProvider } from "@/contexts/SessionContext";
 
 const inter = localFont({
   src: "./fonts/GeistVF.woff",
@@ -118,21 +119,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }),
           }}
         />
-        <ProfileProvider>
-          {children}
-          <SpeedInsights />
-          <Toaster
-            position="bottom-center"
-            toastOptions={{
-              style: {
-                background: "rgb(var(--surface))",
-                border: "1px solid rgb(var(--border))",
-                color: "rgb(var(--fg))",
-              },
-            }}
-            richColors
-          />
-        </ProfileProvider>
+        <AuthSessionProvider>
+          <ProfileProvider>
+            {children}
+            <SpeedInsights />
+            <Toaster
+              position="bottom-center"
+              toastOptions={{
+                style: {
+                  background: "rgb(var(--surface))",
+                  border: "1px solid rgb(var(--border))",
+                  color: "rgb(var(--fg))",
+                },
+              }}
+              richColors
+            />
+          </ProfileProvider>
+        </AuthSessionProvider>
         <Script
           async
           nonce={nonce}
