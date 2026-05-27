@@ -3,6 +3,13 @@ import { createHmac, timingSafeEqual } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+// Validate OAuth credentials at startup (not in test environment)
+if (process.env.NODE_ENV !== "test") {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.warn("[auth] GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set — Google OAuth will not work");
+  }
+}
+
 // ── NextAuth configuration ────────────────────────────────────────────────────
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -26,7 +33,7 @@ export const authOptions: NextAuthOptions = {
     // Expose email in the session object visible to useSession()
     async session({ session, token }) {
       if (token.email && session.user) {
-        session.user.email = token.email as string;
+        session.user.email = String(token.email);
       }
       return session;
     },
