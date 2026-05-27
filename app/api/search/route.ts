@@ -147,6 +147,10 @@ export async function POST(request: Request) {
       ...(bestSaving > 0 && !fromCache
         ? [redis.incrby(TOTAL_SAVINGS_KEY, Math.round(bestSaving))]
         : []),
+      // Track per-route popularity for trending widget (sorted set, TTL 7 days)
+      redis.zincrby(`keza:stats:routes:${today}`, 1, `${from}-${to}`)
+        .then(() => redis.expire(`keza:stats:routes:${today}`, 7 * 24 * 60 * 60))
+        .catch(() => {}),
     ]).catch(() => {});
 
     // Fetch forex rate (non-blocking, fallback to 600 if fails)

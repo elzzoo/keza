@@ -29,8 +29,9 @@ const HowItWorks          = dynamic(() => import("@/components/HowItWorks").then
 const PromoBanner         = dynamic(() => import("@/components/PromoBanner").then(m => m.PromoBanner), { ssr: false });
 const MilesCalculatorWidget = dynamic(() => import("@/components/MilesCalculatorWidget").then(m => m.MilesCalculatorWidget), { ssr: false });
 const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").then(m => m.ProgramsWidget), { ssr: false });
-const SocialProofBar      = dynamic(() => import("@/components/SocialProofBar").then(m => m.SocialProofBar), { ssr: false });
-const PwaInstallBanner    = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
+const SocialProofBar         = dynamic(() => import("@/components/SocialProofBar").then(m => m.SocialProofBar), { ssr: false });
+const PwaInstallBanner       = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
+const TrendingRoutesWidget   = dynamic(() => import("@/components/TrendingRoutesWidget").then(m => m.TrendingRoutesWidget), { ssr: false });
 
 interface HomeClientProps {
   defaultLang?: "fr" | "en";
@@ -129,6 +130,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
       <SocialProofBar lang={lang} />
+      <TrendingRoutesWidget lang={lang} />
 
       {/* -- Deal Spotlight + Cheapest Route + Deals strip -- */}
       {!hasSearched && (

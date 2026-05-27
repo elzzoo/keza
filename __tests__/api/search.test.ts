@@ -3,11 +3,14 @@ const mockGetForexRate = jest.fn();
 const mockRedisGet = jest.fn();
 const mockRedisSet = jest.fn();
 const mockRedisIncr = jest.fn();
+const mockRedisIncrby = jest.fn();
 const mockRedisExpire = jest.fn();
+const mockRedisZincrby = jest.fn();
 const mockRateLimitResponse = jest.fn();
 
 jest.mock("@/lib/engine", () => ({
   searchEngine: (...args: unknown[]) => mockSearchEngine(...args),
+  CACHE_VERSION: "vTEST",
 }));
 
 jest.mock("@/lib/autoCalibrate", () => ({
@@ -19,7 +22,9 @@ jest.mock("@/lib/redis", () => ({
     get: (...args: unknown[]) => mockRedisGet(...args),
     set: (...args: unknown[]) => mockRedisSet(...args),
     incr: (...args: unknown[]) => mockRedisIncr(...args),
+    incrby: (...args: unknown[]) => mockRedisIncrby(...args),
     expire: (...args: unknown[]) => mockRedisExpire(...args),
+    zincrby: (...args: unknown[]) => mockRedisZincrby(...args),
   },
 }));
 
@@ -71,7 +76,9 @@ describe("POST /api/search", () => {
     mockRedisGet.mockResolvedValue(null);
     mockRedisSet.mockResolvedValue("OK");
     mockRedisIncr.mockResolvedValue(1);
+    mockRedisIncrby.mockResolvedValue(1);
     mockRedisExpire.mockResolvedValue(1);
+    mockRedisZincrby.mockResolvedValue(1);
   });
 
   describe("input validation", () => {
