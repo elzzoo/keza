@@ -1,5 +1,45 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
+import type { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+
+// ── NextAuth configuration ────────────────────────────────────────────────────
+export const authOptions: NextAuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId:     process.env.GOOGLE_CLIENT_ID     ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    }),
+  ],
+
+  session: {
+    strategy: "jwt",
+    maxAge:   30 * 24 * 60 * 60, // 30 days
+  },
+
+  callbacks: {
+    // Persist email in the JWT so we can use it server-side
+    async jwt({ token, user }) {
+      if (user?.email) token.email = user.email;
+      return token;
+    },
+    // Expose email in the session object visible to useSession()
+    async session({ session, token }) {
+      if (token.email && session.user) {
+        session.user.email = token.email as string;
+      }
+      return session;
+    },
+  },
+
+  pages: {
+    signIn:  "/connexion",   // custom sign-in page (created in Task 6)
+    error:   "/connexion",   // auth errors redirect there too
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const ADMIN_SESSION_COOKIE = "keza_admin_session";
 const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 hours
