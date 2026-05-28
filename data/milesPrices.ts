@@ -116,7 +116,7 @@ export const MILES_PRICES: MilesPriceRecord[] = [
   { program: "AAdvantage",                  valueCents: 1.3, confidence: "HIGH",   lastUpdated: "2026-04-27" },
   { program: "LifeMiles",                   valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   { program: "ANA Mileage Club",            valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-04-27" },
-  { program: "Singapore KrisFlyer",         valueCents: 1.4, confidence: "HIGH",   lastUpdated: "2026-04-27" },
+  { program: "Singapore KrisFlyer",         valueCents: 1.6, confidence: "HIGH",   lastUpdated: "2026-05-28" }, // raised 1.4→1.6: consensus 1.5–2.0¢ for ASIA-NA/EU premium redemptions
   { program: "Etihad Guest",                valueCents: 1.3, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   { program: "Iberia Avios Plus",           valueCents: 1.4, confidence: "MEDIUM", lastUpdated: "2026-04-27" },
   {

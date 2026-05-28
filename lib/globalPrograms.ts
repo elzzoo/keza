@@ -146,7 +146,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     name: "Garuda GarudaMiles",
     airlineCode: "GA",
     airline: "Garuda Indonesia",
-    alliance: "SkyTeam",
+    alliance: "Star Alliance", // corrected: rejoined Star Alliance (left SkyTeam 2014)
     purchaseMileCostPer1000: null,
     marketValueCents: 1.0,   // raised: 0.8→1.0
     taxProfile: "low",
@@ -245,7 +245,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     airline: "Singapore Airlines",
     alliance: "Star Alliance",
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
+    marketValueCents: 1.6, // canonical: raised 1.4→1.6 (matches milesPrices.ts; consensus 1.5–2.0¢)
     taxProfile: "low",
     transferPartnersFrom: [
       "Amex Membership Rewards",
@@ -558,6 +558,18 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
       "Marriott Bonvoy",
     ],
     accessibilityScore: 2,
+  },
+  {
+    // Required: referenced in 5 routeMeta.ts entries (DSS-CMN, LOS-CMN, CMN-CDG, etc.)
+    name: "Royal Air Maroc Safar Flyer",
+    airlineCode: "AT",
+    airline: "Royal Air Maroc",
+    alliance: "Oneworld", // RAM joined Oneworld February 2020
+    purchaseMileCostPer1000: null,
+    marketValueCents: 1.0,
+    taxProfile: "low",
+    transferPartnersFrom: [], // No credit card transfer partners currently in transferBonuses.ts
+    accessibilityScore: 3,
   },
 
   // ── Independent ──────────────────────────────────────────────────────

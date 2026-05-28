@@ -88,10 +88,10 @@ export const AIRLINE_ALLIANCES: Record<string, Alliance> = {
   AM: "SkyTeam",   // Aeromexico
   AR: "SkyTeam",   // Aerolineas Argentinas
   SU: "SkyTeam",   // Aeroflot (suspended in many markets, still technically member)
-  CI: "SkyTeam",   // China Airlines
+  CI: "Oneworld",      // China Airlines (Taiwan) — full Oneworld member since 2011
   MU: "SkyTeam",   // China Eastern
   CZ: "SkyTeam",   // China Southern
-  GA: "SkyTeam",   // Garuda Indonesia
+  GA: "Star Alliance", // Garuda Indonesia — rejoined Star Alliance (left SkyTeam 2014)
   KQ: "SkyTeam",   // Kenya Airways
   ME: "SkyTeam",   // Middle East Airlines
   SV: "SkyTeam",   // Saudia

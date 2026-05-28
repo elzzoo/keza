@@ -136,7 +136,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     alliance: "star",
     regions: ["asia", "americas", "europe"],
     cpmCents: 1.8,
-    transferPartners: ["amex", "chase"],
+    transferPartners: ["amex"], // Chase UR does NOT transfer to ANA — removed (incorrect)
     bestUse: "Round-the-world & Japan business class",
     bestUseFr: "Tour du monde & business class Japon",
     flag: "🇯🇵",
@@ -410,7 +410,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     type: "airline",
     alliance: "oneworld",
     regions: ["americas", "europe", "asia", "africa"],
-    cpmCents: 1.0,
+    cpmCents: 1.3, // synced with lib/globalPrograms.ts canonical value
     transferPartners: ["citi", "bilt"],
     bestUse: "Oneworld partner awards",
     bestUseFr: "Récompenses partenaires Oneworld",
@@ -423,7 +423,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     company: "Emirates",
     type: "airline",
     regions: ["middle-east", "europe", "africa", "asia", "americas"],
-    cpmCents: 0.9,
+    cpmCents: 1.3, // synced with lib/globalPrograms.ts canonical value (was 0.9)
     transferPartners: ["amex", "citi"],
     bestUse: "Emirates First class A380",
     bestUseFr: "Première classe Emirates A380",
@@ -437,7 +437,7 @@ export const PROGRAMS: LoyaltyProgram[] = [
     type: "airline",
     alliance: "skyteam",
     regions: ["americas", "europe", "asia", "africa"],
-    cpmCents: 1.0,
+    cpmCents: 1.2, // synced with lib/globalPrograms.ts canonical value (was 1.0)
     transferPartners: ["amex"],
     bestUse: "Delta One & partner business class",
     bestUseFr: "Delta One & business class partenaires",

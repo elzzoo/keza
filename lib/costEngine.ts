@@ -817,13 +817,17 @@ export function buildCostOptions(
   const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper, negative = cash cheaper
   const savings = Math.round(signedSavings * 100) / 100;  // keep sign — UI uses recommendation to determine direction
 
-  // USE_MILES only when miles save at least $10 — avoids recommending miles for
-  // $1–$9 "savings" where breakeven uncertainty dwarfs the benefit.
+  // USE_MILES only when miles save at least $10 AND at least 1.5% of the cash total.
+  // The absolute floor prevents recommending miles for $1–$9 trivial "savings".
+  // The percentage floor prevents recommending miles on a $2000 business ticket
+  // where the $10 savings is within the noise of award chart variability.
   const MIN_SAVINGS_USD = 10;
+  const MIN_SAVINGS_PCT = 0.015; // 1.5%
   const recommendation: Recommendation = (
     bestOption !== null &&
     bestOption.totalMilesCost < cashTotal &&
-    (cashTotal - bestOption.totalMilesCost) >= MIN_SAVINGS_USD
+    (cashTotal - bestOption.totalMilesCost) >= MIN_SAVINGS_USD &&
+    (cashTotal - bestOption.totalMilesCost) >= cashTotal * MIN_SAVINGS_PCT
   ) ? "USE_MILES" : "USE_CASH";
 
   // NOTE: displayMessage is not rendered by the UI (FlightCard generates it client-side

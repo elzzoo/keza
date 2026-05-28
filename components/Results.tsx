@@ -116,6 +116,13 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
+  // Track whether the best savings figure comes from a non-HIGH confidence source
+  const maxSavingsIsEstimate = results.length > 0 && (() => {
+    const bestSavingsResult = results.reduce<typeof results[0] | null>(
+      (best, r) => r.savings > (best?.savings ?? 0) ? r : best, null
+    );
+    return bestSavingsResult?.priceConfidence !== "HIGH";
+  })();
 
   // Use milesOptions from the best-deal result, fallback to first result
   const bestResultOptions =
@@ -248,7 +255,12 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
             <p className="text-[11px] text-muted mt-0.5">{t.best}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
-            <p className={`font-black text-success ${fmt(maxSavings).length > 10 ? "text-sm" : "text-xl"}`}>+{fmt(maxSavings)}</p>
+            <p className={`font-black text-success ${fmt(maxSavings).length > 10 ? "text-sm" : "text-xl"}`}>
+              +{fmt(maxSavings)}
+              {maxSavings > 0 && maxSavingsIsEstimate && (
+                <span className="text-[9px] font-medium text-muted/70 ml-1 align-middle">(est.)</span>
+              )}
+            </p>
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
           </div>
         </div>

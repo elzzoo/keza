@@ -105,7 +105,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   },
   "Singapore KrisFlyer": {
     purchaseMileCostPer1000: 35,
-    marketValueCents: 1.4, // canonical: matches milesPrices.ts (was 1.5)
+    marketValueCents: 1.6, // canonical: raised 1.4→1.6 (matches milesPrices.ts; consensus 1.5–2.0¢)
     transferPartnersFrom: ["Amex Membership Rewards", "Chase Ultimate Rewards", "Citi ThankYou", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },

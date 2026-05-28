@@ -259,9 +259,10 @@ describe("SIN → LAX (Asia → North America, Singapore Airlines)", () => {
 
   it("includes Singapore KrisFlyer as DIRECT", () => {
     const { milesOptions } = buildCostOptions(baseSIN, new Map());
-    const kf = milesOptions.find((o) => o.program === "Singapore KrisFlyer");
-    expect(kf).toBeDefined();
-    expect(kf!.type).toBe("DIRECT");
+    // There may be both DIRECT and TRANSFER options for KrisFlyer (via Amex MR etc.)
+    // Verify a DIRECT option exists — when values are equal the sort order is unstable.
+    const kfDirect = milesOptions.find((o) => o.program === "Singapore KrisFlyer" && o.type === "DIRECT");
+    expect(kfDirect).toBeDefined();
   });
 
   it("does not include Air India Flying Returns (no India endpoint)", () => {

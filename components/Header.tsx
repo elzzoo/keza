@@ -74,13 +74,16 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
         </nav>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          {/* Live badge — cash prices are live; miles values are estimates */}
+          {/* Live badge — cash prices are live; miles values are market estimates */}
           <span
-            title="Prix cash en temps réel · Valeurs miles : estimations de marché"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/15 text-[11px] font-semibold text-success cursor-help"
+            title="Prix cash : données temps réel (Duffel + Aviasales) · Valeurs miles : estimations de marché basées sur les barèmes publiés"
+            className="hidden sm:flex flex-col items-start px-2.5 py-1 rounded-full bg-success/10 border border-success/15 cursor-help"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot" />
-            Prix Live
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot flex-shrink-0" />
+              <span className="text-[10px] font-semibold text-success leading-none">Cash · Live</span>
+            </span>
+            <span className="text-[9px] text-muted/70 leading-none mt-0.5 pl-3">Miles · estimés</span>
           </span>
 
           {/* Pro upgrade CTA — small persistent pill */}

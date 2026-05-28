@@ -414,6 +414,45 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
+  // Japan Airlines Mileage Bank — JAL uses Oneworld award bands, closely mirroring ANA.
+  // Rates based on JAL published mileage chart (2025). HOME_CARRIER_PROGRAMS guarantees
+  // this program on NRT-LAX, NRT-JFK, HND-LAX, NRT-SYD etc.
+  "Japan Airlines Mileage Bank": {
+    ASIA: {
+      NORTH_AMERICA: { economy: 35_000, premium: 55_000, business: 85_000 },
+      EUROPE:        { economy: 35_000, premium: 55_000, business: 85_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_EAST:   { economy: 35_000, premium: 52_500, business: 85_000 },
+      AFRICA_SOUTH:  { economy: 40_000, premium: 60_000, business: 100_000 },
+      AFRICA_WEST:   { economy: 40_000, premium: 60_000, business: 100_000 },
+      ASIA:          { economy: 10_000, premium: 15_000, business: 30_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 85_000 },
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 35_000, premium: 55_000, business: 85_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+    AFRICA_WEST: {
+      EUROPE:        { economy: 25_000, premium: 40_000, business: 75_000 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 100_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 25_000, premium: 40_000, business: 75_000 },
+      ASIA:          { economy: 35_000, premium: 52_500, business: 85_000 },
+    },
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 30_000, premium: 47_500, business: 85_000 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 100_000 },
+    },
+  },
+
   "LATAM Pass": {
     SOUTH_AMERICA: {
       SOUTH_AMERICA:  { economy: 10_000, premium: 15_000, business: 30_000 },
