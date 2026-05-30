@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
@@ -101,6 +101,15 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
   const [stopFilter, setStopFilter] = useState<"all" | "direct" | "stops">("all");
   const [sortBy, setSortBy] = useState<SortBy>("value");
+  // Track when live refresh completes to show a freshness timestamp
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
+  const prevRefreshing = useRef(false);
+  useEffect(() => {
+    if (prevRefreshing.current && !liveRefreshing) {
+      setLastUpdatedAt(new Date());
+    }
+    prevRefreshing.current = liveRefreshing ?? false;
+  }, [liveRefreshing]);
 
   const stopsFiltered = useMemo(() => {
     let r = [...results];
@@ -231,12 +240,18 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
           {t.back}
         </button>
         <div className="flex items-center gap-2">
-          {liveRefreshing && (
+          {liveRefreshing ? (
             <span className="flex items-center gap-1.5 text-[11px] text-muted animate-pulse">
               <span className="w-2 h-2 rounded-full border border-primary border-t-transparent animate-spin" />
               {lang === "fr" ? "Mise à jour…" : "Updating…"}
             </span>
-          )}
+          ) : lastUpdatedAt ? (
+            <span className="text-[10px] text-muted/60">
+              {lang === "fr"
+                ? `Mis à jour à ${lastUpdatedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                : `Updated at ${lastUpdatedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`}
+            </span>
+          ) : null}
           <span className="text-xs text-subtle">{t.found(results.length)}</span>
         </div>
       </div>

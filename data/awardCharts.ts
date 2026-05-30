@@ -1048,6 +1048,31 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       MIDDLE_EAST:   { economy: 25_000, premium: 37_500, business: 70_000 },
     },
   },
+
+  // Malaysia Airlines Enrich — Oneworld member, KUL hub.
+  // Rates based on published Enrich points chart (2025). Guaranteed on KUL-LHR and KUL-LAX
+  // via HOME_CARRIER_PROGRAMS. Values align with Oneworld partner tier (similar to Cathay Miles).
+  "Malaysia Airlines Enrich": {
+    ASIA: {
+      EUROPE:        { economy: 35_000, premium: 52_500, business: 85_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 85_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_EAST:   { economy: 35_000, premium: 52_500, business: 85_000 },
+      AFRICA_WEST:   { economy: 40_000, premium: 60_000, business: 100_000 },
+      ASIA:          { economy: 12_000, premium: 18_000, business: 35_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 35_000, premium: 52_500, business: 85_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 52_500, business: 85_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.

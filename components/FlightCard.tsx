@@ -35,6 +35,30 @@ const TYPE_LABEL = {
   en: { DIRECT: "Direct", ALLIANCE: "Alliance", TRANSFER: "Transfer" },
 } as const;
 
+// Programs with dynamic pricing — warn user to verify on airline site
+const DYNAMIC_PRICING_PROGRAMS = new Set(["Delta SkyMiles"]);
+
+// Award search deep-links per program — shown when no bookingLink exists but miles are recommended
+const AWARD_SEARCH_URLS: Record<string, string> = {
+  "Flying Blue":                "https://wwws.airfrance.us/en/common/searchbooking/request/smiles",
+  "Singapore KrisFlyer":        "https://www.singaporeair.com/en_UK/sg/booking/redeem-miles/",
+  "Emirates Skywards":          "https://www.emirates.com/english/skywards/use-miles/use-miles-on-flights/",
+  "Air Canada Aeroplan":        "https://www.aircanada.com/ca/en/aco/home/aeroplan/redeem.html",
+  "ANA Mileage Club":           "https://cam.ana.co.jp/amcmember/login",
+  "Japan Airlines Mileage Bank":"https://www.jal.co.jp/en/jalmileagebank/award/",
+  "AAdvantage":                 "https://www.aa.com/reservation/searchFlightsPage.do?mode=awardSearch",
+  "United MileagePlus":         "https://www.united.com/en/us/flight-search/book-a-flight/awards",
+  "Delta SkyMiles":             "https://www.delta.com/us/en/skymiles/redeem-miles/redeem-for-flights",
+  "British Airways Avios":      "https://www.britishairways.com/en-gb/executive-club/ways-to-spend-avios/flights",
+  "Iberia Avios Plus":          "https://www.iberia.com/us/iberia-plus/points/redeem/",
+  "Turkish Miles&Smiles":       "https://www.turkishairlines.com/en-int/miles-and-smiles/award-ticket/",
+  "Qatar Privilege Club":       "https://www.qatarairways.com/en-us/privilege-club/redeem-avios.html",
+  "Etihad Guest":               "https://www.etihad.com/en/fly-etihad/etihad-guest/redeem",
+  "LATAM Pass":                 "https://www.latamairlines.com/us/en/latam-pass/reward-tickets",
+  "Ethiopian ShebaMiles":       "https://www.ethiopianairlines.com/aa/sheba-miles/use-miles",
+  "Kenya Airways Flying Blue":  "https://wwws.airfrance.us/en/common/searchbooking/request/smiles",
+};
+
 // Confidence labels
 const CONFIDENCE_BADGE: Record<string, { fr: string; en: string; color: string }> = {
   HIGH:   { fr: "Prix confirmé",   en: "Confirmed price", color: "bg-success/15 text-success border-success/20" },
@@ -327,6 +351,18 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         </div>
       )}
 
+      {/* Dynamic pricing warning — Delta SkyMiles uses fully dynamic pricing */}
+      {bestOption && DYNAMIC_PRICING_PROGRAMS.has(bestOption.program) && (
+        <div className="px-5 py-2 border-t border-amber-500/20 bg-amber-500/5 flex items-start gap-2">
+          <span className="text-amber-400 text-xs mt-0.5 flex-shrink-0">⚠️</span>
+          <p className="text-[10px] text-amber-400/80 leading-relaxed">
+            {fr
+              ? "Delta SkyMiles utilise une tarification dynamique — les miles affichés sont des valeurs plancher publiées. Le prix réel peut être 2-3× plus élevé. Vérifiez sur delta.com avant de décider."
+              : "Delta SkyMiles uses dynamic pricing — miles shown are published floor values. Actual cost may be 2-3× higher. Verify on delta.com before deciding."}
+          </p>
+        </div>
+      )}
+
       {/* BUSINESS MODE — program chips */}
       {isBusinessMode && alternatives.length > 0 && (
         <div className="px-5 py-2.5 border-t border-border">
@@ -428,6 +464,25 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
       {isUseMiles && flight.milesOptions && flight.milesOptions.length > 0 && (
         <div className="px-4 pt-3">
           <PortfolioCheck milesOptions={flight.milesOptions} lang={fr ? "fr" : "en"} />
+        </div>
+      )}
+
+      {/* Award search CTA — shown when miles are recommended but no booking link exists */}
+      {!flight.bookingLink && bestOption && (flight.recommendation === "USE_MILES" || flight.recommendation === "IF_HAVE_MILES") && AWARD_SEARCH_URLS[bestOption.program] && (
+        <div className="px-4 pb-4 pt-2 border-t border-border">
+          <a
+            href={AWARD_SEARCH_URLS[bestOption.program]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-[12px] font-semibold transition-all hover-lift bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/25 border-dashed"
+          >
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {fr
+              ? `Rechercher sur ${bestOption.program} →`
+              : `Search awards on ${bestOption.program} →`}
+          </a>
         </div>
       )}
 
