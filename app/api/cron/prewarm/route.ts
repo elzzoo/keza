@@ -4,32 +4,25 @@ import { hasCronSecret } from "@/lib/auth";
 import { logError } from "@/lib/logger";
 
 // ─── Cache pre-warm cron ──────────────────────────────────────────────────────
-// Runs every 2 hours (configured in vercel.json).
-// Fires searchEngine() on high-traffic corridors 30-45 days out so the first
+// Runs daily at 4am UTC (configured in vercel.json).
+// Fires searchEngine() on top-traffic corridors 30 days out so the first
 // real user on each route gets a cache hit instead of waiting 8-10s.
 //
-// Routes chosen: largest traffic corridors by historical search volume.
-// Pre-warmed for economy/oneway only (most common search type).
+// Vercel Hobby hard-kills at 10s. Routes reduced to 5 (all run in parallel,
+// each searchEngine() takes ~3-5s on cache hit or ~7-8s cold).
+// Routes chosen: KEZA's highest-traffic corridors (Africa-Europe focus).
 
-export const maxDuration = 60;
+export const maxDuration = 10;
 
 const POPULAR_ROUTES = [
-  // Asia–Americas
-  { from: "SIN", to: "LAX" },
-  { from: "NRT", to: "LAX" },
-  { from: "NRT", to: "JFK" },
-  // Gulf–Europe
-  { from: "DXB", to: "LHR" },
-  { from: "DXB", to: "CDG" },
-  // Africa–Europe (Keza's focus)
+  // Africa–Europe (KEZA's core)
   { from: "DSS", to: "CDG" },
   { from: "ABJ", to: "CDG" },
   { from: "LOS", to: "LHR" },
-  { from: "NBO", to: "LHR" },
-  { from: "ADD", to: "CDG" },
   // Europe–Americas
   { from: "CDG", to: "JFK" },
-  { from: "LHR", to: "JFK" },
+  // Gulf–Europe
+  { from: "DXB", to: "LHR" },
 ] as const;
 
 /** Generate a YYYY-MM-DD date N days from today */
@@ -45,36 +38,30 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const start = Date.now();
-  // Pre-warm two departure windows: ~30 days and ~45 days out.
-  // Stagger to avoid a thundering herd on Duffel.
-  const dates = [futureDate(30), futureDate(45)];
+  // Single departure window (30 days out) — Hobby plan allows only ~8s execution.
+  const dates = [futureDate(30)];
 
-  const jobs: Promise<void>[] = [];
-  for (const { from, to } of POPULAR_ROUTES) {
-    for (const date of dates) {
-      jobs.push(
-        searchEngine({ from, to, date, tripType: "oneway", stops: "any", cabin: "economy", passengers: 1 })
-          .then(() => undefined)
-          .catch((err) => {
-            logError(`[prewarm] ${from}→${to} ${date} failed`, err);
-          })
-      );
-    }
-  }
+  // Run all 5 routes in parallel (single date, 30 days out).
+  // With maxDuration=10 there is no time for sequential batching.
+  // Each searchEngine() returns instantly on cache hit, or in ~7s cold.
+  const results = await Promise.allSettled(
+    POPULAR_ROUTES.map(({ from, to }) =>
+      searchEngine({ from, to, date: dates[0]!, tripType: "oneway", stops: "any", cabin: "economy", passengers: 1 })
+        .then(() => `${from}→${to}: ok`)
+        .catch((err) => {
+          logError(`[prewarm] ${from}→${to} failed`, err);
+          return `${from}→${to}: failed`;
+        })
+    )
+  );
 
-  // Run up to 6 at a time to avoid overloading Duffel / Redis
-  const BATCH = 6;
-  let warmed = 0;
-  for (let i = 0; i < jobs.length; i += BATCH) {
-    await Promise.allSettled(jobs.slice(i, i + BATCH));
-    warmed += Math.min(BATCH, jobs.length - i);
-  }
+  const warmed = results.filter(r => r.status === "fulfilled" && String((r as PromiseFulfilledResult<string>).value).endsWith("ok")).length;
 
   return NextResponse.json({
     ok: true,
     warmed,
     routes: POPULAR_ROUTES.length,
-    dates,
+    date: dates[0],
     elapsed: `${Date.now() - start}ms`,
   });
 }

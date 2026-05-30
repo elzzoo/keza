@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { searchEngine, CACHE_VERSION, type SearchParams, type FlightResult } from "@/lib/engine";
 
-export const maxDuration = 25;
+// Vercel Hobby plan hard-kills serverless functions at 10s.
+// maxDuration must be ≤ 10 on Hobby; Pro allows up to 300s.
+export const maxDuration = 10;
 import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError, logWarn } from "@/lib/logger";
@@ -10,10 +12,9 @@ import { redis } from "@/lib/redis";
 import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
 
 // Max time to wait for a full search before returning with partial flag.
-// 18s gives Duffel's full first attempt (8s) + TP time on Vercel cloud-to-cloud.
-// The client AbortController fires at 10s so users never actually wait this long —
-// the server completes in the background and warms the cache for the next visitor.
-const SEARCH_TIMEOUT_MS = 18_000;
+// Must be < maxDuration (10s) to ensure graceful partial response fires before
+// Vercel kills the function. 8s leaves 2s for response serialization + Redis write.
+const SEARCH_TIMEOUT_MS = 8_000;
 
 /**
  * Build the versioned cache key that searchEngine uses.
