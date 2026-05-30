@@ -9,6 +9,7 @@ import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
 import { MilesAlertButton } from "@/components/MilesAlertButton";
 import { toggleFavoriteRoute, isFavoriteRoute } from "@/lib/userProfile";
+import { getAchievedCpp, rateCpp, CPP_RATING_DISPLAY } from "@/lib/mileValue";
 import dynamic from "next/dynamic";
 const PortfolioCheck = dynamic(() => import("@/components/PortfolioCheck"), { ssr: false });
 
@@ -348,6 +349,30 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               />
             )}
           </div>
+
+          {/* Achieved CPP badge — shown when miles are recommended and cash price is known */}
+          {isUseMiles && flight.cashCost > 0 && bestOption.milesRequired > 0 && (() => {
+            const achieved = getAchievedCpp(flight.cashCost, bestOption.milesRequired);
+            const rating   = rateCpp(achieved, bestOption.valuePerMile);
+            const display  = CPP_RATING_DISPLAY[rating];
+            if (achieved <= 0) return null;
+            return (
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className={`text-[10px] font-bold ${display.color}`}>
+                  {achieved.toFixed(1)}¢/mile
+                </span>
+                <span className="text-muted/40 text-[9px]">·</span>
+                <span className={`text-[10px] font-semibold ${display.color}`}>
+                  {fr ? display.fr : display.en}
+                </span>
+                {rating === "excellent" && (
+                  <span className="text-[9px] text-muted/60">
+                    ({fr ? `${(achieved / bestOption.valuePerMile).toFixed(1)}× valeur marché` : `${(achieved / bestOption.valuePerMile).toFixed(1)}× market rate`})
+                  </span>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 

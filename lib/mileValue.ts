@@ -1,40 +1,54 @@
 // lib/mileValue.ts
-// Contextual mile value: adjusts the base market value (cents/mile) based on
-// cabin class and route length. Premium redemptions and long-haul sweet spots
-// have higher effective value than short-haul economy usage.
+//
+// Achieved CPP (cents per mile) for a specific redemption — for DISPLAY only.
+//
+// IMPORTANT: Do NOT use getAchievedCpp() to compute totalMilesCost in buildOption().
+// Opportunity cost must stay flat (market rate from milesPrices.ts) regardless of
+// cabin or route length — the formula `savings = cashTotal - (milesRequired × marketRate + taxes)`
+// already reflects higher savings on premium cabins because cashTotal is higher.
+//
+// This module answers a different question: "How many ¢ of flight value did I get
+// per mile burned?" — a quality signal for the user, not a cost signal for the engine.
 
-import type { Cabin } from "./engine";
-
-/** Cabin multipliers applied to the base market value */
-const CABIN_VALUE_MULTIPLIERS: Record<Cabin, number> = {
-  economy: 1.0,
-  premium: 1.4,
-  business: 2.0,
-  first: 2.5,
-};
-
-/** Route length brackets (one-way km) → value multiplier */
-function getRouteLengthMultiplier(distanceKm: number): number {
-  if (distanceKm < 2_000) return 0.85;  // short-haul: poor sweet spots
-  if (distanceKm > 6_000) return 1.25;  // long-haul: best sweet spots
-  return 1.0;                             // medium-haul: standard
+/**
+ * Compute the CPP (cents per mile) actually achieved on this redemption.
+ *
+ * Formula: (cashCost / milesRequired) × 100
+ * Example: $4,000 business / 90,000 KrisFlyer miles = 4.44 ¢/mile
+ *
+ * @param cashCost      - USD cash price of the equivalent flight
+ * @param milesRequired - Miles burned for this award redemption
+ * @returns             - Achieved CPP in cents, 2 decimal places (0 if inputs invalid)
+ */
+export function getAchievedCpp(cashCost: number, milesRequired: number): number {
+  if (milesRequired <= 0 || cashCost <= 0) return 0;
+  return Math.round((cashCost / milesRequired) * 100 * 100) / 100;
 }
 
 /**
- * Compute the effective value of a mile for a specific redemption context.
+ * Rate the quality of a redemption relative to the program's market value.
  *
- * @param baseValueCents  - Static market value from milesPrices.ts (cents)
- * @param cabin           - Cabin class of the redemption
- * @param distanceKm      - Great-circle distance of the route (0 = unknown, skip adjustment)
- * @returns               - Adjusted value in cents (minimum 0.5)
+ * @param achievedCpp  - CPP from getAchievedCpp()
+ * @param marketCpp    - Program's market rate (from milesPrices.ts, via bestOption.valuePerMile)
+ * @returns            - Quality label for display
  */
-export function getContextualMileValue(
-  baseValueCents: number,
-  cabin: Cabin,
-  distanceKm: number,
-): number {
-  const cabinMultiplier  = CABIN_VALUE_MULTIPLIERS[cabin];
-  const routeMultiplier  = getRouteLengthMultiplier(distanceKm);
-  const adjusted = baseValueCents * cabinMultiplier * routeMultiplier;
-  return Math.max(0.5, Math.round(adjusted * 1000) / 1000);
+export type CppRating = "excellent" | "good" | "fair" | "poor";
+
+export function rateCpp(achievedCpp: number, marketCpp: number): CppRating {
+  if (marketCpp <= 0 || achievedCpp <= 0) return "fair";
+  const ratio = achievedCpp / marketCpp;
+  if (ratio >= 2.0) return "excellent"; // ≥2× market rate — classic sweet spot
+  if (ratio >= 1.4) return "good";      // ≥1.4× market rate — solid redemption
+  if (ratio >= 0.9) return "fair";      // near market rate — acceptable
+  return "poor";                         // below market rate — hold miles for better deal
 }
+
+/** UI labels and colors for each rating */
+export const CPP_RATING_DISPLAY: Record<CppRating, {
+  fr: string; en: string; color: string;
+}> = {
+  excellent: { fr: "Excellent",  en: "Excellent",  color: "text-success" },
+  good:      { fr: "Bon",        en: "Good",        color: "text-blue-400" },
+  fair:      { fr: "Correct",    en: "Fair",        color: "text-muted" },
+  poor:      { fr: "Faible",     en: "Poor",        color: "text-warning" },
+};
