@@ -55,8 +55,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET — subscriber count (admin)
-export async function GET() {
+// GET — subscriber count (admin only)
+export async function GET(req: NextRequest) {
+  // Subscriber count is internal data — protect with ADMIN_SECRET.
+  const { hasAdminSecret } = await import("@/lib/auth");
+  if (!hasAdminSecret(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const count = await redis.zcard(NEWSLETTER_KEY);
     return NextResponse.json({ count });

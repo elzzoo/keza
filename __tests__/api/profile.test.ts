@@ -36,14 +36,14 @@ function makeReq(method: string, body?: unknown) {
 describe("GET /api/profile", () => {
   it("returns 401 when no session", async () => {
     mockGetServerSession.mockResolvedValueOnce(null);
-    const res = await GET();
+    const res = await GET(makeReq("GET"));
     expect(res.status).toBe(401);
   });
 
   it("returns profile when session exists", async () => {
     mockGetServerSession.mockResolvedValueOnce({ user: { email: "a@b.com" } });
     mockGetProfile.mockResolvedValueOnce({ balances: { "Flying Blue": 50000 } });
-    const res = await GET();
+    const res = await GET(makeReq("GET"));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.profile.balances["Flying Blue"]).toBe(50000);
@@ -52,7 +52,7 @@ describe("GET /api/profile", () => {
   it("returns null profile when key missing", async () => {
     mockGetServerSession.mockResolvedValueOnce({ user: { email: "new@b.com" } });
     mockGetProfile.mockResolvedValueOnce(null);
-    const res = await GET();
+    const res = await GET(makeReq("GET"));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.profile).toBeNull();

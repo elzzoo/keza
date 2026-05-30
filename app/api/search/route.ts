@@ -44,6 +44,18 @@ function sanitizeCode(raw: unknown): string | null {
   return IATA_RE.test(upper) ? upper : null;
 }
 
+/** Validates YYYY-MM-DD format AND date range (today ≤ date ≤ today + 365 days) */
+function isValidFutureDate(raw: unknown): raw is string {
+  if (typeof raw !== "string" || !DATE_RE.test(raw)) return false;
+  const d = new Date(raw + "T00:00:00Z");
+  if (isNaN(d.getTime())) return false;
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const maxDate = new Date(today);
+  maxDate.setUTCFullYear(maxDate.getUTCFullYear() + 1);
+  return d >= today && d <= maxDate;
+}
+
 export async function POST(request: Request) {
   const requestId = randomUUID();
   const _t0 = Date.now();
@@ -61,7 +73,7 @@ export async function POST(request: Request) {
     /* validate & sanitize inputs */
     const from = sanitizeCode(body.from);
     const to   = sanitizeCode(body.to);
-    const date = typeof body.date === "string" && DATE_RE.test(body.date) ? body.date : null;
+    const date = isValidFutureDate(body.date) ? body.date : null;
 
     if (!from || !to || !date) {
       return NextResponse.json(
@@ -76,7 +88,7 @@ export async function POST(request: Request) {
       from,
       to,
       date,
-      returnDate:   body.returnDate && DATE_RE.test(body.returnDate) ? body.returnDate : undefined,
+      returnDate:   isValidFutureDate(body.returnDate) ? body.returnDate : undefined,
       tripType:     body.tripType === "roundtrip" ? "roundtrip" : "oneway",
       stops:        body.stops === "direct" ? "direct" : "any",
       cabin:        ["economy", "premium", "business", "first"].includes(body.cabin ?? "") ? body.cabin! as "economy" | "premium" | "business" | "first" : "economy",

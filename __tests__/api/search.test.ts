@@ -1,3 +1,6 @@
+// Always-future date for tests — 90 days from test execution
+const FUTURE_DATE = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
 const mockSearchEngine = jest.fn();
 const mockGetForexRate = jest.fn();
 const mockRedisGet = jest.fn();
@@ -44,7 +47,7 @@ const FLIGHT_RESULT = {
   airline: "Air France",
   from: "CDG",
   to: "DSS",
-  date: "2025-06-01",
+  date: FUTURE_DATE,
   price: 450,
   miles: 30000,
   cabin: "economy",
@@ -61,7 +64,7 @@ function makeRequest(body: object): Request {
 const VALID_BODY = {
   from: "CDG",
   to: "DSS",
-  date: "2025-06-01",
+  date: FUTURE_DATE,
   cabin: "economy",
   tripType: "oneway",
   stops: "any",

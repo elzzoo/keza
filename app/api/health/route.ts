@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 /**
  * GET /api/health
@@ -10,7 +11,10 @@ import { redis } from "@/lib/redis";
  * Response shape:
  *   { status: "ok" | "degraded", redis: "ok" | "error", uptime: number }
  */
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const limited = await rateLimitResponse(req, { namespace: "api:health", limit: 60, windowSeconds: 60 });
+  if (limited) return limited;
+
   const start = Date.now();
 
   // Ping Redis with a short timeout

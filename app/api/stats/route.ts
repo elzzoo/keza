@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // GET /api/stats — public lightweight stats for social proof bar
 // Cached 5 min in CDN, recomputed on miss
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, { namespace: "api:stats", limit: 60, windowSeconds: 60 });
+  if (limited) return limited;
   try {
     const today = new Date().toISOString().slice(0, 10);
 

@@ -33,7 +33,8 @@ function buildCsp(nonce: string): string {
     `script-src 'self' 'nonce-${nonce}' https://plausible.io`,
     "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline for styles
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https:",
+    // Restrict to known domains — prevents XSS data exfiltration to arbitrary HTTPS hosts.
+    "connect-src 'self' https://plausible.io https://*.sentry.io https://o*.ingest.sentry.io https://*.upstash.io",
     "font-src 'self' data:",
     "frame-ancestors 'none'",
     "object-src 'none'",
