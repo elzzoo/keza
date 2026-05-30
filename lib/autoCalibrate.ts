@@ -159,11 +159,13 @@ export async function getForexRate(): Promise<number> {
       return cached;
     }
 
-    // Try free API (no key required)
+    // Try free API with 2s timeout — must not block the search response path.
+    const ctrl1 = new AbortController();
+    const timer1 = setTimeout(() => ctrl1.abort(), 2_000);
     const res = await fetch(
       "https://open.er-api.com/v6/latest/USD",
-      { next: { revalidate: 43200 } } // 12h ISR cache
-    );
+      { next: { revalidate: 43200 }, signal: ctrl1.signal }
+    ).finally(() => clearTimeout(timer1));
 
     if (res.ok) {
       const data = await res.json() as { rates?: { XOF?: number } };
@@ -174,11 +176,13 @@ export async function getForexRate(): Promise<number> {
       }
     }
 
-    // Fallback: try backup API
+    // Fallback: try backup API with 2s timeout
+    const ctrl2 = new AbortController();
+    const timer2 = setTimeout(() => ctrl2.abort(), 2_000);
     const res2 = await fetch(
       "https://api.exchangerate.host/latest?base=USD&symbols=XOF",
-      { next: { revalidate: 43200 } }
-    );
+      { next: { revalidate: 43200 }, signal: ctrl2.signal }
+    ).finally(() => clearTimeout(timer2));
 
     if (res2.ok) {
       const data2 = await res2.json() as { rates?: { XOF?: number } };

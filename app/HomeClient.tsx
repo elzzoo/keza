@@ -130,8 +130,9 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <OnboardingWizard lang={lang} />
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
-      <SocialProofBar lang={lang} />
-      <TrendingRoutesWidget lang={lang} />
+      {/* Hide social widgets in results mode — avoids /api/stats + /api/trending fetches */}
+      {!hasSearched && <SocialProofBar lang={lang} />}
+      {!hasSearched && <TrendingRoutesWidget lang={lang} />}
 
       {/* -- Deal Spotlight + Cheapest Route + Deals strip -- */}
       {!hasSearched && (
