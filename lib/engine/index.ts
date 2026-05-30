@@ -14,7 +14,7 @@ import { logError } from "../logger";
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
 // always agree on the key schema. Bump whenever FlightResult shape changes.
-export const CACHE_VERSION = "v23"; // bumped: KrisFlyer 1.4→1.6 + JAL award chart + alliance fixes (CI/GA)
+export const CACHE_VERSION = "v24"; // bumped: COPA/Enrich accessibilityScore fix + label Business inversé + booking link fix
 
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
   try {

@@ -131,7 +131,10 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Iberia":              "Iberia Avios Plus",
   "LATAM Airlines":      "LATAM Pass",   // iataToAirline("LA") returns this name
   "LATAM Brasil":        "LATAM Pass",   // alliances.ts canonical name
-  "Malaysia Airlines":   "Malaysia Airlines Enrich",
+  // Malaysia Airlines Enrich is intentionally NOT in OPERATOR_TO_PROGRAM:
+  // MH has codeshares on many routes it doesn't operate, causing Enrich to appear
+  // globally (DSS→CDG, SIN→LAX, DXB→JFK). Enrich is only guaranteed via
+  // HOME_CARRIER_PROGRAMS for KUL hub routes where MH actually operates.
   "Finnair":             "Finnair Plus", // Oneworld — HEL-JFK, HEL-BKK hub
   // SkyTeam
   "Air France":          "Flying Blue",
@@ -593,9 +596,23 @@ export function buildCostOptions(
   // When using zone fallback, allow all transfer bonuses that target any program
   const programNames = new Set(effectivePrograms.map((p) => p.program));
 
+  // Middle-East hub programs are only relevant when Middle East is involved.
+  // On intra-Europe routes (MAD→BCN, CDG→LHR, etc.) Emirates/Etihad/Qatar
+  // only appear via long-haul hub connections (5h+ for a 1h flight) — misleading.
+  const MIDDLE_EAST_HUB_PROGRAMS = new Set([
+    "Emirates Skywards",
+    "Etihad Guest",
+    "Qatar Privilege Club",
+  ]);
+  const isIntraEurope = originZone === "EUROPE" && destZone === "EUROPE";
+
   for (const bonus of TRANSFER_BONUSES) {
     if (!programNames.has(bonus.to)) continue;
     if (!originZone || !destZone) continue;
+    // Skip Gulf hub programs on non-Middle-East routes — they can only fly via DXB/AUH/DOH
+    // which is never optimal for routes not involving the Gulf.
+    if (MIDDLE_EAST_HUB_PROGRAMS.has(bonus.to) &&
+        originZone !== "MIDDLE_EAST" && destZone !== "MIDDLE_EAST" && isIntraEurope) continue;
 
     // Always use the program's own airline for transfer taxes.
     // operatingAirline may be a different carrier (e.g. Air Senegal on a

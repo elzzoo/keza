@@ -101,18 +101,16 @@ export function enrich(
     result.bookingLink = f.bookingLink;
   } else if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
     // Round-trip TP: build a proper RT Aviasales search URL.
-    // TP v3 deep links are per-leg (one-way); they don't encode the return segment,
-    // so they open a one-way search and confuse users. The RT search URL correctly
-    // shows combined outbound + return itineraries.
+    // ALWAYS build from f.from / f.to (already rebranded by rebrandRoute) rather
+    // than re-using f.bookingLink which may contain a stale/incorrect origin.
     // Format: {FROM}{DEPART_DATE}{TO}{RETURN_DATE}{FROM}{PAX}
-    // Example: DSS20260610CDG20260617DSS1
     const departureDateCompact = searchDate.replace(/-/g, "");
     const returnDateCompact    = returnDate.replace(/-/g, "");
     result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${departureDateCompact}${f.to}${returnDateCompact}${f.from}${passengers}?marker=${TP_MARKER}`;
-  } else if (f.bookingLink) {
-    result.bookingLink = f.bookingLink;
   } else if (searchDate && f.from && f.to) {
-    // One-way fallback: build Aviasales search link
+    // One-way: ALWAYS build from known f.from/f.to to guarantee correct origin.
+    // Do NOT fall through to f.bookingLink (TP v3 deep links may carry wrong origin
+    // after metro-code fallback attempts, e.g. DKR appearing in a DXB→JFK link).
     const dateCompact = searchDate.replace(/-/g, "");
     result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${dateCompact}${f.to}${passengers ?? 1}?marker=${TP_MARKER}`;
   }

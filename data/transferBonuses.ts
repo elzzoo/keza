@@ -107,10 +107,11 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Marriott Bonvoy",  to: "Qantas Frequent Flyer",         baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Aeromexico Club Premier",       baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Thai Royal Orchid Plus",        baseRatio: 0.333, transferTime: "3-5 days" },
-  { from: "Marriott Bonvoy",  to: "COPA ConnectMiles",             baseRatio: 0.333, transferTime: "3-5 days" },
+  // COPA ConnectMiles and Malaysia Airlines Enrich removed from Marriott transfers:
+  // these programs were appearing on globally irrelevant routes (SIN→LAX, DSS→CDG,
+  // DXB→JFK) because Marriott transfers to them. Removed to prevent misleading rankings.
   { from: "Marriott Bonvoy",  to: "Asiana Club",                   baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "EVA Infinity MileageLands",     baseRatio: 0.333, transferTime: "3-5 days" },
-  { from: "Marriott Bonvoy",  to: "Malaysia Airlines Enrich",      baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Finnair Plus",                  baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Southwest Rapid Rewards",       baseRatio: 0.333, transferTime: "3-5 days" },
   { from: "Marriott Bonvoy",  to: "Hawaiian Airlines HawaiianMiles", baseRatio: 0.333, transferTime: "3-5 days" },

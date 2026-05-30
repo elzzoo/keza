@@ -92,10 +92,11 @@ describe("FlightCard", () => {
   });
 
   it("renders USE_CASH recommendation banner", () => {
+    // savings < 0 means cash is cheaper (cashCost - milesCost < 0 → cash costs less)
     const cashFlight: FlightResult = {
       ...baseFlight,
       recommendation: "USE_CASH",
-      savings: 200,
+      savings: -200, // cash saves $200 over miles — correctly represents USE_CASH
     };
     render(<FlightCard flight={cashFlight} lang="en" />);
     expect(screen.getByText(/Pay cash/i)).toBeInTheDocument();

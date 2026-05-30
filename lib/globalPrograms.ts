@@ -324,10 +324,12 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     purchaseMileCostPer1000: 25,
     marketValueCents: 1.0,
     taxProfile: "low",
-    transferPartnersFrom: [
-      "Marriott Bonvoy",
-    ],
-    accessibilityScore: 2,
+    // No transfer partners — Marriott→COPA was causing COPA to appear on SIN→LAX,
+    // DXB→JFK, MAD→BCN and other routes where COPA has no operational relevance.
+    transferPartnersFrom: [],
+    // accessibilityScore: 3 — COPA is only relevant for Panama/Americas hub routes.
+    // Lower score prevents it from outranking KrisFlyer, Emirates, Flying Blue, etc.
+    accessibilityScore: 3,
   },
   {
     name: "Asiana Club",
@@ -519,10 +521,12 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     purchaseMileCostPer1000: 28,
     marketValueCents: 1.0,
     taxProfile: "medium",
-    transferPartnersFrom: [
-      "Marriott Bonvoy",
-    ],
-    accessibilityScore: 2,
+    // No transfer partners — Marriott→Enrich was causing Enrich to appear on every
+    // route globally (DSS→CDG, SIN→LAX, etc.) where MH doesn't even operate.
+    transferPartnersFrom: [],
+    // accessibilityScore: 3 — only relevant on KUL hub routes; should not surface
+    // as "best program" on routes Malaysia Airlines doesn't operate.
+    accessibilityScore: 3,
   },
   {
     name: "Royal Jordanian Royal Plus",

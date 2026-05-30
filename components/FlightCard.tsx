@@ -180,10 +180,14 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                 ? (fr
                     ? `🔥 Tu économises ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " avec les miles"}`
                     : `🔥 You save ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " with miles"}`)
-                : flight.savings > 0
+                : flight.recommendation === "IF_HAVE_MILES" && flight.savings > 0
                   ? (fr
-                      ? `💵 Cash moins cher — économise ${fmt(flight.savings)}`
-                      : `💵 Pay cash — save ${fmt(flight.savings)}`)
+                      ? `✈ Si vous avez des miles — potentiel ${fmt(flight.savings)} d'économie (prix estimé)`
+                      : `✈ If you have miles — potential ${fmt(flight.savings)} saving (estimated price)`)
+                : flight.savings < 0
+                  ? (fr
+                      ? `💵 Cash moins cher — économise ${fmt(Math.abs(flight.savings))}`
+                      : `💵 Pay cash — save ${fmt(Math.abs(flight.savings))}`)
                   : (fr ? "💵 Cash légèrement avantageux" : "💵 Cash slightly better")}
         </div>
 
