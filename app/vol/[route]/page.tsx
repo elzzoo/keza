@@ -121,6 +121,45 @@ export default async function RoutePage(
           availability: "https://schema.org/InStock",
         },
       },
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: `Vaut-il mieux payer en cash ou en miles pour ${fromCity} → ${toCity} ?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: `Cela dépend du programme et des dates. KEZA compare toutes les options — prix cash, rachat de miles (meilleurs programmes : ${meta.bestPrograms.slice(0, 3).join(", ")}), et transferts de points bancaires — pour trouver la solution la moins chère.`,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Combien de miles faut-il pour voler ${fromCity} → ${toCity} ?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: `En classe économique, comptez environ ${meta.milesToEconomy.toLocaleString("fr-FR")} miles aller simple, et ${meta.milesToBusiness.toLocaleString("fr-FR")} miles en business. Les meilleurs programmes sur cette route sont ${meta.bestPrograms.join(", ")}.`,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Quelle est la meilleure période pour voler ${fromCity} → ${toCity} ?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: meta.seasonTip.fr,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Y a-t-il des vols directs entre ${fromCity} et ${toCity} ?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: meta.isNonstop
+                ? `Oui, des vols sans escale sont disponibles entre ${fromCity} et ${toCity} avec ${meta.airlines.join(", ")}.`
+                : `Les vols entre ${fromCity} et ${toCity} ont généralement une escale via ${meta.hub ?? "un hub majeur"}. Les compagnies incluent ${meta.airlines.join(", ")}.`,
+            },
+          },
+        ],
+      },
     ],
   };
 

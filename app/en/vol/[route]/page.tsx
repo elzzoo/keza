@@ -124,6 +124,45 @@ export default async function EnRoutePage(
           availability: "https://schema.org/InStock",
         },
       },
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: `Should I pay cash or use miles for ${fromCity} to ${toCity}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: `It depends on the program and dates. KEZA compares all options — cash prices, miles redemptions (best programs: ${meta.bestPrograms.slice(0, 3).join(", ")}), and credit card point transfers — to find the cheapest option.`,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `How many miles do I need to fly from ${fromCity} to ${toCity}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: `In economy, expect around ${meta.milesToEconomy.toLocaleString("en-US")} miles one-way, and ${meta.milesToBusiness.toLocaleString("en-US")} miles in business class. Best programs on this route: ${meta.bestPrograms.join(", ")}.`,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `What is the best time to fly from ${fromCity} to ${toCity}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: seasonTip,
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Are there direct flights between ${fromCity} and ${toCity}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: meta.isNonstop
+                ? `Yes, nonstop flights are available between ${fromCity} and ${toCity} with ${meta.airlines.join(", ")}.`
+                : `Flights between ${fromCity} and ${toCity} typically connect via ${meta.hub ?? "a major hub"}. Airlines include ${meta.airlines.join(", ")}.`,
+            },
+          },
+        ],
+      },
     ],
   };
 
