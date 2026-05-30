@@ -31,10 +31,15 @@ export async function getOrCreateReferralCode(email: string): Promise<string> {
   const existing = await redis.get(REF_CODE_KEY(email));
   if (existing) return existing as string;
 
-  // Generate 8-char alphanumeric code from email hash
+  // Generate 8-char alphanumeric code from email hash.
+  // HMAC_SECRET must be set in production — warn loudly if missing.
+  const hmacSecret = process.env.HMAC_SECRET;
+  if (!hmacSecret && process.env.NODE_ENV === "production") {
+    console.error("[referral] HMAC_SECRET is not set — referral codes are predictable. Set HMAC_SECRET in production env vars.");
+  }
   const code = crypto
     .createHash("sha256")
-    .update(email.toLowerCase() + (process.env.HMAC_SECRET ?? "keza"))
+    .update(email.toLowerCase() + (hmacSecret ?? "keza-dev-fallback"))
     .digest("hex")
     .slice(0, 8)
     .toUpperCase();

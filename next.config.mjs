@@ -27,6 +27,27 @@ const SECURITY_HEADERS = [
   // (nonce-based CSP — see middleware.ts).
 ];
 
+// City-name slug → IATA redirects.
+// These URLs appear in the sitemap for long-tail SEO but the [route] page
+// expects 3-char IATA codes. 301 redirects preserve link equity.
+const CITY_SLUG_REDIRECTS = [
+  { source: "/flights/paris-dakar",         destination: "/flights/CDG-DSS", permanent: true },
+  { source: "/flights/dakar-paris",         destination: "/flights/DSS-CDG", permanent: true },
+  { source: "/flights/london-lagos",        destination: "/flights/LHR-LOS", permanent: true },
+  { source: "/flights/paris-abidjan",       destination: "/flights/CDG-ABJ", permanent: true },
+  { source: "/flights/paris-casablanca",    destination: "/flights/CDG-CMN", permanent: true },
+  { source: "/flights/london-nairobi",      destination: "/flights/LHR-NBO", permanent: true },
+  { source: "/flights/london-johannesburg", destination: "/flights/LHR-JNB", permanent: true },
+  { source: "/flights/paris-new-york",      destination: "/flights/CDG-JFK", permanent: true },
+  { source: "/flights/new-york-london",     destination: "/flights/JFK-LHR", permanent: true },
+  { source: "/flights/dubai-london",        destination: "/flights/DXB-LHR", permanent: true },
+  { source: "/flights/istanbul-london",     destination: "/flights/IST-LHR", permanent: true },
+  { source: "/flights/paris-tokyo",         destination: "/flights/CDG-NRT", permanent: true },
+  { source: "/flights/london-dubai",        destination: "/flights/LHR-DXB", permanent: true },
+  { source: "/flights/london-singapore",    destination: "/flights/LHR-SIN", permanent: true },
+  { source: "/flights/new-york-paris",      destination: "/flights/JFK-CDG", permanent: true },
+];
+
 const nextConfig = {
   // Moved from experimental.serverComponentsExternalPackages in Next.js 15
   serverExternalPackages: ["web-push"],
@@ -36,6 +57,9 @@ const nextConfig = {
   },
   // Compress responses
   compress: true,
+  async redirects() {
+    return CITY_SLUG_REDIRECTS;
+  },
   async headers() {
     return [
       {

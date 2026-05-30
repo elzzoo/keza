@@ -14,7 +14,12 @@ const MANAGE_TTL_SECONDS = 7 * 24 * 60 * 60;
 const UNSUBSCRIBE_TTL_SECONDS = 180 * 24 * 60 * 60;
 
 function getTokenSecret(): string | undefined {
-  return process.env.ALERT_TOKEN_SECRET ?? process.env.ADMIN_SECRET ?? process.env.CRON_SECRET;
+  // ALERT_TOKEN_SECRET is required. Never fall back to ADMIN_SECRET or CRON_SECRET —
+  // those are separate secrets; cross-use would allow forgery of alert tokens.
+  if (!process.env.ALERT_TOKEN_SECRET && process.env.NODE_ENV === "production") {
+    console.error("[alertTokens] ALERT_TOKEN_SECRET is not set. Alert token signing will fail.");
+  }
+  return process.env.ALERT_TOKEN_SECRET;
 }
 
 function base64UrlJson(payload: AlertTokenPayload): string {

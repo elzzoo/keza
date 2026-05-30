@@ -160,19 +160,6 @@ export const ROUTE_META = new Map<string, RouteMeta>([
     isNonstop: true,
   }],
 
-  ["CMN-JFK", {
-    durationMin: 480,
-    airlines: ["Royal Air Maroc"],
-    bestPrograms: ["Safar", "Flying Blue", "Avios"],
-    seasonTip: {
-      fr: "Printemps (avril-juin) et automne (septembre-octobre) offrent le meilleur rapport qualité/prix sur cette route.",
-      en: "Spring (April-June) and autumn (September-October) offer the best value on this route.",
-    },
-    milesToEconomy: 32000,
-    milesToBusiness: 75000,
-    isNonstop: true,
-  }],
-
   ["LOS-ATL", {
     durationMin: 720,
     airlines: ["Delta"],
@@ -1008,7 +995,7 @@ export const ROUTE_META = new Map<string, RouteMeta>([
   ["CMN-JFK", {
     durationMin: 435,
     airlines: ["Royal Air Maroc", "American Airlines"],
-    bestPrograms: ["American AAdvantage", "Flying Blue", "British Airways Executive Club"],
+    bestPrograms: ["AAdvantage", "Flying Blue", "British Airways Avios"],
     seasonTip: {
       fr: "Mars-mai et septembre-novembre sont idéaux pour Casablanca. Évitez le Ramadan pour les voyages d'affaires.",
       en: "March-May and September-November are ideal for Casablanca. Avoid Ramadan for business travel.",

@@ -40,7 +40,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const form = await req.formData();
   const submittedSecret = String(form.get("secret") ?? "");
-  const expectedSecret = process.env.ADMIN_SECRET ?? process.env.CRON_SECRET;
+  // Never fall back to CRON_SECRET — compromise of cron token must not grant admin access.
+  const expectedSecret = process.env.ADMIN_SECRET;
 
   if (!expectedSecret || !safeCompare(submittedSecret, expectedSecret)) {
     const res = redirectToAdmin(req);
