@@ -63,6 +63,18 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 40_000, premium: 55_000, business: 100_000 },
       ASIA:          { economy: 20_000, premium: 28_000, business: 55_000 },
     },
+    NORTH_AMERICA: {
+      // Flying Blue from US/Canada — JFK-CDG-DSS routings use Europe→Africa rates
+      // but when origin zone is NA, direct zone lookup applies.
+      EUROPE:         { economy: 25_000, premium: 40_000, business: 72_000 },
+      AFRICA_WEST:    { economy: 40_000, premium: 60_000, business: 100_000 },
+      AFRICA_NORTH:   { economy: 35_000, premium: 55_000, business: 90_000 },
+      AFRICA_EAST:    { economy: 45_000, premium: 65_000, business: 110_000 },
+      AFRICA_SOUTH:   { economy: 50_000, premium: 70_000, business: 120_000 },
+      MIDDLE_EAST:    { economy: 40_000, premium: 55_000, business: 100_000 },
+      ASIA:           { economy: 45_000, premium: 65_000, business: 110_000 },
+      SOUTH_AMERICA:  { economy: 30_000, premium: 45_000, business: 80_000 },
+    },
   },
 
   "Turkish Miles&Smiles": {

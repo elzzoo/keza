@@ -50,6 +50,8 @@ export const AWARD_TAXES: Record<string, AwardTaxRecord> = {
   "LATAM Brasil":        { economy:  60, business: 110, note: "Low surcharges" },
   "LATAM Airlines":      { economy:  60, business: 110, note: "Low surcharges (iataToAirline alias for LATAM Brasil)" },
   "Alaska Airlines":     { economy:  40, business:  80, note: "Low surcharges (no YQ on AS metal)" },
+  "Virgin Atlantic":     { economy: 150, business: 300, note: "UK APD + moderate YQ on VS metal (LHR-JFK, LHR-LAX)" },
+  "Malaysia Airlines":   { economy:  80, business: 150, note: "Moderate surcharges on MH metal (similar to Cathay Pacific)" },
   // Independent
   "Emirates":            { economy:  50, business:  90, note: "Low surcharges" },
   "Etihad":              { economy:  60, business: 110, note: "Low surcharges" },

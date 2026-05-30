@@ -12,9 +12,9 @@ const KNOWN_PROGRAMS = new Set([
   "ANA Mileage Club",
   "Japan Airlines Mileage Bank",
   "Emirates Skywards",
-  "British Airways Executive Club",
+  "British Airways Avios",        // canonical — not "British Airways Executive Club"
   "United MileagePlus",
-  "American AAdvantage",
+  "AAdvantage",                   // canonical — not "American AAdvantage"
   "Delta SkyMiles",
   "Air Canada Aeroplan",
   "Turkish Miles&Smiles",
@@ -23,13 +23,10 @@ const KNOWN_PROGRAMS = new Set([
   "Korean Air SKYPASS",
   "Cathay Pacific Asia Miles",
   "Malaysia Airlines Enrich",
-  "Ethiopian Airlines ShebaMiles",
-  "COPA ConnectMiles",
-  "Avianca LifeMiles",
-  "Alaska Airlines Mileage Plan",
+  "Ethiopian ShebaMiles",         // canonical — not "Ethiopian Airlines ShebaMiles"
+  "LifeMiles",                    // canonical — not "Avianca LifeMiles"
+  "Alaska Mileage Plan",          // canonical — not "Alaska Airlines Mileage Plan"
   "Iberia Avios Plus",
-  // P3 additions
-  "Turkish Miles&Smiles",
 ]);
 
 describe("HOME_CARRIER_PROGRAMS", () => {

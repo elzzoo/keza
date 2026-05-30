@@ -104,6 +104,38 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "LHR-KUL": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
   "KUL-LAX": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
   "LAX-KUL": [{ airline: "Malaysia Airlines", programs: ["Malaysia Airlines Enrich"] }],
+
+  // Ethiopian ShebaMiles — ADD hub (Addis Ababa)
+  // Guaranteed: if Duffel + TP both miss, ShebaMiles still appears on ADD corridors.
+  "ADD-LHR": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "LHR-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "ADD-CDG": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "CDG-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "ADD-JFK": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "JFK-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "ADD-DXB": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "DXB-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "ADD-FRA": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "FRA-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+
+  // Kenya Airways Flying Blue — NBO hub (Nairobi)
+  // KQ is SkyTeam → Flying Blue applies on NBO corridors
+  "NBO-LHR": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "LHR-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "NBO-CDG": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "CDG-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "NBO-JFK": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "JFK-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "NBO-AMS": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "AMS-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+
+  // RwandAir — KGL hub (Kigali)
+  "KGL-LHR": [{ airline: "RwandAir", programs: ["British Airways Avios"] }],
+  "LHR-KGL": [{ airline: "RwandAir", programs: ["British Airways Avios"] }],
+  "KGL-CDG": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
+  "CDG-KGL": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
+  "KGL-BRU": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
+  "BRU-KGL": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -152,11 +184,26 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "LOS-JFK": ["United"],
   "JFK-LOS": ["United"],
 
-  // South Africa ↔ Europe
+  // South Africa ↔ Europe (JNB + CPT)
   "JNB-CDG": ["Air France", "South African Airways"],
   "CDG-JNB": ["Air France", "South African Airways"],
   "JNB-FRA": ["Lufthansa", "South African Airways"],
   "FRA-JNB": ["Lufthansa", "South African Airways"],
+  "CPT-LHR": ["British Airways", "South African Airways"],
+  "LHR-CPT": ["British Airways", "South African Airways"],
+  "CPT-CDG": ["Air France", "South African Airways"],
+  "CDG-CPT": ["Air France", "South African Airways"],
+  "CPT-FRA": ["Lufthansa", "South African Airways"],
+  "FRA-CPT": ["Lufthansa", "South African Airways"],
+
+  // South Africa ↔ North America
+  "JNB-JFK": ["South African Airways", "United"],
+  "JFK-JNB": ["South African Airways", "United"],
+
+  // West Africa ↔ Europe — Accra
+  "ACC-CDG": ["Air France"],
+  "CDG-ACC": ["Air France"],
+  // ACC-LHR / LHR-ACC already defined above — no duplicate needed.
 
   // East Africa ↔ Europe (additional routes)
   "ADD-LHR": ["Ethiopian Airlines", "British Airways"],

@@ -96,6 +96,7 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Alaska Mileage Plan":     "Alaska Airlines",  // Oneworld — bookable on BA/QR/AA partners
   "Cathay Pacific Asia Miles": "Cathay Pacific", // static chart added in audit-21
   "Malaysia Airlines Enrich":  "Malaysia Airlines",
+  "Finnair Plus":              "Finnair",          // Oneworld — HEL hub
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -131,6 +132,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "LATAM Airlines":      "LATAM Pass",   // iataToAirline("LA") returns this name
   "LATAM Brasil":        "LATAM Pass",   // alliances.ts canonical name
   "Malaysia Airlines":   "Malaysia Airlines Enrich",
+  "Finnair":             "Finnair Plus", // Oneworld — HEL-JFK, HEL-BKK hub
   // SkyTeam
   "Air France":          "Flying Blue",
   "KLM":                 "Flying Blue",
