@@ -32,6 +32,7 @@ const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").
 const SocialProofBar         = dynamic(() => import("@/components/SocialProofBar").then(m => m.SocialProofBar), { ssr: false });
 const PwaInstallBanner       = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
 const TrendingRoutesWidget   = dynamic(() => import("@/components/TrendingRoutesWidget").then(m => m.TrendingRoutesWidget), { ssr: false });
+import { NewsletterSignup }  from "@/components/NewsletterSignup";
 
 interface HomeClientProps {
   defaultLang?: "fr" | "en";
@@ -333,6 +334,9 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
                 <ProgramsWidget lang={lang} />
               </div>
             </div>
+
+            {/* Newsletter opt-in */}
+            <NewsletterSignup lang={lang} variant="inline" />
 
             {/* Promo banner */}
             <PromoBanner lang={lang} />

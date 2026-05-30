@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { LiveDeal, DealRecommendation } from "@/lib/dealsEngine";
 import { trackDealsFilter, trackDealShare } from "@/lib/analytics";
 import { SITE_URL } from "@/lib/siteConfig";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 // ─── Region mapping (derived from IATA prefix heuristics) ────────────────────
 
@@ -324,8 +325,13 @@ export function DealsPageClient({ initialDeals, lang = "fr" }: { initialDeals: L
         </div>
       )}
 
+      {/* Newsletter opt-in */}
+      <div className="mt-10">
+        <NewsletterSignup lang={lang} variant="inline" />
+      </div>
+
       {/* Alert CTA */}
-      <div className="mt-12 bg-surface border border-border rounded-2xl p-6 text-center">
+      <div className="mt-6 bg-surface border border-border rounded-2xl p-6 text-center">
         <p className="text-fg font-semibold mb-1">{lang === "en" ? "Interested in a flight?" : "Un vol vous intéresse ?"}</p>
         <p className="text-sm text-subtle mb-4">
           {lang === "en"
