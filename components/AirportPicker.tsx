@@ -130,15 +130,20 @@ export function AirportPicker({ label, labelEn, value, onChange, exclude, lang, 
   // Reset active index when results change
   useEffect(() => { setActiveIndex(-1); }, [filtered]);
 
-  // Close on outside click
+  // Close on outside click/tap.
+  // iOS Safari does not fire mousedown reliably on tap — add touchstart too.
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false); setQuery("");
       }
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
   // Focus the search input whenever the dropdown opens

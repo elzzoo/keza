@@ -152,8 +152,13 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
           title={isFav
             ? (fr ? "Retirer des favoris" : "Remove from favourites")
             : (fr ? "Ajouter aux favoris" : "Add to favourites")}
+          aria-label={isFav
+            ? (fr ? "Retirer des favoris" : "Remove from favourites")
+            : (fr ? "Ajouter aux favoris" : "Add to favourites")}
+          aria-pressed={isFav}
           className={clsx(
-            "absolute top-3 left-3 w-6 h-6 flex items-center justify-center rounded-full transition-all",
+            // 44×44px minimum touch target — iOS/Android accessibility guidelines
+            "absolute top-1 left-1 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all",
             isFav
               ? "text-red-400 hover:text-red-500"
               : "text-muted/40 hover:text-muted"

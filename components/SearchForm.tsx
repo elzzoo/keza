@@ -289,9 +289,9 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         <div className={clsx("grid gap-3", tripType === "roundtrip" ? "grid-cols-2" : "grid-cols-1")}>
           {/* Departure date */}
           <div>
-            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            <label htmlFor="keza-dep-date" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 block">
               {fr ? "Date aller" : "Departure"}
-            </p>
+            </label>
             <div className="flex gap-1.5">
               {/* The date input is overlaid transparently over the button so the
                   native date picker opens on click — this works cross-browser,
@@ -305,7 +305,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
                     {new Date(depDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
                   </span>
                 </div>
-                <input type="date" value={depDate} min={today}
+                <input id="keza-dep-date" type="date" value={depDate} min={today}
                   onChange={e => onDep(e.target.value)}
                   className="absolute inset-0 opacity-0 w-full cursor-pointer"
                 />
@@ -338,9 +338,9 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
           {/* Return date */}
           {tripType === "roundtrip" && (
             <div>
-              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+              <label htmlFor="keza-ret-date" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 block">
                 {fr ? "Date retour" : "Return"}
-              </p>
+              </label>
               <div className="flex gap-1.5">
                 <div className="relative flex-1">
                   <div className="flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg pointer-events-none">
@@ -351,7 +351,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
                       {new Date(retDate + "T12:00:00").toLocaleDateString(fr ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </div>
-                  <input type="date" value={retDate} min={addDays(depDate, 1)}
+                  <input id="keza-ret-date" type="date" value={retDate} min={addDays(depDate, 1)}
                     onChange={e => setRetDate(e.target.value)}
                     className="absolute inset-0 opacity-0 w-full cursor-pointer"
                   />
@@ -412,40 +412,45 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         {/* Cabin + Passengers */}
         <div className="flex gap-3">
           <div className="flex-1">
-            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            <p id="keza-cabin-label" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Classe" : "Cabin"}
             </p>
-            <div className="flex gap-1.5">
-              <button type="button" onClick={() => setCabin("economy")} className={cabinBtn(cabin === "economy")}>
+            <div className="flex gap-1.5" role="group" aria-labelledby="keza-cabin-label">
+              <button type="button" onClick={() => setCabin("economy")} aria-pressed={cabin === "economy"} className={cabinBtn(cabin === "economy")}>
                 {fr ? "Éco" : "Economy"}
               </button>
-              <button type="button" onClick={() => setCabin("premium")} className={cabinBtn(cabin === "premium")}>
+              <button type="button" onClick={() => setCabin("premium")} aria-pressed={cabin === "premium"} className={cabinBtn(cabin === "premium")}>
                 {fr ? "Prem+" : "Prem+"}
               </button>
-              <button type="button" onClick={() => setCabin("business")} className={cabinBtn(cabin === "business")}>
+              <button type="button" onClick={() => setCabin("business")} aria-pressed={cabin === "business"} className={cabinBtn(cabin === "business")}>
                 {fr ? "Affaires" : "Business"}
               </button>
-              <button type="button" onClick={() => setCabin("first")} className={cabinBtn(cabin === "first")}>
+              <button type="button" onClick={() => setCabin("first")} aria-pressed={cabin === "first"} className={cabinBtn(cabin === "first")}>
                 {fr ? "1ère" : "First"}
               </button>
             </div>
           </div>
 
           <div className="w-32">
-            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+            <p id="keza-pax-label" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Passagers" : "Passengers"}
             </p>
             <div className="flex items-center justify-between bg-surface-2 border border-border rounded-xl px-3 py-2.5 h-[42px]">
+              {/* Minimum 44×44px touch target per iOS/Android guidelines */}
               <button
                 type="button"
+                aria-label={fr ? "Moins de passagers" : "Fewer passengers"}
                 onClick={() => setPassengers(p => Math.max(1, p - 1))}
-                className="w-6 h-6 rounded-lg bg-border hover:bg-primary/20 hover:text-primary text-muted flex items-center justify-center text-sm font-bold transition-all"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-border hover:bg-primary/20 hover:text-primary text-muted text-sm font-bold transition-all"
               >−</button>
-              <span className="text-sm font-bold text-fg tabular-nums">{passengers} pax</span>
+              <span className="text-sm font-bold text-fg tabular-nums">
+                {passengers} {fr ? "pass." : "pax"}
+              </span>
               <button
                 type="button"
+                aria-label={fr ? "Plus de passagers" : "More passengers"}
                 onClick={() => setPassengers(p => Math.min(9, p + 1))}
-                className="w-6 h-6 rounded-lg bg-border hover:bg-primary/20 hover:text-primary text-muted flex items-center justify-center text-sm font-bold transition-all"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-border hover:bg-primary/20 hover:text-primary text-muted text-sm font-bold transition-all"
               >+</button>
             </div>
           </div>
