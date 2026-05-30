@@ -326,6 +326,21 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "SYD-NRT": ["All Nippon Airways", "Japan Airlines"],
   "NRT-BKK": ["Japan Airlines"],
   "BKK-NRT": ["Japan Airlines"],
+
+  // ── Americas – South America (M3 fix: LATAM absent on MIA→GRU) ──────────
+  // LATAM Airlines and Copa operate these routes. getCorridorGuarantees()
+  // already injects LATAM Pass for SOUTH_AMERICA zone; supplements ensure
+  // the airline injection fires even when TP doesn't return airline codes.
+  "MIA-GRU": ["LATAM Airlines", "Copa Airlines"],
+  "GRU-MIA": ["LATAM Airlines", "Copa Airlines"],
+  "MIA-EZE": ["LATAM Airlines", "Copa Airlines"],
+  "EZE-MIA": ["LATAM Airlines", "Copa Airlines"],
+  "MIA-BOG": ["Copa Airlines", "LATAM Airlines"],
+  "BOG-MIA": ["Copa Airlines", "LATAM Airlines"],
+  "JFK-GRU": ["LATAM Airlines"],
+  "GRU-JFK": ["LATAM Airlines"],
+  "CDG-GRU": ["Air France", "LATAM Airlines"],
+  "GRU-CDG": ["Air France", "LATAM Airlines"],
 };
 
 /**
