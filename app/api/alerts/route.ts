@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { email, from, to, cabin, currentPrice, ref, notifFrequency, milesAlert } = body;
+    const { email, from, to, cabin, currentPrice, targetPrice, ref, notifFrequency, milesAlert } = body;
     const freq = (["instant", "daily", "weekly"] as const).includes(notifFrequency) ? notifFrequency as "instant" | "daily" | "weekly" : "instant";
 
     // Validate optional milesAlert payload
@@ -93,12 +93,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Optional custom target price — validated: must be > 0 and < currentPrice
+    const validatedTargetPrice = (
+      typeof targetPrice === "number" &&
+      targetPrice > 0 &&
+      targetPrice < Number(currentPrice) &&
+      targetPrice <= 50_000
+    ) ? targetPrice : undefined;
+
     const alert = await createAlert({
       email,
       from,
       to,
       cabin: cabin || "economy",
       currentPrice: Number(currentPrice),
+      targetPrice: validatedTargetPrice,
       notifFrequency: freq,
       ...(validatedMilesAlert ? { milesAlert: validatedMilesAlert } : {}),
     });

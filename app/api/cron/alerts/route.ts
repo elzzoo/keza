@@ -5,6 +5,7 @@ import {
   updateAlertAfterCheck,
   sendPriceDropEmail,
   sendMilesAlertEmail,
+  sendAlertPreDeactivationEmail,
   deactivateAlert,
 } from "@/lib/alerts";
 import { sendPushToEmail } from "@/lib/push";
@@ -106,6 +107,13 @@ export async function GET(req: NextRequest) {
             // alert stops showing as active on /alertes. notifCount was just
             // incremented inside updateAlertAfterCheck, so check against the
             // post-increment value (alert.notifCount is the pre-increment).
+            // Warn user when this is their 4th (second-to-last) notification.
+            if (alert.notifCount + 1 === 4) {
+              sendAlertPreDeactivationEmail(alert).catch((err: unknown) =>
+                logError("[cron/alerts] pre-deactivation email failed:", err)
+              );
+            }
+            // Auto-deactivate at 5th notification.
             if (alert.notifCount + 1 >= 5) {
               deactivateAlert(alert.id).catch((err: unknown) =>
                 logError("[cron/alerts] deactivate on cap failed:", err)

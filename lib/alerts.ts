@@ -94,10 +94,15 @@ export async function createAlert(params: {
   to: string;
   cabin: string;
   currentPrice: number;
+  targetPrice?: number;  // Optional custom target — defaults to currentPrice × 0.9
   notifFrequency?: "instant" | "daily" | "weekly";
   milesAlert?: { program: string; targetCpp: number; baseCpp: number };
 }): Promise<PriceAlert> {
   const id = generateId();
+  // Use provided targetPrice if valid (> 0 and < currentPrice), else 90% default.
+  const computedTarget = params.targetPrice && params.targetPrice > 0 && params.targetPrice < params.currentPrice
+    ? Math.round(params.targetPrice)
+    : Math.round(params.currentPrice * 0.9);
   const alert: PriceAlert = {
     id,
     email: params.email.toLowerCase().trim(),
@@ -105,7 +110,7 @@ export async function createAlert(params: {
     to: params.to.toUpperCase(),
     cabin: (params.cabin as PriceAlert["cabin"]) || "economy",
     basePrice: params.currentPrice,
-    targetPrice: Math.round(params.currentPrice * 0.9),
+    targetPrice: computedTarget,
     createdAt: new Date().toISOString(),
     notifCount: 0,
     active: true,
@@ -601,6 +606,60 @@ export async function sendMilesAlertEmail(
     return true;
   } catch (err) {
     logError("[alerts] miles alert email failed:", err);
+    return false;
+  }
+}
+
+/**
+ * Send a pre-deactivation warning email when an alert is about to reach its
+ * notification limit (notifCount === 4, one notification remaining).
+ * Lets users know the alert will expire and provides a one-click renewal link.
+ * Fire-and-forget safe — caller should not await if it doesn't need to block.
+ */
+export async function sendAlertPreDeactivationEmail(alert: PriceAlert): Promise<boolean> {
+  const manageToken = createManageAlertsToken(alert.email);
+  const renewUrl = manageToken
+    ? `${BASE_URL}/alertes?email=${encodeURIComponent(alert.email)}&token=${encodeURIComponent(manageToken)}&renew=${encodeURIComponent(alert.id)}`
+    : `${BASE_URL}/alertes`;
+
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from:    FROM_EMAIL,
+      to:      alert.email,
+      subject: `⚠️ Votre alerte ${alert.from}→${alert.to} expire bientôt`,
+      html: `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;">
+            <h1 style="margin:0;font-size:20px;"><span style="color:#3b82f6;">KE</span><span>ZA</span></h1>
+            <p style="margin:4px 0 0;font-size:13px;color:#f59e0b;">Alerte prix — Dernière notification</p>
+          </div>
+          <div style="padding:24px;">
+            <p style="margin:0 0 12px;font-size:15px;font-weight:600;color:#fbbf24;">
+              ⚠️ Votre alerte ${alert.from}→${alert.to} va s'éteindre
+            </p>
+            <p style="margin:0 0 16px;font-size:14px;color:#94a3b8;line-height:1.6;">
+              Cette notification est la <strong style="color:#e2e8f0;">dernière</strong> pour cette alerte.
+              Elle sera désactivée automatiquement après envoi pour éviter le spam.
+            </p>
+            <div style="background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:16px;">
+              <p style="margin:0;font-size:12px;color:#64748b;">Votre alerte</p>
+              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:#e2e8f0;">${alert.from} → ${alert.to}</p>
+              <p style="margin:2px 0 0;font-size:12px;color:#64748b;">${alert.cabin} · cible $${alert.targetPrice}</p>
+            </div>
+            <a href="${renewUrl}" style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;">
+              🔄 Renouveler l'alerte
+            </a>
+            <p style="margin:16px 0 0;font-size:11px;color:#64748b;text-align:center;">
+              Vous pouvez aussi créer une nouvelle alerte directement depuis les résultats KEZA.
+            </p>
+          </div>
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    logError("[alerts] pre-deactivation email failed:", err);
     return false;
   }
 }

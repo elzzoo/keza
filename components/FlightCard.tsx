@@ -511,6 +511,24 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         </div>
       )}
 
+      {/* Universal fallback CTA — shown when no booking link and no award search URL applies.
+          Directs to Google Flights search so the user always has a next action. */}
+      {!flight.bookingLink && !(bestOption && (flight.recommendation === "USE_MILES" || flight.recommendation === "IF_HAVE_MILES") && AWARD_SEARCH_URLS[bestOption.program]) && (
+        <div className="px-4 pb-4 pt-2 border-t border-border">
+          <a
+            href={`https://www.google.com/travel/flights?q=flights+${encodeURIComponent(flight.from + '+to+' + flight.to)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-[12px] font-medium transition-all hover-lift bg-surface-2 text-muted hover:text-fg border border-border hover:border-border"
+          >
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {fr ? "Rechercher ce vol sur Google Flights →" : "Search this flight on Google Flights →"}
+          </a>
+        </div>
+      )}
+
       {/* Booking CTA */}
       {flight.bookingLink && (
         <div className="px-4 pb-4 pt-2 border-t border-border">

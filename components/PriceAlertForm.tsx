@@ -61,7 +61,9 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
     } catch { /* localStorage unavailable */ }
   }, []);
 
-  const targetPrice = Math.round(currentPrice * 0.9);
+  const defaultTarget = Math.round(currentPrice * 0.9);
+  const [customTarget, setCustomTarget] = useState(defaultTarget);
+  const targetPrice = customTarget > 0 && customTarget < currentPrice ? customTarget : defaultTarget;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,6 +76,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email, from, to, cabin, currentPrice,
+          targetPrice,
           ref: sessionStorage.getItem("keza_ref") ?? undefined,
           notifFrequency: frequency,
         }),
@@ -239,14 +242,29 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         </div>
       </div>
 
-      {/* Route + target info */}
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span className="bg-surface-2 px-2 py-1 rounded-lg font-mono font-bold">
+      {/* Route + target price (editable) */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="bg-surface-2 px-2 py-1 rounded-lg font-mono font-bold text-xs text-muted">
           {from} → {to}
         </span>
-        <span>
-          {t.target} <span className="text-success font-bold">{fmt(targetPrice)}</span>
-        </span>
+        <div className="flex items-center gap-1.5 text-xs text-muted">
+          <span>{t.target}</span>
+          <span className="text-muted/60">$</span>
+          <input
+            type="number"
+            min={1}
+            max={Math.round(currentPrice * 0.99)}
+            value={customTarget}
+            onChange={e => {
+              const v = Math.round(Number(e.target.value));
+              if (v > 0 && v < currentPrice) setCustomTarget(v);
+            }}
+            className="w-20 bg-surface-2 border border-border rounded-lg px-2 py-0.5 text-xs text-fg focus:outline-none focus:border-primary/50 text-center"
+          />
+          <span className="text-muted/50 text-[10px]">
+            ({Math.round((1 - customTarget / currentPrice) * 100)}% {lang === "fr" ? "de réduction" : "off"})
+          </span>
+        </div>
       </div>
 
       {/* Frequency */}
