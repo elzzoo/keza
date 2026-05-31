@@ -604,7 +604,6 @@ export function buildCostOptions(
     "Etihad Guest",
     "Qatar Privilege Club",
   ]);
-  const isIntraEurope = originZone === "EUROPE" && destZone === "EUROPE";
 
   for (const bonus of TRANSFER_BONUSES) {
     if (!programNames.has(bonus.to)) continue;
