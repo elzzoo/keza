@@ -14,7 +14,7 @@ import { logError } from "../logger";
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
 // always agree on the key schema. Bump whenever FlightResult shape changes.
-export const CACHE_VERSION = "v24"; // bumped: COPA/Enrich accessibilityScore fix + label Business inversé + booking link fix
+export const CACHE_VERSION = "v25"; // bumped: zone-aware program filter (Gulf/Asia/Africa) + HOME_CARRIER_PROGRAMS fallback price
 
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
   try {
@@ -212,38 +212,48 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   // JAL, Emirates Skywards) are present on their home corridors.
   // Only injects if the program is completely absent from ALL results — avoids
   // duplicating when the provider already returned the carrier normally.
-  // Uses the cheapest real outbound as the price anchor for the synthetic.
+  //
+  // IMPORTANT: fires even when allResults is empty (e.g. NRT→LAX business when
+  // both Duffel sandbox and TP return nothing). In that case we use a cabin-based
+  // fallback price so ANA/JAL still surface with an ESTIMATED tag rather than
+  // returning a completely empty results page.
   {
     const routeKey = `${from.toUpperCase()}-${to.toUpperCase()}`;
     const guarantees = HOME_CARRIER_PROGRAMS[routeKey] ?? [];
-    if (guarantees.length > 0 && allResults.length > 0) {
+    if (guarantees.length > 0) {
       const presentPrograms = new Set(
         allResults.flatMap(r => r.milesOptions?.map(m => m.program) ?? [])
       );
-      const priceAnchor = outbound.length > 0
+      // Price anchor: cheapest real outbound if available; otherwise use a
+      // cabin-class-based fallback so the miles calculation is still meaningful.
+      const CABIN_FALLBACK_PRICE: Record<string, number> = {
+        economy: 700, premium: 1400, business: 2800, first: 5500,
+      };
+      const priceAnchorFlight = outbound.length > 0
         ? outbound.reduce((best, f) => f.price < best.price ? f : best, outbound[0])
         : undefined;
-      if (priceAnchor) {
-        for (const { airline, programs } of guarantees) {
-          if (!programs.some(p => presentPrograms.has(p))) {
-            const gf: NormalizedFlight = {
-              from, to,
-              price:           priceAnchor.price,
-              airlines:        [airline],
-              stops:           0,
-              isSupplemental:  true,
-              source:          "SYNTHETIC" as const,
-              priceConfidence: "ESTIMATED" as const,
-              cabinResolved:   priceAnchor.cabinResolved ?? false,
-            };
-            const gr = enrich(
-              gf, cabin, passengers, userPrograms, tripType, effectivePrices,
-              tripType === "roundtrip" ? { ...gf, from: to, to: from } : undefined,
-              date, returnDate,
-            );
-            gr.searchId = searchId;
-            allResults.push(gr);
-          }
+      const anchorPrice = priceAnchorFlight?.price ?? CABIN_FALLBACK_PRICE[cabin] ?? 700;
+      const anchorCabinResolved = priceAnchorFlight?.cabinResolved ?? false;
+
+      for (const { airline, programs } of guarantees) {
+        if (!programs.some(p => presentPrograms.has(p))) {
+          const gf: NormalizedFlight = {
+            from, to,
+            price:           anchorPrice,
+            airlines:        [airline],
+            stops:           0,
+            isSupplemental:  true,
+            source:          "SYNTHETIC" as const,
+            priceConfidence: "ESTIMATED" as const,
+            cabinResolved:   anchorCabinResolved,
+          };
+          const gr = enrich(
+            gf, cabin, passengers, userPrograms, tripType, effectivePrices,
+            tripType === "roundtrip" ? { ...gf, from: to, to: from } : undefined,
+            date, returnDate,
+          );
+          gr.searchId = searchId;
+          allResults.push(gr);
         }
       }
     }

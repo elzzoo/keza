@@ -611,8 +611,10 @@ export function buildCostOptions(
     if (!originZone || !destZone) continue;
     // Skip Gulf hub programs on non-Middle-East routes — they can only fly via DXB/AUH/DOH
     // which is never optimal for routes not involving the Gulf.
+    // Extended beyond intra-Europe: e.g. Amex MR → Emirates Skywards on NRT→LAX is never
+    // the best use of points — the redemption would require a DXB connection.
     if (MIDDLE_EAST_HUB_PROGRAMS.has(bonus.to) &&
-        originZone !== "MIDDLE_EAST" && destZone !== "MIDDLE_EAST" && isIntraEurope) continue;
+        originZone !== "MIDDLE_EAST" && destZone !== "MIDDLE_EAST") continue;
 
     // Always use the program's own airline for transfer taxes.
     // operatingAirline may be a different carrier (e.g. Air Senegal on a
@@ -782,9 +784,66 @@ export function buildCostOptions(
     }
   }
 
+  // ── Zone-aware program filter ──────────────────────────────────────────────
+  // Prevents geographically irrelevant programs from surfacing on routes they
+  // have no operational connection to. Applied BEFORE deduplication so phantom
+  // entries don't influence the bestOption ranking.
+  //
+  // Gulf hub programs (EK/EY/QR): only meaningful when a Middle East endpoint
+  // is involved. On NRT→LAX, TP sometimes returns EK codeshare results —
+  // this would inject Emirates Skywards as a DIRECT match. On routes like
+  // BKK→CDG, Etihad would appear as an ALLIANCE match via Lufthansa Star Alliance.
+  // Both are misleading: the redemption requires a 5–10h DXB/AUH/DOH detour.
+  const REQUIRES_MIDDLE_EAST_ENDPOINT = new Set([
+    "Emirates Skywards",
+    "Etihad Guest",
+    "Qatar Privilege Club",
+  ]);
+  // Asia-Pacific flagship programs: ALLIANCE matches only make sense when
+  // Asia is an endpoint. JAL appearing on CMN→CDG (via RAM/Oneworld) or
+  // Cathay Pacific on MAD→BCN (via Iberia/Oneworld) misleads users — the
+  // redemption would require a routing via Asia. DIRECT matches are kept
+  // (JAL DIRECT on NRT→LAX = JAL actually operates the flight → valid).
+  const REQUIRES_ASIA_ENDPOINT = new Set([
+    "Japan Airlines Mileage Bank",
+    "ANA Mileage Club",
+    "Cathay Pacific Asia Miles",
+  ]);
+  // Ethiopian ShebaMiles: primarily useful on ADD (Addis Ababa) routes.
+  // On DXB→LHR it can appear via Star Alliance (Lufthansa) ALLIANCE match —
+  // but Ethiopian doesn't operate that corridor and the detour via ADD is impractical.
+  const REQUIRES_AFRICA_ENDPOINT = new Set([
+    "Ethiopian ShebaMiles",
+  ]);
+
+  const filteredMilesOptions = milesOptions.filter((opt) => {
+    // Gulf programs: filter all appearances when no Middle East endpoint
+    if (
+      REQUIRES_MIDDLE_EAST_ENDPOINT.has(opt.program) &&
+      originZone !== "MIDDLE_EAST" &&
+      destZone !== "MIDDLE_EAST"
+    ) return false;
+    // Asia-Pacific programs: filter ALLIANCE appearances when no Asia endpoint
+    // DIRECT matches are preserved (e.g. JAL DIRECT on NRT→LAX)
+    if (
+      REQUIRES_ASIA_ENDPOINT.has(opt.program) &&
+      opt.type === "ALLIANCE" &&
+      originZone !== "ASIA" &&
+      destZone !== "ASIA"
+    ) return false;
+    // Ethiopian: filter ALLIANCE appearances when no Africa endpoint
+    if (
+      REQUIRES_AFRICA_ENDPOINT.has(opt.program) &&
+      opt.type === "ALLIANCE" &&
+      !(originZone ?? "").startsWith("AFRICA_") &&
+      !(destZone ?? "").startsWith("AFRICA_")
+    ) return false;
+    return true;
+  });
+
   // ── Deduplicate: keep cheapest option per (program + via) key ─────────────
   const seen = new Map<string, MilesOption>();
-  for (const opt of milesOptions) {
+  for (const opt of filteredMilesOptions) {
     const key = `${opt.program}::${opt.via ?? ""}`;
     const existing = seen.get(key);
     // Prefer DIRECT over ALLIANCE when cost is equal — avoids labeling a
