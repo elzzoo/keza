@@ -666,13 +666,26 @@ export function buildCostOptions(
 
       // Skip programs where the airline doesn't match alliance of operating airline
       // (they wouldn't have award space on this airline)
-      // Note: operatingAlliance already computed above (line 449) — re-use it, no re-declare.
+      // Note: operatingAlliance already computed above — re-use it, no re-declare.
       if (
         operatingAirline &&
         operatingAlliance &&
         operatingAlliance !== "Independent" &&
         prog.alliance !== operatingAlliance &&
         prog.alliance !== "Independent"
+      ) continue;
+
+      // Extended guard for Independent operating carriers: even when the primary airline
+      // is Independent (e.g. Air Senegal), still require at least one airline in the
+      // full list to belong to the program's alliance before adding via dynamic estimation.
+      // Without this, Iberia Avios Plus appears on DSS→CDG (Air Senegal + Air France) because
+      // Air Senegal is Independent → the check above doesn't fire → Iberia (Oneworld) gets
+      // estimated as valid. But there is NO Oneworld metal on that route — the redemption
+      // is physically impossible.
+      if (
+        operatingAlliance === "Independent" &&
+        prog.alliance !== "Independent" &&
+        !airlines.some((a) => ALLIANCES[a] === prog.alliance)
       ) continue;
 
       // Strict regional filter: exclude programs whose airlines don't serve these zones.
@@ -879,14 +892,33 @@ export function buildCostOptions(
   // Score-3 niche programs (SAA Voyager, Air China PhoenixMiles, etc.) may rank cheapest
   // by raw cost but are inaccessible to most users. Fall back to raw cheapest only when
   // no accessible (score ≤ 2) option exists.
+  //
+  // DIRECT-program preference (UX policy):
+  // When a DIRECT program (home-carrier redemption) exists and its cost is within 40%
+  // of the cheapest accessible option, prefer it as the headline recommendation.
+  // Rationale: on SIN→LAX operated by Singapore Airlines, showing KrisFlyer as #1
+  // (even if slightly more expensive than Delta SkyMiles ALLIANCE) is more useful —
+  // it confirms the home-carrier redemption option the user expects to see first.
+  // 40% threshold: conservative enough to not override genuinely better programs
+  // (a 41%+ premium is real money worth surfacing to the user), but wide enough
+  // to cover typical DIRECT vs ALLIANCE spreads on hub-carrier routes.
   let bestOption: MilesOption | null = null;
   if (sortedOptions.length > 0) {
-    const hasAccessibleOption = sortedOptions.some(
+    const cheapestAccessible = sortedOptions.find(
       (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2,
-    );
-    bestOption = hasAccessibleOption
-      ? sortedOptions.find((o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2)!
-      : sortedOptions[0]; // fall back to cheapest if no accessible option exists
+    ) ?? null;
+
+    // Look for an accessible DIRECT program within 40% of cheapest accessible
+    const directAccessible = cheapestAccessible
+      ? (sortedOptions.find(
+          (o) =>
+            o.type === "DIRECT" &&
+            (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2 &&
+            o.totalMilesCost <= cheapestAccessible.totalMilesCost * 1.40,
+        ) ?? null)
+      : null;
+
+    bestOption = directAccessible ?? cheapestAccessible ?? sortedOptions[0];
     // isBestDeal marks the best available miles option (cheapest accessible program).
     // It is unconditional: it identifies the best miles deal, not whether miles beat cash.
     // The UI must check `recommendation === "USE_MILES"` to decide whether to suggest using miles.

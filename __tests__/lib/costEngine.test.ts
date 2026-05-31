@@ -165,11 +165,20 @@ describe("MilesOption.isBestDeal", () => {
     expect(best).toHaveLength(1);
   });
 
-  it("the isBestDeal option has the lowest totalMilesCost", () => {
+  it("the isBestDeal option is accessible and within 40% of the cheapest accessible option", () => {
+    // isBestDeal marks the best RECOMMENDED program, which may be a DIRECT program
+    // (home-carrier redemption) preferred over a cheaper ALLIANCE option when the
+    // cost difference is ≤ 40% — ensures the headline recommendation is contextually
+    // relevant (e.g. Flying Blue DIRECT on AF metal rather than Delta ALLIANCE).
     const { milesOptions } = buildCostOptions(BASE, new Map());
     const best = milesOptions.find((o) => o.isBestDeal)!;
-    const minCost = Math.min(...milesOptions.map((o) => o.totalMilesCost));
-    expect(best.totalMilesCost).toBe(minCost);
+    const accessibleOptions = milesOptions.filter(
+      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2,
+    );
+    const minAccessibleCost = Math.min(...accessibleOptions.map((o) => o.totalMilesCost));
+    // isBestDeal must be accessible AND within 40% of the cheapest accessible option
+    expect((PROGRAMS_BY_NAME[best.program]?.accessibilityScore ?? 3) <= 2).toBe(true);
+    expect(best.totalMilesCost).toBeLessThanOrEqual(minAccessibleCost * 1.40);
   });
 });
 
