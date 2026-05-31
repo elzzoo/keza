@@ -564,12 +564,27 @@ export function buildCostOptions(
   // Ensures flagship programs appear on their primary corridors regardless of
   // which specific airline Travelpayouts returned. Only adds programs not
   // already in effectivePrograms (no duplicates).
+  //
+  // Type assignment: a corridor-guaranteed program is set to DIRECT only when
+  // the program's inferred airline actually appears in the flight's airlines list.
+  // Example: KrisFlyer with inferredAirline "Singapore Airlines" on a BA-operated
+  // NRT→LAX connecting flight via LHR → type ALLIANCE (you cannot redeem KrisFlyer
+  // on BA metal). On an actual SQ-operated SIN→LAX flight → type DIRECT.
   const corridorGuaranteedPrograms = new Set<string>();
   if (originZone && destZone) {
     for (const g of getCorridorGuarantees(originZone, destZone, airlines)) {
       corridorGuaranteedPrograms.add(g.program);
+      // DIRECT only when the inferred home carrier IS operating this specific flight
+      const resolvedType: "DIRECT" | "ALLIANCE" =
+        airlines.includes(g.inferredAirline) ? "DIRECT" : "ALLIANCE";
       if (!effectivePrograms.some((p) => p.program === g.program)) {
-        effectivePrograms.push(g);
+        effectivePrograms.push({ ...g, type: resolvedType });
+      } else if (resolvedType === "DIRECT") {
+        // Upgrade an existing ALLIANCE entry to DIRECT when home carrier confirmed
+        const idx = effectivePrograms.findIndex(p => p.program === g.program);
+        if (idx >= 0 && effectivePrograms[idx].type !== "DIRECT") {
+          effectivePrograms[idx] = { ...effectivePrograms[idx], type: "DIRECT" };
+        }
       }
     }
   }
@@ -849,6 +864,17 @@ export function buildCostOptions(
       opt.type === "ALLIANCE" &&
       !(originZone ?? "").startsWith("AFRICA_") &&
       !(destZone ?? "").startsWith("AFRICA_")
+    ) return false;
+    // Americas-only programs: LATAM Pass / Aeromexico only meaningful on routes
+    // involving South or North America. They appear via Oneworld ALLIANCE matches
+    // (e.g. LATAM Pass on CMN→CDG via BA/Oneworld) but with no real chart entry
+    // the distance fallback gives unrealistically low miles (9 000 for Africa→Europe)
+    // — the redemption is physically impossible on non-LATAM/non-Americas metal.
+    if (
+      (opt.program === "LATAM Pass" || opt.program === "Aeromexico Club Premier") &&
+      opt.type === "ALLIANCE" &&
+      originZone !== "SOUTH_AMERICA" && destZone !== "SOUTH_AMERICA" &&
+      originZone !== "NORTH_AMERICA" && destZone !== "NORTH_AMERICA"
     ) return false;
     return true;
   });

@@ -86,4 +86,9 @@ export const ALLIANCES: Record<string, string> = {
   "Tunisair": "Independent",
   "flydubai": "Independent",             // Emirates group
   "Air Arabia": "Independent",
+  "Kuwait Airways": "Independent",       // IATA: KU — Gulf carrier, no Western alliance
+  // Star Alliance additions — missing entries cause zone-fallback to run with no alliance guard,
+  // letting cross-alliance programs (e.g. Delta SkyTeam) pass on Star Alliance–operated flights.
+  "Starlux Airlines": "Star Alliance",   // IATA: JX — Taiwan; joined Star Alliance 2023
+  "Philippine Airlines": "Star Alliance", // IATA: PR — joined Star Alliance 2022
 };
