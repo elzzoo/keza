@@ -537,13 +537,18 @@ export function buildCostOptions(
             // A niche/LCC carrier with no alliance should not silently suppress miles options —
             // the user may still hold miles from any program regardless of the operating airline.
             if (!operatingAirline || !operatingAlliance) return true;
-            // Independent carriers (Air Senegal, RwandAir, niche LCCs): allow ALL programs.
-            // These airlines often have codeshares or sell seats on alliance-metal flights.
-            // Restricting to Independent-only would hide Flying Blue, Turkish, etc. for routes
-            // like DSS→CDG on Air Senegal, where Flying Blue awards are absolutely valid.
-            // Major Independent hubs (Emirates, Etihad) will already have been matched by
-            // getProgramsForAirline as DIRECT, so zone-fallback doesn't fire for them.
-            if (operatingAlliance === "Independent") return true;
+            // Independent carriers: only allow programs whose alliance has at least one airline
+            // present in the FULL airlines list for this flight, or Independent programs.
+            // This prevents e.g. LifeMiles (Star Alliance) from appearing on a Kuwait Airways
+            // DXB→LHR flight (no Star Alliance metal on that specific itinerary), while still
+            // allowing Emirates Skywards (Independent) for any Independent-carrier flight.
+            // Exception: when airlines list is empty or all-unknown, fall back to allow-all so
+            // we don't accidentally hide all options for truly unknown carriers.
+            if (operatingAlliance === "Independent") {
+              const progAlliance = ALLIANCES[programAirline];
+              if (!progAlliance || progAlliance === "Independent") return true;
+              return airlines.some((a) => ALLIANCES[a] === progAlliance);
+            }
             // Alliance airline: only show same-alliance programs
             return ALLIANCES[programAirline] === operatingAlliance;
           })

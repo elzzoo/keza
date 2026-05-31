@@ -91,4 +91,6 @@ export const ALLIANCES: Record<string, string> = {
   // letting cross-alliance programs (e.g. Delta SkyTeam) pass on Star Alliance–operated flights.
   "Starlux Airlines": "Star Alliance",   // IATA: JX — Taiwan; joined Star Alliance 2023
   "Philippine Airlines": "Star Alliance", // IATA: PR — joined Star Alliance 2022
+  // SkyTeam additions
+  "China Airlines": "SkyTeam",           // IATA: CI — Taiwan; SkyTeam member
 };
