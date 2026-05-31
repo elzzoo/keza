@@ -87,10 +87,15 @@ export const ALLIANCES: Record<string, string> = {
   "flydubai": "Independent",             // Emirates group
   "Air Arabia": "Independent",
   "Kuwait Airways": "Independent",       // IATA: KU — Gulf carrier, no Western alliance
+  "Fiji Airways": "Independent",          // IATA: FJ — Pacific; independent carrier
+  "Air Tahiti Nui": "Independent",        // IATA: TN — Pacific independent
+  "Corsair": "Independent",               // IATA: SS — French charter/leisure, no alliance
+  "Air Austral": "Independent",           // IATA: UU — La Réunion regional
   // Star Alliance additions — missing entries cause zone-fallback to run with no alliance guard,
   // letting cross-alliance programs (e.g. Delta SkyTeam) pass on Star Alliance–operated flights.
   "Starlux Airlines": "Star Alliance",   // IATA: JX — Taiwan; joined Star Alliance 2023
   "Philippine Airlines": "Star Alliance", // IATA: PR — joined Star Alliance 2022
-  // SkyTeam additions
+  // SkyTeam additions (only entries not already in the map above)
   "China Airlines": "SkyTeam",           // IATA: CI — Taiwan; SkyTeam member
+  "Saudi Arabian Airlines": "SkyTeam",   // alias for "Saudia" (iataToAirline may return either)
 };

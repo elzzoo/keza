@@ -14,7 +14,7 @@ import { logError } from "../logger";
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
 // always agree on the key schema. Bump whenever FlightResult shape changes.
-export const CACHE_VERSION = "v27"; // bumped: zone fallback Independent guard + China Airlines SkyTeam
+export const CACHE_VERSION = "v28"; // bumped: unknown-alliance guard + alliances (Fiji/Saudia/China Airlines/etc)
 
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
   try {

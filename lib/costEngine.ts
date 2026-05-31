@@ -533,10 +533,19 @@ export function buildCostOptions(
           Object.entries(PROGRAM_TO_AIRLINE)
           .filter(([program, programAirline]) => {
             if (PROGRAMS_BY_NAME[program]?.isBookable === false) return false;
-            // Unknown airline (empty string) or airline not in alliances map: allow all programs.
-            // A niche/LCC carrier with no alliance should not silently suppress miles options —
-            // the user may still hold miles from any program regardless of the operating airline.
-            if (!operatingAirline || !operatingAlliance) return true;
+            // Empty/null airline: completely unknown — allow all programs (no data to filter on).
+            if (!operatingAirline) return true;
+            // Airline name known but NOT in alliances map: treat like Independent (apply the same
+            // guard). This handles carriers like Fiji Airways, Saudia*, or any airline we haven't
+            // catalogued yet — prevents Delta SkyMiles from leaking onto a Fiji Airways SIN→LAX
+            // flight just because FJ's alliance is unknown. Corridor guarantees (KrisFlyer, ANA,
+            // JAL for ASIA→NA) still inject the correct programs regardless of zone fallback.
+            // (*Saudia has its own alliances.ts entry; this covers future unlisted carriers.)
+            if (!operatingAlliance) {
+              const progAlliance = ALLIANCES[programAirline];
+              if (!progAlliance || progAlliance === "Independent") return true;
+              return airlines.some((a) => ALLIANCES[a] === progAlliance);
+            }
             // Independent carriers: only allow programs whose alliance has at least one airline
             // present in the FULL airlines list for this flight, or Independent programs.
             // This prevents e.g. LifeMiles (Star Alliance) from appearing on a Kuwait Airways
@@ -695,15 +704,15 @@ export function buildCostOptions(
         prog.alliance !== "Independent"
       ) continue;
 
-      // Extended guard for Independent operating carriers: even when the primary airline
-      // is Independent (e.g. Air Senegal), still require at least one airline in the
-      // full list to belong to the program's alliance before adding via dynamic estimation.
-      // Without this, Iberia Avios Plus appears on DSS→CDG (Air Senegal + Air France) because
-      // Air Senegal is Independent → the check above doesn't fire → Iberia (Oneworld) gets
-      // estimated as valid. But there is NO Oneworld metal on that route — the redemption
-      // is physically impossible.
+      // Extended guard for Independent or unknown-alliance operating carriers: require at least
+      // one airline in the full list to belong to the program's alliance before adding via
+      // dynamic estimation. Without this, Iberia Avios appears on Air Senegal DSS→CDG because
+      // Air Senegal is Independent → the first check above doesn't fire → Iberia gets estimated
+      // as valid when no Oneworld metal exists. Same logic applies to unknown-alliance carriers
+      // like Fiji Airways — prevents Delta SkyMiles from leaking onto SIN→LAX via dynamic path.
       if (
-        operatingAlliance === "Independent" &&
+        operatingAirline && // airline is known
+        (!operatingAlliance || operatingAlliance === "Independent") &&
         prog.alliance !== "Independent" &&
         !airlines.some((a) => ALLIANCES[a] === prog.alliance)
       ) continue;
