@@ -42,7 +42,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
             {t.title}
           </span>
         </div>
-        <Link href="/deals" className="text-xs text-subtle hover:text-primary transition-colors">
+        <Link href="/deals" className="text-xs text-muted hover:text-primary transition-colors">
             {t.all}
           </Link>
       </div>
@@ -78,7 +78,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
                   <div className="text-sm font-bold text-fg truncate">
                     {deal.from} → {deal.to}
                   </div>
-                  <div className="text-xs text-subtle truncate">{deal.program}</div>
+                  <div className="text-xs text-muted truncate">{deal.program}</div>
                 </div>
 
                 {/* Badge */}
