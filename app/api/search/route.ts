@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { searchEngine, CACHE_VERSION, type SearchParams, type FlightResult } from "@/lib/engine";
+import * as Sentry from "@sentry/nextjs";
 
 // Vercel Hobby plan hard-kills serverless functions at 10s.
 // maxDuration must be ≤ 10 on Hobby; Pro allows up to 300s.
@@ -130,6 +131,8 @@ export async function POST(request: Request) {
         if (cached && cached.length > 0) {
           results = cached;
           fromCache = true;
+          // Log cache hit to Sentry for monitoring
+          Sentry.captureMessage(`Cache hit: ${from}→${to} from ${ver}`, "debug");
           break;
         }
       }
@@ -152,6 +155,8 @@ export async function POST(request: Request) {
       );
     } else {
       results = engineResult;
+      // Log cache miss when results computed in normal path (not from cache)
+      Sentry.captureMessage(`Cache miss: ${from}→${to} computed ${results.length} results`, "debug");
     }
 
     // Fire-and-forget engine observability stats
