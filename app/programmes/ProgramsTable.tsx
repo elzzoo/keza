@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { PROGRAMS, type ProgramType, type Alliance } from "@/data/programs";
 import { trackProgramClick } from "@/lib/analytics";
 
@@ -172,12 +173,15 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
               <tr
                 key={program.id}
                 id={program.id}
-                className="border-b border-border/50 hover:bg-surface-2 transition-colors cursor-pointer"
-                onClick={() => trackProgramClick({ id: program.id, name: program.name })}
+                className="border-b border-border/50 hover:bg-surface-2 transition-colors"
               >
                 <td className="px-4 py-3 text-xs font-black text-muted">{index + 1}</td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
+                  <Link
+                    href={`/programmes/${program.id}`}
+                    className="flex items-center gap-2 no-underline"
+                    onClick={() => trackProgramClick({ id: program.id, name: program.name })}
+                  >
                     <span className="text-base">{program.flag}</span>
                     <div>
                       <div className="font-bold text-fg text-sm">{program.name}</div>
@@ -188,7 +192,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
                         {program.alliance}
                       </span>
                     )}
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="text-base font-black text-primary">{program.score}</span>
@@ -221,10 +225,10 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
       {/* Mobile Cards */}
       <div className="sm:hidden space-y-2">
         {filtered.map((program, index) => (
-          <div
+          <Link
             key={program.id}
-            id={program.id}
-            className="bg-surface border border-border rounded-xl p-4"
+            href={`/programmes/${program.id}`}
+            className="block bg-surface border border-border rounded-xl p-4 hover:bg-surface-2 transition-colors"
             onClick={() => trackProgramClick({ id: program.id, name: program.name })}
           >
             <div className="flex items-start justify-between">
@@ -256,7 +260,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
                 ))}
               </div>
             )}
-          </div>
+          </Link>
         ))}
       </div>
     </div>
