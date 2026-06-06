@@ -31,11 +31,11 @@ test.describe("/alertes page", () => {
     await page.getByPlaceholder(/email/i).fill("test@example.com");
     await page.getByRole("button", { name: /recevoir le lien|send link/i }).click();
 
-    // Should show a success notice after submission
-    // FR: "Un lien de gestion a été envoyé à cet email"
-    // EN: "A management link has been sent to this email"
+    // Should show a clear actionable notice after submission
+    // FR: "Lien envoyé à cet email. Vérifiez vos alertes existantes ou créez-en une nouvelle depuis la recherche."
+    // EN: "Check your email for the management link. Create a new alert from search results."
     await expect(
-      page.getByText(/lien de gestion.*envoy|management link has been sent/i)
+      page.getByText(/lien envoyé|check your email|create a new alert/i)
     ).toBeVisible({ timeout: 15_000 });
   });
 

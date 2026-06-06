@@ -189,8 +189,8 @@ export function AlertesClient() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setAlerts(null);
       setNotice(fr
-        ? "✅ Un lien de gestion a été envoyé à cet email (si des alertes existent)."
-        : "✅ A management link has been sent to this email (if alerts exist).");
+        ? "✅ Lien envoyé à cet email. Vérifiez vos alertes existantes ou créez-en une nouvelle depuis la recherche."
+        : "✅ Check your email for the management link. Create a new alert from search results.");
       localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
     } catch {
       setFetchError(true);
