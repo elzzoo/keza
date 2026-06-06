@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import clsx from "clsx";
+import { toast } from "sonner";
 import { trackShare } from "@/lib/analytics";
 
 interface ShareButtonProps {
@@ -42,6 +43,7 @@ export function ShareButton({ lang, searchParams, savings, bestPrice, bestProgra
     try {
       await navigator.clipboard.writeText(url.toString());
       setCopied(true);
+      toast.success(lang === "fr" ? "Lien copié !" : "URL copied!");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
@@ -54,9 +56,10 @@ export function ShareButton({ lang, searchParams, savings, bestPrice, bestProgra
       document.execCommand("copy");
       document.body.removeChild(ta);
       setCopied(true);
+      toast.success(lang === "fr" ? "Lien copié !" : "URL copied!");
       setTimeout(() => setCopied(false), 2000);
     }
-  }, [searchParams, savings, bestPrice, bestProgram]);
+  }, [searchParams, savings, bestPrice, bestProgram, lang]);
 
   return (
     <button
