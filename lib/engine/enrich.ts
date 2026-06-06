@@ -5,7 +5,7 @@ import type { FlightInput } from "../costEngine";
 import { optimizeMiles } from "../optimizer";
 import type { Cabin, TripType, FlightResult, Stops } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
-import { AVIASALES_BASE_URL, TP_MARKER, buildAviasalesUrl } from "./travelpayouts";
+import { buildAviasalesUrl } from "./travelpayouts";
 
 export { CABIN_MULTIPLIER };
 

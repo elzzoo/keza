@@ -21,9 +21,10 @@ export async function POST(req: NextRequest) {
     }
 
     const url = await createCheckoutUrl(email.trim().toLowerCase());
-    return NextResponse.json({ url });
+    return NextResponse.json({ checkoutUrl: url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[checkout] Error creating checkout:", message);
     // If env vars not set, return 503 with clear message
     if (message.includes("not configured")) {
       return NextResponse.json(
@@ -31,6 +32,6 @@ export async function POST(req: NextRequest) {
         { status: 503 }
       );
     }
-    return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

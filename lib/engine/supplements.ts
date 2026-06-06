@@ -1,7 +1,7 @@
 import "server-only";
 import type { NormalizedFlight } from "../promotions/engine";
 import { iataToAirline } from "../iataAirlines";
-import { TP_BASE, AVIASALES_BASE_URL, TP_MARKER, buildAviasalesUrl } from "./travelpayouts";
+import { TP_BASE, buildAviasalesUrl } from "./travelpayouts";
 import type { Cabin, TripType, FlightResult } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
 
