@@ -132,4 +132,46 @@ describe("FlightCard", () => {
     render(<FlightCard flight={baseFlight} lang="fr" />);
     expect(screen.getByText(/Tu économises/i)).toBeInTheDocument();
   });
+
+  it("displays 'Estimate' badge when bestOption.confidence is LOW", () => {
+    const lowConfidenceFlight: FlightResult = {
+      ...baseFlight,
+      bestOption: {
+        ...bestOption,
+        confidence: "LOW",
+      },
+    };
+    render(<FlightCard flight={lowConfidenceFlight} lang="en" />);
+    expect(screen.getByText("Estimate")).toBeInTheDocument();
+  });
+
+  it("displays 'Estimation' badge when bestOption.confidence is LOW (French)", () => {
+    const lowConfidenceFlight: FlightResult = {
+      ...baseFlight,
+      bestOption: {
+        ...bestOption,
+        confidence: "LOW",
+      },
+    };
+    render(<FlightCard flight={lowConfidenceFlight} lang="fr" />);
+    expect(screen.getByText("Estimation")).toBeInTheDocument();
+  });
+
+  it("displays 'Award availability not verified' disclaimer when recommendation is USE_MILES", () => {
+    const useAwardsFlight: FlightResult = {
+      ...baseFlight,
+      recommendation: "USE_MILES",
+    };
+    render(<FlightCard flight={useAwardsFlight} lang="en" />);
+    expect(screen.getByText(/Award availability not verified in real-time/i)).toBeInTheDocument();
+  });
+
+  it("displays 'Disponibilité awards non vérifiée' disclaimer when recommendation is USE_MILES (French)", () => {
+    const useAwardsFlight: FlightResult = {
+      ...baseFlight,
+      recommendation: "USE_MILES",
+    };
+    render(<FlightCard flight={useAwardsFlight} lang="fr" />);
+    expect(screen.getByText(/Disponibilité awards non vérifiée/i)).toBeInTheDocument();
+  });
 });
