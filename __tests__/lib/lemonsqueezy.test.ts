@@ -15,7 +15,7 @@ const mockSentryCaptureMessage = jest.fn();
 const mockConsoleLog = jest.fn();
 
 jest.mock("@sentry/nextjs", () => ({
-  withScope: (cb: (scope: unknown) => void) => mockSentryWithScope(cb),
+  withScope: (cb: (scope: Record<string, unknown>) => void) => mockSentryWithScope(cb),
   captureMessage: (msg: string, level: string) =>
     mockSentryCaptureMessage(msg, level),
 }));
@@ -144,7 +144,7 @@ describe("createCheckoutUrl", () => {
     });
 
     // Mock Sentry's withScope to call the callback
-    mockSentryWithScope.mockImplementation((cb: Function) => {
+    mockSentryWithScope.mockImplementation((cb: (scope: Record<string, unknown>) => void) => {
       const mockScope = {
         setTag: jest.fn(),
         setContext: jest.fn(),
@@ -160,8 +160,6 @@ describe("createCheckoutUrl", () => {
     }
 
     expect(mockSentryWithScope).toHaveBeenCalled();
-    const scope = (mockSentryWithScope.mock.calls[0][0] as Function)
-      .constructor.name;
     expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
       "Lemon Squeezy checkout failed: 400",
       "error"
@@ -177,7 +175,7 @@ describe("createCheckoutUrl", () => {
       text: async () => "Internal Server Error",
     });
 
-    mockSentryWithScope.mockImplementation((cb: Function) => {
+    mockSentryWithScope.mockImplementation((cb: (scope: Record<string, unknown>) => void) => {
       const mockScope = {
         setTag: jest.fn(),
         setContext: jest.fn(),
@@ -211,7 +209,7 @@ describe("createCheckoutUrl", () => {
       text: async () => errorBody,
     });
 
-    mockSentryWithScope.mockImplementation((cb: Function) => {
+    mockSentryWithScope.mockImplementation((cb: (scope: Record<string, unknown>) => void) => {
       const mockScope = {
         setTag: jest.fn(),
         setContext: jest.fn(),
@@ -243,7 +241,7 @@ describe("createCheckoutUrl", () => {
       text: async () => "Unauthorized",
     });
 
-    mockSentryWithScope.mockImplementation((cb: Function) => {
+    mockSentryWithScope.mockImplementation((cb: (scope: Record<string, unknown>) => void) => {
       const mockScope = {
         setTag: jest.fn(),
         setContext: jest.fn(),
@@ -272,7 +270,7 @@ describe("createCheckoutUrl", () => {
       text: async () => errorBody,
     });
 
-    mockSentryWithScope.mockImplementation((cb: Function) => {
+    mockSentryWithScope.mockImplementation((cb: (scope: Record<string, unknown>) => void) => {
       cb({ setTag: jest.fn(), setContext: jest.fn() });
     });
 
