@@ -8,6 +8,7 @@ import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
 import { MilesAlertButton } from "@/components/MilesAlertButton";
+import { AwardAvailabilityDisclaimer } from "@/components/AwardAvailabilityDisclaimer";
 import { toggleFavoriteRoute, isFavoriteRoute } from "@/lib/userProfile";
 import { getAchievedCpp, rateCpp, CPP_RATING_DISPLAY } from "@/lib/mileValue";
 import dynamic from "next/dynamic";
@@ -226,6 +227,11 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
           )}
         </div>
       </div>
+
+      {/* Award availability disclaimer — shown when recommending USE_MILES */}
+      {isUseMiles && (
+        <AwardAvailabilityDisclaimer lang={lang} />
+      )}
 
       {/* Synthetic / estimated price badge — shown for non-supplemental SYNTHETIC flights */}
       {!flight.isSupplemental && (flight.source === "SYNTHETIC" || flight.priceConfidence === "ESTIMATED") && (
