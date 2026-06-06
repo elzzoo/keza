@@ -134,7 +134,22 @@ export async function POST(request: Request) {
         }
       }
       partial = true;
-      logWarn(`[api/search] timeout for ${from}→${to}, returning ${results.length} cached results`);
+      // Log timeout event with search context for Sentry monitoring
+      logWarn(
+        `[api/search] timeout for ${from}→${to}, returning ${results.length} cached results`,
+        undefined,
+        {
+          route: `${from}-${to}`,
+          date,
+          cabin: searchParams.cabin,
+          passengers: searchParams.passengers,
+          tripType: searchParams.tripType,
+          returnDate: searchParams.returnDate,
+          stops: searchParams.stops,
+          partialResultCount: results.length,
+          fromCache,
+        }
+      );
     } else {
       results = engineResult;
     }
