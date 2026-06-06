@@ -60,13 +60,13 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
           </span>
         </Link>
 
-        {/* Nav — desktop */}
-        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center overflow-hidden">
+        {/* Nav — desktop (shown only on xl and up, 1280px+) */}
+        <nav className="hidden xl:flex items-center gap-1 flex-1 justify-center overflow-auto scrollbar-hide">
           {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all duration-150 font-medium whitespace-nowrap"
+              className="px-3 py-1.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all duration-150 font-medium whitespace-nowrap flex-shrink-0"
             >
               {item.label}
             </a>
@@ -138,7 +138,7 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-1.5 rounded-lg border border-border text-muted hover:text-fg hover:bg-surface-2 transition-all"
+            className="xl:hidden p-1.5 rounded-lg border border-border text-muted hover:text-fg hover:bg-surface-2 transition-all"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Menu"
           >
@@ -154,7 +154,7 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
 
       {/* Mobile nav */}
       {menuOpen && (
-        <div className="md:hidden border-t border-border bg-surface px-4 py-2">
+        <div className="xl:hidden border-t border-border bg-surface px-4 py-2">
           {nav.map((item) => (
             <a
               key={item.href}
