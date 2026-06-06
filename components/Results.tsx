@@ -7,6 +7,7 @@ import { FlightFilters, type SortBy } from "./FlightFilters";
 import { CardRecommendation } from "./CardRecommendation";
 import { PriceAlertForm } from "./PriceAlertForm";
 import { PriceTrendBadge } from "./PriceTrendBadge";
+import { TPCacheDisclaimer } from "./TPCacheDisclaimer";
 import PortfolioCheck from "@/components/PortfolioCheck";
 import clsx from "clsx";
 import { isBusinessMode } from "@/lib/businessMode";
@@ -391,6 +392,11 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
           onSortBy={setSortBy}
           lang={lang}
         />
+      )}
+
+      {/* TP Cache Disclaimer — shown if any results have TP source */}
+      {results.length > 0 && results.some(r => r.source === "TP") && (
+        <TPCacheDisclaimer lang={lang} />
       )}
 
       {/* Cards */}
