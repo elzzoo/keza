@@ -5,6 +5,7 @@
 
 import crypto from "crypto";
 import { redis } from "@/lib/redis";
+import * as Sentry from "@sentry/nextjs";
 
 // ── Redis keys ────────────────────────────────────────────────────────────────
 const PRO_KEY = (email: string) => `keza:pro:${email.toLowerCase()}`;
@@ -96,6 +97,21 @@ export async function createCheckoutUrl(email: string): Promise<string> {
 
   if (!res.ok) {
     const text = await res.text();
+
+    // Capture full context in Sentry
+    Sentry.withScope((scope) => {
+      scope.setTag("api", "lemonsqueezy");
+      scope.setContext("lemon_squeezy_error", {
+        email,
+        status: res.status,
+        body: text,
+      });
+      Sentry.captureMessage(
+        `Lemon Squeezy checkout failed: ${res.status}`,
+        "error"
+      );
+    });
+
     throw new Error(`Lemon Squeezy checkout failed: ${res.status} ${text}`);
   }
 
