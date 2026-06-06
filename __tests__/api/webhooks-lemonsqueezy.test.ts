@@ -5,11 +5,13 @@ const mockRevokePro = jest.fn();
 const mockVerify = jest.fn();
 const mockDiscord = jest.fn();
 const mockTrack = jest.fn();
+const mockLogSubscriptionEvent = jest.fn();
 
 jest.mock("@/lib/lemonsqueezy", () => ({
   verifyLemonWebhook: (...args: unknown[]) => mockVerify(...args),
   grantPro: (...args: unknown[]) => mockGrantPro(...args),
   revokePro: (...args: unknown[]) => mockRevokePro(...args),
+  logSubscriptionEvent: (...args: unknown[]) => mockLogSubscriptionEvent(...args),
 }));
 jest.mock("@/lib/discord", () => ({
   sendDiscordAlert: (...args: unknown[]) => mockDiscord(...args),

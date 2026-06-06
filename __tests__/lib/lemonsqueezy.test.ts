@@ -12,12 +12,16 @@ jest.mock("@/lib/redis", () => ({
 
 const mockSentryWithScope = jest.fn();
 const mockSentryCaptureMessage = jest.fn();
+const mockConsoleLog = jest.fn();
 
 jest.mock("@sentry/nextjs", () => ({
   withScope: (cb: (scope: unknown) => void) => mockSentryWithScope(cb),
   captureMessage: (msg: string, level: string) =>
     mockSentryCaptureMessage(msg, level),
 }));
+
+// Mock console.log
+global.console.log = mockConsoleLog;
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
@@ -28,6 +32,7 @@ import {
   revokePro,
   verifyLemonWebhook,
   createCheckoutUrl,
+  logSubscriptionEvent,
 } from "@/lib/lemonsqueezy";
 import crypto from "crypto";
 
@@ -274,5 +279,74 @@ describe("createCheckoutUrl", () => {
     await expect(createCheckoutUrl("user@example.com")).rejects.toThrow(
       `Lemon Squeezy checkout failed: ${status} ${errorBody}`
     );
+  });
+});
+
+describe("logSubscriptionEvent", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("logs subscription created event to Sentry as INFO", () => {
+    logSubscriptionEvent("created", "user@example.com", { subscriptionId: "sub_123" });
+
+    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
+      "Pro subscription event: created (user@example.com)",
+      "info"
+    );
+  });
+
+  it("logs subscription cancelled event to Sentry as INFO", () => {
+    logSubscriptionEvent("cancelled", "user@example.com");
+
+    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
+      "Pro subscription event: cancelled (user@example.com)",
+      "info"
+    );
+  });
+
+  it("logs subscription updated event to Sentry as INFO", () => {
+    logSubscriptionEvent("updated", "user@example.com", { status: "active" });
+
+    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
+      "Pro subscription event: updated (user@example.com)",
+      "info"
+    );
+  });
+
+  it("logs subscription expired event to Sentry as INFO", () => {
+    logSubscriptionEvent("expired", "user@example.com");
+
+    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
+      "Pro subscription event: expired (user@example.com)",
+      "info"
+    );
+  });
+
+  it("includes email in console log", () => {
+    logSubscriptionEvent("created", "user@example.com");
+
+    expect(mockConsoleLog).toHaveBeenCalled();
+    const callArg = mockConsoleLog.mock.calls[0];
+    expect(callArg[0]).toContain("[KEZA Pro]");
+    expect(callArg[0]).toContain("created");
+    expect(callArg[1]).toHaveProperty("email", "user@example.com");
+  });
+
+  it("includes details in console log when provided", () => {
+    const details = { subscriptionId: "sub_456", status: "active" };
+    logSubscriptionEvent("updated", "user@example.com", details);
+
+    expect(mockConsoleLog).toHaveBeenCalled();
+    const callArg = mockConsoleLog.mock.calls[0];
+    expect(callArg[1]).toHaveProperty("details", details);
+  });
+
+  it("does not include details when not provided", () => {
+    logSubscriptionEvent("created", "user@example.com");
+
+    expect(mockConsoleLog).toHaveBeenCalled();
+    const callArg = mockConsoleLog.mock.calls[0];
+    expect(callArg[1]).not.toHaveProperty("details");
   });
 });

@@ -163,3 +163,28 @@ export interface LemonWebhookPayload {
     };
   };
 }
+
+// ── Subscription event logging ────────────────────────────────────────────────
+
+/**
+ * Log Pro subscription events to Sentry for business analytics.
+ * Events: created, updated, cancelled, expired
+ */
+export function logSubscriptionEvent(
+  event: "created" | "updated" | "cancelled" | "expired",
+  email: string,
+  details?: Record<string, unknown>
+): void {
+  const message = `Pro subscription event: ${event} (${email})`;
+  const context = {
+    event,
+    email,
+    ...(details && { details }),
+  };
+
+  // Log to Sentry as INFO level (not an error)
+  Sentry.captureMessage(message, "info");
+
+  // Also log to console for Vercel logs visibility
+  console.log(`[KEZA Pro] ${message}`, context);
+}

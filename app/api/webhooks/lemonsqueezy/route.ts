@@ -3,6 +3,7 @@ import {
   verifyLemonWebhook,
   grantPro,
   revokePro,
+  logSubscriptionEvent,
   type LemonWebhookPayload,
 } from "@/lib/lemonsqueezy";
 import { sendDiscordAlert } from "@/lib/discord";
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
     case "subscription_created":
     case "subscription_resumed":
       await grantPro(email, subscriptionId);
+      logSubscriptionEvent("created", email, { subscriptionId });
       trackServerEvent("Pro Subscription Created", {
         subscription_id: subscriptionId,
         email,
@@ -61,14 +63,17 @@ export async function POST(req: NextRequest) {
       // Active stays Pro, cancelled/expired lose Pro
       if (status === "active") {
         await grantPro(email, subscriptionId);
+        logSubscriptionEvent("updated", email, { subscriptionId, status });
       } else if (status === "cancelled" || status === "expired") {
         await revokePro(email);
+        logSubscriptionEvent("updated", email, { subscriptionId, status });
       }
       break;
 
     case "subscription_cancelled":
     case "subscription_expired":
       await revokePro(email);
+      logSubscriptionEvent("cancelled", email, { subscriptionId, eventName });
       trackServerEvent("Pro Subscription Cancelled", {
         subscription_id: subscriptionId,
         email,
@@ -86,6 +91,7 @@ export async function POST(req: NextRequest) {
 
     case "subscription_paused":
       await revokePro(email);
+      logSubscriptionEvent("cancelled", email, { subscriptionId, eventName });
       break;
 
     default:
