@@ -67,3 +67,23 @@ export function logWarn(message: string, detail?: string, context?: Record<strin
     Sentry.captureMessage(detail !== undefined ? `${message} ${detail}` : message);
   });
 }
+
+/**
+ * Log a Redis operation error with full context: operation type, key, and error details.
+ *
+ * @param operation Redis operation type (e.g., 'GET', 'SET', 'DEL', 'SADD', 'SMEMBERS')
+ * @param key       Redis key that the operation was targeting
+ * @param err       The caught error
+ */
+export function logRedisError(operation: string, key: string, err: unknown): void {
+  const errorMessage = err instanceof Error ? err.message : String(err);
+  console.error(`[Redis ${operation} ${key}]`, errorMessage);
+
+  Sentry.withScope((scope) => {
+    scope.setTag("operation", operation);
+    scope.setTag("service", "redis");
+    scope.setExtra("key", key);
+    const sentryErr = err instanceof Error ? err : new Error(errorMessage);
+    Sentry.captureException(sentryErr);
+  });
+}
