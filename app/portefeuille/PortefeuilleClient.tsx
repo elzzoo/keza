@@ -82,8 +82,12 @@ function ProgramRow({
           min={0}
           step={1000}
           placeholder="0"
-          value={value || ""}
-          onChange={(e) => onChange(Math.max(0, parseInt(e.target.value || "0", 10)))}
+          value={typeof value === "number" ? (value === 0 ? "" : value.toString()) : ""}
+          onChange={(e) => {
+            const inputValue = e.target.value.trim();
+            const parsed = inputValue === "" ? 0 : parseInt(inputValue, 10);
+            onChange(Math.max(0, isNaN(parsed) ? 0 : parsed));
+          }}
           className="w-28 bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm text-fg text-right placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
         />
       </div>
@@ -118,8 +122,12 @@ function BankRow({
           min={0}
           step={1000}
           placeholder="0"
-          value={value || ""}
-          onChange={(e) => onChange(Math.max(0, parseInt(e.target.value || "0", 10)))}
+          value={typeof value === "number" ? (value === 0 ? "" : value.toString()) : ""}
+          onChange={(e) => {
+            const inputValue = e.target.value.trim();
+            const parsed = inputValue === "" ? 0 : parseInt(inputValue, 10);
+            onChange(Math.max(0, isNaN(parsed) ? 0 : parsed));
+          }}
           className="w-28 bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm text-fg text-right placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
         />
       </div>
