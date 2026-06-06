@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 import { redis } from "@/lib/redis";
 import { PROMOS_KEY, PROMOS_TTL_SECONDS } from "@/lib/promotions/engine";
 import { hasCronSecret } from "@/lib/auth";
@@ -13,27 +15,31 @@ export async function GET(request: Request) {
 
   return Sentry.withMonitor("cron-promotions", async () => {
   try {
-    // validUntil = 30 days from now so promos auto-expire after each refresh cycle
-    const validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+    // Load promotions from promotions.json
+    const filePath = path.join(process.cwd(), "data", "promotions.json");
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    const promos = JSON.parse(fileContent);
 
-    const promos = [
-      { airline: "Air France",       discount: 0.15, validUntil },
-      { airline: "KLM",              discount: 0.10, validUntil },
-      { airline: "Emirates",         discount: 0.20, validUntil },
-      { airline: "Qatar Airways",    discount: 0.12, validUntil },
-      { airline: "Turkish Airlines", discount: 0.18, validUntil },
-      { airline: "Lufthansa",        discount: 0.08, validUntil },
-      { airline: "British Airways",  discount: 0.10, validUntil },
-      { airline: "Ethiopian Airlines", discount: 0.05, validUntil },
-      { airline: "Kenya Airways",    discount: 0.07, validUntil },
-      { airline: "Royal Air Maroc",  discount: 0.12, validUntil },
-    ];
+    if (!Array.isArray(promos)) {
+      throw new Error("promotions.json must be an array");
+    }
 
-    await redis.set(PROMOS_KEY, promos, { ex: PROMOS_TTL_SECONDS });
+    // Filter out expired promotions and validate structure
+    const now = new Date();
+    const validPromos = promos.filter((p) => {
+      if (!p.airline || typeof p.discount !== "number") {
+        logError("[cron/promotions] Invalid promo structure:", p);
+        return false;
+      }
+      if (p.validUntil && new Date(p.validUntil) < now) {
+        return false;
+      }
+      return true;
+    });
 
-    return NextResponse.json({ ok: true, count: promos.length });
+    await redis.set(PROMOS_KEY, validPromos, { ex: PROMOS_TTL_SECONDS });
+
+    return NextResponse.json({ ok: true, count: validPromos.length, loaded: promos.length, filtered: promos.length - validPromos.length });
   } catch (err) {
     logError("[cron/promotions] error:", err);
     return NextResponse.json({ error: "Failed to refresh promotions" }, { status: 500 });
