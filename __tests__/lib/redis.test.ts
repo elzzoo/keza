@@ -365,7 +365,7 @@ describe("redis error logging with logRedisError", () => {
       const testError = new Error("Sorted set add failed");
       mockRedisZadd.mockRejectedValueOnce(testError);
 
-      const result = await redis.zadd("zset_key", 1, "member1", 2, "member2");
+      const result = await (redis.zadd as any)("zset_key", 1, "member1", 2, "member2");
 
       expect(result).toBe(0);
       expect(mockLogRedisError).toHaveBeenCalledWith("ZADD", "zset_key", testError);
@@ -374,7 +374,7 @@ describe("redis error logging with logRedisError", () => {
     it("returns 0 when redis.zadd fails", async () => {
       mockRedisZadd.mockRejectedValueOnce(new Error("Error"));
 
-      const result = await redis.zadd("key", 1, "member");
+      const result = await (redis.zadd as any)("key", 1, "member");
 
       expect(result).toBe(0);
     });
@@ -485,7 +485,7 @@ describe("redis error logging with logRedisError", () => {
       const testError = new Error("Hash set failed");
       mockRedisHset.mockRejectedValueOnce(testError);
 
-      const result = await redis.hset("hash_key", "field", "value");
+      const result = await (redis.hset as any)("hash_key", "field", "value");
 
       expect(result).toBe(0);
       expect(mockLogRedisError).toHaveBeenCalledWith("HSET", "hash_key", testError);
@@ -494,7 +494,7 @@ describe("redis error logging with logRedisError", () => {
     it("returns 0 when redis.hset fails", async () => {
       mockRedisHset.mockRejectedValueOnce(new Error("Error"));
 
-      const result = await redis.hset("key", "field", "value");
+      const result = await (redis.hset as any)("key", "field", "value");
 
       expect(result).toBe(0);
     });

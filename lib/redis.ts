@@ -38,7 +38,8 @@ async function safeGet<T = unknown>(key: string): Promise<T | null> {
 async function safeSet(key: string, value: unknown, options?: { ex?: number }): Promise<string> {
   try {
     const client = getRedis();
-    return await client.set(key, value, options);
+    const result = await client.set(key, value, options as Parameters<typeof client.set>[2]);
+    return result === "OK" ? "OK" : "ERROR";
   } catch (err) {
     logRedisError("SET", key, err);
     return "ERROR";
@@ -58,7 +59,7 @@ async function safeDel(...keys: string[]): Promise<number> {
 async function safeSadd(key: string, ...members: unknown[]): Promise<number> {
   try {
     const client = getRedis();
-    return await client.sadd(key, ...members);
+    return await (client.sadd as (key: string, ...members: unknown[]) => Promise<number>)(key, ...members);
   } catch (err) {
     logRedisError("SADD", key, err);
     return 0;
@@ -68,7 +69,8 @@ async function safeSadd(key: string, ...members: unknown[]): Promise<number> {
 async function safeSmembers<T = unknown>(key: string): Promise<T[]> {
   try {
     const client = getRedis();
-    return await client.smembers<T>(key);
+    const result = await client.smembers(key);
+    return (result ?? []) as T[];
   } catch (err) {
     logRedisError("SMEMBERS", key, err);
     return [];
@@ -78,7 +80,7 @@ async function safeSmembers<T = unknown>(key: string): Promise<T[]> {
 async function safeSrem(key: string, ...members: unknown[]): Promise<number> {
   try {
     const client = getRedis();
-    return await client.srem(key, ...members);
+    return await (client.srem as (key: string, ...members: unknown[]) => Promise<number>)(key, ...members);
   } catch (err) {
     logRedisError("SREM", key, err);
     return 0;
@@ -118,7 +120,8 @@ async function safeExpire(key: string, seconds: number): Promise<number> {
 async function safeLrange<T = unknown>(key: string, start: number, stop: number): Promise<T[]> {
   try {
     const client = getRedis();
-    return await client.lrange<T>(key, start, stop);
+    const result = await client.lrange(key, start, stop);
+    return (result ?? []) as T[];
   } catch (err) {
     logRedisError("LRANGE", key, err);
     return [];
@@ -128,7 +131,7 @@ async function safeLrange<T = unknown>(key: string, start: number, stop: number)
 async function safeLpush(key: string, ...values: unknown[]): Promise<number> {
   try {
     const client = getRedis();
-    return await client.lpush(key, ...values);
+    return await (client.lpush as (key: string, ...values: unknown[]) => Promise<number>)(key, ...values);
   } catch (err) {
     logRedisError("LPUSH", key, err);
     return 0;
@@ -148,7 +151,7 @@ async function safeLtrim(key: string, start: number, stop: number): Promise<stri
 async function safeZadd(key: string, ...options: unknown[]): Promise<number> {
   try {
     const client = getRedis();
-    return await client.zadd(key, ...options);
+    return await (client.zadd as (key: string, ...options: unknown[]) => Promise<number>)(key, ...options);
   } catch (err) {
     logRedisError("ZADD", key, err);
     return 0;
@@ -158,7 +161,9 @@ async function safeZadd(key: string, ...options: unknown[]): Promise<number> {
 async function safeZrange<T = unknown>(key: string, start: number, stop: number, options?: { withscores?: boolean }): Promise<T[]> {
   try {
     const client = getRedis();
-    return await client.zrange<T>(key, start, stop, options);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (client.zrange as any)(key, start, stop, options);
+    return (result ?? []) as T[];
   } catch (err) {
     logRedisError("ZRANGE", key, err);
     return [];
@@ -168,7 +173,8 @@ async function safeZrange<T = unknown>(key: string, start: number, stop: number,
 async function safeZrank(key: string, member: unknown): Promise<number | null> {
   try {
     const client = getRedis();
-    return await client.zrank(key, member);
+    const result = await client.zrank(key, member);
+    return (result ?? null) as number | null;
   } catch (err) {
     logRedisError("ZRANK", key, err);
     return null;
@@ -208,7 +214,7 @@ async function safeHgetall<T extends Record<string, unknown> = Record<string, un
 async function safeHset(key: string, ...options: unknown[]): Promise<number> {
   try {
     const client = getRedis();
-    return await client.hset(key, ...options);
+    return await (client.hset as (key: string, ...options: unknown[]) => Promise<number>)(key, ...options);
   } catch (err) {
     logRedisError("HSET", key, err);
     return 0;
@@ -228,7 +234,8 @@ async function safeExists(...keys: string[]): Promise<number> {
 async function safeMget<T = unknown>(...keys: string[]): Promise<(T | null)[]> {
   try {
     const client = getRedis();
-    return await client.mget<T>(...keys);
+    const result = await client.mget(...keys);
+    return (result ?? keys.map(() => null)) as (T | null)[];
   } catch (err) {
     logRedisError("MGET", keys.join(","), err);
     return keys.map(() => null);
