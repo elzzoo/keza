@@ -3,7 +3,8 @@ import { getZone } from "./zones";
 import { getAwardTaxes } from "@/data/awardTaxes";
 import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
-import { TRANSFER_BONUSES, getEffectiveRatio } from "@/data/transferBonuses";
+import { TRANSFER_BONUSES as TRANSFER_BONUSES_STATIC, getEffectiveRatio } from "@/data/transferBonuses";
+import type { TransferBonusRecord } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME } from "./globalPrograms";
@@ -14,6 +15,34 @@ import { AIRPORTS, type Airport } from "@/data/airports";
 const AIRPORTS_BY_CODE: Map<string, Airport> = new Map(AIRPORTS.map(a => [a.code, a]));
 import type { Cabin, TripType } from "./engine";
 import { buildScenarios, type Scenario } from "./scenarioEngine";
+
+// ─── In-Memory Cache for Bonus Transfers ──────────────────────────────────────
+// Populated on app startup from Redis or static fallback.
+// This allows synchronous access from costEngine while still supporting dynamic updates.
+let cachedBonusTransfers: TransferBonusRecord[] = TRANSFER_BONUSES_STATIC;
+
+/**
+ * Get bonus transfers (sync).
+ * Uses in-memory cache populated at app startup.
+ * Falls back to static data if cache not initialized.
+ */
+export function getBonusTransfers(): TransferBonusRecord[] {
+  return cachedBonusTransfers;
+}
+
+/**
+ * Initialize bonus transfers cache (called at app startup).
+ * Loads from Redis if available, falls back to static data.
+ */
+export async function initializeBonusTransfers(): Promise<void> {
+  const { loadBonusTransfers } = await import("./bonusTransfersRedis");
+  try {
+    cachedBonusTransfers = await loadBonusTransfers();
+  } catch {
+    // Fallback to static data on error
+    cachedBonusTransfers = TRANSFER_BONUSES_STATIC;
+  }
+}
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -634,7 +663,7 @@ export function buildCostOptions(
     "Qatar Privilege Club",
   ]);
 
-  for (const bonus of TRANSFER_BONUSES) {
+  for (const bonus of getBonusTransfers()) {
     if (!programNames.has(bonus.to)) continue;
     if (!originZone || !destZone) continue;
     // Skip Gulf hub programs on non-Middle-East routes — they can only fly via DXB/AUH/DOH

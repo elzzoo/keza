@@ -18,6 +18,10 @@ export const CACHE_VERSION = "v28"; // bumped: unknown-alliance guard + alliance
 
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
   try {
+  // Initialize bonus transfers from Redis on first call (cached afterward)
+  const { initializeBonusTransfers } = await import("../costEngine");
+  await initializeBonusTransfers().catch(() => {}); // Fire-and-forget; fallback to static data
+
   const {
     from, to, date,
     returnDate,
