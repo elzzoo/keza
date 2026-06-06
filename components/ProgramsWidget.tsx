@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { PROGRAMS } from "@/data/programs";
 import { trackProgramClick } from "@/lib/analytics";
 import { useProfile } from "@/hooks/useProfile";
@@ -28,12 +30,12 @@ export function ProgramsWidget({ lang }: Props) {
           <span className="text-base">🏆</span>
           <span className="text-xs font-bold text-muted uppercase tracking-wider">{t.title}</span>
         </div>
-        <a
+        <Link
           href="/programmes"
           className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
         >
           {t.seeAll}
-        </a>
+        </Link>
       </div>
 
       {/* Programs list */}

@@ -8,6 +8,7 @@ jest.mock("next-auth/react", () => ({
 
 jest.mock("next/image", () => ({
   __esModule: true,
+  // eslint-disable-next-line @next/next/no-img-element
   default: ({ alt }: { alt: string }) => <img alt={alt} />,
 }));
 

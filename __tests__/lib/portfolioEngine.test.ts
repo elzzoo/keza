@@ -1,4 +1,4 @@
-import { checkPortfolio, PortfolioStatus } from "@/lib/portfolioEngine";
+import { checkPortfolio } from "@/lib/portfolioEngine";
 import { MilesOption } from "@/lib/costEngine";
 
 // Helper to build minimal MilesOption fixtures

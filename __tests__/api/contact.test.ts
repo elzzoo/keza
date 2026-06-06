@@ -131,6 +131,7 @@ describe("POST /api/contact", () => {
     });
 
     it("succeeds even when message is omitted", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { message: _, ...noMessage } = VALID_BODY;
       const res = await POST(makeRequest(noMessage));
       expect(res.status).toBe(201);

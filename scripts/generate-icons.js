@@ -1,11 +1,9 @@
 // Generate simple PWA icons using canvas (Node 18+)
 // Run: node scripts/generate-icons.js
 
-const { createCanvas } = (() => {
-  try { return require("canvas"); } catch { return { createCanvas: null }; }
-})();
-
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require("path");
 
 function generateSVGIcon(size) {

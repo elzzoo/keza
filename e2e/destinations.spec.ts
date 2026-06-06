@@ -32,7 +32,7 @@ test.describe("/destinations/[iata] page", () => {
   });
 
   test("returns 404 for unknown IATA", async ({ page }) => {
-    const res = await page.goto("/destinations/zzz");
+    await page.goto("/destinations/zzz");
     // Next.js notFound() renders the not-found page — check for 404 or KEZA 404 content
     await expect(page.getByText(/introuvable|not found/i).first()).toBeVisible();
   });
