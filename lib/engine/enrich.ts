@@ -5,7 +5,7 @@ import type { FlightInput } from "../costEngine";
 import { optimizeMiles } from "../optimizer";
 import type { Cabin, TripType, FlightResult, Stops } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
-import { AVIASALES_BASE_URL, TP_MARKER } from "./travelpayouts";
+import { AVIASALES_BASE_URL, TP_MARKER, buildAviasalesUrl } from "./travelpayouts";
 
 export { CABIN_MULTIPLIER };
 
@@ -103,16 +103,12 @@ export function enrich(
     // Round-trip TP: build a proper RT Aviasales search URL.
     // ALWAYS build from f.from / f.to (already rebranded by rebrandRoute) rather
     // than re-using f.bookingLink which may contain a stale/incorrect origin.
-    // Format: {FROM}{DEPART_DATE}{TO}{RETURN_DATE}{FROM}{PAX}
-    const departureDateCompact = searchDate.replace(/-/g, "");
-    const returnDateCompact    = returnDate.replace(/-/g, "");
-    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${departureDateCompact}${f.to}${returnDateCompact}${f.from}${passengers}?marker=${TP_MARKER}`;
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, returnDate, passengers);
   } else if (searchDate && f.from && f.to) {
     // One-way: ALWAYS build from known f.from/f.to to guarantee correct origin.
     // Do NOT fall through to f.bookingLink (TP v3 deep links may carry wrong origin
     // after metro-code fallback attempts, e.g. DKR appearing in a DXB→JFK link).
-    const dateCompact = searchDate.replace(/-/g, "");
-    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${dateCompact}${f.to}${passengers ?? 1}?marker=${TP_MARKER}`;
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, undefined, passengers ?? 1);
   }
 
   return result;

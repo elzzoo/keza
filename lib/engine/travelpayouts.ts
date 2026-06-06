@@ -15,6 +15,40 @@ export const TP_MARKER = "714947";
 // and make the miles comparison misleading. Anything below this is discarded.
 export const MIN_REALISTIC_PRICE_USD = 30;
 
+// ─── Aviasales URL Building ──────────────────────────────────────────────────
+/**
+ * Build an Aviasales booking URL for a given flight search.
+ *
+ * Format:
+ * - Oneway: https://www.aviasales.com/search/{FROM}{DATE}{TO}{PASSENGERS}?marker={MARKER}
+ * - Roundtrip: https://www.aviasales.com/search/{FROM}{DATE}{TO}{RETURN_DATE}{FROM}{PASSENGERS}?marker={MARKER}
+ *
+ * @param from - Origin airport code (e.g., "CDG", "SIN")
+ * @param to - Destination airport code (e.g., "JFK", "LAX")
+ * @param searchDate - Departure date in YYYY-MM-DD format
+ * @param returnDate - Return date in YYYY-MM-DD format (undefined for one-way)
+ * @param passengers - Number of passengers (defaults to 1)
+ * @returns Full Aviasales booking URL
+ */
+export function buildAviasalesUrl(
+  from: string,
+  to: string,
+  searchDate: string,
+  returnDate: string | undefined,
+  passengers: number = 1
+): string {
+  const departureDateCompact = searchDate.replace(/-/g, "");
+
+  if (returnDate) {
+    // Roundtrip: return to origin (FROM)
+    const returnDateCompact = returnDate.replace(/-/g, "");
+    return `${AVIASALES_BASE_URL}/search/${from}${departureDateCompact}${to}${returnDateCompact}${from}${passengers}?marker=${TP_MARKER}`;
+  } else {
+    // One-way
+    return `${AVIASALES_BASE_URL}/search/${from}${departureDateCompact}${to}${passengers}?marker=${TP_MARKER}`;
+  }
+}
+
 // ─── Retry helper ────────────────────────────────────────────────────────────
 /**
  * Retry an async function up to `maxAttempts` times.

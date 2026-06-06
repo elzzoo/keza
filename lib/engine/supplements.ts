@@ -1,7 +1,7 @@
 import "server-only";
 import type { NormalizedFlight } from "../promotions/engine";
 import { iataToAirline } from "../iataAirlines";
-import { TP_BASE, AVIASALES_BASE_URL, TP_MARKER } from "./travelpayouts";
+import { TP_BASE, AVIASALES_BASE_URL, TP_MARKER, buildAviasalesUrl } from "./travelpayouts";
 import type { Cabin, TripType, FlightResult } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
 
@@ -444,12 +444,9 @@ export function enrichSynthetic(
   };
 
   if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
-    const departureDateCompact = searchDate.replace(/-/g, "");
-    const returnDateCompact    = returnDate.replace(/-/g, "");
-    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${departureDateCompact}${f.to}${returnDateCompact}${f.from}${passengers}?marker=${TP_MARKER}`;
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, returnDate, passengers);
   } else if (searchDate && f.from && f.to) {
-    const dateCompact = searchDate.replace(/-/g, "");
-    result.bookingLink = `${AVIASALES_BASE_URL}/search/${f.from}${dateCompact}${f.to}${passengers}?marker=${TP_MARKER}`;
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, undefined, passengers);
   }
 
   return result;
