@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PortefeuilleClient } from "@/app/portefeuille/PortefeuilleClient";
 import { ProfileProvider } from "@/contexts/ProfileContext";
@@ -7,9 +7,9 @@ import * as userProfileLib from "@/lib/userProfile";
 
 // Mock components that aren't essential to test
 jest.mock("@/components/Header", () => ({
-  Header: ({ onLangChange }: any) => (
+  Header: ({ onLangChange }: { onLangChange?: (lang: string) => void }) => (
     <header>
-      <button onClick={() => onLangChange("fr")}>Header</button>
+      <button onClick={() => onLangChange?.("fr")}>Header</button>
     </header>
   ),
 }));
@@ -101,12 +101,13 @@ describe("Portfolio Input Focus Issue (B9) - Input Value Persistence", () => {
 
   test("entering values in both Flying Blue (50K) and ANA (30K) preserves both", () => {
     let lastSavedBalances: Record<string, number> = {};
-    const allSaves: Record<string, number>[] = [];
+    const allSaves: Array<Record<string, number>> = [];
 
     // Track saved balances
-    mockSaveProfile.mockImplementation((profile: any) => {
-      lastSavedBalances = { ...profile.balances };
-      allSaves.push({ ...profile.balances });
+    mockSaveProfile.mockImplementation((profile: Record<string, unknown>) => {
+      const balances = profile.balances as Record<string, number>;
+      lastSavedBalances = { ...balances };
+      allSaves.push({ ...balances });
     });
 
     // Update mock to simulate database returning saved values

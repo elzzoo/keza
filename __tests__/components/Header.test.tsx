@@ -8,7 +8,7 @@ import { Header } from "@/components/Header";
 
 // Mock next/link
 jest.mock("next/link", () => {
-  // eslint-disable-next-line @next/next/no-html-link-for-pages
+  // eslint-disable-next-line @next/next/no-html-link-for-pages,react/display-name
   return ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   );
