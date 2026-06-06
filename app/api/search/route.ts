@@ -156,7 +156,7 @@ export async function POST(request: Request) {
           : redis.incr(`keza:stats:provider:tp:${today}`)
       )),
       redis.expire(`keza:stats:searches:${today}`, 30 * 24 * 60 * 60),
-      // Track cumulative savings so SocialProofBar can show "$Xk saved"
+      // Track cumulative savings for metrics (internal analytics only)
       ...(bestSaving > 0 && !fromCache
         ? [redis.incrby(TOTAL_SAVINGS_KEY, Math.round(bestSaving))]
         : []),

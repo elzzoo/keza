@@ -29,7 +29,6 @@ const HowItWorks          = dynamic(() => import("@/components/HowItWorks").then
 const PromoBanner         = dynamic(() => import("@/components/PromoBanner").then(m => m.PromoBanner), { ssr: false });
 const MilesCalculatorWidget = dynamic(() => import("@/components/MilesCalculatorWidget").then(m => m.MilesCalculatorWidget), { ssr: false });
 const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").then(m => m.ProgramsWidget), { ssr: false });
-const SocialProofBar         = dynamic(() => import("@/components/SocialProofBar").then(m => m.SocialProofBar), { ssr: false });
 const PwaInstallBanner       = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
 const TrendingRoutesWidget   = dynamic(() => import("@/components/TrendingRoutesWidget").then(m => m.TrendingRoutesWidget), { ssr: false });
 import { NewsletterSignup }  from "@/components/NewsletterSignup";
@@ -131,7 +130,6 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
       <TrustBar lang={lang} />
       {/* Hide social widgets in results mode — avoids /api/stats + /api/trending fetches */}
-      {!hasSearched && <SocialProofBar lang={lang} />}
       {!hasSearched && <TrendingRoutesWidget lang={lang} />}
 
       {/* -- Deal Spotlight + Cheapest Route + Deals strip -- */}
