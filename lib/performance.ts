@@ -26,6 +26,8 @@ export async function trackSearchPerformance(
         trace: {
           op: "search",
           description: `${route} search`,
+          span_id: Sentry.getActiveSpan()?.spanContext().spanId || "unknown",
+          trace_id: Sentry.getActiveSpan()?.spanContext().traceId || "unknown",
         },
       },
       measurements: {
@@ -35,7 +37,7 @@ export async function trackSearchPerformance(
         total_time: { value: totalTime, unit: "millisecond" },
       },
     });
-  } catch (err) {
+  } catch {
     // Silently fail
   }
 }

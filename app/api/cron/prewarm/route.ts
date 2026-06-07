@@ -1,67 +1,99 @@
 import { NextResponse } from "next/server";
-import { searchEngine } from "@/lib/engine";
+import { searchEngine, type SearchParams } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
-import { logError } from "@/lib/logger";
+import { logWarn } from "@/lib/logger";
+import { TOP_ROUTES, getPreWarmDates } from "@/lib/prewarm";
 
-// ─── Cache pre-warm cron ──────────────────────────────────────────────────────
-// Runs daily at 4am UTC (configured in vercel.json).
-// Fires searchEngine() on top-traffic corridors 30 days out so the first
-// real user on each route gets a cache hit instead of waiting 8-10s.
+// ─── Hourly route pre-warming cron ────────────────────────────────────────────
+// Runs hourly (configured in vercel.json).
+// Pre-warms top 20 corridors with dates 15-90 days out to keep popular routes
+// cached and ready. Batches 5 requests at a time with 1s between batches
+// to respect rate limits and avoid overwhelming the search engine.
 //
-// Vercel Hobby hard-kills at 10s. Routes reduced to 5 (all run in parallel,
-// each searchEngine() takes ~3-5s on cache hit or ~7-8s cold).
-// Routes chosen: KEZA's highest-traffic corridors (Africa-Europe focus).
+// Rate limiting: 5 parallel requests, 1s delay between batches.
+// This keeps concurrency manageable while maintaining throughput.
 
-export const maxDuration = 10;
+export const maxDuration = 300; // 5 minutes (Vercel Pro plan allows up to 900s)
 
-const POPULAR_ROUTES = [
-  // Africa–Europe (KEZA's core)
-  { from: "DSS", to: "CDG" },
-  { from: "ABJ", to: "CDG" },
-  { from: "LOS", to: "LHR" },
-  // Europe–Americas
-  { from: "CDG", to: "JFK" },
-  // Gulf–Europe
-  { from: "DXB", to: "LHR" },
-] as const;
-
-/** Generate a YYYY-MM-DD date N days from today */
-function futureDate(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+function validateCronSecret(req: Request): boolean {
+  return hasCronSecret(req);
 }
 
-export async function GET(request: Request): Promise<NextResponse> {
-  if (!hasCronSecret(request)) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+export async function POST(request: Request): Promise<NextResponse> {
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const start = Date.now();
-  // Single departure window (30 days out) — Hobby plan allows only ~8s execution.
-  const dates = [futureDate(30)];
+  try {
+    logWarn("[cron/prewarm-routes] Starting route pre-warming");
 
-  // Run all 5 routes in parallel (single date, 30 days out).
-  // With maxDuration=10 there is no time for sequential batching.
-  // Each searchEngine() returns instantly on cache hit, or in ~7s cold.
-  const results = await Promise.allSettled(
-    POPULAR_ROUTES.map(({ from, to }) =>
-      searchEngine({ from, to, date: dates[0]!, tripType: "oneway", stops: "any", cabin: "economy", passengers: 1 })
-        .then(() => `${from}→${to}: ok`)
-        .catch((err) => {
-          logError(`[prewarm] ${from}→${to} failed`, err);
-          return `${from}→${to}: failed`;
+    const dates = getPreWarmDates();
+    const prewarmParams: SearchParams[] = [];
+
+    // Build search parameter combinations: each route × first 3 dates
+    for (const route of TOP_ROUTES) {
+      for (const date of dates.slice(0, 3)) {
+        prewarmParams.push({
+          from: route.from,
+          to: route.to,
+          date,
+          tripType: "oneway",
+          stops: "any",
+          cabin: "economy",
+          passengers: 1,
+          userPrograms: [],
+        });
+      }
+    }
+
+    let completed = 0;
+    let errors = 0;
+
+    // Batch requests: 5 at a time with 1s delay between batches
+    for (let i = 0; i < prewarmParams.length; i += 5) {
+      const batch = prewarmParams.slice(i, i + 5);
+
+      // Execute batch in parallel
+      await Promise.all(
+        batch.map(async (params) => {
+          try {
+            await searchEngine(params, `prewarm-${Date.now()}`);
+            completed++;
+          } catch (err) {
+            errors++;
+            logWarn(
+              `[prewarm] Failed for ${params.from}→${params.to} on ${params.date}`,
+              err instanceof Error ? err.message : String(err)
+            );
+          }
         })
-    )
-  );
+      );
 
-  const warmed = results.filter(r => r.status === "fulfilled" && String((r as PromiseFulfilledResult<string>).value).endsWith("ok")).length;
+      // Rate limiting delay between batches
+      if (i + 5 < prewarmParams.length) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
 
-  return NextResponse.json({
-    ok: true,
-    warmed,
-    routes: POPULAR_ROUTES.length,
-    date: dates[0],
-    elapsed: `${Date.now() - start}ms`,
-  });
+    logWarn(
+      `[cron/prewarm-routes] Completed: ${completed}/${prewarmParams.length} (${errors} errors)`
+    );
+
+    return NextResponse.json({
+      completed,
+      total: prewarmParams.length,
+      errors,
+    });
+  } catch (err) {
+    logWarn(
+      "[cron/prewarm-routes] Failed",
+      err instanceof Error ? err.message : String(err)
+    );
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
+  }
+}
+
+// Legacy GET endpoint for backwards compatibility
+export async function GET(request: Request): Promise<NextResponse> {
+  return POST(request);
 }
