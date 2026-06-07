@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { searchEngine, CACHE_VERSION, type SearchParams, type FlightResult } from "@/lib/engine";
 import * as Sentry from "@sentry/nextjs";
+import { trackSearchPerformance } from "@/lib/performance";
 
 // Vercel Hobby plan hard-kills serverless functions at 10s.
 // maxDuration must be ≤ 10 on Hobby; Pro allows up to 300s.
@@ -192,6 +193,16 @@ export async function POST(request: Request) {
     const response = NextResponse.json({ results, count: results.length, forexRate, partial, fromCache });
     response.headers.set("x-request-id", requestId);
     response.headers.set("x-response-time", `${Date.now() - _t0}ms`);
+
+    // Track performance metrics
+    const responseTimeMs = Date.now() - _t0;
+    await trackSearchPerformance(`${from}-${to}`, {
+      cacheHitTime: fromCache ? 100 : 0,
+      duffelTime: partial ? 0 : responseTimeMs,
+      tpTime: partial ? responseTimeMs : 0,
+      totalTime: responseTimeMs,
+    });
+
     return response;
   } catch (err) {
     logError("[api/search]", err);
