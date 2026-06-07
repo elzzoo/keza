@@ -9,6 +9,14 @@ import * as Sentry from "@sentry/nextjs";
 
 // ── Redis keys ────────────────────────────────────────────────────────────────
 const PRO_KEY = (email: string) => `keza:pro:${email.toLowerCase()}`;
+const TRIAL_KEY = (email: string) => `keza:pro:trial:${email.toLowerCase()}`;
+const TRIAL_DURATION_DAYS = 7;
+const TRIAL_REMINDER_DAYS = 1;
+
+interface TrialStatus {
+  createdAt: string;
+  expiresAt: string;
+}
 
 // ── Env helpers ───────────────────────────────────────────────────────────────
 function getApiKey() {
@@ -44,6 +52,63 @@ export async function grantPro(email: string, subscriptionId: string): Promise<v
 /** Remove Pro status on cancellation / expiry. */
 export async function revokePro(email: string): Promise<void> {
   await redis.set(PRO_KEY(email), "cancelled");
+}
+
+// ── Trial management (7-day free trial) ────────────────────────────────────────
+
+/** Grant trial to new users, only once per email */
+export async function grantTrialIfNew(email: string): Promise<boolean> {
+  try {
+    const existingTrial = await redis.get<TrialStatus>(TRIAL_KEY(email));
+    if (existingTrial !== null) {
+      return false; // Already has a trial
+    }
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000);
+    const status: TrialStatus = {
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    };
+    await redis.set(TRIAL_KEY(email), JSON.stringify(status));
+    return true;
+  } catch (err) {
+    return false; // fail open
+  }
+}
+
+/** Get trial status for a user */
+export async function getTrialStatus(email: string): Promise<TrialStatus | null> {
+  try {
+    const trial = await redis.get<string>(TRIAL_KEY(email));
+    if (!trial) return null;
+    return JSON.parse(trial) as TrialStatus;
+  } catch (err) {
+    return null; // fail open
+  }
+}
+
+/** Check if user needs a trial expiry reminder */
+export async function needsTrialReminder(email: string): Promise<boolean> {
+  try {
+    const trial = await getTrialStatus(email);
+    if (!trial) return false;
+    const expiresAt = new Date(trial.expiresAt);
+    const now = new Date();
+    const millisecondsUntilExpiry = expiresAt.getTime() - now.getTime();
+    const daysUntilExpiry = millisecondsUntilExpiry / (24 * 60 * 60 * 1000);
+    return daysUntilExpiry <= TRIAL_REMINDER_DAYS && daysUntilExpiry > 0;
+  } catch (err) {
+    return false; // fail open
+  }
+}
+
+/** Revoke trial for a user */
+export async function revokeTrial(email: string): Promise<void> {
+  try {
+    await redis.del(TRIAL_KEY(email));
+  } catch (err) {
+    // fail open
+  }
 }
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
