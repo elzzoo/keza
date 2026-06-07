@@ -1,4 +1,4 @@
-import { grantTrialIfNew, getTrialStatus, needsTrialReminder } from "@/lib/lemonsqueezy";
+import { grantTrialIfNew, getTrialStatus } from "@/lib/lemonsqueezy";
 import { checkProAccess } from "@/lib/proAccess";
 import { redis } from "@/lib/redis";
 

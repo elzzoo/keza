@@ -73,7 +73,7 @@ export async function grantTrialIfNew(email: string): Promise<boolean> {
     await redis.set(TRIAL_KEY(lowerEmail), JSON.stringify(status));
     await redis.sadd("keza:trial:pending_reminders", lowerEmail);
     return true;
-  } catch (err) {
+  } catch {
     return false; // fail open
   }
 }
@@ -84,7 +84,7 @@ export async function getTrialStatus(email: string): Promise<TrialStatus | null>
     const trial = await redis.get<TrialStatus>(TRIAL_KEY(email));
     if (!trial) return null;
     return trial;
-  } catch (err) {
+  } catch {
     return null; // fail open
   }
 }
@@ -99,7 +99,7 @@ export async function needsTrialReminder(email: string): Promise<boolean> {
     const millisecondsUntilExpiry = expiresAt.getTime() - now.getTime();
     const daysUntilExpiry = millisecondsUntilExpiry / (24 * 60 * 60 * 1000);
     return daysUntilExpiry <= TRIAL_REMINDER_DAYS && daysUntilExpiry > 0;
-  } catch (err) {
+  } catch {
     return false; // fail open
   }
 }
@@ -108,7 +108,7 @@ export async function needsTrialReminder(email: string): Promise<boolean> {
 export async function revokeTrial(email: string): Promise<void> {
   try {
     await redis.del(TRIAL_KEY(email));
-  } catch (err) {
+  } catch {
     // fail open
   }
 }
