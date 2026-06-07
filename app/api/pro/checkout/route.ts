@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     const url = await createCheckoutUrl(email.trim().toLowerCase());
-    return NextResponse.json({ checkoutUrl: url });
+    return NextResponse.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[checkout] Error creating checkout:", message);

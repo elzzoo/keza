@@ -11,7 +11,6 @@ import * as Sentry from "@sentry/nextjs";
 const PRO_KEY = (email: string) => `keza:pro:${email.toLowerCase()}`;
 const TRIAL_KEY = (email: string) => `keza:pro:trial:${email.toLowerCase()}`;
 const TRIAL_DURATION_DAYS = 7;
-const TRIAL_REMINDER_DAYS = 1;
 
 interface TrialStatus {
   createdAt: string;
@@ -94,11 +93,16 @@ export async function needsTrialReminder(email: string): Promise<boolean> {
   try {
     const trial = await getTrialStatus(email);
     if (!trial) return false;
+
+    // Get configurable reminder days from Redis (default: 1)
+    const reminderDaysBeforeStr = await redis.get<string>("keza:config:trial_reminder_days_before_expiry");
+    const reminderDaysBefore = parseInt(reminderDaysBeforeStr ?? "1", 10);
+
     const expiresAt = new Date(trial.expiresAt);
     const now = new Date();
     const millisecondsUntilExpiry = expiresAt.getTime() - now.getTime();
     const daysUntilExpiry = millisecondsUntilExpiry / (24 * 60 * 60 * 1000);
-    return daysUntilExpiry <= TRIAL_REMINDER_DAYS && daysUntilExpiry > 0;
+    return daysUntilExpiry <= reminderDaysBefore && daysUntilExpiry > 0;
   } catch {
     return false; // fail open
   }

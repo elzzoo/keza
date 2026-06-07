@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import Link from "next/link";
+import type { ProAccessStatus } from "@/lib/proAccess";
 
 const FEATURES = [
   { icon: "🔔", title: "Alertes illimitées", desc: "Surveillez autant de routes que vous voulez, sans limite." },
@@ -14,9 +16,22 @@ const FEATURES = [
 
 type CheckoutStatus = "idle" | "loading" | "waitlisted";
 
-export function ProClient({ upgraded }: { upgraded?: boolean }) {
+interface ProClientProps {
+  upgraded?: boolean;
+  isLoggedIn?: boolean;
+  proStatus?: ProAccessStatus | null;
+  userEmail?: string;
+}
+
+export function ProClient({
+  upgraded,
+  isLoggedIn,
+  proStatus,
+  userEmail,
+}: ProClientProps) {
+  const router = useRouter();
   const [lang] = useState<"fr" | "en">("fr");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(userEmail || "");
   const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
   const [checkoutError, setCheckoutError] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
@@ -47,6 +62,13 @@ export function ProClient({ upgraded }: { upgraded?: boolean }) {
 
   async function handleCheckout(e: React.FormEvent) {
     e.preventDefault();
+
+    // If not logged in, redirect to sign in with return URL
+    if (!isLoggedIn) {
+      router.push("/connexion?callbackUrl=/pro");
+      return;
+    }
+
     const trimmed = email.trim();
     if (!trimmed || checkoutStatus === "loading") return;
     setCheckoutStatus("loading");
@@ -64,9 +86,10 @@ export function ProClient({ upgraded }: { upgraded?: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: trimmed }),
       });
-      const data = await res.json() as { url?: string; error?: string };
-      if (res.ok && data.url) {
-        window.location.href = data.url;
+      const data = await res.json() as { url?: string | undefined; checkoutUrl?: string; error?: string };
+      const checkoutUrl = data.url || data.checkoutUrl;
+      if (res.ok && checkoutUrl) {
+        window.location.href = checkoutUrl;
         return;
       }
       if (res.status === 503) {
@@ -232,7 +255,96 @@ export function ProClient({ upgraded }: { upgraded?: boolean }) {
           </table>
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted/60">
+        {/* Trial / Pro status for logged-in users */}
+        {isLoggedIn && proStatus && (
+          <div className="mt-8 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
+            {proStatus.isPro ? (
+              <>
+                <p className="text-3xl mb-2">🎉</p>
+                <p className="font-semibold text-fg mb-1">Tu as KEZA Pro</p>
+                <p className="text-sm text-muted">
+                  Profite de tes alertes illimitées et de toutes les fonctionnalités Pro.
+                </p>
+                <Link
+                  href="/alertes"
+                  className="mt-4 inline-block rounded-lg bg-primary text-white text-sm font-bold px-5 py-2 hover:bg-primary/90 transition-colors"
+                >
+                  Gérer mes alertes →
+                </Link>
+              </>
+            ) : proStatus.hasTrial ? (
+              <>
+                <p className="text-3xl mb-2">✨</p>
+                <p className="font-semibold text-fg mb-1">Essai gratuit actif</p>
+                <p className="text-sm text-muted">
+                  {proStatus.daysLeft && proStatus.daysLeft > 0
+                    ? `Tu as ${proStatus.daysLeft} jour${proStatus.daysLeft > 1 ? "s" : ""} d'essai gratuit restant.`
+                    : "Ton essai gratuit est actif."}
+                </p>
+                <Link
+                  href="/alertes"
+                  className="mt-4 inline-block rounded-lg bg-primary text-white text-sm font-bold px-5 py-2 hover:bg-primary/90 transition-colors"
+                >
+                  Créer une alerte →
+                </Link>
+              </>
+            ) : null}
+          </div>
+        )}
+
+        {/* FAQ */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <h2 className="text-2xl font-black text-fg mb-6 text-center">Questions fréquentes</h2>
+          <div className="space-y-3">
+            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
+              <summary className="font-semibold text-fg flex items-center justify-between">
+                <span>Combien coûte KEZA Pro ?</span>
+                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-sm text-muted mt-3">
+                KEZA Pro coûte 9$ par mois. Tu peux commencer par un essai gratuit de 7 jours, sans carte de crédit.
+              </p>
+            </details>
+            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
+              <summary className="font-semibold text-fg flex items-center justify-between">
+                <span>Puis-je annuler mon abonnement ?</span>
+                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-sm text-muted mt-3">
+                Oui, tu peux annuler ton abonnement &agrave; tout moment. Tu conserveras l&apos;acc&egrave;s Pro jusqu&apos;&agrave; la fin de ta p&eacute;riode de facturation actuelle.
+              </p>
+            </details>
+            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
+              <summary className="font-semibold text-fg flex items-center justify-between">
+                <span>Qu&apos;est-ce qui inclus dans Pro ?</span>
+                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-sm text-muted mt-3">
+                Alertes illimitées, notifications push multi-devices, historique des prix sur 6 mois, et alertes pour plusieurs passagers simultanément.
+              </p>
+            </details>
+            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
+              <summary className="font-semibold text-fg flex items-center justify-between">
+                <span>Comment fonctionne l&apos;essai gratuit ?</span>
+                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-sm text-muted mt-3">
+                Tu as 7 jours d&apos;acc&egrave;s gratuit &agrave; toutes les fonctionnalit&eacute;s Pro. Aucune carte de cr&eacute;dit n&apos;est requise. Si tu ne convertis pas &agrave; la fin de l&apos;essai, ton compte reviendra &agrave; la version gratuite.
+              </p>
+            </details>
+            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
+              <summary className="font-semibold text-fg flex items-center justify-between">
+                <span>Est-ce que mes donn&eacute;es sont s&ucirc;res ?</span>
+                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-sm text-muted mt-3">
+                Oui. KEZA utilise HTTPS, du chiffrement de bout en bout, et les meilleures pratiques de s&eacute;curit&eacute; pour prot&eacute;ger tes informations personnelles.
+              </p>
+            </details>
+          </div>
+        </div>
+
+        <p className="mt-8 text-center text-xs text-muted/60">
           Question ?{" "}
           <a href="mailto:hello@keza.app" className="underline hover:text-muted">
             hello@keza.app
