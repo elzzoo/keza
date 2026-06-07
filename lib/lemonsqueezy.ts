@@ -69,7 +69,9 @@ export async function grantTrialIfNew(email: string): Promise<boolean> {
       createdAt: now.toISOString(),
       expiresAt: expiresAt.toISOString(),
     };
-    await redis.set(TRIAL_KEY(email), JSON.stringify(status));
+    const lowerEmail = email.toLowerCase();
+    await redis.set(TRIAL_KEY(lowerEmail), JSON.stringify(status));
+    await redis.sadd("keza:trial:pending_reminders", lowerEmail);
     return true;
   } catch (err) {
     return false; // fail open
