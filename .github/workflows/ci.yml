@@ -61,8 +61,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Jest
-        run: npx jest --passWithNoTests
+      - name: Run Jest (excluding integration tests that require external services)
+        run: npx jest --passWithNoTests --testPathIgnorePatterns='/__tests__/integration/'
 
   # ── E2E tests (Playwright) ───────────────────────────────────────────────────
   # Runs only on pushes to main, after unit tests pass.
