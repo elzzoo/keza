@@ -28,6 +28,7 @@ const config = {
         "^@/(.*)$": "<rootDir>/$1",
         "^server-only$": "<rootDir>/__mocks__/server-only.ts",
       },
+      setupFilesAfterEnv: ["<rootDir>/jest.setup.server.ts"],
     },
     {
       displayName: "jsdom",

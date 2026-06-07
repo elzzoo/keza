@@ -81,9 +81,9 @@ export async function grantTrialIfNew(email: string): Promise<boolean> {
 /** Get trial status for a user */
 export async function getTrialStatus(email: string): Promise<TrialStatus | null> {
   try {
-    const trial = await redis.get<string>(TRIAL_KEY(email));
+    const trial = await redis.get<TrialStatus>(TRIAL_KEY(email));
     if (!trial) return null;
-    return JSON.parse(trial) as TrialStatus;
+    return trial;
   } catch (err) {
     return null; // fail open
   }
