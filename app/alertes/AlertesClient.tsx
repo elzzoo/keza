@@ -10,6 +10,7 @@ import { PushAlertButton } from "@/components/PushAlertButton";
 import { ReferralCard } from "@/components/ReferralCard";
 import { MilesValueScore } from "@/components/MilesValueScore";
 import { useProfile } from "@/hooks/useProfile";
+import { useProAccess } from "@/hooks/useProAccess";
 
 // ─── Email localStorage key ───────────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ function progressPct(alert: PriceAlert): number {
 
 export function AlertesClient() {
   const { profile } = useProfile();
+  const { isActive: hasProAccess } = useProAccess();
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [email, setEmail] = useState("");
   const [alerts, setAlerts] = useState<PriceAlert[] | null>(null);
@@ -253,6 +255,40 @@ export function AlertesClient() {
 
         {/* Push notifications opt-in */}
         <PushAlertButton lang={lang} email={email} token={manageToken} />
+
+        {/* Multi-passenger selector (gated) */}
+        <div className="mt-6 mb-8">
+          {hasProAccess ? (
+            <div>
+              <label className="block text-sm font-semibold text-fg mb-2">
+                {fr ? "Nombre de passagers" : "Number of passengers"}
+              </label>
+              <select name="passengers" defaultValue="1" className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm text-fg focus:outline-none focus:border-primary/50 transition-colors">
+                <option value="1">1 {fr ? "passager" : "passenger"}</option>
+                <option value="2">2 {fr ? "passagers" : "passengers"}</option>
+                <option value="3">3 {fr ? "passagers" : "passengers"}</option>
+                <option value="4">4 {fr ? "passagers" : "passengers"}</option>
+              </select>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-4">
+              <p className="text-sm text-amber-800 font-semibold mb-2">
+                {fr ? "Alertes multi-passagers (Pro uniquement)" : "Multi-passenger alerts (Pro only)"}
+              </p>
+              <p className="text-xs text-amber-700 mb-3">
+                {fr
+                  ? "Configurez des alertes pour 2, 3 ou 4 passagers avec KEZA Pro."
+                  : "Configure alerts for 2, 3, or 4 passengers with KEZA Pro."}
+              </p>
+              <Link
+                href="/pro"
+                className="inline-block text-sm text-amber-700 font-bold underline"
+              >
+                {fr ? "Passer à KEZA Pro →" : "Upgrade to KEZA Pro →"}
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Email form */}
         <form onSubmit={handleFetch} className="flex gap-2 mt-4 mb-8">
