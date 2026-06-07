@@ -199,6 +199,8 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   // South Africa ↔ North America
   "JNB-JFK": ["South African Airways", "United"],
   "JFK-JNB": ["South African Airways", "United"],
+  "JNB-LAX": ["South African Airways", "United"],
+  "LAX-JNB": ["South African Airways", "United"],
 
   // West Africa ↔ Europe — Accra
   "ACC-CDG": ["Air France"],
