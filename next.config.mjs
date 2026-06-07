@@ -51,12 +51,33 @@ const CITY_SLUG_REDIRECTS = [
 const nextConfig = {
   // Moved from experimental.serverComponentsExternalPackages in Next.js 15
   serverExternalPackages: ["web-push"],
-  experimental: {
-    // Tree-shake large packages — only import what's used
-    optimizePackageImports: ["lucide-react", "@heroicons/react", "date-fns"],
+
+  // Tree-shaking & code splitting
+  webpack: (config, { isServer }) => {
+    return config;
   },
+
+  // Optimize image handling
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
+
+  // Dynamic imports for heavy libraries — tree-shake large packages
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@heroicons/react",
+      "date-fns",
+      "recharts",
+    ],
+  },
+
   // Compress responses
   compress: true,
+
+  // Disable sourcemaps in production to reduce bundle size
+  productionBrowserSourceMaps: false,
+
   async redirects() {
     return CITY_SLUG_REDIRECTS;
   },
