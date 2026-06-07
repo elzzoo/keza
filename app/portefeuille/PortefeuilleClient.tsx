@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useProfile } from "@/hooks/useProfile";
+import { useProAccess } from "@/hooks/useProAccess";
+import { ProUpgradeCard } from "@/components/ProUpgradeCard";
 import { GLOBAL_PROGRAMS } from "@/lib/globalPrograms";
 import { BANK_CURRENCIES } from "@/lib/userProfile";
 import type { RecentSearch } from "@/lib/userProfile";
@@ -157,6 +159,7 @@ function RecentSearchRow({ search, lang }: { search: RecentSearch; lang: "fr" | 
 
 export function PortefeuilleClient() {
   const { profile, isLoaded, setBalances, setBankPoints } = useProfile();
+  const { isActive: hasProAccess, daysLeft, loading } = useProAccess();
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [showOtherPrograms, setShowOtherPrograms] = useState(false);
 
@@ -192,7 +195,7 @@ export function PortefeuilleClient() {
 
   // ── Skeleton while loading ──────────────────────────────────────────────────
 
-  if (!isLoaded) {
+  if (!isLoaded || loading) {
     return (
       <div className="min-h-screen bg-bg">
         <Header lang={lang} onLangChange={setLang} />
@@ -231,6 +234,19 @@ export function PortefeuilleClient() {
               : "Enter your miles and points balances — KEZA computes the total value of your portfolio."}
           </p>
         </div>
+
+        {/* ── Pro access status ────────────────────────────────────────────── */}
+        {!hasProAccess && <ProUpgradeCard daysLeft={daysLeft} />}
+
+        {hasProAccess && (
+          <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 mb-6">
+            <p className="text-sm text-blue-800">
+              {daysLeft !== null && daysLeft > 0
+                ? `Essai gratuit actif: ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant`
+                : "KEZA Pro actif"}
+            </p>
+          </div>
+        )}
 
         {/* ── Total value card ─────────────────────────────────────────────── */}
         <div className="bg-surface rounded-2xl border border-border p-5">
