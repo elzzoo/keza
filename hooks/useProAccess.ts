@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import type { ProAccessStatus } from "@/lib/proAccess";
 
 export function useProAccess() {
-  const [status, setStatus] = useState<ProAccessStatus>({ hasPro: false, isTrialUser: false });
+  const [status, setStatus] = useState<ProAccessStatus>({ isPro: false, hasTrial: false, daysLeft: null, isActive: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export function useProAccess() {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setError(message);
-        setStatus({ hasPro: false, isTrialUser: false });
+        setStatus({ isPro: false, hasTrial: false, daysLeft: null, isActive: false });
       } finally {
         setLoading(false);
       }

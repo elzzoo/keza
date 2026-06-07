@@ -15,18 +15,19 @@ describe("checkProAccess", () => {
     jest.clearAllMocks();
   });
 
-  it("should return hasPro: true for a paid Pro user", async () => {
+  it("should return isPro: true for a paid Pro user", async () => {
     mockLemonsqueezy.isProUser.mockResolvedValue(true);
     mockLemonsqueezy.getTrialStatus.mockResolvedValue(null);
 
     const result = await checkProAccess("paid@example.com");
 
-    expect(result.hasPro).toBe(true);
-    expect(result.isTrialUser).toBe(false);
-    expect(result.trialExpiresAt).toBeUndefined();
+    expect(result.isPro).toBe(true);
+    expect(result.hasTrial).toBe(false);
+    expect(result.isActive).toBe(true);
+    expect(result.daysLeft).toBeNull();
   });
 
-  it("should return hasPro: true and isTrialUser: true for an active trial user", async () => {
+  it("should return isActive: true and hasTrial: true for an active trial user", async () => {
     const trialExpiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
     mockLemonsqueezy.isProUser.mockResolvedValue(false);
     mockLemonsqueezy.getTrialStatus.mockResolvedValue({
@@ -36,19 +37,21 @@ describe("checkProAccess", () => {
 
     const result = await checkProAccess("trial@example.com");
 
-    expect(result.hasPro).toBe(true);
-    expect(result.isTrialUser).toBe(true);
-    expect(result.trialExpiresAt).toBe(trialExpiresAt);
+    expect(result.isPro).toBe(false);
+    expect(result.isActive).toBe(true);
+    expect(result.hasTrial).toBe(true);
+    expect(result.daysLeft).toBe(5);
   });
 
-  it("should return hasPro: false for a free user with no trial", async () => {
+  it("should return isActive: false for a free user with no trial", async () => {
     mockLemonsqueezy.isProUser.mockResolvedValue(false);
     mockLemonsqueezy.getTrialStatus.mockResolvedValue(null);
 
     const result = await checkProAccess("free@example.com");
 
-    expect(result.hasPro).toBe(false);
-    expect(result.isTrialUser).toBe(false);
-    expect(result.trialExpiresAt).toBeUndefined();
+    expect(result.isPro).toBe(false);
+    expect(result.hasTrial).toBe(false);
+    expect(result.isActive).toBe(false);
+    expect(result.daysLeft).toBeNull();
   });
 });

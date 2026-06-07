@@ -8,9 +8,10 @@ import { getTrialStatus } from "@/lib/lemonsqueezy";
 import { logError } from "@/lib/logger";
 
 export interface ProAccessStatus {
-  hasPro: boolean;
-  isTrialUser: boolean;
-  trialExpiresAt?: string;
+  isPro: boolean;
+  hasTrial: boolean;
+  daysLeft: number | null;
+  isActive: boolean;
 }
 
 /**
@@ -23,16 +24,25 @@ export async function checkProAccess(email: string): Promise<ProAccessStatus> {
       getTrialStatus(email),
     ]);
 
-    const hasPro = isPro || trialStatus !== null;
-    const isTrialUser = !isPro && trialStatus !== null;
+    const hasTrial = trialStatus !== null;
+    const isActive = isPro || hasTrial;
+
+    let daysLeft: number | null = null;
+    if (hasTrial && trialStatus?.expiresAt) {
+      const expiresAt = new Date(trialStatus.expiresAt);
+      const now = new Date();
+      const millisecondsLeft = expiresAt.getTime() - now.getTime();
+      daysLeft = Math.ceil(millisecondsLeft / (24 * 60 * 60 * 1000));
+    }
 
     return {
-      hasPro,
-      isTrialUser,
-      trialExpiresAt: trialStatus?.expiresAt,
+      isPro,
+      hasTrial,
+      daysLeft,
+      isActive,
     };
   } catch (err) {
     logError("[checkProAccess]", err, { email });
-    return { hasPro: false, isTrialUser: false };
+    return { isPro: false, hasTrial: false, daysLeft: null, isActive: false };
   }
 }

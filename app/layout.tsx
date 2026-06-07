@@ -9,6 +9,9 @@ import "./globals.css";
 import { SITE_URL } from "@/lib/siteConfig";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthSessionProvider } from "@/contexts/SessionContext";
+import { grantTrialIfNew } from "@/lib/lemonsqueezy";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const inter = localFont({
   src: "./fonts/GeistVF.woff",
@@ -60,6 +63,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = headersList.get("x-locale") ?? "fr";
   const cookieStore = await cookies();
   const theme = cookieStore.get("keza_theme")?.value ?? "dark";
+  const session = await getServerSession(authOptions);
+
+  // Grant trial if this is first login
+  if (session?.user?.email) {
+    await grantTrialIfNew(session.user.email).catch(() => {});
+  }
+
   return (
     <html lang={locale} className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} suppressHydrationWarning>
       <head>
