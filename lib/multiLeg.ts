@@ -131,3 +131,134 @@ export function calculateRouteTotalTime(route: MultiLegRoute): number {
 export function calculateRouteCPP(route: MultiLegRoute): number {
   return route.totalPrice / route.passengers;
 }
+
+/**
+ * Orchestrates multi-leg route search
+ * Searches direct + via hubs, builds graph, finds optimal paths
+ * Returns top N routes sorted by price
+ */
+export async function searchMultiLegRoutes(
+  flights: FlightLeg[],
+  origin: string,
+  destination: string,
+  passengers: number = 1,
+  maxResults: number = 3,
+  preferredHubs?: string[],
+): Promise<MultiLegRoute[]> {
+  // Import here to avoid circular dependencies
+  const { buildConnectivityGraph } = await import('./graphBuilder');
+  const { dijkstra } = await import('./shortestPath');
+
+  if (flights.length === 0) {
+    return [];
+  }
+
+  // Build connectivity graph
+  const graph = buildConnectivityGraph(flights);
+
+  // Check if destination is reachable
+  const nodes = graph.nodes;
+  if (!nodes.includes(origin) || !nodes.includes(destination)) {
+    return [];
+  }
+
+  // Find all paths from origin to destination
+  const routes: MultiLegRoute[] = [];
+  const seenPrices = new Set<number>();
+
+  // First, check for direct flights
+  const directFlights = flights.filter((f) => f.origin === origin && f.destination === destination);
+  for (const flight of directFlights) {
+    const route: MultiLegRoute = {
+      legs: [flight],
+      totalPrice: flight.price,
+      passengers,
+    };
+    if (validateMultiLegRoute(route)) {
+      routes.push(route);
+      seenPrices.add(flight.price);
+    }
+  }
+
+  // Use Dijkstra to find shortest path by price
+  const bestPath = dijkstra(flights, origin, destination, 'price');
+
+  if (bestPath.distance !== Infinity && bestPath.path.length > 1) {
+    // Reconstruct route from path
+    const legRoute = reconstructRoute(flights, bestPath.path, passengers);
+    if (legRoute && !seenPrices.has(legRoute.totalPrice)) {
+      routes.push(legRoute);
+      seenPrices.add(legRoute.totalPrice);
+    }
+  }
+
+  // Try alternative paths through different hubs if available
+  const hubs = preferredHubs || ['ORD', 'DEN', 'ATL', 'DFW'];
+
+  for (const hub of hubs) {
+    if (hub === origin || hub === destination) continue;
+    if (!nodes.includes(hub)) continue;
+
+    // Try origin -> hub -> destination
+    const toHub = dijkstra(flights, origin, hub, 'price');
+    if (toHub.distance !== Infinity && toHub.path.length > 0) {
+      const fromHub = dijkstra(flights, hub, destination, 'price');
+      if (fromHub.distance !== Infinity && fromHub.path.length > 0) {
+        // Combine paths
+        const combinedPath = [...toHub.path.slice(0, -1), ...fromHub.path];
+        const legRoute = reconstructRoute(flights, combinedPath, passengers);
+        if (legRoute && !seenPrices.has(legRoute.totalPrice)) {
+          routes.push(legRoute);
+          seenPrices.add(legRoute.totalPrice);
+        }
+      }
+    }
+  }
+
+  // Sort by price ascending
+  routes.sort((a, b) => a.totalPrice - b.totalPrice);
+
+  // Return top N results
+  return routes.slice(0, maxResults);
+}
+
+/**
+ * Reconstructs a MultiLegRoute from a path of airports and available flights
+ */
+function reconstructRoute(flights: FlightLeg[], path: string[], passengers: number): MultiLegRoute | null {
+  if (path.length < 2) {
+    return null;
+  }
+
+  const legs: FlightLeg[] = [];
+  let totalPrice = 0;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const from = path[i];
+    const to = path[i + 1];
+
+    // Find cheapest flight from 'from' to 'to'
+    const candidates = flights.filter((f) => f.origin === from && f.destination === to);
+
+    if (candidates.length === 0) {
+      return null; // No flight available for this leg
+    }
+
+    // Pick cheapest candidate
+    const flight = candidates.reduce((cheapest, current) => (current.price < cheapest.price ? current : cheapest));
+
+    legs.push(flight);
+    totalPrice += flight.price;
+  }
+
+  // Validate route
+  if (!validateMultiLegRoute({ legs, totalPrice, passengers })) {
+    return null;
+  }
+
+  return {
+    legs,
+    totalPrice,
+    passengers,
+  };
+}
