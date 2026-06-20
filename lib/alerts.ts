@@ -61,20 +61,29 @@ function generateId(): string {
 // ─── Index helpers (atomic SET ops) ─────────────────────────────────────────
 
 const INDEX_TTL = 90 * 86400;
+const MIGRATED_KEYS = new Set<string>(); // Track keys that have been migrated to prevent re-migration
 
 // Reads IDs from a Redis SET index. If the key was written in the old JSON-array
 // format (pre-D2), migrates it transparently to a SET on first access.
 async function getIdsFromIndex(key: string): Promise<string[]> {
-  const members = await redis.smembers(key).catch(async () => {
-    // WRONGTYPE error: key is an old JSON string — migrate to SET
+  // If already migrated this session, skip the catch block
+  if (MIGRATED_KEYS.has(key)) {
+    return (await redis.smembers(key)) as string[];
+  }
+
+  const members = await redis.smembers(key).catch(async (err) => {
+    // WRONGTYPE error: key is an old JSON string — migrate to SET (one-time)
     const ids = (await redis.get<string[]>(key)) ?? [];
     if (ids.length > 0) {
       await redis.del(key);
       await redis.sadd(key, ids[0], ...ids.slice(1));
       await redis.expire(key, INDEX_TTL);
     }
+    MIGRATED_KEYS.add(key); // Mark as migrated so future reads skip this
     return ids;
   });
+
+  MIGRATED_KEYS.add(key); // Mark as migrated
   return members as string[];
 }
 
