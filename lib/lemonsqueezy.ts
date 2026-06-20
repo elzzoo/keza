@@ -260,14 +260,9 @@ export const lemonWebhookPayloadSchema = z.object({
 export function logSubscriptionEvent(
   event: "created" | "updated" | "cancelled" | "expired",
   email: string,
-  details?: Record<string, unknown>
+  _details?: Record<string, unknown>
 ): void {
   const message = `Pro subscription event: ${event} (${email})`;
-  const context = {
-    event,
-    email,
-    ...(details && { details }),
-  };
 
   // Log to Sentry as INFO level (not an error)
   Sentry.captureMessage(message, "info");

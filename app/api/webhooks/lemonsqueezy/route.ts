@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   try {
     const parsed = JSON.parse(rawBody);
     payload = lemonWebhookPayloadSchema.parse(parsed);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Invalid payload structure" }, { status: 400 });
   }
 

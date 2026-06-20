@@ -71,7 +71,7 @@ async function getIdsFromIndex(key: string): Promise<string[]> {
     return (await redis.smembers(key)) as string[];
   }
 
-  const members = await redis.smembers(key).catch(async (err) => {
+  const members = await redis.smembers(key).catch(async (_err) => {
     // WRONGTYPE error: key is an old JSON string — migrate to SET (one-time)
     const ids = (await redis.get<string[]>(key)) ?? [];
     if (ids.length > 0) {
