@@ -18,6 +18,27 @@ jest.mock("@/components/Footer", () => ({
   Footer: () => <footer>Footer</footer>,
 }));
 
+jest.mock("@/components/BalanceSyncWidget", () => ({
+  BalanceSyncWidget: ({ lastSync }: { lastSync: Date | null }) => (
+    <div>Balance Sync: {lastSync ? lastSync.toISOString() : "Never"}</div>
+  ),
+}));
+
+jest.mock("@/components/ProUpgradeCard", () => ({
+  ProUpgradeCard: () => <div>Pro Upgrade Card</div>,
+}));
+
+jest.mock("@/lib/balanceSync", () => ({
+  getLastSyncTime: jest.fn().mockResolvedValue(null),
+}));
+
+jest.mock("next-auth/react", () => ({
+  useSession: jest.fn(() => ({
+    data: { user: { email: "test@example.com" } },
+    status: "authenticated",
+  })),
+}));
+
 jest.mock("@/lib/globalPrograms", () => ({
   GLOBAL_PROGRAMS: [
     { name: "Flying Blue", marketValueCents: 0.8 },

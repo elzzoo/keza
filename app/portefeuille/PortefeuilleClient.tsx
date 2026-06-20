@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useProfile } from "@/hooks/useProfile";
 import { useProAccess } from "@/hooks/useProAccess";
 import { ProUpgradeCard } from "@/components/ProUpgradeCard";
+import { BalanceSyncWidget } from "@/components/BalanceSyncWidget";
 import { GLOBAL_PROGRAMS } from "@/lib/globalPrograms";
 import { BANK_CURRENCIES } from "@/lib/userProfile";
 import type { RecentSearch } from "@/lib/userProfile";
@@ -160,8 +162,38 @@ function RecentSearchRow({ search, lang }: { search: RecentSearch; lang: "fr" | 
 export function PortefeuilleClient() {
   const { profile, isLoaded, setBalances, setBankPoints } = useProfile();
   const { isActive: hasProAccess, daysLeft, loading } = useProAccess();
+  const { data: session } = useSession();
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [showOtherPrograms, setShowOtherPrograms] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const fetchLastSync = async () => {
+      try {
+        const res = await fetch("/api/balance/sync-time");
+        if (res.ok) {
+          const data = await res.json();
+          setLastSync(data.lastSync ? new Date(data.lastSync) : null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch sync time:", err);
+      }
+    };
+    fetchLastSync();
+  }, [session?.user?.email]);
+
+  const handleRefresh = async () => {
+    try {
+      await fetch("/api/balance/sync", { method: "POST" });
+      const res = await fetch("/api/balance/sync-time");
+      if (res.ok) {
+        const data = await res.json();
+        setLastSync(data.lastSync ? new Date(data.lastSync) : null);
+      }
+    } catch (err) {
+      console.error("Failed to refresh balances:", err);
+    }
+  };
 
   // ── Derived values ──────────────────────────────────────────────────────────
 
@@ -247,6 +279,9 @@ export function PortefeuilleClient() {
             </p>
           </div>
         )}
+
+        {/* ── Balance sync widget ──────────────────────────────────────────── */}
+        <BalanceSyncWidget lastSync={lastSync} onRefresh={handleRefresh} />
 
         {/* ── Total value card ─────────────────────────────────────────────── */}
         <div className="bg-surface rounded-2xl border border-border p-5">
