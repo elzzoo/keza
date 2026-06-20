@@ -27,7 +27,10 @@ const KNOWN_PROGRAMS = new Set([
   "LifeMiles",                    // canonical — not "Avianca LifeMiles"
   "Alaska Mileage Plan",          // canonical — not "Alaska Airlines Mileage Plan"
   "Iberia Avios Plus",
+  "Lufthansa Miles & More",       // P5 Scaling: Europe hubs
 ]);
+
+
 
 describe("HOME_CARRIER_PROGRAMS", () => {
   it("has entries for all key hub corridors (SIN, NRT, HND, DXB, DOH, AUH, IST, ICN, HKG, KUL)", () => {

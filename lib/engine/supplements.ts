@@ -136,6 +136,39 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-KGL": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
   "KGL-BRU": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
   "BRU-KGL": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
+
+  // ─── Europe Hubs (P5 Scaling Task 1.1) ───────────────────────────────────────
+  // Lufthansa Miles & More — FRA hub (Frankfurt)
+  "FRA-LAX": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "LAX-FRA": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "FRA-JFK": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "JFK-FRA": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "FRA-CDG": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "CDG-FRA": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+
+  // KLM Flying Blue — AMS hub (Amsterdam)
+  "AMS-LAX": [{ airline: "KLM", programs: ["Flying Blue"] }],
+  "LAX-AMS": [{ airline: "KLM", programs: ["Flying Blue"] }],
+  "AMS-CDG": [{ airline: "KLM", programs: ["Flying Blue"] }],
+  "CDG-AMS": [{ airline: "KLM", programs: ["Flying Blue"] }],
+
+  // British Airways Avios — LHR hub (London)
+  "LHR-LAX": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LAX-LHR": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LHR-JFK": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "JFK-LHR": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LHR-SFO": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "SFO-LHR": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LHR-CDG": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-LHR": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "LHR-FRA": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "FRA-LHR": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "LHR-AMS": [{ airline: "KLM", programs: ["Flying Blue"] }],
+  "AMS-LHR": [{ airline: "KLM", programs: ["Flying Blue"] }],
+  "LHR-SIN": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "SIN-LHR": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "LHR-NRT": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "NRT-LHR": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -343,6 +376,39 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "GRU-JFK": ["LATAM Airlines"],
   "CDG-GRU": ["Air France", "LATAM Airlines"],
   "GRU-CDG": ["Air France", "LATAM Airlines"],
+
+  // ── Europe Hubs (P5 Scaling Task 1.1) ───────────────────────────────────────
+  // Lufthansa (FRA hub)
+  "FRA-LAX": ["Lufthansa", "United"],
+  "LAX-FRA": ["Lufthansa", "United"],
+  "FRA-JFK": ["Lufthansa", "United"],
+  "JFK-FRA": ["Lufthansa", "United"],
+  "FRA-CDG": ["Lufthansa", "Air France"],
+  "CDG-FRA": ["Lufthansa", "Air France"],
+
+  // KLM (AMS hub)
+  "AMS-LAX": ["KLM", "United"],
+  "LAX-AMS": ["KLM", "United"],
+  "AMS-CDG": ["KLM", "Air France"],
+  "CDG-AMS": ["KLM", "Air France"],
+
+  // British Airways (LHR hub)
+  "LHR-LAX": ["British Airways", "United"],
+  "LAX-LHR": ["British Airways", "United"],
+  "LHR-JFK": ["British Airways", "United"],
+  "JFK-LHR": ["British Airways", "United"],
+  "LHR-SFO": ["British Airways", "United"],
+  "SFO-LHR": ["British Airways", "United"],
+  "LHR-CDG": ["British Airways", "Air France"],
+  "CDG-LHR": ["Air France", "British Airways"],
+  "LHR-FRA": ["British Airways", "Lufthansa"],
+  "FRA-LHR": ["Lufthansa", "British Airways"],
+  "LHR-AMS": ["British Airways", "KLM"],
+  "AMS-LHR": ["KLM", "British Airways"],
+  "LHR-SIN": ["British Airways", "Singapore Airlines"],
+  "SIN-LHR": ["Singapore Airlines", "British Airways"],
+  "LHR-NRT": ["British Airways", "All Nippon Airways"],
+  "NRT-LHR": ["All Nippon Airways", "British Airways"],
 };
 
 /**

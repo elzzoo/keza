@@ -732,6 +732,28 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
+  // ─── KLM Flying Blue ──────────────────────────────────────────────────────────
+  // Flying Blue (Air France-KLM group) award chart for SkyTeam network. One-way per pax.
+  // KLM is the primary operator for AMS hub routes. Source: Flying Blue award chart 2026-Q1.
+  "KLM Flying Blue": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 25_000, premium: 40_000, business: 72_000 },
+      ASIA:          { economy: 35_000, premium: 50_000, business: 90_000 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 20_000, business: 45_000 },
+      SOUTH_AMERICA: { economy: 45_000, premium: 65_000, business: 110_000 },
+      EUROPE:        { economy: 15_000, premium: 20_000, business: 35_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:         { economy: 25_000, premium: 40_000, business: 72_000 },
+      ASIA:           { economy: 45_000, premium: 65_000, business: 110_000 },
+      MIDDLE_EAST:    { economy: 40_000, premium: 55_000, business: 100_000 },
+    },
+    ASIA: {
+      EUROPE:         { economy: 35_000, premium: 50_000, business: 90_000 },
+      NORTH_AMERICA:  { economy: 45_000, premium: 65_000, business: 110_000 },
+    },
+  },
+
   // ─── Alaska Mileage Plan ──────────────────────────────────────────────────
   // Oneworld partner awards (BA/QR/RAM/AA). One-way per pax.
   // Africa routes bookable via BA/Royal Air Maroc (Oneworld). Source: Alaska award chart 2025.
