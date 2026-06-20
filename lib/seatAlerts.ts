@@ -90,7 +90,7 @@ export async function deleteSeatAlert(
 
 export async function getAllAlertsForEmail(email: string): Promise<SeatAlertSubscription[]> {
   const indexKey = SEAT_ALERT_INDEX(email);
-  const pairs = await redis.smembers<string>(indexKey);
+  const pairs = (await redis.smembers(indexKey)) as string[];
 
   // Build keys for batch fetch
   const validPairs: Array<{ route: string; cabin: CabinType }> = [];
@@ -108,13 +108,14 @@ export async function getAllAlertsForEmail(email: string): Promise<SeatAlertSubs
   if (keys.length === 0) return [];
 
   // Batch fetch all alerts
-  const data = await redis.mget<string>(...keys);
+  const data = (await redis.mget(...keys)) as (string | null)[];
   const alerts: SeatAlertSubscription[] = [];
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i]) {
+    const item = data[i];
+    if (item !== null) {
       try {
-        const alert = JSON.parse(data[i]) as SeatAlertSubscription;
+        const alert = JSON.parse(item) as SeatAlertSubscription;
         alerts.push(alert);
       } catch {
         // Skip corrupted entries
@@ -130,7 +131,7 @@ export async function getAllAlertsForRoute(
   cabin: CabinType
 ): Promise<SeatAlertSubscription[]> {
   const indexKey = SEAT_ALERT_ROUTE_INDEX(route, cabin);
-  const emails = await redis.smembers<string>(indexKey);
+  const emails = (await redis.smembers(indexKey)) as string[];
 
   // Build keys for batch fetch
   const keys = emails.map((email) => SEAT_ALERT_KEY(email, route, cabin));
@@ -138,7 +139,7 @@ export async function getAllAlertsForRoute(
   if (keys.length === 0) return [];
 
   // Batch fetch all alerts
-  const data = await redis.mget<string>(...keys);
+  const data = (await redis.mget(...keys)) as (string | null)[];
   const alerts: SeatAlertSubscription[] = [];
 
   for (const item of data) {
@@ -223,9 +224,16 @@ export async function getAllActiveRouteCabinPairs(): Promise<
     const pattern = "keza:setalerts:route:*";
 
     do {
-      const [nextCursor, keys] = await redis.scan<string>(cursor, {
-        match: pattern,
-      });
+      let nextCursor = cursor;
+      let keys: string[] = [];
+
+      try {
+        const result = await redis.scan(cursor, { match: pattern });
+        [nextCursor, keys] = [result[0], result[1] as string[]];
+      } catch {
+        // Log scan error but continue with next iteration
+        break;
+      }
 
       for (const key of keys) {
         // Parse key: keza:setalerts:route:ROUTE:CABIN
@@ -287,26 +295,32 @@ export async function processAllSeatAlerts(): Promise<{
       // Find minimum price
       const minPrice = Math.min(...prices.map((p) => p.price));
 
-      // Apply cabin multiplier
-      const cabinMultiplierKey = CABIN_MULTIPLIER_MAP[cabin];
-      const cabinMultiplier = CABIN_MULTIPLIERS[cabinMultiplierKey] ?? 1.0;
-      const adjustedPrice = Math.round(minPrice * cabinMultiplier);
-
-      // Check for deals
-      const deal = await detectDeal(route, cabin, adjustedPrice);
+      // Check for deals - detectDeal will apply cabin multiplier internally
+      const deal = await detectDeal(route, cabin, minPrice);
 
       if (deal) {
         // Send notifications to all subscribers for this route/cabin
         const subscribers = await getAllAlertsForRoute(route, cabin);
 
+        // Apply cabin multiplier for subscriber comparison
+        const cabinMultiplierKey = CABIN_MULTIPLIER_MAP[cabin];
+        const cabinMultiplier = CABIN_MULTIPLIERS[cabinMultiplierKey] ?? 1.0;
+        const adjustedPrice = Math.round(minPrice * cabinMultiplier);
+
         for (const subscriber of subscribers) {
           checked++;
 
-          // Check if deal meets subscriber's minPrice threshold
-          if (adjustedPrice <= subscriber.minPrice) {
-            // Placeholder: Task 1.3 will implement sendSeatAlertEmail
-            // For now just log
-            notified++;
+          try {
+            // Check if deal meets subscriber's minPrice threshold
+            if (subscriber.minPrice > 0 && adjustedPrice <= subscriber.minPrice) {
+              // Placeholder: Task 1.3 will implement sendSeatAlertEmail
+              // For now just log
+              notified++;
+            }
+          } catch (err) {
+            errors.push(
+              `Error notifying ${subscriber.email} for ${route}-${cabin}: ${String(err)}`
+            );
           }
         }
       }
