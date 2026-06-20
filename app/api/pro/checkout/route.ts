@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutUrl } from "@/lib/lemonsqueezy";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail } from "@/lib/validate";
+import { logError } from "@/lib/logger";
 
 // POST /api/pro/checkout — create a Lemon Squeezy checkout session
 export async function POST(req: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[checkout] Error creating checkout:", message);
+    logError("[api/pro/checkout] Failed to create checkout", err);
     // If env vars not set, return 503 with clear message
     if (message.includes("not configured")) {
       return NextResponse.json(

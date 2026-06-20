@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { checkProAccess } from "@/lib/proAccess";
 import { authOptions } from "@/lib/auth";
+import { logError } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -22,7 +23,7 @@ export async function GET() {
     const status = await checkProAccess(session.user.email);
     return NextResponse.json(status);
   } catch (err) {
-    console.error("[api/pro/access]", err);
+    logError("[api/pro/access] Failed to check pro access", err);
     return NextResponse.json(
       {
         isPro: false,

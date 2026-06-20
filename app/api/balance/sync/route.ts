@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserCredentials } from "@/lib/portfolio";
 import { syncUserBalances } from "@/lib/balanceSync";
+import { logError } from "@/lib/logger";
 
 export async function POST() {
   const session = await getServerSession(authOptions);
@@ -19,7 +20,7 @@ export async function POST() {
       syncedAt: new Date().toISOString(),
     });
   } catch (err) {
-    console.error("Balance sync error for user", session.user.email, ":", err);
+    logError("[api/balance/sync] Failed to sync balances", err, { userEmail: session.user.email });
     return NextResponse.json(
       { error: "Sync failed" },
       { status: 500 }
