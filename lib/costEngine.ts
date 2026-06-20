@@ -114,6 +114,7 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Singapore KrisFlyer":     "Singapore Airlines",
   "ANA Mileage Club":        "All Nippon Airways",
   "LifeMiles":               "Avianca",
+  "COPA ConnectMiles":       "Copa Airlines",     // P5 Scaling Task 1.4 — MIA hub
   // ─── Oneworld ──────────────────────────────────────────────────────────────
   "British Airways Avios":   "British Airways",   // awardCharts key
   "Qatar Privilege Club":    "Qatar Airways",
@@ -151,6 +152,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Ethiopian Airlines":  "Ethiopian ShebaMiles",
   "Air Canada":          "Air Canada Aeroplan",
   "Avianca":             "LifeMiles",
+  "Copa Airlines":       "COPA ConnectMiles",   // P5 Scaling Task 1.4 — MIA hub
   // Oneworld
   "Japan Airlines":      "Japan Airlines Mileage Bank",
   "British Airways":     "British Airways Avios",

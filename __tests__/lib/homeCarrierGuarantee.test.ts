@@ -29,13 +29,15 @@ const KNOWN_PROGRAMS = new Set([
   "Iberia Avios Plus",
   "Lufthansa Miles & More",       // P5 Scaling: Europe hubs
   "Thai Royal Orchid Plus",       // P5 Scaling Task 1.2: Asia hubs
+  "COPA ConnectMiles",            // P5 Scaling Task 1.4: US hubs (MIA)
+  "LATAM Pass",                   // P5 Scaling Task 1.4: US hubs (MIA)
   "Qantas Frequent Flyer",        // used on SYD-HKG reverse
 ]);
 
 
 
 describe("HOME_CARRIER_PROGRAMS", () => {
-  it("has entries for all key hub corridors (SIN, NRT, HND, DXB, DOH, AUH, IST, ICN, HKG, KUL)", () => {
+  it("has entries for all key hub corridors (SIN, NRT, HND, DXB, DOH, AUH, IST, ICN, HKG, KUL, MIA, ORD)", () => {
     const keys = Object.keys(HOME_CARRIER_PROGRAMS);
     expect(keys.some(k => k.startsWith("SIN-"))).toBe(true);
     expect(keys.some(k => k.startsWith("NRT-"))).toBe(true);
@@ -46,6 +48,9 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     expect(keys.some(k => k.startsWith("IST-"))).toBe(true);
     expect(keys.some(k => k.startsWith("ICN-"))).toBe(true);
     expect(keys.some(k => k.startsWith("HKG-"))).toBe(true);
+    // P5 Scaling Task 1.4 US hubs
+    expect(keys.some(k => k.startsWith("MIA-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("ORD-"))).toBe(true);
   });
 
   it("includes both directions for every corridor", () => {
@@ -148,6 +153,99 @@ describe("HOME_CARRIER_PROGRAMS", () => {
       "AUH-BKK", "BKK-AUH",
       "AUH-SYD", "SYD-AUH",
       "DOH-BKK", "BKK-DOH",
+    ];
+    for (const route of newRoutes) {
+      expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
+    }
+  });
+
+  // ─── P5 Scaling Task 1.4: US Hub Expansion (MIA, ORD) ──────────────────────
+  it("LATAM Pass guaranteed on MIA→GRU and reverse", () => {
+    for (const route of ["MIA-GRU", "GRU-MIA"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("LATAM Pass");
+    }
+  });
+
+  it("LATAM Pass guaranteed on MIA→EZE and reverse", () => {
+    for (const route of ["MIA-EZE", "EZE-MIA"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("LATAM Pass");
+    }
+  });
+
+  it("COPA ConnectMiles guaranteed on MIA→BOG and reverse", () => {
+    for (const route of ["MIA-BOG", "BOG-MIA"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("COPA ConnectMiles");
+    }
+  });
+
+  it("British Airways Avios guaranteed on MIA↔LHR", () => {
+    for (const route of ["MIA-LHR", "LHR-MIA"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("British Airways Avios");
+    }
+  });
+
+  it("Flying Blue guaranteed on MIA↔CDG", () => {
+    for (const route of ["MIA-CDG", "CDG-MIA"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Flying Blue");
+    }
+  });
+
+  it("United MileagePlus guaranteed on MIA↔SFO", () => {
+    for (const route of ["MIA-SFO", "SFO-MIA"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("United MileagePlus");
+    }
+  });
+
+  it("ORD transatlantic routes have correct programs", () => {
+    const routes = [
+      { route: "ORD-LHR", program: "British Airways Avios" },
+      { route: "LHR-ORD", program: "British Airways Avios" },
+      { route: "ORD-CDG", program: "Flying Blue" },
+      { route: "CDG-ORD", program: "Flying Blue" },
+      { route: "ORD-FRA", program: "Lufthansa Miles & More" },
+      { route: "FRA-ORD", program: "Lufthansa Miles & More" },
+    ];
+    for (const { route, program } of routes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain(program);
+    }
+  });
+
+  it("NRT-ORD route includes ANA and JAL programs (ORD-NRT set in Asia hub)", () => {
+    const nrtOrd = HOME_CARRIER_PROGRAMS["NRT-ORD"] ?? [];
+    const allPrograms = nrtOrd.flatMap(c => c.programs);
+    expect(allPrograms).toContain("ANA Mileage Club");
+    expect(allPrograms).toContain("Japan Airlines Mileage Bank");
+
+    // ORD-NRT is already in Asia hub section and should NOT be duplicated
+    const ordNrt = HOME_CARRIER_PROGRAMS["ORD-NRT"] ?? [];
+    expect(ordNrt.length).toBeGreaterThan(0);
+  });
+
+  it("all new US hub routes (Task 1.4) have both directions", () => {
+    const newRoutes = [
+      // MIA South America routes already covered in M3 section
+      // New in Task 1.4 are transatlantic + SFO routes
+      "MIA-LHR", "LHR-MIA",
+      "MIA-CDG", "CDG-MIA",
+      "MIA-SFO", "SFO-MIA",
+      // Chicago transatlantic routes (ORD-NRT already defined in Asia hub)
+      "ORD-LHR", "LHR-ORD",
+      "ORD-CDG", "CDG-ORD",
+      "ORD-FRA", "FRA-ORD",
     ];
     for (const route of newRoutes) {
       expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);

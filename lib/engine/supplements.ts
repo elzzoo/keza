@@ -188,6 +188,33 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "FRA-LHR": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
   "LHR-AMS": [{ airline: "KLM", programs: ["Flying Blue"] }],
   "AMS-LHR": [{ airline: "KLM", programs: ["Flying Blue"] }],
+
+  // ─── P5 Scaling Task 1.4: US Hub Expansion (MIA, ORD) ────────────────────
+  // Miami hub — South America + Transatlantic
+  "MIA-GRU": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "GRU-MIA": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "MIA-EZE": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "EZE-MIA": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "MIA-BOG": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+  "BOG-MIA": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+
+  // Miami ↔ Europe
+  "MIA-LHR": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LHR-MIA": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "MIA-CDG": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-MIA": [{ airline: "Air France", programs: ["Flying Blue"] }],
+
+  // Miami ↔ US West Coast
+  "MIA-SFO": [{ airline: "United", programs: ["United MileagePlus"] }],
+  "SFO-MIA": [{ airline: "United", programs: ["United MileagePlus"] }],
+
+  // Chicago hub — Transatlantic (ORD-NRT already exists for Asia hub)
+  "ORD-LHR": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LHR-ORD": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "ORD-CDG": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-ORD": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "ORD-FRA": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+  "FRA-ORD": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -442,6 +469,25 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "SIN-LHR": ["Singapore Airlines", "British Airways"],
   "LHR-NRT": ["British Airways", "All Nippon Airways"],
   "NRT-LHR": ["All Nippon Airways", "British Airways"],
+
+  // ── P5 Scaling Task 1.4: US Hub Expansion (MIA, ORD) ─────────────────────
+  // Miami — Europe routes (South America routes already in M3 fix section above)
+  "MIA-LHR": ["British Airways", "American Airlines"],
+  "LHR-MIA": ["British Airways", "American Airlines"],
+  "MIA-CDG": ["Air France", "American Airlines"],
+  "CDG-MIA": ["Air France", "American Airlines"],
+
+  // Miami — West Coast (United hub)
+  "MIA-SFO": ["United", "American Airlines"],
+  "SFO-MIA": ["United", "American Airlines"],
+
+  // Chicago — Transatlantic (ORD-NRT already exists above)
+  "ORD-LHR": ["British Airways", "United", "American Airlines"],
+  "LHR-ORD": ["British Airways", "United", "American Airlines"],
+  "ORD-CDG": ["Air France", "United", "American Airlines"],
+  "CDG-ORD": ["Air France", "United", "American Airlines"],
+  "ORD-FRA": ["Lufthansa", "United", "American Airlines"],
+  "FRA-ORD": ["Lufthansa", "United", "American Airlines"],
 };
 
 /**
