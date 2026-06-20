@@ -284,6 +284,29 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "JFK-EZE": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
   "EZE-CDG": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
   "CDG-EZE": [{ airline: "Air France", programs: ["Flying Blue"] }],
+
+  // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
+  // Qantas Frequent Flyer — Sydney (SYD) hub
+  "SYD-LAX": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "LAX-SYD": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "SYD-JFK": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "JFK-SYD": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "SYD-LHR": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "LHR-SYD": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  "SYD-CDG": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "CDG-SYD": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "SYD-NRT": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "NRT-SYD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "SYD-BKK": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "BKK-SYD": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+
+  // Air New Zealand Airpoints — Auckland/Wellington (NZL) hub
+  "NZL-LAX": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "LAX-NZL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "NZL-SFO": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "SFO-NZL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "NZL-LHR": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "LHR-NZL": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -582,6 +605,27 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "LAX-BOG": ["Avianca", "Copa Airlines"],
   "BOG-JFK": ["Avianca", "United"],
   "JFK-BOG": ["Avianca", "United"],
+
+  // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
+  // Qantas (SYD hub)
+  "SYD-LAX": ["Qantas", "United"],
+  "LAX-SYD": ["Qantas", "United"],
+  "SYD-JFK": ["Qantas", "United"],
+  "JFK-SYD": ["Qantas", "United"],
+  "SYD-LHR": ["Qantas", "British Airways"],
+  "LHR-SYD": ["British Airways", "Qantas"],
+  "SYD-CDG": ["Qantas", "Air France"],
+  "CDG-SYD": ["Air France", "Qantas"],
+  "SYD-BKK": ["Qantas", "Thai Airways"],
+  "BKK-SYD": ["Thai Airways", "Qantas"],
+
+  // Air New Zealand (NZL hub)
+  "NZL-LAX": ["Air New Zealand", "United"],
+  "LAX-NZL": ["Air New Zealand", "United"],
+  "NZL-SFO": ["Air New Zealand", "United"],
+  "SFO-NZL": ["Air New Zealand", "United"],
+  "NZL-LHR": ["Air New Zealand", "British Airways"],
+  "LHR-NZL": ["British Airways", "Air New Zealand"],
 };
 
 /**

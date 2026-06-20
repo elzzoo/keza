@@ -45,6 +45,7 @@ const KNOWN_PROGRAMS = new Set([
   "Asiana Airlines Club",         // P5 Task 2.2: Asian programs (ICN hub)
   "Kenya Airways Mileage Club",   // P5 Task 2.4: African programs (NBO hub)
   "Aeromexico Club Premier",      // P5 Task 3.1: Latin America market (MEX hub)
+  "Air New Zealand Airpoints",    // P5 Task 3.2: South Pacific expansion (NZL hub)
 ]);
 
 
@@ -424,5 +425,114 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     expect(keys.some(k => k.startsWith("GRU-"))).toBe(true);
     expect(keys.some(k => k.startsWith("EZE-"))).toBe(true);
     expect(keys.some(k => k.startsWith("BOG-"))).toBe(true);
+  });
+
+  // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
+  it("Qantas Frequent Flyer guaranteed on SYD→LAX and reverse", () => {
+    for (const route of ["SYD-LAX", "LAX-SYD"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Qantas Frequent Flyer");
+    }
+  });
+
+  it("Qantas Frequent Flyer guaranteed on SYD→JFK and reverse", () => {
+    for (const route of ["SYD-JFK", "JFK-SYD"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Qantas Frequent Flyer");
+    }
+  });
+
+  it("Qantas Frequent Flyer on SYD→LHR outbound, British Airways on reverse", () => {
+    const sydLhr = HOME_CARRIER_PROGRAMS["SYD-LHR"] ?? [];
+    const sydLhrPrograms = sydLhr.flatMap(c => c.programs);
+    expect(sydLhrPrograms).toContain("Qantas Frequent Flyer");
+
+    const lhrSyd = HOME_CARRIER_PROGRAMS["LHR-SYD"] ?? [];
+    const lhrSydPrograms = lhrSyd.flatMap(c => c.programs);
+    expect(lhrSydPrograms).toContain("British Airways Avios");
+  });
+
+  it("Qantas Frequent Flyer on SYD→CDG outbound, Flying Blue on reverse", () => {
+    const sydCdg = HOME_CARRIER_PROGRAMS["SYD-CDG"] ?? [];
+    const sydCdgPrograms = sydCdg.flatMap(c => c.programs);
+    expect(sydCdgPrograms).toContain("Qantas Frequent Flyer");
+
+    const cdgSyd = HOME_CARRIER_PROGRAMS["CDG-SYD"] ?? [];
+    const cdgSydPrograms = cdgSyd.flatMap(c => c.programs);
+    expect(cdgSydPrograms).toContain("Flying Blue");
+  });
+
+  it("Qantas Frequent Flyer on SYD→BKK outbound, Thai Royal Orchid Plus on reverse", () => {
+    const sydBkk = HOME_CARRIER_PROGRAMS["SYD-BKK"] ?? [];
+    const sydBkkPrograms = sydBkk.flatMap(c => c.programs);
+    expect(sydBkkPrograms).toContain("Qantas Frequent Flyer");
+
+    const bkkSyd = HOME_CARRIER_PROGRAMS["BKK-SYD"] ?? [];
+    const bkkSydPrograms = bkkSyd.flatMap(c => c.programs);
+    expect(bkkSydPrograms).toContain("Thai Royal Orchid Plus");
+  });
+
+  it("Qantas Frequent Flyer on SYD→NRT outbound, ANA/JAL on reverse", () => {
+    const sydNrt = HOME_CARRIER_PROGRAMS["SYD-NRT"] ?? [];
+    const sydNrtPrograms = sydNrt.flatMap(c => c.programs);
+    expect(sydNrtPrograms).toContain("Qantas Frequent Flyer");
+
+    const nrtSyd = HOME_CARRIER_PROGRAMS["NRT-SYD"] ?? [];
+    const nrtSydPrograms = nrtSyd.flatMap(c => c.programs);
+    expect(nrtSydPrograms).toContain("ANA Mileage Club");
+    expect(nrtSydPrograms).toContain("Japan Airlines Mileage Bank");
+  });
+
+  it("Air New Zealand Airpoints guaranteed on NZL→LAX and reverse", () => {
+    for (const route of ["NZL-LAX", "LAX-NZL"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Air New Zealand Airpoints");
+    }
+  });
+
+  it("Air New Zealand Airpoints guaranteed on NZL→SFO and reverse", () => {
+    for (const route of ["NZL-SFO", "SFO-NZL"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Air New Zealand Airpoints");
+    }
+  });
+
+  it("Air New Zealand Airpoints on NZL→LHR outbound, British Airways on reverse", () => {
+    const nzlLhr = HOME_CARRIER_PROGRAMS["NZL-LHR"] ?? [];
+    const nzlLhrPrograms = nzlLhr.flatMap(c => c.programs);
+    expect(nzlLhrPrograms).toContain("Air New Zealand Airpoints");
+
+    const lhrNzl = HOME_CARRIER_PROGRAMS["LHR-NZL"] ?? [];
+    const lhrNzlPrograms = lhrNzl.flatMap(c => c.programs);
+    expect(lhrNzlPrograms).toContain("British Airways Avios");
+  });
+
+  it("all South Pacific corridors (Task 3.2) have both directions", () => {
+    const southPacificRoutes = [
+      // SYD routes
+      "SYD-LAX", "LAX-SYD",
+      "SYD-JFK", "JFK-SYD",
+      "SYD-LHR", "LHR-SYD",
+      "SYD-CDG", "CDG-SYD",
+      "SYD-NRT", "NRT-SYD",
+      "SYD-BKK", "BKK-SYD",
+      // NZL routes
+      "NZL-LAX", "LAX-NZL",
+      "NZL-SFO", "SFO-NZL",
+      "NZL-LHR", "LHR-NZL",
+    ];
+    for (const route of southPacificRoutes) {
+      expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
+    }
+  });
+
+  it("South Pacific hub coverage includes SYD and NZL hubs", () => {
+    const keys = Object.keys(HOME_CARRIER_PROGRAMS);
+    expect(keys.some(k => k.startsWith("SYD-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("NZL-"))).toBe(true);
   });
 });

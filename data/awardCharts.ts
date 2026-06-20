@@ -1406,6 +1406,25 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       SOUTH_AMERICA:  { economy: 40_000, premium: 60_000, business: 90_000 },
     },
   },
+
+  // Air New Zealand Airpoints (Oneworld, NZL hub) — P5 Task 3.2
+  // South Pacific regional flights to North America, Europe, and Asia
+  // Note: SYD/AKL/NZL are ASIA zone (will be added to zones.ts in future tasks)
+  "Air New Zealand Airpoints": {
+    ASIA: {
+      NORTH_AMERICA: { economy: 50_000, premium: 70_000, business: 120_000 },
+      EUROPE:        { economy: 60_000, premium: 85_000, business: 140_000 },
+      ASIA:          { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 50_000, premium: 70_000, business: 120_000 },
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 60_000, premium: 85_000, business: 140_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.

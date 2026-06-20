@@ -125,6 +125,7 @@ export const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Japan Airlines Mileage Bank": "Japan Airlines",
   "LATAM Pass":              "LATAM Brasil",
   "Qantas Frequent Flyer":   "Qantas",
+  "Air New Zealand Airpoints": "Air New Zealand",
   "Alaska Mileage Plan":     "Alaska Airlines",  // Oneworld — bookable on BA/QR/AA partners
   "Cathay Pacific Asia Miles": "Cathay Pacific", // static chart added in audit-21
   "Malaysia Airlines Enrich":  "Malaysia Airlines",
@@ -175,6 +176,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Qatar Airways":       "Qatar Privilege Club",
   "Cathay Pacific":      "Cathay Pacific Asia Miles",
   "Qantas":              "Qantas Frequent Flyer",
+  "Air New Zealand":     "Air New Zealand Airpoints",
   "Iberia":              "Iberia Avios Plus",
   "LATAM Airlines":      "LATAM Pass",   // iataToAirline("LA") returns this name
   "LATAM Brasil":        "LATAM Pass",   // alliances.ts canonical name
