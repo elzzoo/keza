@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
@@ -106,11 +106,11 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   const [showAlts,   setShowAlts]   = useState(false);
   const [isFav,      setIsFav]      = useState(false);
   useEffect(() => { setIsFav(isFavoriteRoute(flight.from, flight.to)); }, [flight.from, flight.to]);
-  function handleFav(e: React.MouseEvent) {
+  const handleFav = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const nowFav = toggleFavoriteRoute(flight.from, flight.to);
     setIsFav(nowFav);
-  }
+  }, []);
   const alternatives = (flight.milesOptions ?? [])
     .filter(o => !o.isBestDeal)
     .slice(0, 3);
