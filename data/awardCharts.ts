@@ -1387,6 +1387,25 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA:  { economy: 30_000, premium: 45_000, business: 75_000 },
     },
   },
+
+  // Aeromexico Club Premier (Oneworld, MEX hub) — P5 Task 3.1
+  // Mexico City hub with Oneworld connectivity to North America and Europe
+  "Aeromexico Club Premier": {
+    NORTH_AMERICA: {
+      NORTH_AMERICA:  { economy: 12_500, premium: 20_000, business: 40_000 },
+      SOUTH_AMERICA:  { economy: 25_000, premium: 37_500, business: 55_000 },
+      EUROPE:         { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    SOUTH_AMERICA: {
+      NORTH_AMERICA:  { economy: 25_000, premium: 37_500, business: 55_000 },
+      SOUTH_AMERICA:  { economy: 15_000, premium: 22_500, business: 45_000 },
+      EUROPE:         { economy: 40_000, premium: 60_000, business: 90_000 },
+    },
+    EUROPE: {
+      NORTH_AMERICA:  { economy: 30_000, premium: 45_000, business: 75_000 },
+      SOUTH_AMERICA:  { economy: 40_000, premium: 60_000, business: 90_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.

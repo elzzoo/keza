@@ -221,8 +221,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "GRU-MIA": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
   "MIA-EZE": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
   "EZE-MIA": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
-  "MIA-BOG": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
-  "BOG-MIA": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+  "MIA-BOG": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }, { airline: "Avianca", programs: ["LifeMiles"] }],
+  "BOG-MIA": [{ airline: "Avianca", programs: ["LifeMiles"] }, { airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
 
   // Miami ↔ Europe
   "MIA-LHR": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
@@ -241,6 +241,49 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-ORD": [{ airline: "Air France", programs: ["Flying Blue"] }],
   "ORD-FRA": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
   "FRA-ORD": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
+
+  // ─── P5 Task 3.1: Latin America Market Activation ──────────────────────────
+  // Aeromexico (MEX hub)
+  "MEX-LAX": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "LAX-MEX": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "MEX-JFK": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "JFK-MEX": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "MEX-SFO": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "SFO-MEX": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "MEX-CDG": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "CDG-MEX": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "MEX-LHR": [{ airline: "Aeromexico", programs: ["Aeromexico Club Premier"] }],
+  "LHR-MEX": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+
+  // LATAM (GRU/SAO hub) — NEW routes beyond MIA (already has GRU↔MIA)
+  "GRU-LAX": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "LAX-GRU": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "GRU-JFK": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "JFK-GRU": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "GRU-CDG": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "CDG-GRU": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "GRU-SFO": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "SFO-GRU": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+
+  // Avianca (BOG hub) — NEW routes beyond MIA (MIA-BOG already covered in P5 Task 1.4)
+  "BOG-LAX": [{ airline: "Avianca", programs: ["LifeMiles"] }],
+  "LAX-BOG": [{ airline: "Avianca", programs: ["LifeMiles"] }],
+  "BOG-JFK": [{ airline: "Avianca", programs: ["LifeMiles"] }],
+  "JFK-BOG": [{ airline: "Avianca", programs: ["LifeMiles"] }],
+
+  // COPA (SJO hub)
+  "SJO-LAX": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+  "LAX-SJO": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+  "SJO-JFK": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+  "JFK-SJO": [{ airline: "Copa Airlines", programs: ["COPA ConnectMiles"] }],
+
+  // LATAM (EZE/Buenos Aires hub) — NEW routes beyond MIA (already has EZE↔MIA)
+  "EZE-LAX": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "LAX-EZE": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "EZE-JFK": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "JFK-EZE": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "EZE-CDG": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
+  "CDG-EZE": [{ airline: "Air France", programs: ["Flying Blue"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -456,8 +499,8 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "GRU-MIA": ["LATAM Airlines", "Copa Airlines"],
   "MIA-EZE": ["LATAM Airlines", "Copa Airlines"],
   "EZE-MIA": ["LATAM Airlines", "Copa Airlines"],
-  "MIA-BOG": ["Copa Airlines", "LATAM Airlines"],
-  "BOG-MIA": ["Copa Airlines", "LATAM Airlines"],
+  "MIA-BOG": ["Copa Airlines", "Avianca", "LATAM Airlines"],
+  "BOG-MIA": ["Avianca", "Copa Airlines", "LATAM Airlines"],
   "JFK-GRU": ["LATAM Airlines"],
   "GRU-JFK": ["LATAM Airlines"],
   "CDG-GRU": ["Air France", "LATAM Airlines"],
@@ -514,6 +557,31 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "CDG-ORD": ["Air France", "United", "American Airlines"],
   "ORD-FRA": ["Lufthansa", "United", "American Airlines"],
   "FRA-ORD": ["Lufthansa", "United", "American Airlines"],
+
+  // ─── P5 Task 3.1: Latin America Market Activation ───────────────────────
+  // Aeromexico (MEX hub)
+  "MEX-LAX": ["Aeromexico", "United"],
+  "LAX-MEX": ["Aeromexico", "United"],
+  "MEX-JFK": ["Aeromexico", "United"],
+  "JFK-MEX": ["Aeromexico", "United"],
+  "MEX-SFO": ["Aeromexico", "United"],
+  "SFO-MEX": ["Aeromexico", "United"],
+  "MEX-CDG": ["Aeromexico", "Air France"],
+  "CDG-MEX": ["Air France", "Aeromexico"],
+  "MEX-LHR": ["Aeromexico", "British Airways"],
+  "LHR-MEX": ["British Airways", "Aeromexico"],
+
+  // COPA (SJO hub)
+  "SJO-LAX": ["Copa Airlines", "United"],
+  "LAX-SJO": ["Copa Airlines", "United"],
+  "SJO-JFK": ["Copa Airlines", "United"],
+  "JFK-SJO": ["Copa Airlines", "United"],
+
+  // Avianca (BOG hub) — NEW routes (beyond MIA-BOG covered in P5 Task 1.4)
+  "BOG-LAX": ["Avianca", "Copa Airlines"],
+  "LAX-BOG": ["Avianca", "Copa Airlines"],
+  "BOG-JFK": ["Avianca", "United"],
+  "JFK-BOG": ["Avianca", "United"],
 };
 
 /**

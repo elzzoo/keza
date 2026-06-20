@@ -117,6 +117,7 @@ export const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "LifeMiles":               "Avianca",
   "COPA ConnectMiles":       "Copa Airlines",     // P5 Scaling Task 1.4 — MIA hub
   // ─── Oneworld ──────────────────────────────────────────────────────────────
+  "Aeromexico Club Premier":  "Aeromexico",       // P5 Task 3.1 — MEX hub
   "British Airways Avios":   "British Airways",   // awardCharts key
   "Qatar Privilege Club":    "Qatar Airways",
   "AAdvantage":              "American Airlines",
@@ -166,6 +167,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Air Canada":          "Air Canada Aeroplan",
   "Avianca":             "LifeMiles",
   "Copa Airlines":       "COPA ConnectMiles",   // P5 Scaling Task 1.4 — MIA hub
+  "Aeromexico":          "Aeromexico Club Premier", // P5 Task 3.1 — MEX hub
   // Oneworld
   "Japan Airlines":      "Japan Airlines Mileage Bank",
   "British Airways":     "British Airways Avios",

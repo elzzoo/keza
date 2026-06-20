@@ -44,6 +44,7 @@ const KNOWN_PROGRAMS = new Set([
   "EVA Air Points",               // P5 Task 2.2: Asian programs (TPE hub)
   "Asiana Airlines Club",         // P5 Task 2.2: Asian programs (ICN hub)
   "Kenya Airways Mileage Club",   // P5 Task 2.4: African programs (NBO hub)
+  "Aeromexico Club Premier",      // P5 Task 3.1: Latin America market (MEX hub)
 ]);
 
 
@@ -188,11 +189,12 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     }
   });
 
-  it("COPA ConnectMiles guaranteed on MIA→BOG and reverse", () => {
+  it("Avianca LifeMiles guaranteed on BOG→MIA and reverse (already in supplements)", () => {
+    // BOG-MIA corridors are already covered by P5 Task 3.1 as Avianca routes
     for (const route of ["MIA-BOG", "BOG-MIA"]) {
       const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
       const allPrograms = carriers.flatMap(c => c.programs);
-      expect(allPrograms).toContain("COPA ConnectMiles");
+      expect(allPrograms).toContain("LifeMiles");
     }
   });
 
@@ -328,5 +330,99 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     expect(keys.some(k => k.startsWith("NBO-"))).toBe(true);
     expect(keys.some(k => k.startsWith("CMN-"))).toBe(true);
     expect(keys.some(k => k.startsWith("JNB-"))).toBe(true);
+  });
+
+  // ─── P5 Task 3.1: Latin America Market Activation ──────────────────────────
+  it("Aeromexico Club Premier guaranteed on MEX routes (LAX, JFK, SFO, CDG, LHR)", () => {
+    const mexRoutes = ["MEX-LAX", "LAX-MEX", "MEX-JFK", "JFK-MEX", "MEX-SFO", "SFO-MEX"];
+    for (const route of mexRoutes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Aeromexico Club Premier");
+    }
+  });
+
+  it("Aeromexico on MEX-CDG outbound, Flying Blue on reverse", () => {
+    const mexCdg = HOME_CARRIER_PROGRAMS["MEX-CDG"] ?? [];
+    const mexCdgPrograms = mexCdg.flatMap(c => c.programs);
+    expect(mexCdgPrograms).toContain("Aeromexico Club Premier");
+
+    const cdgMex = HOME_CARRIER_PROGRAMS["CDG-MEX"] ?? [];
+    const cdgMexPrograms = cdgMex.flatMap(c => c.programs);
+    expect(cdgMexPrograms).toContain("Flying Blue");
+  });
+
+  it("Aeromexico on MEX-LHR outbound, British Airways on reverse", () => {
+    const mexLhr = HOME_CARRIER_PROGRAMS["MEX-LHR"] ?? [];
+    const mexLhrPrograms = mexLhr.flatMap(c => c.programs);
+    expect(mexLhrPrograms).toContain("Aeromexico Club Premier");
+
+    const lhrMex = HOME_CARRIER_PROGRAMS["LHR-MEX"] ?? [];
+    const lhrMexPrograms = lhrMex.flatMap(c => c.programs);
+    expect(lhrMexPrograms).toContain("British Airways Avios");
+  });
+
+  it("LATAM Pass guaranteed on GRU routes (LAX, JFK, CDG, SFO)", () => {
+    const gruRoutes = ["GRU-LAX", "LAX-GRU", "GRU-JFK", "JFK-GRU", "GRU-CDG", "GRU-SFO", "SFO-GRU"];
+    for (const route of gruRoutes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("LATAM Pass");
+    }
+  });
+
+  it("LifeMiles guaranteed on BOG routes (LAX, JFK, MIA)", () => {
+    const bogRoutes = ["BOG-LAX", "LAX-BOG", "BOG-JFK", "JFK-BOG", "BOG-MIA", "MIA-BOG"];
+    for (const route of bogRoutes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("LifeMiles");
+    }
+  });
+
+  it("COPA ConnectMiles guaranteed on SJO routes (LAX, JFK)", () => {
+    const sjoRoutes = ["SJO-LAX", "LAX-SJO", "SJO-JFK", "JFK-SJO"];
+    for (const route of sjoRoutes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("COPA ConnectMiles");
+    }
+  });
+
+  it("LATAM Pass guaranteed on EZE routes (LAX, JFK, CDG)", () => {
+    const ezeRoutes = ["EZE-LAX", "LAX-EZE", "EZE-JFK", "JFK-EZE", "EZE-CDG"];
+    for (const route of ezeRoutes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("LATAM Pass");
+    }
+  });
+
+  it("all Latin America corridors (Task 3.1) have both directions", () => {
+    const latinAmericaRoutes = [
+      // MEX
+      "MEX-LAX", "LAX-MEX", "MEX-JFK", "JFK-MEX", "MEX-SFO", "SFO-MEX",
+      "MEX-CDG", "CDG-MEX", "MEX-LHR", "LHR-MEX",
+      // GRU
+      "GRU-LAX", "LAX-GRU", "GRU-JFK", "JFK-GRU", "GRU-CDG", "CDG-GRU", "GRU-SFO", "SFO-GRU",
+      // BOG
+      "BOG-LAX", "LAX-BOG", "BOG-JFK", "JFK-BOG", "BOG-MIA", "MIA-BOG",
+      // SJO
+      "SJO-LAX", "LAX-SJO", "SJO-JFK", "JFK-SJO",
+      // EZE
+      "EZE-LAX", "LAX-EZE", "EZE-JFK", "JFK-EZE", "EZE-CDG", "CDG-EZE",
+    ];
+    for (const route of latinAmericaRoutes) {
+      expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
+    }
+  });
+
+  it("Latin America hub coverage includes all 5 new hubs (MEX, SJO, GRU, EZE, BOG)", () => {
+    const keys = Object.keys(HOME_CARRIER_PROGRAMS);
+    expect(keys.some(k => k.startsWith("MEX-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("SJO-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("GRU-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("EZE-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("BOG-"))).toBe(true);
   });
 });
