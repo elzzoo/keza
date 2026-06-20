@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { savePushSubscriptionForEmail, type PushSubscriptionRecord } from "@/lib/push";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { isValidHttpsUrl } from "@/lib/validate";
+import { isValidHttpsUrl, isValidEmail } from "@/lib/validate";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { getAlertById } from "@/lib/alerts";
 import { logError } from "@/lib/logger";
@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
     const token: unknown = body?.token;
     const alertId: unknown = body?.alertId;
 
-    // Validate email
-    if (typeof email !== "string" || !email.includes("@")) {
+    // Validate email (use RFC 5322 compliance check)
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: "Invalid email" },
         { status: 400 }
