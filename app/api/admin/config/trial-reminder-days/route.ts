@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasAdminSecret } from "@/lib/auth";
 import { redis } from "@/lib/redis";
+import { logWarn, logError } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 
 /**
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       "info"
     );
 
-    console.log(`[admin] Trial reminder days updated to: ${days}`);
+    logWarn("[admin] Trial reminder days updated", { days });
 
     return NextResponse.json({
       success: true,
@@ -47,9 +48,8 @@ export async function POST(req: NextRequest) {
       days,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[admin] Error updating trial reminder config:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    logError("[admin] Error updating trial reminder config", err);
+    return NextResponse.json({ error: "Failed to update config" }, { status: 500 });
   }
 }
 
@@ -69,14 +69,24 @@ export async function GET(req: NextRequest) {
     const daysStr = await redis.get<string>("keza:config:trial_reminder_days_before_expiry");
     const days = parseInt(daysStr ?? "1", 10);
 
+    // Validate bounds (config should always be within 0-30, but validate on read as safety check)
+    if (!Number.isInteger(days) || days < 0 || days > 30) {
+      logWarn("[admin] Trial reminder config out of bounds, using default", { storedValue: daysStr, parsedValue: days });
+      const defaultDays = 1;
+      return NextResponse.json({
+        success: true,
+        days: defaultDays,
+        message: `Config corrupted, using default: ${defaultDays} day(s) before trial expiry`,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       days,
       message: `Reminders will be sent ${days} day(s) before trial expiry`,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[admin] Error reading trial reminder config:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    logError("[admin] Error reading trial reminder config", err);
+    return NextResponse.json({ error: "Failed to read config" }, { status: 500 });
   }
 }
