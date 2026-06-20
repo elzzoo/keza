@@ -380,6 +380,63 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 2,
   },
 
+  // ── P5 Task 2.1: 10 European Programs (Star Alliance) ──────────────────
+  {
+    name: "Swiss Miles",
+    airlineCode: "LX",
+    airline: "Swiss International Air Lines",
+    alliance: "Star Alliance",
+    purchaseMileCostPer1000: 28,
+    marketValueCents: 1.2,
+    taxProfile: "medium",
+    transferPartnersFrom: [],
+    accessibilityScore: 2,
+  },
+  {
+    name: "Finnair Plus",
+    airlineCode: "AY",
+    airline: "Finnair",
+    alliance: "Oneworld",    // Note: Finnair is actually Oneworld, not Star Alliance
+    purchaseMileCostPer1000: null,
+    marketValueCents: 1.0,
+    taxProfile: "low",
+    transferPartnersFrom: [],
+    accessibilityScore: 2,
+  },
+  {
+    name: "TAP Air Portugal Miles",
+    airlineCode: "TP",
+    airline: "TAP Air Portugal",
+    alliance: "Star Alliance",
+    purchaseMileCostPer1000: null,
+    marketValueCents: 1.1,
+    taxProfile: "low",
+    transferPartnersFrom: [],
+    accessibilityScore: 2,
+  },
+  {
+    name: "LOT Polish Airlines Frequent Flyer",
+    airlineCode: "LO",
+    airline: "LOT Polish Airlines",
+    alliance: "Star Alliance",
+    purchaseMileCostPer1000: null,
+    marketValueCents: 1.0,
+    taxProfile: "low",
+    transferPartnersFrom: [],
+    accessibilityScore: 2,
+  },
+  {
+    name: "SAS EuroBonus",
+    airlineCode: "SK",
+    airline: "SAS",
+    alliance: "Star Alliance",
+    purchaseMileCostPer1000: null,
+    marketValueCents: 1.1,
+    taxProfile: "low",
+    transferPartnersFrom: [],
+    accessibilityScore: 2,
+  },
+
   // ── Oneworld ─────────────────────────────────────────────────────────
   {
     name: "British Airways Avios",

@@ -130,6 +130,11 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Finnair Plus":              "Finnair",          // Oneworld — HEL hub
   "Royal Air Maroc Safar Flyer": "Royal Air Maroc",  // P5 Scaling Task 1.5 — CMN hub
   "South African Voyager":   "South African Airways", // P5 Scaling Task 1.5 — JNB hub
+  // ─── P5 Task 2.1: 10 European Programs ────────────────────────────────────
+  "Swiss Miles":             "Swiss International Air Lines", // Star Alliance, ZRH hub
+  "TAP Air Portugal Miles":  "TAP Air Portugal",              // Star Alliance, LIS hub
+  "LOT Polish Airlines Frequent Flyer": "LOT Polish Airlines", // Star Alliance, WAW hub
+  "SAS EuroBonus":           "SAS",                           // Star Alliance, CPH hub
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -173,6 +178,13 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Finnair":             "Finnair Plus", // Oneworld — HEL-JFK, HEL-BKK hub
   "Royal Air Maroc":     "Royal Air Maroc Safar Flyer", // P5 Scaling Task 1.5 — CMN hub
   "South African Airways": "South African Voyager", // P5 Scaling Task 1.5 — JNB hub
+  // P5 Task 2.1: 10 European Programs
+  "Swiss International Air Lines": "Swiss Miles",
+  "Swiss":               "Swiss Miles",
+  "TAP Air Portugal":    "TAP Air Portugal Miles",
+  "LOT Polish Airlines": "LOT Polish Airlines Frequent Flyer",
+  "SAS":                 "SAS EuroBonus",
+  "Scandinavian Airlines": "SAS EuroBonus",
   // SkyTeam
   "Air France":          "Flying Blue",
   "KLM":                 "Flying Blue",
@@ -197,9 +209,9 @@ const FLYING_BLUE_AIRLINES = new Set([
 // Star Alliance airlines for which Aeroplan should always be guaranteed
 const AEROPLAN_GUARANTEE_AIRLINES = new Set([
   "Air Canada", "United", "Lufthansa", "Turkish Airlines", "Singapore Airlines",
-  "Ethiopian Airlines", "Swiss", "South African Airways", "EgyptAir",
+  "Ethiopian Airlines", "Swiss", "Swiss International Air Lines", "South African Airways", "EgyptAir",
   "TAP Air Portugal", "All Nippon Airways", "Avianca",
-  "Brussels Airlines", "Austrian Airlines", "LOT Polish Airlines", "SAS",
+  "Brussels Airlines", "Austrian Airlines", "LOT Polish Airlines", "SAS", "Scandinavian Airlines", "Finnair",
   // Additional Star Alliance members — ensures Aeroplan surfaces on their routes
   "Air India", "Air China", "Asiana Airlines", "EVA Air", "Thai Airways",
   "Copa Airlines", "Garuda Indonesia", "Aegean Airlines",

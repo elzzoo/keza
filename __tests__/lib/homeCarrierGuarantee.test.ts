@@ -34,6 +34,11 @@ const KNOWN_PROGRAMS = new Set([
   "Qantas Frequent Flyer",        // used on SYD-HKG reverse
   "Royal Air Maroc Safar Flyer",  // P5 Scaling Task 1.5: Africa hubs (CMN)
   "South African Voyager",        // P5 Scaling Task 1.5: Africa hubs (JNB)
+  "Swiss Miles",                  // P5 Task 2.1: European programs (ZRH hub)
+  "Finnair Plus",                 // P5 Task 2.1: European programs (HEL hub)
+  "TAP Air Portugal Miles",       // P5 Task 2.1: European programs (LIS hub)
+  "LOT Polish Airlines Frequent Flyer", // P5 Task 2.1: European programs (WAW hub)
+  "SAS EuroBonus",                // P5 Task 2.1: European programs (CPH hub)
 ]);
 
 

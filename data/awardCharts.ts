@@ -1133,6 +1133,100 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       ASIA:          { economy: 20_000, premium: 30_000, business: 55_000 },
     },
   },
+
+  // ─── P5 Task 2.1: 10 European Programs — New Star Alliance Carriers ──────────
+  "Swiss Miles": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 65_000, premium: 100_000, business: 130_000 },
+      ASIA:          { economy: 70_000, premium: 110_000, business: 140_000 },
+      MIDDLE_EAST:   { economy: 50_000, premium: 75_000, business: 110_000 },
+      AFRICA_NORTH:  { economy: 45_000, premium: 70_000, business: 100_000 },
+      EUROPE:        { economy: 45_000, premium: 70_000, business: 100_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 65_000, premium: 100_000, business: 130_000 },
+      ASIA:          { economy: 60_000, premium: 95_000, business: 125_000 },
+      MIDDLE_EAST:   { economy: 60_000, premium: 90_000, business: 120_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 70_000, premium: 110_000, business: 140_000 },
+      NORTH_AMERICA: { economy: 60_000, premium: 95_000, business: 125_000 },
+    },
+  },
+
+  "Finnair Plus": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 60_000, premium: 95_000, business: 125_000 },
+      ASIA:          { economy: 65_000, premium: 105_000, business: 135_000 },
+      MIDDLE_EAST:   { economy: 50_000, premium: 75_000, business: 110_000 },
+      AFRICA_NORTH:  { economy: 70_000, premium: 110_000, business: 140_000 },
+      EUROPE:        { economy: 40_000, premium: 65_000, business: 90_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 60_000, premium: 95_000, business: 125_000 },
+      ASIA:          { economy: 55_000, premium: 85_000, business: 115_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 65_000, premium: 105_000, business: 135_000 },
+      NORTH_AMERICA: { economy: 55_000, premium: 85_000, business: 115_000 },
+    },
+  },
+
+  "TAP Air Portugal Miles": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 50_000, premium: 80_000, business: 110_000 },
+      ASIA:          { economy: 55_000, premium: 90_000, business: 120_000 },
+      MIDDLE_EAST:   { economy: 40_000, premium: 65_000, business: 95_000 },
+      SOUTH_AMERICA: { economy: 60_000, premium: 95_000, business: 130_000 },
+      AFRICA_NORTH:  { economy: 35_000, premium: 55_000, business: 80_000 },
+      EUROPE:        { economy: 35_000, premium: 55_000, business: 75_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 50_000, premium: 80_000, business: 110_000 },
+      ASIA:          { economy: 50_000, premium: 80_000, business: 110_000 },
+      SOUTH_AMERICA: { economy: 30_000, premium: 50_000, business: 80_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 55_000, premium: 90_000, business: 120_000 },
+      NORTH_AMERICA: { economy: 50_000, premium: 80_000, business: 110_000 },
+    },
+  },
+
+  "LOT Polish Airlines Frequent Flyer": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 45_000, premium: 75_000, business: 105_000 },
+      ASIA:          { economy: 50_000, premium: 85_000, business: 115_000 },
+      MIDDLE_EAST:   { economy: 35_000, premium: 55_000, business: 85_000 },
+      AFRICA_NORTH:  { economy: 30_000, premium: 50_000, business: 75_000 },
+      EUROPE:        { economy: 30_000, premium: 50_000, business: 70_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 45_000, premium: 75_000, business: 105_000 },
+      ASIA:          { economy: 45_000, premium: 75_000, business: 105_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 50_000, premium: 85_000, business: 115_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 75_000, business: 105_000 },
+    },
+  },
+
+  "SAS EuroBonus": {
+    EUROPE: {
+      NORTH_AMERICA: { economy: 55_000, premium: 90_000, business: 120_000 },
+      ASIA:          { economy: 60_000, premium: 100_000, business: 130_000 },
+      MIDDLE_EAST:   { economy: 40_000, premium: 65_000, business: 95_000 },
+      AFRICA_NORTH:  { economy: 35_000, premium: 55_000, business: 80_000 },
+      EUROPE:        { economy: 35_000, premium: 60_000, business: 85_000 },
+    },
+    NORTH_AMERICA: {
+      EUROPE:        { economy: 55_000, premium: 90_000, business: 120_000 },
+      ASIA:          { economy: 50_000, premium: 80_000, business: 110_000 },
+    },
+    ASIA: {
+      EUROPE:        { economy: 60_000, premium: 100_000, business: 130_000 },
+      NORTH_AMERICA: { economy: 50_000, premium: 80_000, business: 110_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.
