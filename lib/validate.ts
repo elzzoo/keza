@@ -43,6 +43,21 @@ export function isValidPrice(price: unknown): price is number {
   return Number.isFinite(n) && n > 0 && n <= 50_000;
 }
 
+export function isValidFlightInputPrice(price: unknown): boolean {
+  const n = Number(price);
+  return Number.isFinite(n) && n > 0 && n <= 100_000 && Math.round(n * 100) / 100 === n;
+}
+
+export function isValidPassengerCount(count: unknown): boolean {
+  if (typeof count !== "number") return false;
+  return Number.isInteger(count) && count >= 1 && count <= 9;
+}
+
+export function isValidStops(stops: unknown): boolean {
+  if (typeof stops !== "number") return false;
+  return Number.isInteger(stops) && stops >= 0 && stops <= 5;
+}
+
 export function isValidHttpsUrl(url: unknown): url is string {
   if (typeof url !== "string") return false;
   try {

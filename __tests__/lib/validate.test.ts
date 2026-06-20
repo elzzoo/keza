@@ -3,6 +3,9 @@ import {
   isValidEmail,
   isValidCabin,
   isValidPrice,
+  isValidFlightInputPrice,
+  isValidPassengerCount,
+  isValidStops,
   isValidHttpsUrl,
 } from "@/lib/validate";
 
@@ -107,6 +110,90 @@ describe("isValidPrice", () => {
     expect(isValidPrice(Infinity)).toBe(false);
     expect(isValidPrice("abc")).toBe(false);
     expect(isValidPrice(null)).toBe(false);
+  });
+});
+
+describe("isValidFlightInputPrice", () => {
+  it("accepts positive numbers with at most 2 decimal places", () => {
+    expect(isValidFlightInputPrice(100)).toBe(true);
+    expect(isValidFlightInputPrice(500.5)).toBe(true);
+    expect(isValidFlightInputPrice(1234.56)).toBe(true);
+  });
+
+  it("rejects numbers with more than 2 decimal places (financial precision)", () => {
+    expect(isValidFlightInputPrice(100.123)).toBe(false);
+    expect(isValidFlightInputPrice(500.555)).toBe(false);
+  });
+
+  it("rejects zero and negative numbers", () => {
+    expect(isValidFlightInputPrice(0)).toBe(false);
+    expect(isValidFlightInputPrice(-100)).toBe(false);
+  });
+
+  it("rejects prices above 100 000", () => {
+    expect(isValidFlightInputPrice(100001)).toBe(false);
+  });
+
+  it("rejects non-finite values", () => {
+    expect(isValidFlightInputPrice(NaN)).toBe(false);
+    expect(isValidFlightInputPrice(Infinity)).toBe(false);
+  });
+});
+
+describe("isValidPassengerCount", () => {
+  it("accepts integers from 1 to 9", () => {
+    expect(isValidPassengerCount(1)).toBe(true);
+    expect(isValidPassengerCount(4)).toBe(true);
+    expect(isValidPassengerCount(9)).toBe(true);
+  });
+
+  it("rejects zero and negative counts", () => {
+    expect(isValidPassengerCount(0)).toBe(false);
+    expect(isValidPassengerCount(-1)).toBe(false);
+  });
+
+  it("rejects counts over 9", () => {
+    expect(isValidPassengerCount(10)).toBe(false);
+    expect(isValidPassengerCount(100)).toBe(false);
+  });
+
+  it("rejects decimal numbers", () => {
+    expect(isValidPassengerCount(1.5)).toBe(false);
+    expect(isValidPassengerCount(2.1)).toBe(false);
+  });
+
+  it("rejects invalid values", () => {
+    expect(isValidPassengerCount(null)).toBe(false);
+    expect(isValidPassengerCount(undefined)).toBe(false);
+    expect(isValidPassengerCount("abc")).toBe(false);
+  });
+});
+
+describe("isValidStops", () => {
+  it("accepts integers from 0 to 5", () => {
+    expect(isValidStops(0)).toBe(true);
+    expect(isValidStops(1)).toBe(true);
+    expect(isValidStops(5)).toBe(true);
+  });
+
+  it("rejects negative numbers", () => {
+    expect(isValidStops(-1)).toBe(false);
+  });
+
+  it("rejects stops over 5", () => {
+    expect(isValidStops(6)).toBe(false);
+    expect(isValidStops(10)).toBe(false);
+  });
+
+  it("rejects decimal numbers", () => {
+    expect(isValidStops(1.5)).toBe(false);
+    expect(isValidStops(2.1)).toBe(false);
+  });
+
+  it("rejects invalid values", () => {
+    expect(isValidStops(null)).toBe(false);
+    expect(isValidStops(undefined)).toBe(false);
+    expect(isValidStops("abc")).toBe(false);
   });
 });
 
