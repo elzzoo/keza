@@ -204,7 +204,16 @@ export async function fetchFromDuffel(
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      logError(`[duffel] ${res.status} for ${from}→${to}: ${body.slice(0, 200)}`);
+      // Sanitize error body to avoid leaking API keys or sensitive data
+      const sanitized = body.slice(0, 200).replace(/api[_-]?key|authorization|token/gi, "***");
+      logError(`[duffel] ${res.status} for ${from}→${to}: ${sanitized}`);
+      // Check for 429 rate limiting
+      if (res.status === 429) {
+        const retryAfter = res.headers.get("retry-after");
+        if (retryAfter) {
+          logWarn(`[duffel] rate limited (retry after ${retryAfter}s), falling back to Travelpayouts`);
+        }
+      }
       return [];
     }
 

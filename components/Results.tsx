@@ -194,6 +194,8 @@ export const Results = memo(function Results({ results, loading, lang, onBack, p
       setProgress(Math.min(Math.round((elapsed / DURATION) * 100), 95));
     }, 80);
     return () => { clearInterval(stepTimer); clearInterval(progTimer); };
+    // Safe to ignore exhaustive-deps: stepTimer and progTimer are internal timers
+    // created and destroyed within this effect; they don't need to be listed as dependencies
   }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {

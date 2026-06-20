@@ -13,7 +13,11 @@ import { logError } from "../logger";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
-// always agree on the key schema. Bump whenever FlightResult shape changes.
+// always agree on the key schema. Bump CACHE_VERSION whenever:
+//  1. FlightResult type shape changes (new field, field removal, type change)
+//  2. A post-processing fix is deployed that must invalidate stale results
+//  3. New field added to miles options or cost comparison
+// See keza-project skill for full rules.
 export const CACHE_VERSION = "v29"; // bumped: P5 final validation + comprehensive testing
 
 /**

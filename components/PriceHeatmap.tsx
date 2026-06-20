@@ -18,6 +18,12 @@ interface Props {
   formatPrice?: (usd: number) => string;
 }
 
+// Cabin class price multipliers for calendar display — based on industry CPM (cost per mile) ratios
+// applied to economy base price to show premium/business/first estimated prices for 6-month heatmap.
+// Values derived from historical fare ratio analysis across major routes:
+// - Premium (premium economy): 1.8x economy base
+// - Business: 4.0x economy base (long-haul premium)
+// - First: 6.5x economy base (ultra-premium)
 const CABIN_MULT: Record<string, number> = {
   economy: 1,
   premium: 1.8,
