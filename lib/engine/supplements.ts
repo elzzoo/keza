@@ -151,7 +151,7 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CMN-LHR": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
   "LHR-CMN": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
 
-  // South African Voyager — JNB hub (Johannesburg) — P5 Task 1.5 — NEW
+  // South African Voyager — JNB hub (Johannesburg) — P5 Task 1.5 & 3.3
   "JNB-LHR": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "LHR-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "JNB-CDG": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
@@ -162,6 +162,13 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "LAX-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "JNB-JFK": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "JFK-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  // Task 3.3: Consolidate JNB gateway — add DXB, BKK, SYD corridors
+  "JNB-DXB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "DXB-JNB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "JNB-BKK": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "BKK-JNB": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "JNB-SYD": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "SYD-JNB": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
 
   // RwandAir — KGL hub (Kigali)
   "KGL-LHR": [{ airline: "RwandAir", programs: ["British Airways Avios"] }],
@@ -372,6 +379,14 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "JFK-JNB": ["South African Airways", "United"],
   "JNB-LAX": ["South African Airways", "United"],
   "LAX-JNB": ["South African Airways", "United"],
+
+  // Task 3.3: Consolidate JNB gateway — add DXB, BKK, SYD corridors
+  "JNB-DXB": ["South African Airways", "Emirates"],
+  "DXB-JNB": ["Emirates", "South African Airways"],
+  "JNB-BKK": ["South African Airways", "Thai Airways"],
+  "BKK-JNB": ["Thai Airways", "South African Airways"],
+  "JNB-SYD": ["South African Airways", "Qantas"],
+  "SYD-JNB": ["Qantas", "South African Airways"],
 
   // West Africa ↔ Europe — Accra
   "ACC-CDG": ["Air France"],
