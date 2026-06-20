@@ -25,7 +25,7 @@ function getRedis(): Redis {
 }
 
 // Wrapper functions that log errors
-async function safeGet<T = unknown>(key: string): Promise<T | null> {
+export async function safeGet<T = unknown>(key: string): Promise<T | null> {
   try {
     const client = getRedis();
     return await client.get<T>(key);
@@ -35,7 +35,7 @@ async function safeGet<T = unknown>(key: string): Promise<T | null> {
   }
 }
 
-async function safeSet(key: string, value: unknown, options?: { ex?: number }): Promise<string> {
+export async function safeSet(key: string, value: unknown, options?: { ex?: number }): Promise<string> {
   try {
     const client = getRedis();
     const result = await client.set(key, value, options as Parameters<typeof client.set>[2]);
