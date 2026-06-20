@@ -87,7 +87,7 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "HKG-LAX": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
   "LAX-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
   "HKG-SYD": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
-  "SYD-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "SYD-HKG": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
 
   // Turkish Miles&Smiles — IST hub
   "IST-JFK": [{ airline: "Turkish Airlines", programs: ["Turkish Miles&Smiles"] }],
@@ -136,6 +136,21 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-KGL": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
   "KGL-BRU": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
   "BRU-KGL": [{ airline: "RwandAir", programs: ["Flying Blue"] }],
+
+  // ─── P5 Scaling Task 1.2: Asia Hub Extensions ───────────────────────────────
+  // HKG: Add SFO and CDG corridors (other HKG routes already covered in P3)
+  "HKG-SFO": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "SFO-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "HKG-CDG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "CDG-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+
+  // Thai Airways Royal Orchid Plus — BKK hub (Bangkok) — NEW
+  "BKK-LAX": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "LAX-BKK": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "BKK-CDG": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "CDG-BKK": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "BKK-NRT": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "NRT-BKK": [{ airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
 
   // ─── Europe Hubs (P5 Scaling Task 1.1) ───────────────────────────────────────
   // Lufthansa Miles & More — FRA hub (Frankfurt)
@@ -325,8 +340,12 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "JFK-HKG": ["Cathay Pacific"],
   "HKG-LAX": ["Cathay Pacific"],
   "LAX-HKG": ["Cathay Pacific"],
+  "HKG-SFO": ["Cathay Pacific"],
+  "SFO-HKG": ["Cathay Pacific"],
+  "HKG-CDG": ["Cathay Pacific"],
+  "CDG-HKG": ["Cathay Pacific"],
   "HKG-SYD": ["Cathay Pacific"],
-  "SYD-HKG": ["Cathay Pacific"],
+  "SYD-HKG": ["Qantas"],
 
   // ── Turkish Airlines (IST hub) ───────────────────────────────────────────
   "IST-JFK": ["Turkish Airlines"],
@@ -353,10 +372,12 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   // ── Asia–Europe additional ───────────────────────────────────────────────
   "CDG-BKK": ["Air France", "Thai Airways"],
   "BKK-CDG": ["Air France", "Thai Airways"],
+  "LAX-BKK": ["Thai Airways"],
+  "BKK-LAX": ["Thai Airways"],
   "NRT-SYD": ["All Nippon Airways", "Japan Airlines"],
   "SYD-NRT": ["All Nippon Airways", "Japan Airlines"],
-  "NRT-BKK": ["Japan Airlines"],
-  "BKK-NRT": ["Japan Airlines"],
+  "NRT-BKK": ["Japan Airlines", "Thai Airways"],
+  "BKK-NRT": ["Japan Airlines", "Thai Airways"],
 
   // ── Americas – South America (M3 fix: LATAM absent on MIA→GRU) ──────────
   // LATAM Airlines and Copa operate these routes. getCorridorGuarantees()

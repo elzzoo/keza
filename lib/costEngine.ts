@@ -125,6 +125,7 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Alaska Mileage Plan":     "Alaska Airlines",  // Oneworld — bookable on BA/QR/AA partners
   "Cathay Pacific Asia Miles": "Cathay Pacific", // static chart added in audit-21
   "Malaysia Airlines Enrich":  "Malaysia Airlines",
+  "Thai Royal Orchid Plus":    "Thai Airways",    // P5 Scaling Task 1.2 — BKK hub
   "Finnair Plus":              "Finnair",          // Oneworld — HEL hub
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
@@ -164,6 +165,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   // MH has codeshares on many routes it doesn't operate, causing Enrich to appear
   // globally (DSS→CDG, SIN→LAX, DXB→JFK). Enrich is only guaranteed via
   // HOME_CARRIER_PROGRAMS for KUL hub routes where MH actually operates.
+  "Thai Airways":        "Thai Royal Orchid Plus", // P5 Scaling Task 1.2 — BKK hub
   "Finnair":             "Finnair Plus", // Oneworld — HEL-JFK, HEL-BKK hub
   // SkyTeam
   "Air France":          "Flying Blue",
@@ -195,7 +197,7 @@ const AEROPLAN_GUARANTEE_AIRLINES = new Set([
   // Additional Star Alliance members — ensures Aeroplan surfaces on their routes
   "Air India", "Air China", "Asiana Airlines", "EVA Air", "Thai Airways",
   "Copa Airlines", "Garuda Indonesia", "Aegean Airlines",
-]);
+]); // Thai Airways already listed
 
 // Airlines for which Singapore KrisFlyer should always be guaranteed
 const KRISFLYER_GUARANTEE_AIRLINES = new Set([

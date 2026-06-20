@@ -28,6 +28,8 @@ const KNOWN_PROGRAMS = new Set([
   "Alaska Mileage Plan",          // canonical — not "Alaska Airlines Mileage Plan"
   "Iberia Avios Plus",
   "Lufthansa Miles & More",       // P5 Scaling: Europe hubs
+  "Thai Royal Orchid Plus",       // P5 Scaling Task 1.2: Asia hubs
+  "Qantas Frequent Flyer",        // used on SYD-HKG reverse
 ]);
 
 

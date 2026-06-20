@@ -1083,6 +1083,32 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
+  // ─── Thai Airways Royal Orchid Plus ────────────────────────────────────────
+  // Star Alliance member, BKK hub. Rates based on Thai Airways published chart (2025).
+  // Guaranteed on BKK-LAX, BKK-CDG, BKK-NRT via HOME_CARRIER_PROGRAMS.
+  "Thai Royal Orchid Plus": {
+    ASIA: {
+      EUROPE:        { economy: 32_500, premium: 48_750, business: 80_000 },
+      NORTH_AMERICA: { economy: 35_000, premium: 52_500, business: 85_000 },
+      MIDDLE_EAST:   { economy: 17_500, premium: 27_500, business: 55_000 },
+      AFRICA_EAST:   { economy: 35_000, premium: 52_500, business: 85_000 },
+      AFRICA_WEST:   { economy: 40_000, premium: 60_000, business: 100_000 },
+      ASIA:          { economy: 12_000, premium: 18_000, business: 35_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 32_500, premium: 48_750, business: 80_000 },
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 52_500, business: 85_000 },
+    },
+    MIDDLE_EAST: {
+      EUROPE:        { economy: 20_000, premium: 30_000, business: 55_000 },
+      ASIA:          { economy: 17_500, premium: 27_500, business: 55_000 },
+    },
+  },
+
   // Malaysia Airlines Enrich — Oneworld member, KUL hub.
   // Rates based on published Enrich points chart (2025). Guaranteed on KUL-LHR and KUL-LAX
   // via HOME_CARRIER_PROGRAMS. Values align with Oneworld partner tier (similar to Cathay Miles).
