@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, memo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
@@ -103,7 +103,7 @@ function SkeletonCard() {
  *
  * @param Props - Results props including flight results array, loading state, language, and formatPrice callback
  */
-export const Results = memo(function Results({ results, loading, lang, onBack, partial, liveRefreshing, searchMeta, formatPrice }: Props) {
+export function Results({ results, loading, lang, onBack, partial, liveRefreshing, searchMeta, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
@@ -442,4 +442,4 @@ export const Results = memo(function Results({ results, loading, lang, onBack, p
       </div>
     </div>
   );
-});
+}
