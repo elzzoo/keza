@@ -80,17 +80,28 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Group "daily" and (on Mondays) "weekly" alerts by email
+    // 2. Batch-fetch alerts for all routes in parallel (avoid sequential fetches)
+    const routeToAlerts = await Promise.all(
+      routes.map(async (routeKey) => {
+        const [from, to] = (routeKey as string).split(":");
+        if (!from || !to) return [routeKey, [] as PriceAlert[]];
+        try {
+          const alerts = await getAlertsByRoute(from, to);
+          return [routeKey, alerts];
+        } catch {
+          return [routeKey, [] as PriceAlert[]];
+        }
+      })
+    );
+
+    // 3. Group "daily" and (on Mondays) "weekly" alerts by email
     const byEmail = new Map<string, Array<{ alert: PriceAlert; currentPrice: number }>>();
 
-    for (const routeKey of routes) {
-      const [from, to] = (routeKey as string).split(":");
-      if (!from || !to) continue;
+    for (const [routeKey, alerts] of routeToAlerts) {
       const cheapest = routePrices.get(routeKey as string);
       if (cheapest === undefined) continue;
 
-      const alerts = await getAlertsByRoute(from, to);
-      for (const alert of alerts) {
+      for (const alert of alerts as PriceAlert[]) {
         if (!alert.active) continue;
 
         const freq = alert.notifFrequency ?? "instant";
@@ -118,10 +129,12 @@ export async function GET(req: NextRequest) {
         const ok = await sendDigestEmail(email, items, isMonday ? topDeals : []);
         if (ok) {
           sent++;
-          // 6. Update lastCheckedAt for each alert
-          for (const { alert, currentPrice } of items) {
-            await updateAlertAfterCheck(alert.id, currentPrice, true);
-          }
+          // 6. Batch-update lastCheckedAt for all alerts in parallel
+          await Promise.all(
+            items.map(({ alert, currentPrice }) =>
+              updateAlertAfterCheck(alert.id, currentPrice, true).catch(() => {})
+            )
+          );
           trackServerEvent("Digest Sent", { email_count: 1 }).catch(() => {});
         } else {
           skipped++;
