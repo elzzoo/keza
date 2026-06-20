@@ -91,14 +91,16 @@ export async function fetchV3(
   url.searchParams.set("sorting", "price");
   url.searchParams.set("unique", "false");
   url.searchParams.set("limit", "30");
-  url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
   let res: Response;
   try {
     res = await withRetry(() => fetch(url.toString(), {
       next: { revalidate: 3600 },
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "X-Access-Token": token,
+      },
       signal: AbortSignal.timeout(4000),
     }));
   } catch (err) {
@@ -168,14 +170,16 @@ export async function fetchMonthMatrix(
   url.searchParams.set("month", monthParam);
   url.searchParams.set("currency", "USD");
   url.searchParams.set("show_to_affiliates", "true");
-  url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
   let res: Response;
   try {
     res = await withRetry(() => fetch(url.toString(), {
       next: { revalidate: 3600 },
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "X-Access-Token": token,
+      },
       signal: AbortSignal.timeout(4000),
     }));
   } catch (err) {
@@ -240,12 +244,14 @@ export async function fetchMonthMatrixFull(
   url.searchParams.set("month", monthParam);
   url.searchParams.set("currency", "USD");
   url.searchParams.set("show_to_affiliates", "true");
-  url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
   const res = await fetch(url.toString(), {
     next: { revalidate: 3600 },
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      "X-Access-Token": token,
+    },
     signal: AbortSignal.timeout(4000),
   });
 
@@ -300,12 +306,14 @@ export async function fetchV3Calendar(
   url.searchParams.set("sorting", "price");
   url.searchParams.set("unique", "false");
   url.searchParams.set("limit", "60");
-  url.searchParams.set("token", token);
   if (direct) url.searchParams.set("direct", "true");
 
   const res = await fetch(url.toString(), {
     next: { revalidate: 3600 },
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      "X-Access-Token": token,
+    },
     signal: AbortSignal.timeout(4000),
   });
 
