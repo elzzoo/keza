@@ -55,7 +55,7 @@ async function getDeals(): Promise<LiveDeal[]> {
       return cached;
     }
   } catch (e) {
-    logWarn("[deals/en] Redis unavailable, using fallback", e);
+    logWarn("[deals/en] Redis unavailable, using fallback", undefined, { error: String(e) });
   }
   return sortDeals(FALLBACK_DEALS);
 }

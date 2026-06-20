@@ -21,6 +21,6 @@ export async function getUserCredentials(
   email: string
 ): Promise<Record<string, AirlineCredentials>> {
   // TODO: Fetch user's saved airline credentials from database
-  logWarn("[portfolio] Getting credentials for email", { email });
+  logWarn("[portfolio] Getting credentials for email", undefined, { email });
   return {};
 }

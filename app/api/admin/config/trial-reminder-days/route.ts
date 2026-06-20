@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       "info"
     );
 
-    logWarn("[admin] Trial reminder days updated", { days });
+    logWarn("[admin] Trial reminder days updated", undefined, { days });
 
     return NextResponse.json({
       success: true,
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
 
     // Validate bounds (config should always be within 0-30, but validate on read as safety check)
     if (!Number.isInteger(days) || days < 0 || days > 30) {
-      logWarn("[admin] Trial reminder config out of bounds, using default", { storedValue: daysStr, parsedValue: days });
+      logWarn("[admin] Trial reminder config out of bounds, using default", undefined, { storedValue: daysStr, parsedValue: days });
       const defaultDays = 1;
       return NextResponse.json({
         success: true,
