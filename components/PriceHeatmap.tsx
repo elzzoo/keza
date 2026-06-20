@@ -66,6 +66,20 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
       return;
     }
 
+    const cacheKey = `heatmap:${from}:${to}:${cabin ?? "economy"}`;
+    const cached = typeof window !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
+
+    if (cached) {
+      try {
+        const data = JSON.parse(cached) as MonthData[];
+        setMonthData(data);
+        setLoading(false);
+        return;
+      } catch {
+        // Invalid cache, proceed to fetch
+      }
+    }
+
     const months = getNextMonths(6);
     setLoading(true);
 
@@ -87,9 +101,16 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
     ).then((results) => {
       const valid = results.filter((r): r is MonthData => r !== null);
       setMonthData(valid);
+      if (typeof window !== "undefined" && valid.length > 0) {
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(valid));
+        } catch {
+          // Storage full or unavailable, silently skip caching
+        }
+      }
       setLoading(false);
     });
-  }, [from, to, mult]);
+  }, [from, to, cabin, mult]);
 
   if (loading) {
     return (
