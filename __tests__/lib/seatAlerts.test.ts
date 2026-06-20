@@ -5,6 +5,7 @@ const mockRedisDel = jest.fn();
 const mockRedisSadd = jest.fn();
 const mockRedisSmembers = jest.fn();
 const mockRedisSrem = jest.fn();
+const mockRedisMget = jest.fn();
 
 jest.mock("@upstash/redis", () => ({
   Redis: jest.fn().mockImplementation(() => ({
@@ -14,6 +15,7 @@ jest.mock("@upstash/redis", () => ({
     sadd: mockRedisSadd,
     smembers: mockRedisSmembers,
     srem: mockRedisSrem,
+    mget: mockRedisMget,
   })),
 }));
 
@@ -104,8 +106,10 @@ describe("SeatAlert Redis storage", () => {
       "SIN-LAX:BUSINESS",
       "NRT-LAX:PREMIUM_ECONOMY",
     ]);
-    mockRedisGet.mockResolvedValueOnce(JSON.stringify(testAlert));
-    mockRedisGet.mockResolvedValueOnce(JSON.stringify(testAlert2));
+    mockRedisMget.mockResolvedValueOnce([
+      JSON.stringify(testAlert),
+      JSON.stringify(testAlert2),
+    ]);
 
     await saveSeatAlert(testAlert);
     await saveSeatAlert(testAlert2);
@@ -120,6 +124,7 @@ describe("SeatAlert Redis storage", () => {
     mockRedisDel.mockResolvedValueOnce(1);
     mockRedisSrem.mockResolvedValue(1);
     mockRedisGet.mockResolvedValueOnce(null);
+    mockRedisGet.mockResolvedValueOnce(null);
 
     await saveSeatAlert(testAlert);
     await deleteSeatAlert(testAlert.email, testAlert.route, testAlert.cabin);
@@ -128,8 +133,10 @@ describe("SeatAlert Redis storage", () => {
     expect(retrieved).toBeNull();
   });
 
-  it("auto-expires alerts after 90 days", async () => {
-    // Verify Redis TTL is set to 90 days (7,776,000 seconds)
-    // This is verified in integration test during cron run
+  it("returns null for corrupted JSON", async () => {
+    mockRedisGet.mockResolvedValueOnce("{ invalid json");
+
+    const result = await getSeatAlert("test@example.com", "SIN-LAX", "BUSINESS");
+    expect(result).toBeNull();
   });
 });

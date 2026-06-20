@@ -70,7 +70,11 @@ export async function getSeatAlert(
   const key = SEAT_ALERT_KEY(email, route, cabin);
   const data = await redis.get<string>(key);
   if (!data) return null;
-  return JSON.parse(data) as SeatAlertSubscription;
+  try {
+    return JSON.parse(data) as SeatAlertSubscription;
+  } catch {
+    return null;
+  }
 }
 
 export async function deleteSeatAlert(
@@ -87,12 +91,35 @@ export async function deleteSeatAlert(
 export async function getAllAlertsForEmail(email: string): Promise<SeatAlertSubscription[]> {
   const indexKey = SEAT_ALERT_INDEX(email);
   const pairs = await redis.smembers<string>(indexKey);
-  const alerts: SeatAlertSubscription[] = [];
+
+  // Build keys for batch fetch
+  const validPairs: Array<{ route: string; cabin: CabinType }> = [];
+  const keys: string[] = [];
 
   for (const pair of pairs) {
-    const [route, cabin] = pair.split(":");
-    const alert = await getSeatAlert(email, route, cabin as CabinType);
-    if (alert) alerts.push(alert);
+    const parts = pair.split(":");
+    if (parts.length === 2) {
+      const [route, cabin] = parts;
+      validPairs.push({ route, cabin: cabin as CabinType });
+      keys.push(SEAT_ALERT_KEY(email, route, cabin));
+    }
+  }
+
+  if (keys.length === 0) return [];
+
+  // Batch fetch all alerts
+  const data = await redis.mget<string>(...keys);
+  const alerts: SeatAlertSubscription[] = [];
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i]) {
+      try {
+        const alert = JSON.parse(data[i]) as SeatAlertSubscription;
+        alerts.push(alert);
+      } catch {
+        // Skip corrupted entries
+      }
+    }
   }
 
   return alerts;
@@ -104,11 +131,25 @@ export async function getAllAlertsForRoute(
 ): Promise<SeatAlertSubscription[]> {
   const indexKey = SEAT_ALERT_ROUTE_INDEX(route, cabin);
   const emails = await redis.smembers<string>(indexKey);
+
+  // Build keys for batch fetch
+  const keys = emails.map((email) => SEAT_ALERT_KEY(email, route, cabin));
+
+  if (keys.length === 0) return [];
+
+  // Batch fetch all alerts
+  const data = await redis.mget<string>(...keys);
   const alerts: SeatAlertSubscription[] = [];
 
-  for (const email of emails) {
-    const alert = await getSeatAlert(email, route, cabin);
-    if (alert) alerts.push(alert);
+  for (const item of data) {
+    if (item) {
+      try {
+        const alert = JSON.parse(item) as SeatAlertSubscription;
+        alerts.push(alert);
+      } catch {
+        // Skip corrupted entries
+      }
+    }
   }
 
   return alerts;
