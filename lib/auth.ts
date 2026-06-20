@@ -78,7 +78,7 @@ export function hasAdminSecret(request: Request): boolean {
 function getAdminSecret(): string | undefined {
   const secret = process.env.ADMIN_SECRET;
   if (!secret && process.env.NODE_ENV === "production") {
-    console.error("[auth] ADMIN_SECRET is not set — admin login disabled");
+    Sentry.captureMessage("[auth] ADMIN_SECRET is not set — admin login disabled", "error");
   }
   return secret;
 }
