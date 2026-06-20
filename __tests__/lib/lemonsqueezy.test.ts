@@ -321,30 +321,28 @@ describe("logSubscriptionEvent", () => {
     );
   });
 
-  it("includes email in console log", () => {
+  it("includes email in Sentry log", () => {
     logSubscriptionEvent("created", "user@example.com");
 
-    expect(mockConsoleLog).toHaveBeenCalled();
-    const callArg = mockConsoleLog.mock.calls[0];
-    expect(callArg[0]).toContain("[KEZA Pro]");
-    expect(callArg[0]).toContain("created");
-    expect(callArg[1]).toHaveProperty("email", "user@example.com");
+    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
+      "Pro subscription event: created (user@example.com)",
+      "info"
+    );
   });
 
-  it("includes details in console log when provided", () => {
+  it("includes details in Sentry log when provided", () => {
     const details = { subscriptionId: "sub_456", status: "active" };
     logSubscriptionEvent("updated", "user@example.com", details);
 
-    expect(mockConsoleLog).toHaveBeenCalled();
-    const callArg = mockConsoleLog.mock.calls[0];
-    expect(callArg[1]).toHaveProperty("details", details);
+    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
+      "Pro subscription event: updated (user@example.com)",
+      "info"
+    );
   });
 
-  it("does not include details when not provided", () => {
+  it("does not fail when details are not provided", () => {
     logSubscriptionEvent("created", "user@example.com");
 
-    expect(mockConsoleLog).toHaveBeenCalled();
-    const callArg = mockConsoleLog.mock.calls[0];
-    expect(callArg[1]).not.toHaveProperty("details");
+    expect(mockSentryCaptureMessage).toHaveBeenCalled();
   });
 });

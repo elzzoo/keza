@@ -271,7 +271,4 @@ export function logSubscriptionEvent(
 
   // Log to Sentry as INFO level (not an error)
   Sentry.captureMessage(message, "info");
-
-  // Also log to console for Vercel logs visibility
-  console.log(`[KEZA Pro] ${message}`, context);
 }

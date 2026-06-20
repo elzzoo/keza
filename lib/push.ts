@@ -1,7 +1,7 @@
 import "server-only";
 import { redis } from "./redis";
 import webpush from "web-push";
-import { logError } from "@/lib/logger";
+import { logError, logWarn } from "@/lib/logger";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ function setupVapid(): boolean {
   const email = process.env.VAPID_EMAIL ?? "mailto:contact@keza.app";
   if (!publicKey || !privateKey) {
     if (!vapidMissingWarned) {
-      console.error(
+      logWarn(
         "[push] VAPID keys not configured — push notifications disabled. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY."
       );
       vapidMissingWarned = true;
