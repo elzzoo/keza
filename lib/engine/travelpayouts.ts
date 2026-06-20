@@ -58,16 +58,28 @@ export function buildAviasalesUrl(
 export async function withRetry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
-  backoffMs: number[] = [500, 1000]
+  backoffMs: number[] = [500, 1000],
+  totalTimeoutMs = 9000 // Total timeout to avoid Vercel maxDuration (10s limit)
 ): Promise<T> {
   let lastErr: unknown;
+  const startTime = Date.now();
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // Check if we've exceeded total timeout budget
+    if (Date.now() - startTime > totalTimeoutMs) {
+      throw lastErr || new Error("Total retry timeout exceeded");
+    }
+
     try {
       return await fn();
     } catch (err) {
       lastErr = err;
       const wait = backoffMs[attempt] ?? backoffMs[backoffMs.length - 1];
-      if (attempt < maxAttempts - 1) await new Promise(r => setTimeout(r, wait));
+      if (attempt < maxAttempts - 1) {
+        // Only wait if we won't exceed timeout
+        if (Date.now() - startTime + wait <= totalTimeoutMs) {
+          await new Promise(r => setTimeout(r, wait));
+        }
+      }
     }
   }
   throw lastErr;
