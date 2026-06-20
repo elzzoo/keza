@@ -1,5 +1,6 @@
 import "server-only";
 import type { AirlineCredentials } from "@/lib/balanceSync";
+import { logWarn } from "@/lib/logger";
 
 /**
  * Get all user emails that have saved portfolios.
@@ -20,6 +21,6 @@ export async function getUserCredentials(
   email: string
 ): Promise<Record<string, AirlineCredentials>> {
   // TODO: Fetch user's saved airline credentials from database
-  console.log(`Getting credentials for ${email}`);
+  logWarn("[portfolio] Getting credentials for email", { email });
   return {};
 }

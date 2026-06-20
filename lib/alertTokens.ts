@@ -1,6 +1,7 @@
 import "server-only";
 import { createHmac } from "crypto";
 import { safeCompare } from "@/lib/auth";
+import * as Sentry from "@sentry/nextjs";
 
 type AlertTokenAction = "manage" | "unsubscribe";
 
@@ -17,7 +18,7 @@ function getTokenSecret(): string | undefined {
   // ALERT_TOKEN_SECRET is required. Never fall back to ADMIN_SECRET or CRON_SECRET —
   // those are separate secrets; cross-use would allow forgery of alert tokens.
   if (!process.env.ALERT_TOKEN_SECRET && process.env.NODE_ENV === "production") {
-    console.error("[alertTokens] ALERT_TOKEN_SECRET is not set. Alert token signing will fail.");
+    Sentry.captureMessage("[alertTokens] ALERT_TOKEN_SECRET is not set. Alert token signing will fail.", "error");
   }
   return process.env.ALERT_TOKEN_SECRET;
 }

@@ -1,4 +1,6 @@
+import "server-only";
 import { Resend } from "resend";
+import { logError } from "@/lib/logger";
 
 export interface SeatAlertEmailProps {
   subscriberEmail: string;
@@ -93,7 +95,7 @@ export async function sendSeatAlertEmail(
 
     return true;
   } catch (err) {
-    console.error("Failed to send seat alert email:", err);
+    logError("[seatAlertEmails] Failed to send seat alert email", err);
     return false;
   }
 }
