@@ -1,8 +1,10 @@
 import "server-only";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { redis } from "@/lib/redis";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
+import * as Sentry from "@sentry/nextjs";
 
 interface B2BLead {
   name: string;
@@ -15,13 +17,23 @@ interface B2BLead {
 
 // GET /api/admin/export/leads — download B2B leads as CSV
 // Protected by admin session cookie (same auth as /admin page)
-export async function GET() {
+// Rate limited: max 10 exports per hour per IP
+export async function GET(req: NextRequest) {
+  // Rate limit: max 10 exports per hour
+  const limited = await rateLimitResponse(req, { namespace: "api:admin:export:leads", limit: 10, windowSeconds: 3600 });
+  if (limited) return limited;
+
   // Auth: verify admin session cookie
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
   if (!verifyAdminSessionToken(sessionToken)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Audit log: data export attempt
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+  Sentry.captureMessage("[admin] CSV export: leads", "info");
+  Sentry.captureException(new Error("Data Export: Leads CSV"), { level: "info", contexts: { request: { ip } } });
 
   // Fetch all leads (up to 500)
   const raw = await redis.lrange("keza:b2b:leads", 0, 499);

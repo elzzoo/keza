@@ -16,11 +16,23 @@ export interface RateLimitResult {
 }
 
 function clientIp(request: Request): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown"
-  );
+  // Vercel's x-forwarded-for is trustworthy when behind Vercel proxy
+  // Only use the first IP (client IP, not the proxy chain)
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const clientAddr = forwardedFor.split(",")[0]?.trim();
+    if (clientAddr && /^[\d.]+$|^[\da-f:]+$/.test(clientAddr)) {
+      return clientAddr;
+    }
+  }
+
+  // Fallback to x-real-ip (nginx style) — but only if it's a valid IP
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp && /^[\d.]+$|^[\da-f:]+$/.test(realIp)) {
+    return realIp;
+  }
+
+  return "unknown";
 }
 
 function safeKeyPart(value: string): string {
