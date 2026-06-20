@@ -288,7 +288,7 @@ export async function processAllSeatAlerts(): Promise<{
       const month = getCurrentMonth();
 
       // Search the route for calendar prices
-      const prices = await fetchCalendarPrices(from, to, month);
+      const prices = await fetchCalendarPrices(from, to, month).catch(() => []);
 
       if (!prices.length) continue;
 

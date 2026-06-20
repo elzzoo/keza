@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
   // Fetch fresh data — use first day of month as date param
   const date = `${month}-01`;
-  const days = await fetchCalendarPrices(from, to, date);
+  const days = await fetchCalendarPrices(from, to, date).catch(() => []);
 
   // Cache for 2 hours
   if (days.length > 0) {
