@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { logError } from "@/lib/logger";
+import { logError, logWarn } from "@/lib/logger";
 import { sendDiscordAlert } from "@/lib/discord";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     await redis.lpush(key, JSON.stringify(entry));
     await redis.ltrim(key, 0, 499);
 
-    // Fire-and-forget: confirmation email to the user
+    // Fire-and-forget: confirmation email to the user (logged on failure)
     resend.emails.send({
       from: FROM,
       to: [body.email],
@@ -77,7 +77,9 @@ export async function POST(request: Request) {
           </div>
         </div>
       `,
-    }).catch(() => {});
+    }).catch((err) => {
+      logWarn("[api/contact] Failed to send confirmation email", String(err), { email: body.email });
+    });
 
     // Fire-and-forget: Discord notification to the team
     sendDiscordAlert("🏢 Nouveau lead B2B", [{

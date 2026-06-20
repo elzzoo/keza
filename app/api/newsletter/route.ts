@@ -3,7 +3,7 @@ import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail } from "@/lib/validate";
 import { Resend } from "resend";
-import { logError } from "@/lib/logger";
+import { logError, logWarn } from "@/lib/logger";
 
 const NEWSLETTER_KEY = "keza:newsletter:subscribers";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     // Store in Redis sorted set (score = timestamp)
     await redis.zadd(NEWSLETTER_KEY, { score: Date.now(), member: email });
 
-    // Send welcome email (fire-and-forget)
+    // Send welcome email (fire-and-forget, logged on failure)
     const resend = new Resend(process.env.RESEND_API_KEY);
     const subject = lang === "fr"
       ? "✅ Les meilleures offres miles, chaque semaine"
@@ -46,7 +46,9 @@ export async function POST(req: NextRequest) {
       to: email,
       subject,
       html: lang === "fr" ? buildFrEmail() : buildEnEmail(),
-    }).catch(() => {});
+    }).catch((err) => {
+      logWarn("[api/newsletter] Failed to send welcome email", String(err), { email, lang });
+    });
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {

@@ -3,7 +3,7 @@ import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail } from "@/lib/validate";
 import { Resend } from "resend";
-import { logError } from "@/lib/logger";
+import { logError, logWarn } from "@/lib/logger";
 
 const WAITLIST_KEY = "keza:pro:waitlist";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const score = Date.now();
     await redis.zadd(WAITLIST_KEY, { score, member: email });
 
-    // Send confirmation email (fire-and-forget)
+    // Send confirmation email (fire-and-forget, logged on failure)
     const resend = new Resend(process.env.RESEND_API_KEY);
     resend.emails.send({
       from: FROM_EMAIL,
@@ -61,7 +61,9 @@ export async function POST(req: NextRequest) {
           </div>
         </div>
       `,
-    }).catch(() => {});
+    }).catch((err) => {
+      logWarn("[api/pro/waitlist] Failed to send waitlist confirmation email", String(err), { email });
+    });
 
     const position = await redis.zrank(WAITLIST_KEY, email);
 
