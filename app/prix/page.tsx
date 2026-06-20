@@ -4,6 +4,7 @@ import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
 import { PriceChart } from "./PriceChart";
 import { SITE_URL } from "@/lib/siteConfig";
+import { logError } from "@/lib/logger";
 
 export const metadata: Metadata = {
   title: "Meilleur moment pour voyager | KEZA",
@@ -38,7 +39,7 @@ export default function PrixPage() {
     histories = getAllDestinationPriceHistories();
     if (!histories || histories.length === 0) dataError = true;
   } catch (err) {
-    console.error("[/prix] Failed to load price histories:", err);
+    logError("[/prix] Failed to load price histories", err);
     dataError = true;
   }
 

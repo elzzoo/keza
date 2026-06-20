@@ -8,6 +8,7 @@ import { DEALS_KEY } from "@/lib/redisKeys";
 import { sortDeals } from "@/lib/dealsEngine";
 import type { LiveDeal, RawDeal } from "@/lib/dealsEngine";
 import { SITE_URL } from "@/lib/siteConfig";
+import { logWarn } from "@/lib/logger";
 
 export const revalidate = 3600; // Re-fetch every hour
 
@@ -52,7 +53,7 @@ async function getDeals(): Promise<LiveDeal[]> {
       return cached;
     }
   } catch (e) {
-    console.error("[deals] Redis unavailable, using fallback:", e);
+    logWarn("[deals] Redis unavailable, using fallback", e);
   }
   return sortDeals(FALLBACK_DEALS);
 }

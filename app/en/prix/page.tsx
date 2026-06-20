@@ -5,6 +5,7 @@ import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
 import { PriceChart } from "@/app/prix/PriceChart";
 import { SITE_URL } from "@/lib/siteConfig";
+import { logError } from "@/lib/logger";
 
 export const metadata: Metadata = {
   title: "Flight Prices — Compare Cash & Miles | KEZA",
@@ -39,7 +40,7 @@ export default function EnPrixPage() {
     histories = getAllDestinationPriceHistories();
     if (!histories || histories.length === 0) dataError = true;
   } catch (err) {
-    console.error("[/en/prix] Failed to load price histories:", err);
+    logError("[/en/prix] Failed to load price histories", err);
     dataError = true;
   }
 
