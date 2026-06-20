@@ -137,7 +137,8 @@ export function findPathsByPrice(
   flights: FlightLeg[],
   origin: string,
   destination: string,
-  limit: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _limit: number
 ): PathResult[] {
   // For now, return single best path
   const bestPath = dijkstra(flights, origin, destination, 'price');

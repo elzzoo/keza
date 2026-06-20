@@ -107,7 +107,7 @@ async function getAllRoutes(): Promise<string[]> {
   return ["SIN-LAX", "NRT-LAX", "DXB-LHR", "CDG-BKK"]; // Placeholder
 }
 
-async function getCurrentPrices(route: string): Promise<number[]> {
+async function getCurrentPrices(_route: string): Promise<number[]> {
   // Fetch current cheapest prices for route
   return [];
 }

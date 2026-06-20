@@ -92,28 +92,28 @@ async function fetchANABalance(
 }
 
 async function fetchJALBalance(
-  creds: AirlineCredentials
+  _creds: AirlineCredentials
 ): Promise<BalanceResult | null> {
   // JAL Mileage Bank API
   return null; // Placeholder
 }
 
 async function fetchUnitedBalance(
-  creds: AirlineCredentials
+  _creds: AirlineCredentials
 ): Promise<BalanceResult | null> {
   // United MileagePlus API
   return null;
 }
 
 async function fetchCathayBalance(
-  creds: AirlineCredentials
+  _creds: AirlineCredentials
 ): Promise<BalanceResult | null> {
   // Cathay Pacific Asia Miles API
   return null;
 }
 
 async function fetchEmiratesBalance(
-  creds: AirlineCredentials
+  _creds: AirlineCredentials
 ): Promise<BalanceResult | null> {
   // Emirates Skywards API
   return null;

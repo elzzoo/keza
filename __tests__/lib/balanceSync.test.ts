@@ -18,8 +18,9 @@ describe("Balance Sync", () => {
 
   it("fetches Singapore Airlines balance from API", async () => {
     // Mock the fetch for Singapore API
-    global.fetch = jest.fn((url: string) => {
-      if (url.includes("singaporeair.com")) {
+    global.fetch = jest.fn((url: string | Request | URL) => {
+      const urlStr = typeof url === "string" ? url : url.toString();
+      if (urlStr.includes("singaporeair.com")) {
         return Promise.resolve({
           ok: true,
           json: () =>
@@ -31,7 +32,7 @@ describe("Balance Sync", () => {
         } as Response);
       }
       return Promise.reject(new Error("Unknown URL"));
-    });
+    }) as jest.Mock;
 
     const balance = await fetchAirlineBalance("SINGAPORE", {
       username: "user123",
@@ -62,8 +63,9 @@ describe("Balance Sync", () => {
 
   it("syncs all programs for user", async () => {
     // Mock successful fetch for both airlines
-    global.fetch = jest.fn((url: string) => {
-      if (url.includes("singaporeair.com")) {
+    global.fetch = jest.fn((url: string | Request | URL) => {
+      const urlStr = typeof url === "string" ? url : url.toString();
+      if (urlStr.includes("singaporeair.com")) {
         return Promise.resolve({
           ok: true,
           json: () =>
@@ -74,7 +76,7 @@ describe("Balance Sync", () => {
             }),
         } as Response);
       }
-      if (url.includes("ana.co.jp")) {
+      if (urlStr.includes("ana.co.jp")) {
         return Promise.resolve({
           ok: true,
           json: () =>
@@ -86,7 +88,7 @@ describe("Balance Sync", () => {
         } as Response);
       }
       return Promise.reject(new Error("Unknown URL"));
-    });
+    }) as jest.Mock;
 
     const programs = {
       SINGAPORE: { username: "user1", password: "pass1" },

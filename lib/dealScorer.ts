@@ -76,10 +76,11 @@ export function getDealRecommendation(score: number): string {
   return "Not a deal.";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getRouteProgramsForUser(
   route: string,
-  from: string,
-  to: string
+  _from: string,
+  _to: string
 ): { program: string; airline: string }[] {
   // Look up which programs service this route
   // This is a mapping of routes to their primary airline programs

@@ -158,11 +158,18 @@ async function safeZadd(key: string, ...options: unknown[]): Promise<number> {
   }
 }
 
-async function safeZrange<T = unknown>(key: string, start: number, stop: number, options?: { withscores?: boolean }): Promise<T[]> {
+async function safeZrange<T = unknown>(
+  key: string,
+  start: number,
+  stop: number,
+  options?: { withScores?: boolean; rev?: boolean }
+): Promise<T[]> {
   try {
     const client = getRedis();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (client.zrange as any)(key, start, stop, options);
+    // Upstash Redis zrange with standard numeric indices
+    // Cast to the basic overload signature that accepts key, start, stop, options
+    type ZrangeFn = (key: string, start: number, stop: number, opts?: Record<string, unknown>) => Promise<unknown>;
+    const result = await (client.zrange as unknown as ZrangeFn)(key, start, stop, options);
     return (result ?? []) as T[];
   } catch (err) {
     logRedisError("ZRANGE", key, err);

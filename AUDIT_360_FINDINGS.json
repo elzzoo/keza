@@ -1,0 +1,290 @@
+[
+  {
+    "category": "Type Safety",
+    "severity": "Critical",
+    "location": "lib/redis.ts:165",
+    "description": "Unsafe type casting (client.zrange as any) bypasses TypeScript type safety on cache operations. Silent failures possible on sorted set range queries.",
+    "effort": "medium",
+    "impact": "Replace with proper type cast using Upstash SDK generics. Prevents silent cache failures."
+  },
+  {
+    "category": "Test Coverage",
+    "severity": "Critical",
+    "location": "lib/engine/enrich.ts:159 lines",
+    "description": "Zero unit test coverage on core enrich() function. Central flight enrichment logic (program attachment, price calculation) completely untested. Edge cases (0 passengers, undefined returnFlight, negative prices) unprotected.",
+    "effort": "large refactor",
+    "impact": "1-2 weeks to add comprehensive test suite. Prevents silent bugs in flight data transformation."
+  },
+  {
+    "category": "Test Coverage",
+    "severity": "Critical",
+    "location": "app/api/calendar/route.ts:50 lines",
+    "description": "F2 calendar API endpoint has zero test coverage. Month validation, cache hit/miss, Duffel/TP fallback, error handling all untested.",
+    "effort": "large refactor",
+    "impact": "Users may see incomplete or wrong 6-month heatmap data. Silent regressions in date handling."
+  },
+  {
+    "category": "Test Coverage",
+    "severity": "Critical",
+    "location": "app/api/search/stream/route.ts:235 lines",
+    "description": "F3 streaming search endpoint has zero tests. Error propagation, client disconnect, partial results, buffer management untested.",
+    "effort": "large refactor",
+    "impact": "Streaming can hang or lose data silently. No regression tests for complex streaming logic."
+  },
+  {
+    "category": "Performance",
+    "severity": "High",
+    "location": "components/Results.tsx:421-422",
+    "description": "Array index used as React key (key={i}). React can't reconcile list items properly—causes animation bugs, state persistence issues, wrong updates on sort/filter.",
+    "effort": "quick fix",
+    "impact": "When users sort/filter results, list re-renders incorrectly. Use flight.id instead."
+  },
+  {
+    "category": "Performance",
+    "severity": "High",
+    "location": "components/PriceHeatmap.tsx:87",
+    "description": "Calendar fetch chain missing Promise.catch(). If API fails, component silently hangs in loading state forever.",
+    "effort": "quick fix",
+    "impact": "Users on slow networks see frozen heatmap indefinitely. Add error boundary."
+  },
+  {
+    "category": "Performance",
+    "severity": "High",
+    "location": "components/PriceHeatmap.tsx:63-92",
+    "description": "Missing client-side caching for calendar data. 6 API calls fire on every route change despite Redis caching server-side. Should use SWR or localStorage.",
+    "effort": "medium",
+    "impact": "6x unnecessary API load, hits rate limits faster, slow UX."
+  },
+  {
+    "category": "Type Safety",
+    "severity": "High",
+    "location": "lib/engine/index.ts:85, 237",
+    "description": "Array reduce() without initial value on potentially empty arrays. If rawOutbound/rawReturn empty, reduce returns undefined, causing downstream null reference errors.",
+    "effort": "quick fix",
+    "impact": "Zero-result searches crash or return null prices. Add initial value guard."
+  },
+  {
+    "category": "Type Safety",
+    "severity": "High",
+    "location": "lib/costEngine.ts:584-585, 689, 695, 833",
+    "description": "originZone/destZone are nullable but passed to getAwardTaxes() without null checks. Silent calculation errors possible.",
+    "effort": "medium",
+    "impact": "Award tax calculations skip for some routes, prices wrong by 5-10%."
+  },
+  {
+    "category": "Type Safety",
+    "severity": "High",
+    "location": "lib/duffelProvider.ts:211",
+    "description": "No runtime validation of Duffel API response shape. Missing fields silently become undefined, cascading null reference errors.",
+    "effort": "medium",
+    "impact": "Malformed API responses cause hard-to-debug crashes deep in enrichment logic."
+  },
+  {
+    "category": "Architecture",
+    "severity": "High",
+    "location": "lib/optimizer.ts:7-29",
+    "description": "AIRLINE_TO_PROGRAM mapping never updated with P5 airlines (Air India, Swiss, TAP, LOT, SAS, Asiana, EVA). Users won't get optimization recommendations for these carriers.",
+    "effort": "medium",
+    "impact": "P5 airlines silently excluded from miles optimizer suggestions."
+  },
+  {
+    "category": "Monitoring",
+    "severity": "High",
+    "location": "lib/engine/enrich.ts, lib/costEngine.ts",
+    "description": "No timing instrumentation on expensive compute. enrich() and buildCostOptions() lack performance metrics. Can't diagnose which enrichment step is bottleneck.",
+    "effort": "medium",
+    "impact": "Performance issues hidden from metrics. Can't optimize without blind guessing."
+  },
+  {
+    "category": "Security",
+    "severity": "High",
+    "location": "app/api/cron/deals/route.ts:32",
+    "description": "TRAVELPAYOUTS_TOKEN passed in URL query string. Token leaks via Referer header, browser history, CDN logs. Should use POST + Authorization header.",
+    "effort": "medium",
+    "impact": "Token compromise risk. Move to headers or POST body immediately."
+  },
+  {
+    "category": "Documentation",
+    "severity": "High",
+    "location": "lib/engine/index.ts, lib/costEngine.ts, lib/engine/enrich.ts, components/SearchForm.tsx",
+    "description": "5 core public functions missing JSDoc: searchEngine(), buildCostOptions(), enrich(), SearchForm, Results. New developers can't understand signatures without reading full implementation.",
+    "effort": "medium",
+    "impact": "Slower onboarding, more typos in function calls, inconsistent API usage."
+  },
+  {
+    "category": "Test Coverage",
+    "severity": "High",
+    "location": "jest.config.js",
+    "description": "No coverage thresholds configured. Coverage can regress to 0% without CI detection.",
+    "effort": "medium",
+    "impact": "Test quality degrades silently. No automated enforcement of coverage minimums."
+  },
+  {
+    "category": "Dead Code",
+    "severity": "Medium",
+    "location": "lib/buyMilesEngine.ts, lib/cityToIata.ts, lib/geoRoutes.ts, lib/globalAlliances.ts, lib/transferEngine.ts, lib/dataFreshness.ts",
+    "description": "6 unused library files never imported. ~500 lines of dead code.",
+    "effort": "quick fix",
+    "impact": "Removes maintenance burden, shrinks codebase, improves readability."
+  },
+  {
+    "category": "Architecture",
+    "severity": "Medium",
+    "location": "lib/costEngine.ts:457, 839, 892-895, 1045, 1059, 1061",
+    "description": "Rounding formula duplicated 9 times across cost calculations. Inconsistency risk if logic changes.",
+    "effort": "quick fix",
+    "impact": "Extract to utility function. Prevents decimal rounding bugs, future-proofs precision."
+  },
+  {
+    "category": "Architecture",
+    "severity": "Medium",
+    "location": "lib/engine/index.ts, app/api/search/stream/route.ts",
+    "description": "CONFIDENCE_PENALTY map duplicated in 2 files. Will break if not kept in sync.",
+    "effort": "quick fix",
+    "impact": "Search and stream endpoints diverge on confidence penalties. Extract to shared constant."
+  },
+  {
+    "category": "Architecture",
+    "severity": "Medium",
+    "location": "lib/costEngine.ts",
+    "description": "costEngine.ts is monolithic at 1,102 lines. Mixes program mapping, pricing, guarantees, and calculations. Hard to test, understand, maintain.",
+    "effort": "large refactor",
+    "impact": "Split into costCalculator, programEngine, guaranteeEngine. Improves testability and maintainability."
+  },
+  {
+    "category": "Documentation",
+    "severity": "Medium",
+    "location": "components/PriceHeatmap.tsx",
+    "description": "F2 (PriceHeatmap) feature completely undocumented. No docs on 6-month calendar fetch, cabin multipliers, color-coding logic.",
+    "effort": "medium",
+    "impact": "Future developers can't extend feature without reading full source."
+  },
+  {
+    "category": "Documentation",
+    "severity": "Medium",
+    "location": "app/portefeuille/",
+    "description": "F3 (Portefeuille) feature completely undocumented. No docs on portfolio balance logic, user data source, results integration.",
+    "effort": "medium",
+    "impact": "Feature isolated from team knowledge. Can't debug user issues."
+  },
+  {
+    "category": "Test Coverage",
+    "severity": "Medium",
+    "location": "lib/optimizer.ts, lib/autoCalibrate.ts, lib/engine/supplements.ts, lib/globalPrograms.ts",
+    "description": "13 untested modules (2,000+ lines). optimizer, autoCalibrate, supplements, globalPrograms, alerts, dynamicAwardEngine, seatAlerts, milesAcquisition have zero dedicated test files.",
+    "effort": "large refactor",
+    "impact": "Silent bugs in optimization, supplement logic, alerting. High maintenance risk."
+  },
+  {
+    "category": "Monitoring",
+    "severity": "Medium",
+    "location": "lib/duffelProvider.ts:207",
+    "description": "Duffel API error responses logged without sanitization. If error includes API key, it leaks to Sentry.",
+    "effort": "quick fix",
+    "impact": "Potential secret leakage. Filter sensitive fields before logging."
+  },
+  {
+    "category": "Security",
+    "severity": "Medium",
+    "location": "lib/duffelProvider.ts:187-190",
+    "description": "Duffel 429 rate limit responses don't parse Retry-After header. App silently falls back to Travelpayouts without informing user.",
+    "effort": "medium",
+    "impact": "Rate limiting transparency missing. Users don't know why results are cached."
+  },
+  {
+    "category": "Performance",
+    "severity": "Medium",
+    "location": "components/Results.tsx:190",
+    "description": "ESLint disable without justification. Makes code maintenance fragile.",
+    "effort": "quick fix",
+    "impact": "Add comment explaining why dependency is safe to omit."
+  },
+  {
+    "category": "Performance",
+    "severity": "Medium",
+    "location": "components/Results.tsx, components/PriceHeatmap.tsx",
+    "description": "Missing React.memo on expensive components. Re-renders unnecessarily when parent updates.",
+    "effort": "quick fix",
+    "impact": "Recalculates expensive component logic on every parent re-render."
+  },
+  {
+    "category": "Performance",
+    "severity": "Low",
+    "location": "components/FlightCard.tsx:109",
+    "description": "Missing useCallback on memoized component event handlers. New function created on every render.",
+    "effort": "quick fix",
+    "impact": "Wastes reconciliation work if handlers passed to memoized children."
+  },
+  {
+    "category": "Type Safety",
+    "severity": "Medium",
+    "location": "lib/engine/travelpayouts.ts:131",
+    "description": "Unsafe optional chaining in calendar data. If departure_at is null, creates empty string key.",
+    "effort": "quick fix",
+    "impact": "Could create invalid cache keys or missing data in heatmap."
+  },
+  {
+    "category": "Architecture",
+    "severity": "Medium",
+    "location": "lib/costEngine.ts:221-248",
+    "description": "Program guarantees hardcoded in costEngine. No data-driven approach—adding guarantee requires code modification.",
+    "effort": "large refactor",
+    "impact": "Extract guarantees to config file. Easier to manage and update without code changes."
+  },
+  {
+    "category": "Documentation",
+    "severity": "Medium",
+    "location": "lib/engine/index.ts:17",
+    "description": "CACHE_VERSION bump rule unclear. Rule in CLAUDE.md but not in code—developers must read two files.",
+    "effort": "quick fix",
+    "impact": "Add inline comment explaining when to bump version."
+  },
+  {
+    "category": "Documentation",
+    "severity": "Medium",
+    "location": "lib/costEngine.ts",
+    "description": "CABIN_MULTIPLIER rationale undocumented. No explanation of why premium=1.8, business=4.0, first=6.5.",
+    "effort": "quick fix",
+    "impact": "Add JSDoc explaining multiplier sources and assumptions."
+  },
+  {
+    "category": "Documentation",
+    "severity": "Low",
+    "location": "README.md",
+    "description": "README is generic create-next-app template. Should cover setup (env vars), testing, architecture overview.",
+    "effort": "medium",
+    "impact": "Improves onboarding for new developers and contributors."
+  },
+  {
+    "category": "Monitoring",
+    "severity": "Low",
+    "location": "lib/portfolio.ts:23, lib/lemonsqueezy.ts, app/api/admin/",
+    "description": "5 console.log statements mixed with structured logging. Should use logError/logWarn for consistency.",
+    "effort": "quick fix",
+    "impact": "Standardizes logging across codebase."
+  },
+  {
+    "category": "Monitoring",
+    "severity": "Low",
+    "location": "app/api/",
+    "description": "No session ID propagation across API requests. Can't trace user flow in error context for debugging.",
+    "effort": "medium",
+    "impact": "Easier error diagnosis and user support troubleshooting."
+  },
+  {
+    "category": "Architecture",
+    "severity": "Medium",
+    "location": "lib/duffelProvider.ts, lib/engine/travelpayouts.ts",
+    "description": "API providers loosely abstracted. No common provider interface—retry/fallback logic inline, tight coupling to API quirks.",
+    "effort": "large refactor",
+    "impact": "Adding new provider requires duplicating pattern. Extract to ProviderAdapter interface."
+  },
+  {
+    "category": "Architecture",
+    "severity": "Medium",
+    "location": "lib/engine/index.ts, app/api/search/route.ts",
+    "description": "Cache schema duplicated without abstraction. CACHE_VERSION coordination required manually in 2 places.",
+    "effort": "large refactor",
+    "impact": "2+ hour refactor to extract lib/cache.ts service. Prevents sync bugs."
+  }
+]

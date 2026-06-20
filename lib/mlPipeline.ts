@@ -22,9 +22,10 @@ export interface UserSearchHistory {
 const MIN_DATA_POINTS = 5;
 const BASELINE_CACHE_TTL = 24 * 60 * 60; // 24 hours
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function aggregateUserHistory(
   email: string,
-  days: number = 90
+  _days: number = 90
 ): Promise<UserSearchHistory> {
   // Read user's search history from Redis
   // Key: keza:search:user:{email}:history
