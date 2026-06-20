@@ -44,6 +44,14 @@ export function enrich(
   const outboundMultiplier = f.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
   const returnMultiplier   = returnFlight?.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
 
+  // Cabin multipliers must be positive finite values (guard against data corruption)
+  if (!Number.isFinite(outboundMultiplier) || outboundMultiplier <= 0) {
+    throw new Error(`[enrich] Invalid outbound cabin multiplier: ${outboundMultiplier}`);
+  }
+  if (returnFlight && (!Number.isFinite(returnMultiplier) || returnMultiplier <= 0)) {
+    throw new Error(`[enrich] Invalid return cabin multiplier: ${returnMultiplier}`);
+  }
+
   const outboundPrice = Math.round(f.price * outboundMultiplier * 100) / 100;
   const returnPrice   = returnFlight
     ? Math.round(returnFlight.price * returnMultiplier * 100) / 100
@@ -52,6 +60,14 @@ export function enrich(
   const totalPrice = returnPrice !== undefined
     ? Math.round((outboundPrice + returnPrice) * passengers * 100) / 100
     : Math.round(outboundPrice * passengers * 100) / 100;
+
+  // Estimated cabin prices should remain within 10x base price (sanity check)
+  const basePrice = returnPrice !== undefined
+    ? Math.round((f.price + (returnFlight?.price ?? 0)) * passengers * 100) / 100
+    : Math.round(f.price * passengers * 100) / 100;
+  if (totalPrice > basePrice * 10) {
+    throw new Error(`[enrich] Estimated cabin price exceeded 10x multiplier: ${totalPrice} > ${basePrice * 10}`);
+  }
 
   const flightInput: FlightInput = {
     from: f.from,
