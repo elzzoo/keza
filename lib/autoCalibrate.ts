@@ -150,7 +150,8 @@ export async function recalibrate(): Promise<Record<string, { before: number; af
 export async function getForexRate(): Promise<number> {
   const CACHE_KEY = "forex:usd:xof";
   const CACHE_TTL = 12 * 60 * 60; // 12h
-  const FALLBACK_RATE = 600; // approximate if all APIs fail (updated 2026-04-28)
+  const FALLBACK_RATE = 600; // approximate if all APIs fail
+  const FALLBACK_CACHE_TTL = 24 * 60 * 60; // cache fallback for 24h when APIs fail
 
   try {
     // Check cache first
@@ -196,5 +197,7 @@ export async function getForexRate(): Promise<number> {
     // Fall through to fallback
   }
 
+  // Both APIs failed — cache the hardcoded fallback so we don't retry both APIs on every request
+  await redis.set(CACHE_KEY, FALLBACK_RATE, { ex: FALLBACK_CACHE_TTL }).catch(() => null);
   return FALLBACK_RATE;
 }
