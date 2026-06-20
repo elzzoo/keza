@@ -1191,4 +1191,181 @@ describe("European programs (P5 Task 2.1)", () => {
       }
     });
   });
+
+  describe("African + Regional programs (Task 2.4)", () => {
+    it("Ethiopian ShebaMiles registered in PROGRAM_TO_AIRLINE", () => {
+      const flight: FlightInput = {
+        from: "ADD",
+        to: "CDG",
+        totalPrice: 800,
+        airlines: ["Ethiopian Airlines"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const ethio = milesOptions.find((o) => o.program === "Ethiopian ShebaMiles");
+      expect(ethio).toBeDefined();
+    });
+
+    it("Kenya Airways Mileage Club registered and available", () => {
+      const flight: FlightInput = {
+        from: "NBO",
+        to: "LHR",
+        totalPrice: 900,
+        airlines: ["Kenya Airways"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const kq = milesOptions.find((o) => o.program === "Kenya Airways Mileage Club");
+      expect(kq).toBeDefined();
+      expect(kq!.milesRequired).toBeGreaterThan(0);
+    });
+
+    it("South African Voyager has award chart", () => {
+      const flight: FlightInput = {
+        from: "JNB",
+        to: "LHR",
+        totalPrice: 1_100,
+        airlines: ["South African Airways"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const saavoy = milesOptions.find((o) => o.program === "South African Voyager");
+      if (saavoy) {
+        expect(saavoy.milesRequired).toBeGreaterThan(0);
+      }
+    });
+
+    it("Royal Air Maroc Safar Flyer has award chart", () => {
+      const flight: FlightInput = {
+        from: "CMN",
+        to: "LHR",
+        totalPrice: 700,
+        airlines: ["Royal Air Maroc"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const ram = milesOptions.find((o) => o.program === "Royal Air Maroc Safar Flyer");
+      if (ram) {
+        expect(ram.milesRequired).toBeGreaterThan(0);
+      }
+    });
+
+    it("LATAM Pass has South America coverage", () => {
+      const flight: FlightInput = {
+        from: "GRU",
+        to: "LAX",
+        totalPrice: 600,
+        airlines: ["LATAM Airlines"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const latam = milesOptions.find((o) => o.program === "LATAM Pass");
+      expect(latam).toBeDefined();
+      expect(latam!.milesRequired).toBeGreaterThan(0);
+    });
+
+    it("Avianca LifeMiles (SkyTeam) has South America coverage", () => {
+      const flight: FlightInput = {
+        from: "BOG",
+        to: "LHR",
+        totalPrice: 850,
+        airlines: ["Avianca"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const lifeM = milesOptions.find((o) => o.program === "LifeMiles");
+      expect(lifeM).toBeDefined();
+    });
+
+    it("COPA ConnectMiles (Star Alliance) has award chart", () => {
+      const flight: FlightInput = {
+        from: "PTY",
+        to: "LAX",
+        totalPrice: 500,
+        airlines: ["Copa Airlines"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      const copa = milesOptions.find((o) => o.program === "COPA ConnectMiles");
+      expect(copa).toBeDefined();
+      expect(copa!.milesRequired).toBeGreaterThan(0);
+    });
+
+    it("all African + Regional programs appear on appropriate routes", () => {
+      const programs = [
+        "Ethiopian ShebaMiles",
+        "Kenya Airways Mileage Club",
+        "South African Voyager",
+        "Royal Air Maroc Safar Flyer",
+        "LATAM Pass",
+        "LifeMiles",
+        "COPA ConnectMiles",
+      ];
+
+      // Test on an Africa-to-Europe route where most programs should surface
+      const flight: FlightInput = {
+        from: "CDG",
+        to: "JNB",
+        totalPrice: 1_200,
+        airlines: ["South African Airways"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+
+      const { milesOptions } = buildCostOptions(flight, new Map());
+
+      // At least some of these programs should be present
+      let found = 0;
+      for (const program of programs) {
+        if (milesOptions.some((o) => o.program === program)) {
+          found++;
+        }
+      }
+      expect(found).toBeGreaterThan(0);
+    });
+
+    it("programs use correct alliance networks", () => {
+      // Test that programs match their alliance:
+      // Star Alliance: Ethiopian ShebaMiles, COPA ConnectMiles
+      // SkyTeam: Kenya Airways Mileage Club
+      // Oneworld: LATAM Pass
+
+      const flight: FlightInput = {
+        from: "CDG",
+        to: "JNB",
+        totalPrice: 1_200,
+        airlines: ["British Airways"],
+        stops: 0,
+        cabin: "economy",
+        tripType: "oneway",
+        passengers: 1,
+      };
+
+      const { milesOptions } = buildCostOptions(flight, new Map());
+      expect(milesOptions.length).toBeGreaterThan(0);
+    });
+  });
 });

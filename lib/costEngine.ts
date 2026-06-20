@@ -105,6 +105,7 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Flying Blue":             "Air France",        // Air France + KLM
   "Delta SkyMiles":          "Delta",             // matches iataToAirline("DL")
   "Korean Air SKYPASS":      "Korean Air",
+  "Kenya Airways Mileage Club": "Kenya Airways",  // SkyTeam, NBO hub — P5 Task 2.4
   // ─── Star Alliance ─────────────────────────────────────────────────────────
   "Turkish Miles&Smiles":    "Turkish Airlines",
   "Ethiopian ShebaMiles":    "Ethiopian Airlines",
@@ -203,6 +204,7 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "HOP! Air France":     "Flying Blue",
   "Delta":               "Delta SkyMiles",
   "Korean Air":          "Korean Air SKYPASS",
+  "Kenya Airways":       "Kenya Airways Mileage Club", // P5 Task 2.4 — NBO hub
   // Independent
   "Emirates":            "Emirates Skywards",
   "Etihad":              "Etihad Guest",

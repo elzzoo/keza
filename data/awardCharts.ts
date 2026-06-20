@@ -1296,6 +1296,97 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       EUROPE:        { economy: 62_000, premium: 95_000, business: 160_000 },
     },
   },
+
+  // ─── P5 Task 2.4: African + Regional Programs ──────────────────────────────
+
+  // Kenya Airways Mileage Club (SkyTeam, NBO hub)
+  // East African hub with good connectivity to Africa, Middle East, Europe
+  "Kenya Airways Mileage Club": {
+    AFRICA_EAST: {
+      EUROPE:        { economy: 25_000, premium: 37_500, business: 65_000 },
+      NORTH_AMERICA: { economy: 45_000, premium: 62_500, business: 105_000 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 40_000 },
+      ASIA:          { economy: 30_000, premium: 45_000, business: 75_000 },
+      AFRICA_EAST:   { economy:  7_500, premium: 12_000, business: 25_000 },
+      AFRICA_WEST:   { economy: 20_000, premium: 30_000, business: 55_000 },
+      AFRICA_SOUTH:  { economy: 15_000, premium: 22_500, business: 42_500 },
+      AFRICA_NORTH:  { economy: 17_500, premium: 25_000, business: 45_000 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 30_000, premium: 45_000, business: 75_000 },
+      ASIA:          { economy: 32_500, premium: 47_500, business: 82_500 },
+      MIDDLE_EAST:   { economy: 15_000, premium: 22_500, business: 40_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 35_000, premium: 52_500, business: 90_000 },
+      EUROPE:        { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+  },
+
+  // South African Voyager (Oneworld, JNB hub)
+  // Southern African hub with great access to Africa, Europe, Americas
+  "South African Voyager": {
+    AFRICA_SOUTH: {
+      EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },
+      NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      SOUTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      MIDDLE_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
+      ASIA:          { economy: 39_000, premium: 78_000, business: 120_000 },
+      AFRICA_SOUTH:  { economy:  7_500, premium: 15_000, business: 30_000 },
+      AFRICA_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
+      AFRICA_WEST:   { economy: 26_000, premium: 52_000, business: 78_000 },
+    },
+    AFRICA_EAST: {
+      EUROPE:        { economy: 26_000, premium: 52_000, business: 78_000 },
+      NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      SOUTH_AMERICA: { economy: 52_000, premium: 104_000, business: 130_000 },
+      AFRICA_EAST:   { economy:  7_500, premium: 15_000, business: 30_000 },
+      AFRICA_SOUTH:  { economy: 13_000, premium: 26_000, business: 47_750 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 26_000, premium: 52_000, business: 78_000 },
+      SOUTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+      ASIA:          { economy: 39_000, premium: 78_000, business: 104_000 },
+    },
+  },
+
+  // Royal Air Maroc Safar Flyer (Oneworld, CMN hub)
+  // North African gateway with Oneworld connectivity
+  "Royal Air Maroc Safar Flyer": {
+    AFRICA_NORTH: {
+      EUROPE:        { economy: 13_000, premium: 26_000, business: 47_750 },
+      MIDDLE_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
+      AFRICA_WEST:   { economy: 13_000, premium: 26_000, business: 47_750 },
+      AFRICA_NORTH:  { economy:  7_500, premium: 15_000, business: 30_000 },
+      AFRICA_EAST:   { economy: 20_000, premium: 40_000, business: 60_000 },
+      NORTH_AMERICA: { economy: 39_000, premium: 78_000, business: 104_000 },
+    },
+    EUROPE: {
+      NORTH_AMERICA: { economy: 26_000, premium: 52_000, business: 78_000 },
+      ASIA:          { economy: 39_000, premium: 78_000, business: 104_000 },
+      MIDDLE_EAST:   { economy: 13_000, premium: 26_000, business: 47_750 },
+    },
+  },
+
+  // COPA ConnectMiles (Star Alliance, PTY hub)
+  // Central American gateway with Star Alliance coverage
+  "COPA ConnectMiles": {
+    SOUTH_AMERICA: {
+      SOUTH_AMERICA:  { economy: 15_000, premium: 22_500, business: 45_000 },
+      NORTH_AMERICA:  { economy: 25_000, premium: 37_500, business: 55_000 },
+      EUROPE:         { economy: 35_000, premium: 52_500, business: 70_000 },
+      MIDDLE_EAST:    { economy: 42_000, premium: 60_000, business: 85_000 },
+    },
+    NORTH_AMERICA: {
+      SOUTH_AMERICA:  { economy: 25_000, premium: 37_500, business: 55_000 },
+      NORTH_AMERICA:  { economy: 12_500, premium: 20_000, business: 40_000 },
+      EUROPE:         { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+    EUROPE: {
+      SOUTH_AMERICA:  { economy: 35_000, premium: 52_500, business: 70_000 },
+      NORTH_AMERICA:  { economy: 30_000, premium: 45_000, business: 75_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.

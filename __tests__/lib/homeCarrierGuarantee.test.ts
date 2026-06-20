@@ -43,6 +43,7 @@ const KNOWN_PROGRAMS = new Set([
   "Garuda GarudaMiles",           // P5 Task 2.2: Asian programs (CGK hub)
   "EVA Air Points",               // P5 Task 2.2: Asian programs (TPE hub)
   "Asiana Airlines Club",         // P5 Task 2.2: Asian programs (ICN hub)
+  "Kenya Airways Mileage Club",   // P5 Task 2.4: African programs (NBO hub)
 ]);
 
 
