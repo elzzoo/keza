@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 interface CalendarDay {
   date: string;
@@ -51,7 +51,7 @@ function priceColor(ratio: number): string {
   return "bg-orange-500/20 border-orange-500/30 text-orange-300";
 }
 
-export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice }: Props) {
+export const PriceHeatmap = memo(function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice }: Props) {
   const fr = lang === "fr";
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const mult = CABIN_MULT[cabin ?? "economy"] ?? 1;
@@ -176,4 +176,4 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
       </div>
     </div>
   );
-}
+});

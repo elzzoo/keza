@@ -39,6 +39,13 @@ const addDays = (base: string, n: number) => {
   return d.toISOString().split("T")[0]!;
 };
 
+/**
+ * Main flight search form. Handles trip type (oneway/roundtrip), date selection,
+ * cabin choice, passenger count, and airlines/programs filtering. Streams results
+ * as they arrive via SSE, with cabin auto-refire on user change after first search.
+ *
+ * @param Props - SearchForm props including initial values, callbacks, and formatting function
+ */
 export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax, onLiveRefreshing }: Props) {
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");

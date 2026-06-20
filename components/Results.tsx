@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, memo } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
@@ -96,7 +96,14 @@ function SkeletonCard() {
   );
 }
 
-export function Results({ results, loading, lang, onBack, partial, liveRefreshing, searchMeta, formatPrice }: Props) {
+/**
+ * Flight results display component. Renders ranked flights with tabs (all/miles/cash),
+ * filtering by stops, sorting by value/price/duration, and shows live results as they stream.
+ * Each FlightCard displays cash vs miles options with confidence badges and booking links.
+ *
+ * @param Props - Results props including flight results array, loading state, language, and formatPrice callback
+ */
+export const Results = memo(function Results({ results, loading, lang, onBack, partial, liveRefreshing, searchMeta, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
@@ -433,4 +440,4 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       </div>
     </div>
   );
-}
+});

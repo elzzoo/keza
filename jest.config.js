@@ -10,6 +10,22 @@ const config = {
   testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
   modulePathIgnorePatterns: ["/.worktrees/"],
   watchPathIgnorePatterns: ["/.worktrees/"],
+  collectCoverageFrom: [
+    "lib/**/*.{ts,tsx}",
+    "app/api/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "!**/*.test.{ts,tsx}",
+    "!**/node_modules/**",
+    "!**/.worktrees/**",
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
   transform: {
     "^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json" }],
   },

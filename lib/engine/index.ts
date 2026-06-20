@@ -16,6 +16,15 @@ import { logError } from "../logger";
 // always agree on the key schema. Bump whenever FlightResult shape changes.
 export const CACHE_VERSION = "v29"; // bumped: P5 final validation + comprehensive testing
 
+/**
+ * Main flight search orchestrator. Fetches flights from Duffel (real-time) + Travelpayouts (fallback),
+ * merges results, applies home carrier guarantees, enriches with miles options across 50+ programs,
+ * and ranks by effective cost (cash vs miles). Results cached for 1h.
+ *
+ * @param params - SearchParams (from, to, date, returnDate, cabin, passengers, etc.)
+ * @param requestId - Optional request ID for logging/tracing
+ * @returns Ranked FlightResult[] with miles options attached. Empty array if no flights found.
+ */
 export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
   try {
   // Initialize bonus transfers from Redis on first call (cached afterward)
