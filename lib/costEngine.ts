@@ -684,15 +684,17 @@ export function buildCostOptions(
     // the program actually uses on this route, regardless of which carrier
     // Travelpayouts happened to list first.
     const airlineForTaxes = entry.inferredAirline;
+    const safeOriginZone = originZone || "EUROPE";
+    const safeDestZone = destZone || "EUROPE";
     if (!originZone || !destZone) {
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
-      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
+      const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, safeOriginZone, safeDestZone)
         * (tripType === "roundtrip" ? 2 : 1);
       milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
       continue;
     }
     const { miles, source } = getMilesRequired(entry.program, originZone, destZone, cabin, tripType, passengers);
-    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
+    const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, safeOriginZone, safeDestZone)
       * (tripType === "roundtrip" ? 2 : 1);
     milesOptions.push(buildOption(entry.type, entry.program, undefined, airlineForTaxes, miles, source, taxes, cashTotal, effectivePrices));
   }
