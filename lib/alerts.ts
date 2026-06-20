@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "crypto";
 import { redis } from "./redis";
 import { Resend } from "resend";
 import { logError } from "@/lib/logger";
@@ -54,7 +55,7 @@ const ALL_ROUTES_KEY = "keza:alerts:routes"; // Set of "FROM:TO" active routes
 // ─── ID generation ──────────────────────────────────────────────────────────
 
 function generateId(): string {
-  return `alt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  return `alt_${randomUUID().replace(/-/g, '')}`;
 }
 
 // ─── Index helpers (atomic SET ops) ─────────────────────────────────────────

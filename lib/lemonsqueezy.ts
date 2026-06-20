@@ -4,6 +4,7 @@
  */
 
 import crypto from "crypto";
+import { z } from "zod";
 import { redis } from "@/lib/redis";
 import * as Sentry from "@sentry/nextjs";
 
@@ -234,6 +235,21 @@ export interface LemonWebhookPayload {
     };
   };
 }
+
+export const lemonWebhookPayloadSchema = z.object({
+  meta: z.object({
+    event_name: z.enum(["subscription_created", "subscription_updated", "subscription_cancelled", "subscription_expired", "subscription_resumed", "subscription_paused"]),
+    custom_data: z.object({ keza_email: z.string().email() }).optional(),
+  }),
+  data: z.object({
+    id: z.string().min(1),
+    attributes: z.object({
+      user_email: z.string().email(),
+      status: z.enum(["active", "cancelled", "expired", "paused", "past_due"]),
+      ends_at: z.string().nullable(),
+    }),
+  }),
+});
 
 // ── Subscription event logging ────────────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logWarn } from "@/lib/logger";
 
 export const runtime = "nodejs";  // Redis client requires Node.js
 
@@ -29,18 +30,28 @@ export async function POST(request: Request) {
 
   // Fire-and-forget: per-search click counter, expires after 30 days
   const key = `keza:clicks:${searchId}:${route}`;
-  redis.incr(key).then(() => redis.expire(key, 60 * 60 * 24 * 30)).catch(() => {});
+  redis.incr(key).then(() => redis.expire(key, 60 * 60 * 24 * 30)).catch((err) => {
+    logWarn("[track/click] Redis error on search counter", err);
+  });
 
   // Aggregate counter per route (all time)
-  redis.incr(`keza:clicks:route:${route}`).catch(() => {});
+  redis.incr(`keza:clicks:route:${route}`).catch((err) => {
+    logWarn("[track/click] Redis error on route counter", err);
+  });
 
   if (program) {
-    redis.incr(`keza:clicks:program:${program}`).catch(() => {});
+    redis.incr(`keza:clicks:program:${program}`).catch((err) => {
+      logWarn("[track/click] Redis error on program counter", err);
+    });
   }
 
   // Daily + total stats (for admin dashboard)
-  redis.incr(`keza:stats:clicks:${today}`).catch(() => {});
-  redis.incr(`keza:stats:clicks:total`).catch(() => {});
+  redis.incr(`keza:stats:clicks:${today}`).catch((err) => {
+    logWarn("[track/click] Redis error on daily stat", err);
+  });
+  redis.incr(`keza:stats:clicks:total`).catch((err) => {
+    logWarn("[track/click] Redis error on total stat", err);
+  });
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

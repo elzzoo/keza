@@ -32,14 +32,14 @@ export async function getOrCreateReferralCode(email: string): Promise<string> {
   if (existing) return existing as string;
 
   // Generate 8-char alphanumeric code from email hash.
-  // HMAC_SECRET must be set in production — warn loudly if missing.
+  // HMAC_SECRET must be set — fail securely if missing.
   const hmacSecret = process.env.HMAC_SECRET;
-  if (!hmacSecret && process.env.NODE_ENV === "production") {
-    console.error("[referral] HMAC_SECRET is not set — referral codes are predictable. Set HMAC_SECRET in production env vars.");
+  if (!hmacSecret) {
+    throw new Error("[referral] HMAC_SECRET is not set in environment. Referral codes cannot be generated securely. Set HMAC_SECRET in env vars.");
   }
   const code = crypto
     .createHash("sha256")
-    .update(email.toLowerCase() + (hmacSecret ?? "keza-dev-fallback"))
+    .update(email.toLowerCase() + hmacSecret)
     .digest("hex")
     .slice(0, 8)
     .toUpperCase();

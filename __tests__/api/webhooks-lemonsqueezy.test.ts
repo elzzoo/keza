@@ -12,6 +12,9 @@ jest.mock("@/lib/lemonsqueezy", () => ({
   grantPro: (...args: unknown[]) => mockGrantPro(...args),
   revokePro: (...args: unknown[]) => mockRevokePro(...args),
   logSubscriptionEvent: (...args: unknown[]) => mockLogSubscriptionEvent(...args),
+  lemonWebhookPayloadSchema: {
+    parse: (data: unknown) => data,
+  },
 }));
 jest.mock("@/lib/discord", () => ({
   sendDiscordAlert: (...args: unknown[]) => mockDiscord(...args),

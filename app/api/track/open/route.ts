@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
-import { logError } from "@/lib/logger";
+import { logError, logWarn } from "@/lib/logger";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
 // 1x1 transparent PNG (base64)
@@ -23,14 +23,20 @@ export async function GET(req: NextRequest) {
 
     // Increment daily counter — fire and forget
     const key = `keza:email:opens:${today}`;
-    redis.hincrby(key, type, 1).catch(() => {});
+    redis.hincrby(key, type, 1).catch((err) => {
+      logWarn("[track/open] Redis hincrby failed", err);
+    });
     // Set TTL 90 days
-    redis.expire(key, 90 * 24 * 60 * 60).catch(() => {});
+    redis.expire(key, 90 * 24 * 60 * 60).catch((err) => {
+      logWarn("[track/open] Redis expire failed", err);
+    });
 
     // Per-email open tracking (know if this email ever opened)
     if (email) {
       const emailKey = `keza:email:opened:${email.toLowerCase()}`;
-      redis.set(emailKey, new Date().toISOString(), { ex: 180 * 24 * 60 * 60 }).catch(() => {});
+      redis.set(emailKey, new Date().toISOString(), { ex: 180 * 24 * 60 * 60 }).catch((err) => {
+        logWarn("[track/open] Redis set email tracking failed", err);
+      });
     }
   } catch (err) {
     logError("[track/open]", err);

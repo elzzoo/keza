@@ -4,6 +4,7 @@ import {
   grantPro,
   revokePro,
   logSubscriptionEvent,
+  lemonWebhookPayloadSchema,
   type LemonWebhookPayload,
 } from "@/lib/lemonsqueezy";
 import { sendDiscordAlert } from "@/lib/discord";
@@ -21,9 +22,10 @@ export async function POST(req: NextRequest) {
 
   let payload: LemonWebhookPayload;
   try {
-    payload = JSON.parse(rawBody) as LemonWebhookPayload;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    const parsed = JSON.parse(rawBody);
+    payload = lemonWebhookPayloadSchema.parse(parsed);
+  } catch (err) {
+    return NextResponse.json({ error: "Invalid payload structure" }, { status: 400 });
   }
 
   const eventName = payload.meta.event_name;
