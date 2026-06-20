@@ -100,7 +100,7 @@ export interface CostComparison {
 // Used to determine DIRECT (same airline) vs ALLIANCE (partner) matching.
 // Keys must match exactly what awardCharts.ts AND globalPrograms.ts use.
 // Values must match keys in lib/alliances.ts and lib/iataAirlines.ts.
-const PROGRAM_TO_AIRLINE: Record<string, string> = {
+export const PROGRAM_TO_AIRLINE: Record<string, string> = {
   // ─── SkyTeam ───────────────────────────────────────────────────────────────
   "Flying Blue":             "Air France",        // Air France + KLM
   "Delta SkyMiles":          "Delta",             // matches iataToAirline("DL")
