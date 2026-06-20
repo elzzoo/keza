@@ -165,10 +165,6 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "FRA-LHR": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
   "LHR-AMS": [{ airline: "KLM", programs: ["Flying Blue"] }],
   "AMS-LHR": [{ airline: "KLM", programs: ["Flying Blue"] }],
-  "LHR-SIN": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
-  "SIN-LHR": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
-  "LHR-NRT": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
-  "NRT-LHR": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────

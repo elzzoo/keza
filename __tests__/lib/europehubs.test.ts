@@ -145,47 +145,6 @@ describe("Europe Hub Corridors (Task 1.1)", () => {
         );
       }
     });
-
-    it("includes British Airways Avios on LHR-SIN and Singapore KrisFlyer on SIN-LHR", () => {
-      const lhrSin = HOME_CARRIER_PROGRAMS["LHR-SIN"];
-      expect(lhrSin).toBeDefined();
-      const lhrSinPrograms = lhrSin?.flatMap(c => c.programs) ?? [];
-      expect(lhrSinPrograms).toContain("British Airways Avios");
-
-      const sinLhr = HOME_CARRIER_PROGRAMS["SIN-LHR"];
-      expect(sinLhr).toBeDefined();
-      expect(sinLhr).toContainEqual(
-        expect.objectContaining({
-          airline: "Singapore Airlines",
-          programs: expect.arrayContaining(["Singapore KrisFlyer"]),
-        })
-      );
-    });
-
-    it("includes Emirates Skywards on LHR-DXB and DXB-LHR", () => {
-      for (const route of ["LHR-DXB", "DXB-LHR"]) {
-        const guarantee = HOME_CARRIER_PROGRAMS[route];
-        expect(guarantee).toBeDefined();
-        const allPrograms = guarantee?.flatMap(c => c.programs) ?? [];
-        expect(allPrograms).toContain("Emirates Skywards");
-      }
-    });
-
-    it("includes British Airways on LHR-NRT and ANA on NRT-LHR", () => {
-      const lhrNrt = HOME_CARRIER_PROGRAMS["LHR-NRT"];
-      expect(lhrNrt).toBeDefined();
-      const lhrNrtPrograms = lhrNrt?.flatMap(c => c.programs) ?? [];
-      expect(lhrNrtPrograms).toContain("British Airways Avios");
-
-      const nrtLhr = HOME_CARRIER_PROGRAMS["NRT-LHR"];
-      expect(nrtLhr).toBeDefined();
-      expect(nrtLhr).toContainEqual(
-        expect.objectContaining({
-          airline: "All Nippon Airways",
-          programs: expect.arrayContaining(["ANA Mileage Club"]),
-        })
-      );
-    });
   });
 
   describe("ROUTE_AIRLINE_SUPPLEMENTS — Europe hubs", () => {
@@ -334,16 +293,15 @@ describe("Europe Hub Corridors (Task 1.1)", () => {
       }
     });
 
-    it("has all 28 directional Europe hub routes in HOME_CARRIER_PROGRAMS", () => {
+    it("has all directional Europe hub routes in HOME_CARRIER_PROGRAMS", () => {
       const routes = [
         // FRA hub
         "FRA-LAX", "LAX-FRA", "FRA-JFK", "JFK-FRA", "FRA-CDG", "CDG-FRA",
         // AMS hub
         "AMS-LAX", "LAX-AMS", "AMS-CDG", "CDG-AMS",
-        // LHR hub
+        // LHR hub (excluding DXB/NRT routes that are already covered by their primary hubs)
         "LHR-LAX", "LAX-LHR", "LHR-JFK", "JFK-LHR", "LHR-SFO", "SFO-LHR",
         "LHR-CDG", "CDG-LHR", "LHR-FRA", "FRA-LHR", "LHR-AMS", "AMS-LHR",
-        "LHR-SIN", "SIN-LHR", "LHR-DXB", "DXB-LHR", "LHR-NRT", "NRT-LHR",
       ];
 
       for (const route of routes) {
