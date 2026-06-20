@@ -209,7 +209,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         <div className="flex items-center gap-1.5">
           {loadingSteps.map((s, i) => (
             <div
-              key={i}
+              key={`loading-step-${i}`}
               className={clsx(
                 "h-1 rounded-full transition-all duration-300",
                 i <= loadStep
@@ -412,14 +412,14 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
           <p className="text-sm text-muted text-center">{t.emptyDesc}</p>
           <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
             {t.emptyTips.map((tip, i) => (
-              <li key={i}>{tip}</li>
+              <li key={`empty-tip-${i}`}>{tip}</li>
             ))}
           </ul>
         </div>
       ) : (
         <div className="space-y-3 stagger-children">
           {filtered.map((f, i) => (
-            <div key={i} className="animate-fade-up">
+            <div key={f.searchId || `flight-${i}`} className="animate-fade-up">
               <FlightCard
                 flight={f}
                 lang={lang}
