@@ -154,3 +154,170 @@ export async function getAllAlertsForRoute(
 
   return alerts;
 }
+
+// ─── Deal detection functions ────────────────────────────────────────────────
+
+import { getPriceHistory } from "@/lib/priceHistoryRedis";
+import { fetchCalendarPrices } from "@/lib/engine/travelpayouts";
+import { CABIN_MULTIPLIERS } from "@/lib/dynamicAwardEngine";
+
+// Map uppercase cabin types to lowercase multiplier keys
+const CABIN_MULTIPLIER_MAP: Record<CabinType, keyof typeof CABIN_MULTIPLIERS> =
+  {
+    ECONOMY: "economy",
+    PREMIUM_ECONOMY: "premium_economy",
+    BUSINESS: "business",
+    FIRST: "first",
+  };
+
+export async function detectDeal(
+  route: string,
+  cabin: CabinType,
+  currentPrice: number
+): Promise<SeatAlertDeal | null> {
+  const [from, to] = route.split("-");
+  if (!from || !to) return null;
+
+  // Fetch historical average (last 30 days)
+  const history = await getPriceHistory(from, to);
+  if (!history || history.length < 5) return null; // Need minimum data
+
+  const historicalAvg =
+    history.reduce((sum, p) => sum + p.price, 0) / history.length;
+
+  // Apply cabin multiplier to compare apples-to-apples
+  const cabinMultiplierKey = CABIN_MULTIPLIER_MAP[cabin];
+  const cabinMultiplier = CABIN_MULTIPLIERS[cabinMultiplierKey] ?? 1.0;
+  const adjustedHistorical = historicalAvg * cabinMultiplier;
+
+  // Deal: price < 80% of historical average
+  const dealThreshold = adjustedHistorical * 0.8;
+  const isDeal = currentPrice < dealThreshold;
+
+  if (!isDeal) return null;
+
+  return {
+    route,
+    cabin,
+    currentPrice,
+    historicalAvg: adjustedHistorical,
+    discount: ((adjustedHistorical - currentPrice) / adjustedHistorical) * 100,
+    timestamp: new Date(),
+  };
+}
+
+export function getCurrentMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export async function getAllActiveRouteCabinPairs(): Promise<
+  Array<{ route: string; cabin: CabinType }>
+> {
+  const pairs: Array<{ route: string; cabin: CabinType }> = [];
+
+  try {
+    // Scan for all SEAT_ALERT_ROUTE_INDEX keys
+    // Pattern: keza:setalerts:route:ROUTE:CABIN
+    let cursor = "0";
+    const pattern = "keza:setalerts:route:*";
+
+    do {
+      const [nextCursor, keys] = await redis.scan<string>(cursor, {
+        match: pattern,
+      });
+
+      for (const key of keys) {
+        // Parse key: keza:setalerts:route:ROUTE:CABIN
+        const parts = key.split(":");
+        if (parts.length >= 5) {
+          // Join middle parts in case route has colons (unlikely but safe)
+          const route = parts.slice(3, -1).join(":");
+          const cabin = parts[parts.length - 1];
+
+          if (
+            ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"].includes(
+              cabin
+            )
+          ) {
+            pairs.push({
+              route,
+              cabin: cabin as CabinType,
+            });
+          }
+        }
+      }
+
+      cursor = nextCursor;
+    } while (cursor !== "0");
+  } catch {
+    // Return empty array on error
+    return [];
+  }
+
+  return pairs;
+}
+
+export async function processAllSeatAlerts(): Promise<{
+  checked: number;
+  notified: number;
+  errors: string[];
+}> {
+  const errors: string[] = [];
+  let checked = 0;
+  let notified = 0;
+
+  // Get all unique (route, cabin) pairs with active alerts
+  const routeCabinPairs = await getAllActiveRouteCabinPairs();
+
+  for (const { route, cabin } of routeCabinPairs) {
+    try {
+      // Fetch current price for this cabin
+      const [from, to] = route.split("-");
+      if (!from || !to) continue;
+
+      // Get current month for price search
+      const month = getCurrentMonth();
+
+      // Search the route for calendar prices
+      const prices = await fetchCalendarPrices(from, to, month);
+
+      if (!prices.length) continue;
+
+      // Find minimum price
+      const minPrice = Math.min(...prices.map((p) => p.price));
+
+      // Apply cabin multiplier
+      const cabinMultiplierKey = CABIN_MULTIPLIER_MAP[cabin];
+      const cabinMultiplier = CABIN_MULTIPLIERS[cabinMultiplierKey] ?? 1.0;
+      const adjustedPrice = Math.round(minPrice * cabinMultiplier);
+
+      // Check for deals
+      const deal = await detectDeal(route, cabin, adjustedPrice);
+
+      if (deal) {
+        // Send notifications to all subscribers for this route/cabin
+        const subscribers = await getAllAlertsForRoute(route, cabin);
+
+        for (const subscriber of subscribers) {
+          checked++;
+
+          // Check if deal meets subscriber's minPrice threshold
+          if (adjustedPrice <= subscriber.minPrice) {
+            // Placeholder: Task 1.3 will implement sendSeatAlertEmail
+            // For now just log
+            notified++;
+          }
+        }
+      }
+    } catch (err) {
+      errors.push(
+        `Error processing ${route}-${cabin}: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+    }
+  }
+
+  return { checked, notified, errors };
+}
