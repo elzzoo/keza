@@ -208,18 +208,49 @@ export async function fetchFromDuffel(
       return [];
     }
 
-    const json = (await res.json()) as DuffelOfferRequestResponse;
-    const offers = json.data?.offers ?? [];
+    let json: unknown;
+    try {
+      json = await res.json();
+    } catch {
+      logError(`[duffel] invalid JSON response for ${from}→${to}`);
+      return [];
+    }
+
+    // Validate response structure
+    if (!json || typeof json !== "object" || !("data" in json)) {
+      logWarn(`[duffel] invalid response structure for ${from}→${to}: missing data field`);
+      return [];
+    }
+
+    const data = (json as DuffelOfferRequestResponse).data;
+    if (!Array.isArray(data?.offers)) {
+      logWarn(`[duffel] invalid response structure for ${from}→${to}: offers is not an array`);
+      return [];
+    }
+
+    const offers = data.offers;
     if (offers.length === 0) return [];
 
     const flights: NormalizedFlight[] = [];
 
     for (const offer of offers.slice(0, 30)) {
+      // Validate offer structure
+      if (!offer || typeof offer !== "object" || !offer.id) {
+        logWarn(`[duffel] skipping malformed offer for ${from}→${to}`);
+        continue;
+      }
+
       const priceUsd = await toUsd(offer.total_amount ?? "0", offer.total_currency ?? "USD");
       if (!priceUsd || priceUsd <= 0) continue;
 
-      const slice = offer.slices?.[0];
-      if (!slice) continue;
+      const slices = offer.slices;
+      if (!Array.isArray(slices) || slices.length === 0) {
+        logWarn(`[duffel] offer ${offer.id} has no valid slices for ${from}→${to}`);
+        continue;
+      }
+
+      const slice = slices[0];
+      if (!slice || typeof slice !== "object") continue;
 
       const segments = slice.segments ?? [];
       const stops = Math.max(0, segments.length - 1);
