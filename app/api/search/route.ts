@@ -166,7 +166,9 @@ export async function POST(request: Request) {
     const bestSaving = results
       .filter(r => r.recommendation === "USE_MILES" && r.savings > 0)
       .reduce((max, r) => Math.max(max, r.savings), 0);
-    Promise.all([
+
+    // Track stats in parallel; use allSettled to ensure we track each independently even if one fails
+    Promise.allSettled([
       redis.incr(`keza:stats:searches:${today}`),
       fromCache
         ? redis.incr(`keza:stats:cache:hits:${today}`)
@@ -185,7 +187,10 @@ export async function POST(request: Request) {
       redis.zincrby(`keza:stats:routes:${today}`, 1, `${from}-${to}`)
         .then(() => redis.expire(`keza:stats:routes:${today}`, 7 * 24 * 60 * 60))
         .catch(() => {}),
-    ]).catch(() => {});
+    ]).catch(() => {
+      // Stats tracking failed; this is non-critical, log and continue
+      logWarn("[search] Stats tracking failed", undefined, { route: `${from}-${to}`, cacheHit: fromCache });
+    });
 
     // Fetch forex rate (non-blocking, fallback to 600 if fails)
     const forexRate = await getForexRate().catch(() => 600);

@@ -59,11 +59,19 @@ export async function revokePro(email: string): Promise<void> {
 /** Grant trial to new users, only once per email */
 export async function grantTrialIfNew(email: string): Promise<boolean> {
   try {
-    const existingTrial = await redis.get<TrialStatus>(TRIAL_KEY(email));
-    if (existingTrial !== null) {
-      return false; // Already has a trial
-    }
     const now = new Date();
+    const existingTrial = await redis.get<TrialStatus>(TRIAL_KEY(email));
+
+    // Check if trial exists AND has not yet expired
+    if (existingTrial !== null && new Date(existingTrial.expiresAt) > now) {
+      return false; // Already has a valid (non-expired) trial
+    }
+
+    // If trial is expired, delete it and grant a new one
+    if (existingTrial !== null && new Date(existingTrial.expiresAt) <= now) {
+      await redis.del(TRIAL_KEY(email.toLowerCase()));
+    }
+
     const expiresAt = new Date(now.getTime() + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000);
     const status: TrialStatus = {
       createdAt: now.toISOString(),
