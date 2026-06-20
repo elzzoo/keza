@@ -39,6 +39,10 @@ const KNOWN_PROGRAMS = new Set([
   "TAP Air Portugal Miles",       // P5 Task 2.1: European programs (LIS hub)
   "LOT Polish Airlines Frequent Flyer", // P5 Task 2.1: European programs (WAW hub)
   "SAS EuroBonus",                // P5 Task 2.1: European programs (CPH hub)
+  "Air India Flying Returns",     // P5 Task 2.2: Asian programs (DEL hub)
+  "Garuda GarudaMiles",           // P5 Task 2.2: Asian programs (CGK hub)
+  "EVA Air Points",               // P5 Task 2.2: Asian programs (TPE hub)
+  "Asiana Airlines Club",         // P5 Task 2.2: Asian programs (ICN hub)
 ]);
 
 

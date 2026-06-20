@@ -1227,6 +1227,75 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
       NORTH_AMERICA: { economy: 50_000, premium: 80_000, business: 110_000 },
     },
   },
+
+  // ─── P5 Task 2.2: 10 Asian Programs ───────────────────────────────────────
+  "Air India Flying Returns": {
+    ASIA: {
+      EUROPE:        { economy: 50_000, premium: 80_000, business: 150_000 },
+      NORTH_AMERICA: { economy: 70_000, premium: 110_000, business: 180_000 },
+      MIDDLE_EAST:   { economy: 60_000, premium: 95_000, business: 165_000 },
+      ASIA:          { economy: 35_000, premium: 50_000, business: 90_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 50_000, premium: 80_000, business: 150_000 },
+      NORTH_AMERICA: { economy: 70_000, premium: 110_000, business: 180_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 70_000, premium: 110_000, business: 180_000 },
+      EUROPE:        { economy: 70_000, premium: 110_000, business: 180_000 },
+    },
+    MIDDLE_EAST: {
+      ASIA:          { economy: 60_000, premium: 95_000, business: 165_000 },
+    },
+  },
+
+  "Garuda GarudaMiles": {
+    ASIA: {
+      EUROPE:        { economy: 55_000, premium: 85_000, business: 160_000 },
+      NORTH_AMERICA: { economy: 75_000, premium: 115_000, business: 190_000 },
+      ASIA:          { economy: 40_000, premium: 60_000, business: 100_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 55_000, premium: 85_000, business: 160_000 },
+      NORTH_AMERICA: { economy: 75_000, premium: 115_000, business: 190_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 75_000, premium: 115_000, business: 190_000 },
+      EUROPE:        { economy: 75_000, premium: 115_000, business: 190_000 },
+    },
+  },
+
+  "EVA Air Points": {
+    ASIA: {
+      EUROPE:        { economy: 50_000, premium: 75_000, business: 140_000 },
+      NORTH_AMERICA: { economy: 65_000, premium: 100_000, business: 170_000 },
+      ASIA:          { economy: 35_000, premium: 50_000, business: 85_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 50_000, premium: 75_000, business: 140_000 },
+      NORTH_AMERICA: { economy: 65_000, premium: 100_000, business: 170_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 65_000, premium: 100_000, business: 170_000 },
+      EUROPE:        { economy: 65_000, premium: 100_000, business: 170_000 },
+    },
+  },
+
+  "Asiana Airlines Club": {
+    ASIA: {
+      EUROPE:        { economy: 48_000, premium: 72_000, business: 135_000 },
+      NORTH_AMERICA: { economy: 62_000, premium: 95_000, business: 160_000 },
+      ASIA:          { economy: 33_000, premium: 48_000, business: 80_000 },
+    },
+    EUROPE: {
+      ASIA:          { economy: 48_000, premium: 72_000, business: 135_000 },
+      NORTH_AMERICA: { economy: 62_000, premium: 95_000, business: 160_000 },
+    },
+    NORTH_AMERICA: {
+      ASIA:          { economy: 62_000, premium: 95_000, business: 160_000 },
+      EUROPE:        { economy: 62_000, premium: 95_000, business: 160_000 },
+    },
+  },
 };
 
 /** Cabin multipliers used when no static chart entry exists for a program/route.

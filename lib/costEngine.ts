@@ -135,6 +135,11 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "TAP Air Portugal Miles":  "TAP Air Portugal",              // Star Alliance, LIS hub
   "LOT Polish Airlines Frequent Flyer": "LOT Polish Airlines", // Star Alliance, WAW hub
   "SAS EuroBonus":           "SAS",                           // Star Alliance, CPH hub
+  // ─── P5 Task 2.2: 10 Asian Programs ───────────────────────────────────────
+  "Air India Flying Returns": "Air India",                    // Star Alliance, DEL hub
+  "Garuda GarudaMiles":       "Garuda Indonesia",              // Star Alliance, CGK hub
+  "EVA Air Points":           "EVA Air",                       // Star Alliance, TPE hub
+  "Asiana Airlines Club":     "Asiana Airlines",               // Star Alliance, ICN hub
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -185,6 +190,11 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "LOT Polish Airlines": "LOT Polish Airlines Frequent Flyer",
   "SAS":                 "SAS EuroBonus",
   "Scandinavian Airlines": "SAS EuroBonus",
+  // P5 Task 2.2: 10 Asian Programs
+  "Air India":           "Air India Flying Returns",
+  "Garuda Indonesia":    "Garuda GarudaMiles",
+  "EVA Air":             "EVA Air Points",
+  "Asiana Airlines":     "Asiana Airlines Club",
   // SkyTeam
   "Air France":          "Flying Blue",
   "KLM":                 "Flying Blue",
@@ -497,7 +507,9 @@ const DYNAMIC_PROGRAM_SERVED_ZONES: Partial<Record<string, string[]>> = {
   "Air India Flying Returns":      ["ASIA", "EUROPE", "NORTH_AMERICA", "MIDDLE_EAST"],
   "Korean Air SKYPASS":            ["ASIA", "NORTH_AMERICA", "EUROPE"],
   "Thai Royal Orchid Plus":        ["ASIA", "EUROPE", "MIDDLE_EAST"],
-  "Garuda GarudaMiles":            ["ASIA", "EUROPE", "MIDDLE_EAST"],
+  "Garuda GarudaMiles":            ["ASIA", "EUROPE", "NORTH_AMERICA"],
+  "EVA Air Points":                ["ASIA", "EUROPE", "NORTH_AMERICA"],
+  "Asiana Airlines Club":          ["ASIA", "EUROPE", "NORTH_AMERICA"],
   "Vietnam Airlines Lotusmiles":   ["ASIA"],
   "China Southern Sky Pearl Club": ["ASIA", "NORTH_AMERICA", "EUROPE"],
   "China Eastern Eastern Miles":   ["ASIA", "NORTH_AMERICA", "EUROPE"],
@@ -514,6 +526,15 @@ const DYNAMIC_PROGRAM_HOME_AIRPORTS: Partial<Record<string, Set<string>>> = {
     "DEL","BOM","CCU","MAA","HYD","BLR","AMD","GOI","COK","TRV",
     "IXC","ATQ","IXR","IXD","SXR","LKO","BBI","NAG","PAT","IXB",
     "GAU","VGA","VTZ","IXM","IXZ","CNN","IXE","IXA","DIB","IMF",
+  ]),
+  "Garuda GarudaMiles": new Set([
+    "CGK","SUB","BDO","SRG","MES","YIA","KNO","BTJ",  // Jakarta, Surabaya, Bandung, Semarang, Medan, Yogyakarta, Kuala Namu, Balikpapan
+  ]),
+  "EVA Air Points": new Set([
+    "TPE","KHH","TXG","RMQ","CYI","MZG","GNE",  // Taipei Taoyuan, Kaohsiung, Taichung, Taitung, Chiayi, Meizhou, Guangzhou
+  ]),
+  "Asiana Airlines Club": new Set([
+    "ICN","GMP","CJU","PUS","TAE","CJJ","MWX","USN","KWJ",  // Seoul Incheon/Gimpo, Jeju, Busan, Daegu, Cheongju, Muan, Ulsan, Gwangju
   ]),
 };
 
