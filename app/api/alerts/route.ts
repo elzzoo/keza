@@ -93,13 +93,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Optional custom target price — validated: must be > 0 and < currentPrice
+    // Optional custom target price — validated: must be > 0, < currentPrice, finite, and no more than 2 decimals
     const validatedTargetPrice = (
       typeof targetPrice === "number" &&
+      Number.isFinite(targetPrice) &&
       targetPrice > 0 &&
       targetPrice < Number(currentPrice) &&
-      targetPrice <= 50_000
-    ) ? targetPrice : undefined;
+      targetPrice <= 50_000 &&
+      Math.round(targetPrice * 100) / 100 === targetPrice // Validate at most 2 decimal places (cents)
+    ) ? Math.round(targetPrice * 100) / 100 : undefined;
 
     const alert = await createAlert({
       email,
