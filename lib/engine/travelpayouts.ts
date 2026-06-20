@@ -130,7 +130,10 @@ export async function fetchV3(
   // Deduplicate by (airline, departure date) — keep cheapest price per pairing
   const seen = new Map<string, typeof json.data[0]>();
   for (const f of json.data) {
-    const day = f.departure_at?.slice(0, 10) ?? "";
+    // Extract date safely: departure_at should be ISO format (YYYY-MM-DD...), fallback to empty string
+    const day = f.departure_at && typeof f.departure_at === "string" ? f.departure_at.slice(0, 10) : "";
+    // Skip records without valid departure date to prevent cache key collisions
+    if (!day) continue;
     const key = `${f.airline}::${day}`;
     const existing = seen.get(key);
     if (!existing || f.price < existing.price) seen.set(key, f);
