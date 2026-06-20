@@ -175,8 +175,8 @@ export function PortefeuilleClient() {
           const data = await res.json();
           setLastSync(data.lastSync ? new Date(data.lastSync) : null);
         }
-      } catch (err) {
-        console.error("Failed to fetch sync time:", err);
+      } catch {
+        // Silently fail; last sync time remains null
       }
     };
     fetchLastSync();
@@ -195,7 +195,7 @@ export function PortefeuilleClient() {
         setLastSync(data.lastSync ? new Date(data.lastSync) : null);
       }
     } catch (err) {
-      console.error("Failed to refresh balances:", err);
+      // Propagate error to caller for UI error handling
       throw err;
     }
   };
