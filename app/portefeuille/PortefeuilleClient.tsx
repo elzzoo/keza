@@ -184,14 +184,19 @@ export function PortefeuilleClient() {
 
   const handleRefresh = async () => {
     try {
-      await fetch("/api/balance/sync", { method: "POST" });
-      const res = await fetch("/api/balance/sync-time");
-      if (res.ok) {
-        const data = await res.json();
+      const syncRes = await fetch("/api/balance/sync", { method: "POST" });
+      if (!syncRes.ok) {
+        throw new Error("Failed to sync balances");
+      }
+
+      const timeRes = await fetch("/api/balance/sync-time");
+      if (timeRes.ok) {
+        const data = await timeRes.json();
         setLastSync(data.lastSync ? new Date(data.lastSync) : null);
       }
     } catch (err) {
       console.error("Failed to refresh balances:", err);
+      throw err;
     }
   };
 

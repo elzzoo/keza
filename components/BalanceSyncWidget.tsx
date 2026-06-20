@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export interface BalanceSyncWidgetProps {
   lastSync: Date | null;
@@ -14,11 +14,22 @@ export function BalanceSyncWidget({
   isLoading = false,
 }: BalanceSyncWidgetProps) {
   const [loading, setLoading] = useState(isLoading);
+  const [error, setError] = useState<string | null>(null);
+
+  // Sync loading prop with internal state
+  useEffect(() => {
+    setLoading(isLoading ?? false);
+  }, [isLoading]);
 
   const handleRefresh = async () => {
     setLoading(true);
+    setError(null);
     try {
       await onRefresh?.();
+    } catch (err) {
+      console.error("Refresh failed:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to refresh balances";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -38,18 +49,25 @@ export function BalanceSyncWidget({
   const isStale = lastSync && (Date.now() - lastSync.getTime()) > 24 * 60 * 60 * 1000;
 
   return (
-    <div className={`p-4 rounded-lg border ${isStale ? "bg-yellow-50 border-yellow-300" : "bg-green-50 border-green-300"}`}>
+    <div className={`p-4 rounded-lg border ${error ? "bg-red-50 border-red-300" : isStale ? "bg-yellow-50 border-yellow-300" : "bg-green-50 border-green-300"}`}>
       <div className="flex justify-between items-center">
         <div>
           <p className="text-sm font-medium">Balance Sync Status</p>
           <p className="text-sm text-gray-600">Last synced: {getTimeAgo(lastSync)}</p>
-          {isStale && (
+          {error && (
+            <p className="text-xs text-red-700 mt-1">
+              ⚠️ {error}
+            </p>
+          )}
+          {!error && isStale && (
             <p className="text-xs text-yellow-700 mt-1">
               ⚠️ Balance data is stale. Please refresh for current values.
             </p>
           )}
         </div>
         <button
+          type="button"
+          aria-label="Refresh balance sync"
           onClick={handleRefresh}
           disabled={loading}
           className={`px-4 py-2 rounded font-medium transition ${

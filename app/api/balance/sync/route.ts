@@ -18,7 +18,8 @@ export async function POST() {
       balances: results,
       syncedAt: new Date().toISOString(),
     });
-  } catch {
+  } catch (err) {
+    console.error("Balance sync error for user", session.user.email, ":", err);
     return NextResponse.json(
       { error: "Sync failed" },
       { status: 500 }
