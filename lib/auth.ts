@@ -2,11 +2,12 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import * as Sentry from "@sentry/nextjs";
 
 // Validate OAuth credentials at startup (not in test environment)
 if (process.env.NODE_ENV !== "test") {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.warn("[auth] GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set — Google OAuth will not work");
+    Sentry.captureMessage("[auth] GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set — Google OAuth will not work", "warning");
   }
 }
 
@@ -97,16 +98,37 @@ export function createAdminSessionToken(now = Date.now()): string | null {
 
 export function verifyAdminSessionToken(token: string | undefined, now = Date.now()): boolean {
   const secret = getAdminSecret();
-  if (!secret || !token) return false;
+  if (!secret) {
+    Sentry.captureMessage("[auth] Admin session verification failed: missing secret", "error");
+    return false;
+  }
+  if (!token) {
+    Sentry.captureMessage("[auth] Admin session verification failed: missing token", "error");
+    return false;
+  }
 
   const [expRaw, sig] = token.split(".");
-  if (!expRaw || !sig) return false;
+  if (!expRaw || !sig) {
+    Sentry.captureMessage("[auth] Admin session verification failed: malformed token", "error");
+    return false;
+  }
 
   const exp = Number(expRaw);
-  if (!Number.isInteger(exp) || exp <= Math.floor(now / 1000)) return false;
+  if (!Number.isInteger(exp)) {
+    Sentry.captureMessage("[auth] Admin session verification failed: invalid expiration format", "error");
+    return false;
+  }
+  if (exp <= Math.floor(now / 1000)) {
+    Sentry.captureMessage("[auth] Admin session verification failed: token expired", "info");
+    return false;
+  }
 
   const expected = signAdminSession(exp, secret);
-  return safeCompare(sig, expected);
+  const valid = safeCompare(sig, expected);
+  if (!valid) {
+    Sentry.captureMessage("[auth] Admin session verification failed: invalid signature", "error");
+  }
+  return valid;
 }
 
 export function adminSessionMaxAgeSeconds(): number {
