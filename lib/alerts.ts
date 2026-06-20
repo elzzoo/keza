@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { redis } from "./redis";
 import { Resend } from "resend";
 import { logError } from "@/lib/logger";
+import { isValidCabin } from "@/lib/validate";
 import {
   createManageAlertsToken,
   createUnsubscribeAlertToken,
@@ -113,12 +114,16 @@ export async function createAlert(params: {
   const computedTarget = params.targetPrice && params.targetPrice > 0 && params.targetPrice < params.currentPrice
     ? Math.round(params.targetPrice)
     : Math.round(params.currentPrice * 0.9);
+
+  // Validate cabin before casting
+  const validCabin = isValidCabin(params.cabin) ? params.cabin : "economy";
+
   const alert: PriceAlert = {
     id,
     email: params.email.toLowerCase().trim(),
     from: params.from.toUpperCase(),
     to: params.to.toUpperCase(),
-    cabin: (params.cabin as PriceAlert["cabin"]) || "economy",
+    cabin: validCabin as PriceAlert["cabin"],
     basePrice: params.currentPrice,
     targetPrice: computedTarget,
     createdAt: new Date().toISOString(),
