@@ -62,6 +62,12 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "JFK-AUH": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
   "AUH-CDG": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
   "CDG-AUH": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "AUH-LAX": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "LAX-AUH": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "AUH-BKK": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "BKK-AUH": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "AUH-SYD": [{ airline: "Etihad", programs: ["Etihad Guest"] }],
+  "SYD-AUH": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
 
   // Qatar Privilege Club — DOH hub
   "DOH-LHR": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
@@ -72,6 +78,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-DOH": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
   "DOH-LAX": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
   "LAX-DOH": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "DOH-BKK": [{ airline: "Qatar Airways", programs: ["Qatar Privilege Club"] }],
+  "BKK-DOH": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
 
   // Korean Air SKYPASS — ICN (Seoul) hub
   "ICN-LAX": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
@@ -316,6 +324,12 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "JFK-AUH": ["Etihad"],
   "AUH-CDG": ["Etihad"],
   "CDG-AUH": ["Etihad"],
+  "AUH-LAX": ["Etihad", "United"],
+  "LAX-AUH": ["Etihad", "United"],
+  "AUH-BKK": ["Etihad", "Thai Airways"],
+  "BKK-AUH": ["Thai Airways", "Etihad"],
+  "AUH-SYD": ["Etihad", "Qantas"],
+  "SYD-AUH": ["Qantas", "Etihad"],
 
   // ── Qatar Airways (DOH hub) ──────────────────────────────────────────────
   "DOH-LHR": ["Qatar Airways"],
@@ -326,6 +340,8 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "CDG-DOH": ["Qatar Airways"],
   "DOH-LAX": ["Qatar Airways"],
   "LAX-DOH": ["Qatar Airways"],
+  "DOH-BKK": ["Qatar Airways", "Thai Airways"],
+  "BKK-DOH": ["Thai Airways", "Qatar Airways"],
 
   // ── Korean Air (ICN hub) ─────────────────────────────────────────────────
   "ICN-LAX": ["Korean Air"],

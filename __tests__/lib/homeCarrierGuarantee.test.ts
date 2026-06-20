@@ -106,4 +106,51 @@ describe("HOME_CARRIER_PROGRAMS", () => {
       expect(allPrograms).toContain("Emirates Skywards");
     }
   });
+
+  // ─── P5 Scaling Task 1.3: Middle East Consolidation ──────────────────────
+  it("Etihad Guest guaranteed on new AUH corridors (LAX, BKK, SYD)", () => {
+    for (const route of ["AUH-LAX", "LAX-AUH", "AUH-BKK", "AUH-SYD"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Etihad Guest");
+    }
+  });
+
+  it("Thai Royal Orchid Plus guaranteed on BKK→AUH reverse leg", () => {
+    const carriers = HOME_CARRIER_PROGRAMS["BKK-AUH"] ?? [];
+    const allPrograms = carriers.flatMap(c => c.programs);
+    expect(allPrograms).toContain("Thai Royal Orchid Plus");
+  });
+
+  it("Qantas Frequent Flyer guaranteed on SYD→AUH reverse leg", () => {
+    const carriers = HOME_CARRIER_PROGRAMS["SYD-AUH"] ?? [];
+    const allPrograms = carriers.flatMap(c => c.programs);
+    expect(allPrograms).toContain("Qantas Frequent Flyer");
+  });
+
+  it("Qatar Privilege Club guaranteed on new DOH-BKK corridor", () => {
+    for (const route of ["DOH-BKK"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Qatar Privilege Club");
+    }
+  });
+
+  it("Thai Royal Orchid Plus guaranteed on BKK→DOH reverse leg", () => {
+    const carriers = HOME_CARRIER_PROGRAMS["BKK-DOH"] ?? [];
+    const allPrograms = carriers.flatMap(c => c.programs);
+    expect(allPrograms).toContain("Thai Royal Orchid Plus");
+  });
+
+  it("all new Middle East routes (Task 1.3) have both directions", () => {
+    const newRoutes = [
+      "AUH-LAX", "LAX-AUH",
+      "AUH-BKK", "BKK-AUH",
+      "AUH-SYD", "SYD-AUH",
+      "DOH-BKK", "BKK-DOH",
+    ];
+    for (const route of newRoutes) {
+      expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
+    }
+  });
 });
