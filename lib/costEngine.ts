@@ -128,6 +128,8 @@ const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Malaysia Airlines Enrich":  "Malaysia Airlines",
   "Thai Royal Orchid Plus":    "Thai Airways",    // P5 Scaling Task 1.2 — BKK hub
   "Finnair Plus":              "Finnair",          // Oneworld — HEL hub
+  "Royal Air Maroc Safar Flyer": "Royal Air Maroc",  // P5 Scaling Task 1.5 — CMN hub
+  "South African Voyager":   "South African Airways", // P5 Scaling Task 1.5 — JNB hub
   // ─── Independent ───────────────────────────────────────────────────────────
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
@@ -169,6 +171,8 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   // HOME_CARRIER_PROGRAMS for KUL hub routes where MH actually operates.
   "Thai Airways":        "Thai Royal Orchid Plus", // P5 Scaling Task 1.2 — BKK hub
   "Finnair":             "Finnair Plus", // Oneworld — HEL-JFK, HEL-BKK hub
+  "Royal Air Maroc":     "Royal Air Maroc Safar Flyer", // P5 Scaling Task 1.5 — CMN hub
+  "South African Airways": "South African Voyager", // P5 Scaling Task 1.5 — JNB hub
   // SkyTeam
   "Air France":          "Flying Blue",
   "KLM":                 "Flying Blue",

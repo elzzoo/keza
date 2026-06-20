@@ -125,6 +125,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "DXB-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
   "ADD-FRA": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
   "FRA-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "ADD-AMS": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
+  "AMS-ADD": [{ airline: "Ethiopian Airlines", programs: ["Ethiopian ShebaMiles"] }],
 
   // Kenya Airways Flying Blue — NBO hub (Nairobi)
   // KQ is SkyTeam → Flying Blue applies on NBO corridors
@@ -136,6 +138,30 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "JFK-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
   "NBO-AMS": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
   "AMS-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "NBO-FRA": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+  "FRA-NBO": [{ airline: "Kenya Airways", programs: ["Flying Blue"] }],
+
+  // Royal Air Maroc Safar Flyer — CMN hub (Casablanca) — P5 Task 1.5
+  "CMN-CDG": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "CDG-CMN": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "CMN-LAX": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "LAX-CMN": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "CMN-JFK": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "JFK-CMN": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "CMN-LHR": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+  "LHR-CMN": [{ airline: "Royal Air Maroc", programs: ["Royal Air Maroc Safar Flyer"] }],
+
+  // South African Voyager — JNB hub (Johannesburg) — P5 Task 1.5 — NEW
+  "JNB-LHR": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "LHR-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "JNB-CDG": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "CDG-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "JNB-FRA": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "FRA-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "JNB-LAX": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "LAX-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "JNB-JFK": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "JFK-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
 
   // RwandAir — KGL hub (Kigali)
   "KGL-LHR": [{ airline: "RwandAir", programs: ["British Airways Avios"] }],

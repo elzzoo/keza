@@ -32,6 +32,8 @@ const KNOWN_PROGRAMS = new Set([
   "COPA ConnectMiles",            // P5 Scaling Task 1.4: US hubs (MIA)
   "LATAM Pass",                   // P5 Scaling Task 1.4: US hubs (MIA)
   "Qantas Frequent Flyer",        // used on SYD-HKG reverse
+  "Royal Air Maroc Safar Flyer",  // P5 Scaling Task 1.5: Africa hubs (CMN)
+  "South African Voyager",        // P5 Scaling Task 1.5: Africa hubs (JNB)
 ]);
 
 
@@ -250,5 +252,71 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     for (const route of newRoutes) {
       expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
     }
+  });
+
+  // ─── P5 Scaling Task 1.5: Africa Expansion (ADD, NBO, CMN, JNB) ──────────────
+  it("Ethiopian ShebaMiles guaranteed on ADD→AMS and reverse", () => {
+    for (const route of ["ADD-AMS", "AMS-ADD"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Ethiopian ShebaMiles");
+    }
+  });
+
+  it("Flying Blue guaranteed on NBO→FRA and reverse", () => {
+    for (const route of ["NBO-FRA", "FRA-NBO"]) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Flying Blue");
+    }
+  });
+
+  it("Royal Air Maroc Safar Flyer guaranteed on CMN routes (CDG, LAX, JFK, LHR)", () => {
+    const cmn_routes = ["CMN-CDG", "CDG-CMN", "CMN-LAX", "LAX-CMN", "CMN-JFK", "JFK-CMN", "CMN-LHR", "LHR-CMN"];
+    for (const route of cmn_routes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("Royal Air Maroc Safar Flyer");
+    }
+  });
+
+  it("South African Voyager guaranteed on JNB routes (LHR, CDG, FRA, LAX, JFK)", () => {
+    const jnb_routes = ["JNB-LHR", "LHR-JNB", "JNB-CDG", "CDG-JNB", "JNB-FRA", "FRA-JNB", "JNB-LAX", "LAX-JNB", "JNB-JFK", "JFK-JNB"];
+    for (const route of jnb_routes) {
+      const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
+      const allPrograms = carriers.flatMap(c => c.programs);
+      expect(allPrograms).toContain("South African Voyager");
+    }
+  });
+
+  it("all new Africa expansion routes (Task 1.5) have both directions", () => {
+    const newRoutes = [
+      // ADD
+      "ADD-AMS", "AMS-ADD",
+      // NBO
+      "NBO-FRA", "FRA-NBO",
+      // CMN
+      "CMN-CDG", "CDG-CMN",
+      "CMN-LAX", "LAX-CMN",
+      "CMN-JFK", "JFK-CMN",
+      "CMN-LHR", "LHR-CMN",
+      // JNB
+      "JNB-LHR", "LHR-JNB",
+      "JNB-CDG", "CDG-JNB",
+      "JNB-FRA", "FRA-JNB",
+      "JNB-LAX", "LAX-JNB",
+      "JNB-JFK", "JFK-JNB",
+    ];
+    for (const route of newRoutes) {
+      expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
+    }
+  });
+
+  it("Africa hub coverage now includes Africa expansion hubs (ADD, NBO, CMN, JNB)", () => {
+    const keys = Object.keys(HOME_CARRIER_PROGRAMS);
+    expect(keys.some(k => k.startsWith("ADD-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("NBO-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("CMN-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("JNB-"))).toBe(true);
   });
 });
