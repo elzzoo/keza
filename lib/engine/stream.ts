@@ -32,7 +32,7 @@ function buildResults(
   const returnWithPromos = returnFlights.length ? applyPromotions(returnFlights, promotions) : [];
 
   const cheapestReturn = returnWithPromos.length
-    ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best))
+    ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best), returnWithPromos[0])
     : undefined;
 
   function bestReturnFor(of: NormalizedFlight): NormalizedFlight | undefined {
@@ -40,7 +40,7 @@ function buildResults(
     const outSet = new Set(of.airlines);
     const same = returnWithPromos.filter(r => r.airlines.some(a => outSet.has(a)));
     return same.length > 0
-      ? same.reduce((best, f) => (f.price < best.price ? f : best))
+      ? same.reduce((best, f) => (f.price < best.price ? f : best), same[0])
       : cheapestReturn;
   }
 

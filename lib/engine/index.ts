@@ -154,7 +154,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   // with the outbound (avoids fictitious cross-carrier totals). Fall back to
   // the cheapest available return when no same-carrier match exists.
   const cheapestReturn = returnWithPromos.length
-    ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best))
+    ? returnWithPromos.reduce((best, f) => (f.price < best.price ? f : best), returnWithPromos[0])
     : undefined;
 
   function bestReturnFor(outboundFlight: NormalizedFlight): NormalizedFlight | undefined {
@@ -165,7 +165,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
       r.airlines.some(a => outboundSet.has(a))
     );
     if (sameCarrier.length > 0) {
-      return sameCarrier.reduce((best, f) => (f.price < best.price ? f : best));
+      return sameCarrier.reduce((best, f) => (f.price < best.price ? f : best), sameCarrier[0]);
     }
     // No carrier match — use cheapest overall
     return cheapestReturn;
