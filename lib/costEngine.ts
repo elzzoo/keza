@@ -560,6 +560,17 @@ function accessibilityPenalty(programName: string): number {
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
+/**
+ * Build a cost comparison between cash and miles options for a given flight.
+ *
+ * Computes miles costs across all available programs, applies taxes, handles
+ * transfer bonuses, and synthesizes dynamic transfer recommendations. Returns
+ * a ranked list of miles options plus a recommendation (USE_MILES, USE_CASH, or IF_HAVE_MILES).
+ *
+ * @param flight - Flight details including from/to, cash price, cabin, passengers, airlines
+ * @param effectivePrices - Map of program names to effective mile value (cents)
+ * @returns Cost comparison with cashCost, milesCost, savings, best option, and all scenarios
+ */
 export function buildCostOptions(
   flight: FlightInput,
   effectivePrices: Map<string, number>

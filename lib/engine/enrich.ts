@@ -11,6 +11,24 @@ export { CABIN_MULTIPLIER };
 
 // ─── Enrich a single flight into a FlightResult ──────────────────────────────
 
+/**
+ * Convert a NormalizedFlight to a FlightResult with full cost comparison and miles options.
+ *
+ * Applies cabin price multipliers (if needed), builds cost options via buildCostOptions,
+ * applies program optimization, and generates booking links. Handles both one-way and
+ * roundtrip flights with optional return flight pairing.
+ *
+ * @param f - Normalized flight from provider (Duffel/TP)
+ * @param cabin - Cabin class (economy, premium, business, first)
+ * @param passengers - Number of passengers
+ * @param userPrograms - Array of program names to prioritize
+ * @param tripType - "oneway" or "roundtrip"
+ * @param effectivePrices - Map of program → effective mile value (cents)
+ * @param returnFlight - Optional return flight for roundtrip
+ * @param searchDate - Departure date (YYYY-MM-DD) for booking link generation
+ * @param returnDate - Return date (YYYY-MM-DD) for roundtrip booking links
+ * @returns FlightResult with complete cost comparison and recommendation
+ */
 export function enrich(
   f: NormalizedFlight,
   cabin: Cabin,
@@ -115,9 +133,16 @@ export function enrich(
 }
 
 /**
- * Merge NormalizedFlight arrays from multiple providers.
- * Deduplicates by (sorted airlines, stops), keeping the cheapest price per pairing.
- * Preserves booking links from the first provider that has them (Travelpayouts).
+ * Merge NormalizedFlight arrays from multiple providers with smart deduplication.
+ *
+ * Combines primary and secondary flight lists, deduplicates by (sorted airlines, stops),
+ * and applies source-aware merging: Duffel (HIGH confidence) is preferred over
+ * Travelpayouts (LOW confidence) for the same flight pairing. Preserves booking links
+ * across merges to inherit fallback TP links when Duffel lacks them.
+ *
+ * @param primary - Primary flight array (typically Duffel)
+ * @param secondary - Secondary flight array (typically Travelpayouts)
+ * @returns Merged array with duplicates removed, sorted airlines in keys, cheapest per pairing
  */
 export function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedFlight[]): NormalizedFlight[] {
   const all = [...primary, ...secondary];
@@ -152,6 +177,13 @@ export function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedF
 
 // ─── Filter by stops preference ──────────────────────────────────────────────
 
+/**
+ * Filter flights by connection preference (direct, with-stops, or any).
+ *
+ * @param flights - Array of flights to filter
+ * @param stops - Filter mode: "direct" (0 stops), "with_stops" (>0 stops), or "any" (all)
+ * @returns Filtered subset of flights matching the stops preference
+ */
 export function filterByStops(flights: NormalizedFlight[], stops: Stops): NormalizedFlight[] {
   if (stops === "any") return flights;
   if (stops === "direct") return flights.filter((f) => (f.stops ?? 0) === 0);

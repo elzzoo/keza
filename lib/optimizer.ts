@@ -34,6 +34,17 @@ export type OptimizerDecision =
   | { type: "TRANSFER"; from: string; to: string }
   | { type: "CASH" };
 
+/**
+ * Determine the best redemption strategy for a flight given user's loyalty programs.
+ *
+ * Applies a decision tree: (1) DIRECT — user holds flagship program for operating airline,
+ * (2) ALLIANCE — user holds a partner program in the same alliance, (3) TRANSFER — user
+ * can transfer from one program to another, (4) CASH — no miles option suitable.
+ *
+ * @param airlines - Operating airlines of the flight (typically 1 for direct, >1 for connections)
+ * @param userPrograms - Array of loyalty program names user owns (e.g. ["Flying Blue", "KrisFlyer"])
+ * @returns Optimization decision (DIRECT, ALLIANCE with program/alliance, TRANSFER, or CASH)
+ */
 export function optimizeMiles(
   airlines: string[],
   userPrograms: string[]
