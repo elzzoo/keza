@@ -5,10 +5,12 @@ import { PROGRAMS_BY_NAME } from "./globalPrograms";
 // Airline → flagship program mapping (must stay in sync with costEngine OPERATOR_TO_PROGRAM)
 // Used by the optimizer to match user programs against operating airlines.
 const AIRLINE_TO_PROGRAM: Record<string, string> = {
+  // SkyTeam
   "Air France":         "Flying Blue",
   "KLM":                "Flying Blue",
   "Delta":              "Delta SkyMiles",
   "Korean Air":         "Korean Air SKYPASS",
+  // Star Alliance
   "Turkish Airlines":   "Turkish Miles&Smiles",
   "Ethiopian Airlines": "Ethiopian ShebaMiles",
   "Air Canada":         "Air Canada Aeroplan",
@@ -17,15 +19,25 @@ const AIRLINE_TO_PROGRAM: Record<string, string> = {
   "Singapore Airlines": "Singapore KrisFlyer",
   "All Nippon Airways": "ANA Mileage Club",
   "Avianca":            "LifeMiles",
+  "Copa Airlines":      "COPA ConnectMiles",
+  "Aeromexico":         "Aeromexico Club Premier",
+  // Oneworld
   "British Airways":    "British Airways Avios",
   "Qatar Airways":      "Qatar Privilege Club",
   "American Airlines":  "AAdvantage",
   "Iberia":             "Iberia Avios Plus",
   "Japan Airlines":     "Japan Airlines Mileage Bank",
-  "Emirates":           "Emirates Skywards",
-  "Etihad":             "Etihad Guest",
+  "Cathay Pacific":     "Cathay Pacific Asia Miles",
+  "Qantas":             "Qantas Frequent Flyer",
+  "Air New Zealand":    "Air New Zealand Airpoints",
   "LATAM Brasil":       "LATAM Pass",
   "LATAM Airlines":     "LATAM Pass",
+  // Other
+  "Emirates":           "Emirates Skywards",
+  "Etihad":             "Etihad Guest",
+  "Thai Airways":       "Thai Royal Orchid Plus",
+  "Finnair":            "Finnair Plus",
+  "Royal Air Maroc":    "Royal Air Maroc Safar Flyer",
 };
 
 export type OptimizerDecision =
