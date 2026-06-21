@@ -1,4 +1,5 @@
 // lib/costEngine.ts
+import { roundPrice } from "./roundPrice";
 import { getZone } from "./zones";
 import { getAwardTaxes } from "@/data/awardTaxes";
 import { getMilesRequired } from "@/data/awardCharts";
@@ -461,9 +462,9 @@ function buildOption(
   // For TRANSFER: milesRequired = destination miles needed; valuePerMile =
   // source currency cost/unit (assumes 1:1 ratio at transfer time).
   // ═══════════════════════════════════════════════════════════════════════════
-  const milesCost      = Math.round((milesRequired * valuePerMile) / 100 * 100) / 100;
-  const totalMilesCost = Math.round((milesCost + taxes) * 100) / 100;
-  const savings        = Math.round((cashTotal - totalMilesCost) * 100) / 100;
+  const milesCost      = roundPrice((milesRequired * valuePerMile) / 100);
+  const totalMilesCost = roundPrice(milesCost + taxes);
+  const savings        = roundPrice(cashTotal - totalMilesCost);
 
   const confidence: Confidence =
     MILES_CONFIDENCE_MAP.get(sourceProgram) ??
@@ -857,8 +858,8 @@ export function buildCostOptions(
       const baseCents = effectivePrices.get(prog.name) ?? prog.marketValueCents;
       const valuePerMile = baseCents;
       const milesCost = Math.round((estimate.milesRequired * valuePerMile) / 100 * 100) / 100;
-      const totalMilesCost = Math.round((milesCost + taxes) * 100) / 100;
-      const savings = Math.round((cashTotal - totalMilesCost) * 100) / 100;
+      const totalMilesCost = roundPrice(milesCost + taxes);
+      const savings = roundPrice(cashTotal - totalMilesCost);
 
       // Only add if it's potentially interesting (not way more expensive than cash)
       if (totalMilesCost > cashTotal * 1.5) continue;
@@ -909,7 +910,7 @@ export function buildCostOptions(
         operatingAirline: opt.operatingAirline,
         milesRequired: opt.milesRequired,
         taxes: opt.taxes,
-        valuePerMile: Math.round((acquisition.cheapest.costUsd / opt.milesRequired) * 100 * 100) / 100,
+        valuePerMile: roundPrice((acquisition.cheapest.costUsd / opt.milesRequired) * 100),
         milesCost: acquisition.cheapest.costUsd,
         totalMilesCost: totalAcquisitionCost,
         savings: Math.round((cashTotal - totalAcquisitionCost) * 100) / 100,
@@ -1062,7 +1063,7 @@ export function buildCostOptions(
   }
   const bestMilesCost = bestOption?.totalMilesCost ?? Infinity;
   const signedSavings = cashTotal - bestMilesCost;  // positive = miles cheaper, negative = cash cheaper
-  const savings = Math.round(signedSavings * 100) / 100;  // keep sign — UI uses recommendation to determine direction
+  const savings = roundPrice(signedSavings);  // keep sign — UI uses recommendation to determine direction
 
   // USE_MILES only when miles save at least $10 AND at least 1.5% of the cash total.
   // The absolute floor prevents recommending miles for $1–$9 trivial "savings".

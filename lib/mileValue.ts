@@ -1,5 +1,7 @@
 // lib/mileValue.ts
 //
+import { roundPrice } from "./roundPrice";
+
 // Achieved CPP (cents per mile) for a specific redemption — for DISPLAY only.
 //
 // IMPORTANT: Do NOT use getAchievedCpp() to compute totalMilesCost in buildOption().
@@ -22,7 +24,7 @@
  */
 export function getAchievedCpp(cashCost: number, milesRequired: number): number {
   if (milesRequired <= 0 || cashCost <= 0) return 0;
-  return Math.round((cashCost / milesRequired) * 100 * 100) / 100;
+  return roundPrice((cashCost / milesRequired) * 100);
 }
 
 /**
