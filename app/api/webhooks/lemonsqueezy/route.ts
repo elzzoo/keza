@@ -11,6 +11,7 @@ import {
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { sendDiscordAlert } from "@/lib/discord";
 import { trackServerEvent } from "@/lib/analytics";
+import { trackTrialConversion } from "@/lib/conversionTracking";
 
 // POST /api/webhooks/lemonsqueezy — handle Lemon Squeezy subscription events
 export async function POST(req: NextRequest) {
@@ -64,6 +65,21 @@ export async function POST(req: NextRequest) {
             subscription_id: subscriptionId,
             email,
           }).catch(() => {});
+
+          // Track trial-to-paying conversion
+          try {
+            const source = (
+              payload.meta.custom_data as Record<string, string> | undefined
+            )?.keza_source || "other";
+            await trackTrialConversion(email, "PRO", source);
+          } catch (err) {
+            // Don't let conversion tracking errors block subscription grant
+            Sentry.captureException(err, {
+              tags: { stage: "trial-conversion-tracking" },
+              extra: { email },
+            });
+          }
+
           sendDiscordAlert("", [
             {
               title: "💎 Nouveau Pro — " + email,

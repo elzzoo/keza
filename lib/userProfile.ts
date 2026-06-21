@@ -26,6 +26,8 @@ export interface UserProfile {
   bankPoints: Record<string, number>;
   /** Whether user has completed the onboarding wizard */
   hasOnboarded?: boolean;
+  /** Trial start date (ISO 8601) — used for trial-to-paying conversion tracking */
+  trialStartedAt?: string;
 }
 
 export interface RecentSearch {

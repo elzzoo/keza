@@ -42,14 +42,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     // Measure latency with ping samples
     const latencies: number[] = [];
-    // Redis client has ping method for health checks
-    const redisWithPing = redis as { ping: () => Promise<string> };
 
     for (let i = 0; i < LATENCY_SAMPLE_COUNT; i++) {
       const start = Date.now();
       try {
         await Promise.race([
-          redisWithPing.ping(),
+          (redis as unknown as { ping: () => Promise<string> }).ping(),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error("ping timeout")), 1000)
           ),
@@ -66,7 +64,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const latencyP95 = sortedLatencies[Math.max(0, p95Index)];
 
     // Fetch Redis info
-    const info = await redisClient.info();
+    const info = await (redis as unknown as { info: () => Promise<Record<string, number>> }).info();
     const usedMemory = (info as Record<string, number>)?.used_memory ?? 0;
     const maxMemory = (info as Record<string, number>)?.maxmemory ?? 1024 * 1024 * 1024; // default 1GB
     const opsPerSec = (info as Record<string, number>)?.instantaneous_ops_per_sec ?? 0;
