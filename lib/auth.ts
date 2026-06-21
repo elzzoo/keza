@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual, randomBytes } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
+import { grantTrialIfNew } from "@/lib/lemonsqueezy";
 
 // Validate auth secrets at startup (not in test environment)
 if (process.env.NODE_ENV !== "test") {
@@ -43,6 +44,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token.email && session.user) {
         session.user.email = String(token.email);
+        // Grant 7-day trial to new users (only once per email)
+        await grantTrialIfNew(token.email);
       }
       return session;
     },

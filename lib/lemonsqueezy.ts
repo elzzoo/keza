@@ -97,6 +97,25 @@ export async function getTrialStatus(email: string): Promise<TrialStatus | null>
   }
 }
 
+/** Check if user has access to Pro features (either via trial OR paid subscription) */
+export async function hasProAccess(email: string): Promise<boolean> {
+  try {
+    // Check if user has active Pro subscription
+    const isPro = await isProUser(email);
+    if (isPro) return true;
+
+    // Check if user has active trial
+    const trial = await getTrialStatus(email);
+    if (!trial) return false;
+
+    const expiresAt = new Date(trial.expiresAt);
+    const now = new Date();
+    return expiresAt > now; // trial is still valid
+  } catch {
+    return false; // fail open — deny access if Redis fails
+  }
+}
+
 /** Check if user needs a trial expiry reminder */
 export async function needsTrialReminder(email: string): Promise<boolean> {
   try {

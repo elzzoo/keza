@@ -11,6 +11,7 @@ import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { PriceHeatmap } from "@/components/PriceHeatmap";
 import type { FlightResult } from "@/lib/engine";
 import { airportsMap } from "@/data/airports";
+import { useProAccess } from "@/hooks/useProAccess";
 
 // ─── RouteMeta interface (sourced from @/data/routeMeta when available) ──────
 
@@ -146,6 +147,7 @@ export function RoutePageClient({
   const [results, setResults] = useState<FlightResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const { isActive: hasProAccess } = useProAccess();
   const fr = lang === "fr";
 
   const handleSearchStart = useCallback(() => {
@@ -513,9 +515,19 @@ export function RoutePageClient({
               </ul>
             </div>
 
-            {/* ── Price alert ── */}
-            {/* ── Price history chart ── */}
-            <PriceHistoryChart from={from} to={to} lang={lang} />
+            {/* ── Price history chart (Pro only) ── */}
+            {hasProAccess ? (
+              <PriceHistoryChart from={from} to={to} lang={lang} />
+            ) : (
+              <div className="bg-surface-2 border border-dashed border-primary/40 rounded-xl px-6 py-8 text-center">
+                <p className="text-sm text-muted mb-3">
+                  {fr ? "Historique 6 mois disponible en Pro" : "6-month price history available in Pro"}
+                </p>
+                <Link href="/pro" className="inline-block bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors">
+                  {fr ? "Essayer gratuitement" : "Try for free"}
+                </Link>
+              </div>
+            )}
 
             <div>
               <h2 className="section-rule mb-4">
