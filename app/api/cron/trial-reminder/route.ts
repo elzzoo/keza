@@ -13,11 +13,8 @@ function validateCronSecret(req: Request): boolean {
   return authHeader === `Bearer ${cronSecret}`;
 }
 
-export async function POST(request: Request) {
-  if (!validateCronSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+// Unified handler for both GET (Vercel Cron) and POST (Inngest, backup dispatcher)
+async function handleTrialReminder() {
   try {
     logWarn("[cron/trial-reminder] Starting trial reminder scan");
 
@@ -38,10 +35,25 @@ export async function POST(request: Request) {
     }
 
     logWarn(`[cron/trial-reminder] Reminded ${reminded} users`);
-
-    return NextResponse.json({ reminded });
+    return { reminded, success: true };
   } catch (err) {
     logWarn("[cron/trial-reminder] Failed", String(err));
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    throw err;
   }
+}
+
+export async function GET(request: Request) {
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const result = await handleTrialReminder();
+  return NextResponse.json(result);
+}
+
+export async function POST(request: Request) {
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const result = await handleTrialReminder();
+  return NextResponse.json(result);
 }

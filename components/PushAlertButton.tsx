@@ -114,7 +114,7 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
         toast.error(errMsg);
         setState("idle");
       }
-    } catch (err) {
+    } catch {
       const msg = fr ? "Échec de l'activation" : "Failed to enable notifications";
       toast.error(msg);
       setState("idle");
@@ -135,7 +135,7 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
           toast.error(fr ? "Erreur lors de la désactivation" : "Error disabling notifications");
         }
       }
-    } catch (err) {
+    } catch {
       toast.error(fr ? "Échec de la désactivation" : "Failed to disable notifications");
     } finally {
       try {
