@@ -23,13 +23,19 @@ export function PwaInstallBanner({ lang, searchCount }: Props) {
 
   // Capture the install prompt
   useEffect(() => {
-    const handler = (e: Event) => {
+    const beforeInstallPromptHandler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
-    window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setInstalled(true));
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    const appInstalledHandler = () => setInstalled(true);
+
+    window.addEventListener("beforeinstallprompt", beforeInstallPromptHandler);
+    window.addEventListener("appinstalled", appInstalledHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", beforeInstallPromptHandler);
+      window.removeEventListener("appinstalled", appInstalledHandler);
+    };
   }, []);
 
   // Show after 2 searches, if not already dismissed/installed
