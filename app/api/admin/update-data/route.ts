@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { hasAdminSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { updateMilesPricesSchema } from "@/lib/adminSchemas";
 
 // ── Admin endpoint to update miles values dynamically ────────────────────────
 // POST /api/admin/update-data
@@ -47,28 +48,34 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     const body = await request.json();
+    const result = updateMilesPricesSchema.safeParse(body);
+
+    if (!result.success) {
+      const error = result.error.issues[0];
+      return NextResponse.json(
+        { ok: false, error: `${error.path.join(".")}: ${error.message}` },
+        { status: 400 }
+      );
+    }
+
+    const { program, valueCents, programs } = result.data;
     const updated: Array<{ program: string; valueCents: number }> = [];
 
     // Single program update
-    if (body.program && typeof body.valueCents === "number") {
-      if (!VALID_PROGRAMS.includes(body.program)) {
-        return NextResponse.json({ ok: false, error: `Unknown program: ${body.program}` }, { status: 400 });
+    if (program && valueCents) {
+      if (!VALID_PROGRAMS.includes(program)) {
+        return NextResponse.json({ ok: false, error: `Unknown program: ${program}` }, { status: 400 });
       }
-      if (body.valueCents < 0.1 || body.valueCents > 10) {
-        return NextResponse.json({ ok: false, error: "valueCents must be between 0.1 and 10" }, { status: 400 });
-      }
-      await redis.set(`miles:price:${body.program}`, body.valueCents, { ex: TTL_SECONDS });
-      updated.push({ program: body.program, valueCents: body.valueCents });
+      await redis.set(`miles:price:${program}`, valueCents, { ex: TTL_SECONDS });
+      updated.push({ program, valueCents });
     }
 
     // Batch update
-    if (body.programs && typeof body.programs === "object") {
-      for (const [program, value] of Object.entries(body.programs)) {
-        if (!VALID_PROGRAMS.includes(program)) continue;
-        const v = value as number;
-        if (typeof v !== "number" || v < 0.1 || v > 10) continue;
-        await redis.set(`miles:price:${program}`, v, { ex: TTL_SECONDS });
-        updated.push({ program, valueCents: v });
+    if (programs) {
+      for (const [prog, value] of Object.entries(programs)) {
+        if (!VALID_PROGRAMS.includes(prog)) continue;
+        await redis.set(`miles:price:${prog}`, value, { ex: TTL_SECONDS });
+        updated.push({ program: prog, valueCents: value });
       }
     }
 

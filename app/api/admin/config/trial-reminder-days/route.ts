@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { hasAdminSecret } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { logWarn, logError } from "@/lib/logger";
+import { trialReminderDaysSchema } from "@/lib/adminSchemas";
 import * as Sentry from "@sentry/nextjs";
 
 /**
@@ -21,15 +22,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { days } = body as { days?: unknown };
+    const result = trialReminderDaysSchema.safeParse(body);
 
-    // Validate input
-    if (typeof days !== "number" || days < 0 || days > 30) {
+    if (!result.success) {
+      const error = result.error.issues[0];
       return NextResponse.json(
-        { error: "days must be a number between 0 and 30" },
+        { error: `${error.path.join(".")}: ${error.message}` },
         { status: 400 }
       );
     }
+
+    const { days } = result.data;
 
     // Set the config in Redis
     await redis.set("keza:config:trial_reminder_days_before_expiry", String(Math.floor(days)));
