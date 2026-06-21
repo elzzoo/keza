@@ -410,8 +410,8 @@ export function PortefeuilleClient() {
           ))}
         </div>
 
-        {/* ── Recent searches ───────────────────────────────────────────────── */}
-        {recentSearches.length > 0 && (
+        {/* ── Recent searches (Pro only) ────────────────────────────────────── */}
+        {hasProAccess && recentSearches.length > 0 && (
           <div className="bg-surface rounded-2xl border border-border p-5">
             <div className="mb-4">
               <h2 className="text-sm font-bold text-fg">
