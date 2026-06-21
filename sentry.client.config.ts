@@ -7,8 +7,10 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Capture 10% of transactions for performance monitoring
-  tracesSampleRate: 0.1,
+  // Capture 50% of transactions for performance monitoring — increased for better observability
+  // Higher sampling helps catch frontend slowdowns (search, calendar, portfolio page loads)
+  // and improves correlation with server-side errors
+  tracesSampleRate: 0.5,
 
   // Capture 5% of sessions for session replay
   replaysSessionSampleRate: 0.05,

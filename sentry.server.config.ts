@@ -7,8 +7,10 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Performance monitoring
-  tracesSampleRate: 0.2, // 20% of transactions
+  // Performance monitoring — increased from 0.1 to 0.5 for better error context
+  // Higher sampling captures more transaction details (slow endpoints, errors)
+  // Cost: ~5× more trace events sent to Sentry (still within free tier)
+  tracesSampleRate: 0.5, // 50% of transactions
 
   // Track slow transactions
   maxBreadcrumbs: 50,

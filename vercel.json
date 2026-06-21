@@ -1,4 +1,11 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm ci",
+  "env": [
+    "NODE_ENV=production",
+    "VERCEL_ENV=production"
+  ],
   "crons": [
     {
       "path": "/api/cron/alerts",
@@ -12,5 +19,29 @@
       "path": "/api/cron/trial-reminder",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "github": {
+    "enabled": true,
+    "autoAlias": true,
+    "autoAssignCustomDomains": false,
+    "autoCommentTeamOnPR": true,
+    "autoCreateIssueForFailure": false
+  },
+  "preview": {
+    "bypassToken": null,
+    "previewCommits": true,
+    "previewBranches": [
+      "develop",
+      "staging"
+    ],
+    "deployment": {
+      "autoAssignCustomDomain": false,
+      "comments": true,
+      "teamReviewers": ["@keza-team"],
+      "allowlist": []
+    }
+  },
+  "production": {
+    "autoExposeSystemEnvs": false
+  }
 }
