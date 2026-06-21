@@ -35,7 +35,14 @@ export function PromoBanner({ lang }: Props) {
   useEffect(() => {
     fetch("/api/promos")
       .then(r => r.json())
-      .then((d: { promos: Promo[] }) => setPromos(d.promos ?? []))
+      .then((d: { promos: Promo[] }) => {
+        const now = new Date();
+        // Only show promos that haven't expired
+        const activePromos = (d.promos ?? []).filter(
+          (p) => !p.validUntil || new Date(p.validUntil) >= now
+        );
+        setPromos(activePromos);
+      })
       .catch(() => {});
   }, []);
 

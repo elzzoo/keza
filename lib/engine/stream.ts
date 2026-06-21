@@ -100,7 +100,16 @@ export async function searchEngineStream(
     ]);
     if (cached) {
       const freshId = crypto.randomUUID();
-      return cached.map(r => ({ ...r, searchId: freshId }));
+      const now = new Date();
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      // Filter out flights with past departure dates (cache may be stale across days)
+      const searchDate = new Date(date! + "T00:00:00Z");
+      if (searchDate < today) {
+        // Search date is in the past, don't return cache
+        // Fall through to fetch fresh results
+      } else {
+        return cached.map(r => ({ ...r, searchId: freshId }));
+      }
     }
 
     const searchId = crypto.randomUUID();
