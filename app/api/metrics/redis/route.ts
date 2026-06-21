@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { logWarn } from "@/lib/logger";
 
 /**
  * GET /api/metrics/redis
@@ -43,11 +42,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     // Measure latency with ping samples
     const latencies: number[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const redisClient = redis as any;
+
     for (let i = 0; i < LATENCY_SAMPLE_COUNT; i++) {
       const start = Date.now();
       try {
         await Promise.race([
-          (redis as any).ping(),
+          redisClient.ping(),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error("ping timeout")), 1000)
           ),
@@ -64,10 +66,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const latencyP95 = sortedLatencies[Math.max(0, p95Index)];
 
     // Fetch Redis info
-    const info = await (redis as any).info();
-    const usedMemory = (info as any)?.used_memory ?? 0;
-    const maxMemory = (info as any)?.maxmemory ?? 1024 * 1024 * 1024; // default 1GB
-    const opsPerSec = (info as any)?.instantaneous_ops_per_sec ?? 0;
+    const info = await redisClient.info();
+    const usedMemory = (info as Record<string, number>)?.used_memory ?? 0;
+    const maxMemory = (info as Record<string, number>)?.maxmemory ?? 1024 * 1024 * 1024; // default 1GB
+    const opsPerSec = (info as Record<string, number>)?.instantaneous_ops_per_sec ?? 0;
 
     const memoryMb = Math.round(usedMemory / 1024 / 1024);
     const maxmemoryMb = Math.round(maxMemory / 1024 / 1024);

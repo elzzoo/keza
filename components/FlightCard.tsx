@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import type { SeatMapData } from "@/lib/seatMapsIntegration";
@@ -134,10 +135,11 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
       { rootMargin: "100px" } // Start loading 100px before card enters viewport
     );
 
-    observer.observe(seatMapRef.current);
+    const currentRef = seatMapRef.current;
+    observer.observe(currentRef);
 
     return () => {
-      if (seatMapRef.current) observer.unobserve(seatMapRef.current);
+      if (currentRef) observer.unobserve(currentRef);
     };
   }, [flight.airlines, flight.from, flight.to, flight.cabin]);
 
@@ -648,9 +650,11 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-2 hover:border-primary/50 transition-colors"
               >
-                <img
+                <Image
                   src={seatMap.thumbnailUrl}
                   alt={`${seatMap.airline} ${seatMap.aircraft} seat map`}
+                  width={200}
+                  height={128}
                   className="w-full h-auto max-h-32 object-cover"
                 />
               </a>
