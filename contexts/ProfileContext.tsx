@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import {
   loadProfile,
   saveProfile,
@@ -15,6 +16,7 @@ import {
 interface ProfileContextValue {
   profile:       UserProfile | null;
   isLoaded:      boolean;
+  isSyncing:     boolean;
   update:        (updates: Partial<UserProfile>) => void;
   setPrograms:   (programs: string[]) => void;
   setLang:       (lang: "fr" | "en") => void;
@@ -33,20 +35,64 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 // ---- provider ----
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoadingFromServer, setIsLoadingFromServer] = useState(false);
 
+  // Load profile from server (if authenticated) or localStorage (if not)
   useEffect(() => {
-    setProfile(loadProfile());
-  }, []);
+    const loadProfileData = async () => {
+      if (session?.user?.email) {
+        // Authenticated: fetch from Redis via server
+        setIsLoadingFromServer(true);
+        try {
+          const res = await fetch("/api/portfolio");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.portfolio) {
+              setProfile(data.portfolio);
+            } else {
+              // No server profile yet — fall back to localStorage
+              setProfile(loadProfile());
+            }
+          } else {
+            setProfile(loadProfile());
+          }
+        } catch {
+          setProfile(loadProfile());
+        } finally {
+          setIsLoadingFromServer(false);
+        }
+      } else {
+        // Unauthenticated: use localStorage only
+        setProfile(loadProfile());
+      }
+    };
+    loadProfileData();
+  }, [session?.user?.email]);
 
   const update = useCallback((updates: Partial<UserProfile>) => {
     setProfile(prev => {
       if (!prev) return prev;
       const updated = { ...prev, ...updates, lastActiveAt: new Date().toISOString() };
+
+      // Save to localStorage (always)
       saveProfile(updated);
+
+      // Save to server if authenticated
+      if (session?.user?.email) {
+        fetch("/api/portfolio", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated),
+        }).catch(() => {
+          // Silently fail — localStorage is the fallback
+        });
+      }
+
       return updated;
     });
-  }, []);
+  }, [session?.user?.email]);
 
   const setPrograms   = useCallback((programs: string[]) => { update({ programs }); }, [update]);
   const setLang       = useCallback((lang: "fr" | "en") => { update({ lang }); }, [update]);
@@ -68,7 +114,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, isLoaded: profile !== null,
+      profile, isLoaded: profile !== null, isSyncing: isLoadingFromServer,
       update, setPrograms, setLang, setCurrency, setCabin,
       setBalances, setBankPoints, recordSearch, toggleFavorite,
     }}>
