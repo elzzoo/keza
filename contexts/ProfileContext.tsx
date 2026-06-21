@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
 import {
   loadProfile,
   saveProfile,
@@ -35,19 +34,15 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 // ---- provider ----
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(loadProfile);
   const [isLoadingFromServer, setIsLoadingFromServer] = useState(false);
 
-  // Load profile from server if authenticated (but start with localStorage)
+  // On mount, try to sync with server (if user is authenticated)
+  // Server checks authentication; endpoint returns null if not authenticated
   useEffect(() => {
-    // Only fetch on the client side
-    if (typeof window === "undefined" || !session?.user?.email) {
-      return;
-    }
+    if (typeof window === "undefined") return;
 
-    // Authenticated: fetch from Redis via server
-    const loadFromServer = async () => {
+    const syncWithServer = async () => {
       setIsLoadingFromServer(true);
       try {
         const res = await fetch("/api/portfolio");
@@ -64,8 +59,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    loadFromServer();
-  }, [session?.user?.email]);
+    syncWithServer();
+  }, []);
 
   const update = useCallback((updates: Partial<UserProfile>) => {
     setProfile(prev => {
@@ -75,8 +70,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       // Save to localStorage (always)
       saveProfile(updated);
 
-      // Save to server if authenticated and in browser
-      if (typeof window !== "undefined" && session?.user?.email) {
+      // Try to save to server (if authenticated, server will accept; if not, server returns 401)
+      if (typeof window !== "undefined") {
         fetch("/api/portfolio", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -88,7 +83,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
       return updated;
     });
-  }, [session?.user?.email]);
+  }, []);
 
   const setPrograms   = useCallback((programs: string[]) => { update({ programs }); }, [update]);
   const setLang       = useCallback((lang: "fr" | "en") => { update({ lang }); }, [update]);
