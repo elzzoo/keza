@@ -4,8 +4,16 @@ import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
 
-// Validate OAuth credentials at startup (not in test environment)
+// Validate auth secrets at startup (not in test environment)
 if (process.env.NODE_ENV !== "test") {
+  if (!process.env.NEXTAUTH_SECRET) {
+    const msg = "[auth] CRITICAL: NEXTAUTH_SECRET is not set — JWT sessions will be unsigned (security risk)";
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(msg);
+    } else {
+      Sentry.captureMessage(msg, "error");
+    }
+  }
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     Sentry.captureMessage("[auth] GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set — Google OAuth will not work", "warning");
   }
