@@ -19,7 +19,10 @@ export interface MilesPriceRecord {
 }
 
 // Default fallback: $0.014 per mile (1.4 cents)
-export const DEFAULT_MILE_VALUE_CENTS = 1.4;
+// Can be overridden via DEFAULT_MILE_VALUE_CENTS env var
+export const DEFAULT_MILE_VALUE_CENTS = parseFloat(
+  process.env.DEFAULT_MILE_VALUE_CENTS ?? "1.4"
+);
 
 export const MILES_PRICES: MilesPriceRecord[] = [
   // ─── Airline loyalty programs ─────────────────────────────────────────────
