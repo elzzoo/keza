@@ -159,9 +159,14 @@ export async function getAlertById(id: string): Promise<PriceAlert | null> {
 
 export async function getAlertsByRoute(from: string, to: string): Promise<PriceAlert[]> {
   const ids = await getIdsFromIndex(ALERTS_BY_ROUTE(from, to));
+  if (ids.length === 0) return [];
+
+  // Batch fetch all alert IDs using MGET (avoid N+1 pattern)
+  const keys = ids.map(id => ALERT_KEY(id));
+  const results = await redis.mget<PriceAlert[]>(keys);
+
   const alerts: PriceAlert[] = [];
-  for (const id of ids) {
-    const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
+  for (const alert of results) {
     if (alert && alert.active) alerts.push(alert);
   }
   return alerts;
