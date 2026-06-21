@@ -6,6 +6,7 @@ import { optimizeMiles } from "../optimizer";
 import type { Cabin, TripType, FlightResult, Stops } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
 import { buildAviasalesUrl } from "./travelpayouts";
+import { roundPrice } from "../roundPrice";
 
 export { CABIN_MULTIPLIER };
 
@@ -52,19 +53,19 @@ export function enrich(
     throw new Error(`[enrich] Invalid return cabin multiplier: ${returnMultiplier}`);
   }
 
-  const outboundPrice = Math.round(f.price * outboundMultiplier * 100) / 100;
+  const outboundPrice = roundPrice(f.price * outboundMultiplier);
   const returnPrice   = returnFlight
-    ? Math.round(returnFlight.price * returnMultiplier * 100) / 100
+    ? roundPrice(returnFlight.price * returnMultiplier)
     : undefined;
 
   const totalPrice = returnPrice !== undefined
-    ? Math.round((outboundPrice + returnPrice) * passengers * 100) / 100
-    : Math.round(outboundPrice * passengers * 100) / 100;
+    ? roundPrice((outboundPrice + returnPrice) * passengers)
+    : roundPrice(outboundPrice * passengers);
 
   // Estimated cabin prices should remain within 10x base price (sanity check)
   const basePrice = returnPrice !== undefined
-    ? Math.round((f.price + (returnFlight?.price ?? 0)) * passengers * 100) / 100
-    : Math.round(f.price * passengers * 100) / 100;
+    ? roundPrice((f.price + (returnFlight?.price ?? 0)) * passengers)
+    : roundPrice(f.price * passengers);
   if (totalPrice > basePrice * 10) {
     throw new Error(`[enrich] Estimated cabin price exceeded 10x multiplier: ${totalPrice} > ${basePrice * 10}`);
   }

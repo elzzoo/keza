@@ -1,6 +1,8 @@
 // lib/dealsEngine.ts
 // Pure functions — no Redis, no API calls. Testable in isolation.
 
+import { roundPrice } from "./roundPrice";
+
 export type DealRecommendation = "USE_MILES" | "USE_CASH" | "NEUTRAL";
 
 export interface RawDeal {
@@ -29,7 +31,7 @@ const CASH_WIN_THRESHOLD   = 1.0;
  */
 export function computeDealRatio(cashPrice: number, milesRequired: number): number {
   if (milesRequired <= 0) return 0;
-  return Math.round((cashPrice * 100 / milesRequired) * 100) / 100;
+  return roundPrice(cashPrice * 100 / milesRequired);
 }
 
 export function classifyDeal(ratioCpp: number): DealRecommendation {

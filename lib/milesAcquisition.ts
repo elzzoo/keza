@@ -11,6 +11,8 @@
  * Self-contained — imports types only, no project dependencies.
  */
 
+import { roundPrice } from "./roundPrice";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -259,7 +261,7 @@ export function calculateAcquisitionCost(
     paths.push({
       method: "direct_purchase",
       source: program,
-      costUsd: round2(costUsd),
+      costUsd: roundPrice(costUsd),
       costPer1000: data.purchaseMileCostPer1000,
       note: "Direct purchase from airline (sale pricing)",
     });
@@ -279,8 +281,8 @@ export function calculateAcquisitionCost(
     paths.push({
       method: "bank_transfer",
       source: bank,
-      costUsd: round2(costUsd),
-      costPer1000: round2(effectiveCostPer1000),
+      costUsd: roundPrice(costUsd),
+      costPer1000: roundPrice(effectiveCostPer1000),
       pointsNeeded,
       transferRatio: ratio,
       note:
@@ -296,9 +298,9 @@ export function calculateAcquisitionCost(
   paths.sort((a, b) => a.costUsd - b.costUsd);
 
   // ── Value analysis ───────────────────────────────────────────────────
-  const redemptionValueUsd = round2((milesNeeded * data.marketValueCents) / 100);
+  const redemptionValueUsd = roundPrice((milesNeeded * data.marketValueCents) / 100);
   const cheapest = paths[0] ?? null;
-  const valueRatio = cheapest ? round2(redemptionValueUsd / cheapest.costUsd) : null;
+  const valueRatio = cheapest ? roundPrice(redemptionValueUsd / cheapest.costUsd) : null;
 
   return {
     program,
@@ -352,9 +354,7 @@ export function compareAcquisitionAcrossPrograms(
 // Helpers
 // ---------------------------------------------------------------------------
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
+// Use roundPrice helper instead of local round2 function
 
 /**
  * Check if a program is supported by the acquisition engine.

@@ -1,5 +1,7 @@
 // Shared input validators for API endpoints
 
+import { roundPrice } from "@/lib/roundPrice";
+
 const VALID_CABINS = new Set(["economy", "premium", "business", "first"]);
 
 export function isValidIata(code: unknown): code is string {
@@ -45,7 +47,7 @@ export function isValidPrice(price: unknown): price is number {
 
 export function isValidFlightInputPrice(price: unknown): boolean {
   const n = Number(price);
-  return Number.isFinite(n) && n > 0 && n <= 100_000 && Math.round(n * 100) / 100 === n;
+  return Number.isFinite(n) && n > 0 && n <= 100_000 && roundPrice(n) === n;
 }
 
 export function isValidPassengerCount(count: unknown): boolean {

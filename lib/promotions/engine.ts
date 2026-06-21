@@ -1,6 +1,7 @@
 import { parseJsonPromos, type Promotion } from "./parsers";
 import { redis } from "@/lib/redis";
 import { logError } from "@/lib/logger";
+import { roundPrice } from "@/lib/roundPrice";
 
 export const PROMOS_KEY = "keza:promotions";
 // 35-day TTL — cron refreshes every 30 days, giving a 5-day safety window
@@ -73,6 +74,6 @@ export function applyPromotions(
 
       price = price * (1 - promo.discount);
     }
-    return { ...f, price: Math.round(price * 100) / 100 };
+    return { ...f, price: roundPrice(price) };
   });
 }

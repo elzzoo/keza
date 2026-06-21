@@ -1,6 +1,7 @@
 import "server-only";
 import { redis } from "./redis";
 import { MILES_PRICE_MAP } from "@/data/milesPrices";
+import { roundPrice } from "./roundPrice";
 
 // ─── Auto-calibration system ────────────────────────────────────────────────
 // After each search, we record observed "implied mile values" based on:
@@ -119,7 +120,7 @@ export async function recalibrate(): Promise<Record<string, { before: number; af
 
     // Clamp between 50% and 200% of static
     const clamped = Math.max(staticValue * 0.5, Math.min(staticValue * 2.0, blended));
-    const rounded = Math.round(clamped * 100) / 100;
+    const rounded = roundPrice(clamped);
 
     // Store in Redis
     const currentValue = await redis.get<number>(`miles:price:${program}`).catch(() => null) ?? staticValue;
