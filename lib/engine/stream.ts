@@ -14,15 +14,15 @@ import { CACHE_VERSION } from "./index";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
-// ─── Synchronous core: enrich a set of outbound+return flights into FlightResults ───
-function buildResults(
+// ─── Asynchronous enrichment: parallelize enrich() across all flights ───
+async function buildResults(
   outbound: NormalizedFlight[],
   returnFlights: NormalizedFlight[],
   params: SearchParams,
   effectivePrices: Map<string, number>,
   promotions: Promotions,
   searchId: string,
-): FlightResult[] {
+): Promise<FlightResult[]> {
   const {
     cabin = "economy", passengers = 1, userPrograms = [],
     tripType = "oneway", date, returnDate,
@@ -44,10 +44,16 @@ function buildResults(
       : cheapestReturn;
   }
 
-  const results: FlightResult[] = withPromos.map(f => {
-    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date!, returnDate);
+  // Parallelize enrich() for all flights via Promise.all
+  const results: FlightResult[] = await Promise.all(
+    withPromos.map(f => Promise.resolve(
+      enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date!, returnDate)
+    ))
+  );
+
+  // Attach searchId to each result
+  results.forEach(r => {
     r.searchId = searchId;
-    return r;
   });
 
   const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };
@@ -137,7 +143,7 @@ export async function searchEngineStream(
 
     const partialOutbound = filterByStops(duffelOutbound, stops);
     const partialReturn   = filterByStops(duffelReturn, stops);
-    const partialResults  = buildResults(partialOutbound, partialReturn, params, effectivePrices, promotions, searchId);
+    const partialResults  = await buildResults(partialOutbound, partialReturn, params, effectivePrices, promotions, searchId);
     // Only emit partial if we actually have something to show
     if (partialResults.length > 0) {
       onPartial(partialResults);
@@ -211,7 +217,7 @@ export async function searchEngineStream(
       returnFlights = filterByStops(rawReturn, stops);
     }
 
-    const results = buildResults(outbound, returnFlights, params, effectivePrices, promotions, searchId);
+    const results = await buildResults(outbound, returnFlights, params, effectivePrices, promotions, searchId);
 
     // Synthetic + Home Carrier Guarantee (appended after sorted real results)
     const syntheticResults: FlightResult[] = syntheticFlights.map(f => {
