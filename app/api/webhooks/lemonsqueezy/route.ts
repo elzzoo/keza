@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import {
   verifyLemonWebhook,
   grantPro,
@@ -13,101 +14,114 @@ import { trackServerEvent } from "@/lib/analytics";
 
 // POST /api/webhooks/lemonsqueezy — handle Lemon Squeezy subscription events
 export async function POST(req: NextRequest) {
-  const limited = await rateLimitResponse(req, {
-    namespace: "api:webhooks:lemonsqueezy",
-    limit: 5,
-    windowSeconds: 300,
-  });
-  if (limited) return limited;
+  return Sentry.withMonitor("lemonsqueezy-webhook", async () => {
+    const limited = await rateLimitResponse(req, {
+      namespace: "api:webhooks:lemonsqueezy",
+      limit: 5,
+      windowSeconds: 300,
+    });
+    if (limited) return limited;
 
-  const signature = req.headers.get("x-signature") ?? "";
-  const rawBody = await req.text();
+    const signature = req.headers.get("x-signature") ?? "";
+    const rawBody = await req.text();
 
-  // Verify signature
-  if (!verifyLemonWebhook(rawBody, signature)) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  }
+    // Verify signature
+    if (!verifyLemonWebhook(rawBody, signature)) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
 
-  let payload: LemonWebhookPayload;
-  try {
-    const parsed = JSON.parse(rawBody);
-    payload = lemonWebhookPayloadSchema.parse(parsed);
-  } catch {
-    return NextResponse.json({ error: "Invalid payload structure" }, { status: 400 });
-  }
+    let payload: LemonWebhookPayload;
+    try {
+      const parsed = JSON.parse(rawBody);
+      payload = lemonWebhookPayloadSchema.parse(parsed);
+    } catch (err) {
+      Sentry.captureException(err, {
+        tags: { route: "lemonsqueezy-webhook", stage: "payload-parse" },
+      });
+      return NextResponse.json({ error: "Invalid payload structure" }, { status: 400 });
+    }
 
-  const eventName = payload.meta.event_name;
-  const subscriptionId = payload.data.id;
-  const status = payload.data.attributes.status;
+    const eventName = payload.meta.event_name;
+    const subscriptionId = payload.data.id;
+    const status = payload.data.attributes.status;
 
-  // Resolve email: prefer custom_data (set at checkout), fallback to user_email
-  const email =
-    payload.meta.custom_data?.keza_email ??
-    payload.data.attributes.user_email;
+    // Resolve email: prefer custom_data (set at checkout), fallback to user_email
+    const email =
+      payload.meta.custom_data?.keza_email ??
+      payload.data.attributes.user_email;
 
-  if (!email) {
-    return NextResponse.json({ error: "No email in payload" }, { status: 400 });
-  }
+    if (!email) {
+      return NextResponse.json({ error: "No email in payload" }, { status: 400 });
+    }
 
-  switch (eventName) {
-    case "subscription_created":
-    case "subscription_resumed":
-      await grantPro(email, subscriptionId);
-      logSubscriptionEvent("created", email, { subscriptionId });
-      trackServerEvent("Pro Subscription Created", {
-        subscription_id: subscriptionId,
-        email,
-      }).catch(() => {});
-      sendDiscordAlert("", [
-        {
-          title: "💎 Nouveau Pro — " + email,
-          description: `Subscription \`${subscriptionId}\` activée.`,
-          color: 0xf59e0b,
-          footer: { text: "Lemon Squeezy webhook" },
-          timestamp: new Date().toISOString(),
-        },
-      ]).catch(() => {});
-      break;
+    try {
+      switch (eventName) {
+        case "subscription_created":
+        case "subscription_resumed":
+          await grantPro(email, subscriptionId);
+          logSubscriptionEvent("created", email, { subscriptionId });
+          trackServerEvent("Pro Subscription Created", {
+            subscription_id: subscriptionId,
+            email,
+          }).catch(() => {});
+          sendDiscordAlert("", [
+            {
+              title: "💎 Nouveau Pro — " + email,
+              description: `Subscription \`${subscriptionId}\` activée.`,
+              color: 0xf59e0b,
+              footer: { text: "Lemon Squeezy webhook" },
+              timestamp: new Date().toISOString(),
+            },
+          ]).catch(() => {});
+          break;
 
-    case "subscription_updated":
-      // Active stays Pro, cancelled/expired lose Pro
-      if (status === "active") {
-        await grantPro(email, subscriptionId);
-        logSubscriptionEvent("updated", email, { subscriptionId, status });
-      } else if (status === "cancelled" || status === "expired") {
-        await revokePro(email);
-        logSubscriptionEvent("updated", email, { subscriptionId, status });
+        case "subscription_updated":
+          // Active stays Pro, cancelled/expired lose Pro
+          if (status === "active") {
+            await grantPro(email, subscriptionId);
+            logSubscriptionEvent("updated", email, { subscriptionId, status });
+          } else if (status === "cancelled" || status === "expired") {
+            await revokePro(email);
+            logSubscriptionEvent("updated", email, { subscriptionId, status });
+          }
+          break;
+
+        case "subscription_cancelled":
+        case "subscription_expired":
+          await revokePro(email);
+          logSubscriptionEvent("cancelled", email, { subscriptionId, eventName });
+          trackServerEvent("Pro Subscription Cancelled", {
+            subscription_id: subscriptionId,
+            email,
+          }).catch(() => {});
+          sendDiscordAlert("", [
+            {
+              title: "❌ Pro annulé — " + email,
+              description: `Subscription \`${subscriptionId}\` annulée (${eventName}).`,
+              color: 0xef4444,
+              footer: { text: "Lemon Squeezy webhook" },
+              timestamp: new Date().toISOString(),
+            },
+          ]).catch(() => {});
+          break;
+
+        case "subscription_paused":
+          await revokePro(email);
+          logSubscriptionEvent("cancelled", email, { subscriptionId, eventName });
+          break;
+
+        default:
+          // Unknown event — ignore silently
+          break;
       }
-      break;
+    } catch (err) {
+      Sentry.captureException(err, {
+        tags: { route: "lemonsqueezy-webhook", eventName },
+        extra: { subscriptionId, email },
+      });
+      throw err;
+    }
 
-    case "subscription_cancelled":
-    case "subscription_expired":
-      await revokePro(email);
-      logSubscriptionEvent("cancelled", email, { subscriptionId, eventName });
-      trackServerEvent("Pro Subscription Cancelled", {
-        subscription_id: subscriptionId,
-        email,
-      }).catch(() => {});
-      sendDiscordAlert("", [
-        {
-          title: "❌ Pro annulé — " + email,
-          description: `Subscription \`${subscriptionId}\` annulée (${eventName}).`,
-          color: 0xef4444,
-          footer: { text: "Lemon Squeezy webhook" },
-          timestamp: new Date().toISOString(),
-        },
-      ]).catch(() => {});
-      break;
-
-    case "subscription_paused":
-      await revokePro(email);
-      logSubscriptionEvent("cancelled", email, { subscriptionId, eventName });
-      break;
-
-    default:
-      // Unknown event — ignore silently
-      break;
-  }
-
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  });
 }

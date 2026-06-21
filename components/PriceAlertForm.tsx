@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
 import { toast } from "sonner";
 import { trackAlertCreated } from "@/lib/analytics";
@@ -111,7 +112,8 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
         setStatus("error");
         toast.error(t.error);
       }
-    } catch {
+    } catch (err) {
+      Sentry.captureException(err);
       setStatus("error");
       toast.error(t.error);
     }
