@@ -17,6 +17,8 @@ function getLuminance(r: number, g: number, b: number): number {
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
 
+// getContrastRatio helper (currently unused but kept for reference)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getContrastRatio(color1: string, color2: string): number {
   // Parse RGB colors from computed style
   const parseRGB = (css: string) => {
