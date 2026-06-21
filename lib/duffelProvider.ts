@@ -326,7 +326,7 @@ export async function fetchFromDuffel(
   } catch (err) {
     const name = (err as Error).name;
     if (name === "AbortError") {
-      logWarn(`[duffel] all attempts timed out (>${TIMEOUT_MS}ms) for ${from}→${to}`);
+      logWarn(`[duffel] all attempts timed out (>${DUFFEL_TIMEOUT}ms) for ${from}→${to}`);
     } else {
       logError(`[duffel] unexpected error for ${from}→${to}:`, err);
     }
