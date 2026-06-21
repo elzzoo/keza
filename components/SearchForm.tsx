@@ -241,9 +241,9 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     active ? "bg-surface-2 text-fg shadow-sm border border-border" : "text-muted hover:text-fg"
   );
 
-  // Cabin pill
+  // Cabin pill — py-3 ensures 44px minimum touch target on mobile
   const cabinBtn = (active: boolean) => clsx(
-    "flex-1 py-2 rounded-xl font-semibold text-sm border transition-all duration-150",
+    "flex-1 py-3 rounded-xl font-semibold text-sm border transition-all duration-150",
     active
       ? "bg-primary/15 border-primary/30 text-blue-400"
       : "bg-surface-2 border-border text-muted hover:border-subtle hover:text-fg"

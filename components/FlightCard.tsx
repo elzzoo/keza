@@ -330,7 +330,11 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
       {/* COST COMPARISON — side by side */}
       <div className="grid grid-cols-2 divide-x divide-border border-t border-border">
         {/* Cash */}
-        <div className="px-4 py-3.5 text-center">
+        <div className={clsx("px-4 py-3.5 text-center relative", !isUseMiles && !isNearParity && "bg-success/5")}>
+          {/* Checkmark for accessibility (not just color) */}
+          {!isUseMiles && !isNearParity && cashCost > 0 && (
+            <div className="absolute top-1.5 right-1.5 text-success text-lg">✓</div>
+          )}
           {flight.isSupplemental ? (
             <>
               <div className="font-black tabular-nums text-base text-sky-400">
@@ -359,7 +363,11 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         </div>
 
         {/* Miles */}
-        <div className="px-4 py-3.5 text-center">
+        <div className={clsx("px-4 py-3.5 text-center relative", isUseMiles && !isNearParity && "bg-blue-500/5")}>
+          {/* Checkmark for accessibility (not just color) */}
+          {isUseMiles && !isNearParity && milesCost > 0 && (
+            <div className="absolute top-1.5 right-1.5 text-blue-400 text-lg">✓</div>
+          )}
           {milesCost > 0 ? (
             <>
               <div className={clsx(
