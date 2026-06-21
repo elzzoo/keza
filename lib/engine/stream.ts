@@ -51,9 +51,13 @@ function buildResults(
   });
 
   const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };
+  const userProgramsSet = new Set(userPrograms);
   const effectiveCost = (r: FlightResult) => {
     const pen = CONFIDENCE_PENALTY[r.priceConfidence ?? "LOW"] ?? 1.05;
-    return (r.milesCost > 0 ? Math.min(r.cashCost, r.milesCost) : r.cashCost) * pen;
+    const baseCost = (r.milesCost > 0 ? Math.min(r.cashCost, r.milesCost) : r.cashCost) * pen;
+    // Boost (5% lower cost) if best program matches user's programs
+    const userProgramBoost = r.bestOption && userProgramsSet.has(r.bestOption.program) ? 0.95 : 1.0;
+    return baseCost * userProgramBoost;
   };
   results.sort((a, b) => effectiveCost(a) - effectiveCost(b) || (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
   return results;
