@@ -61,6 +61,17 @@ jest.mock("@/lib/userProfile", () => ({
   saveProfile: jest.fn(),
 }));
 
+jest.mock("@/hooks/useProAccess", () => ({
+  useProAccess: () => ({
+    isActive: false,
+    hasTrial: false,
+    isPro: false,
+    daysLeft: null,
+    loading: false,
+    error: null,
+  }),
+}));
+
 const mockLoadProfile = userProfileLib.loadProfile as jest.Mock;
 const mockSaveProfile = userProfileLib.saveProfile as jest.Mock;
 
