@@ -3,6 +3,7 @@ import { iataToAirline, VIRTUAL_IATA_CODES } from "./iataAirlines";
 import type { NormalizedFlight } from "./promotions/engine";
 import { redis } from "@/lib/redis";
 import { logError, logWarn } from "@/lib/logger";
+import { roundPrice } from "@/lib/roundPrice";
 
 const DUFFEL_ERROR_TRACKING_KEY = "duffel:errors:1m";
 
@@ -102,7 +103,7 @@ export async function toUsd(amount: string | number, currency: string): Promise<
   const rates = await getFxRates();
   const rate = rates[currency.toUpperCase()] ?? FX_FALLBACK_TO_USD[currency.toUpperCase()];
   if (!rate) return null; // unknown currency — skip this offer
-  return Math.round(Number(amount) * rate * 100) / 100;
+  return roundPrice(Number(amount) * rate);
 }
 
 // ─── Duffel response types ────────────────────────────────────────────────────
