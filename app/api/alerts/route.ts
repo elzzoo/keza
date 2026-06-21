@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/alerts?email=xxx&token=xxx — list active alerts for a verified email
+// GET /api/alerts?email=xxx — list active alerts for a verified email (token in Authorization header)
 export async function GET(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
     namespace: "api:alerts:get",
@@ -148,10 +148,20 @@ export async function GET(req: NextRequest) {
 
   try {
     const email = req.nextUrl.searchParams.get("email");
-    const token = req.nextUrl.searchParams.get("token");
     if (!email) {
       return NextResponse.json({ error: "Missing email param" }, { status: 400 });
     }
+
+    // Extract token from Authorization header (Bearer scheme)
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+    // Reject if token was passed via query params (legacy insecure method)
+    if (req.nextUrl.searchParams.has("token")) {
+      logError("[api/alerts] GET: token passed via query param (insecure)", new Error("Token in query params"));
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (!verifyManageAlertsToken(email, token)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -163,7 +173,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH /api/alerts — update notification frequency for an alert
+// PATCH /api/alerts — update notification frequency for an alert (token in Authorization header)
 export async function PATCH(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
     namespace: "api:alerts:patch",
@@ -174,11 +184,11 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, notifFrequency, token } = body;
+    const { id, notifFrequency } = body;
 
-    if (!id || !notifFrequency || !token) {
+    if (!id || !notifFrequency) {
       return NextResponse.json(
-        { error: "Missing required fields: id, notifFrequency, token" },
+        { error: "Missing required fields: id, notifFrequency" },
         { status: 400 }
       );
     }
@@ -193,6 +203,16 @@ export async function PATCH(req: NextRequest) {
     const alert = await getAlertById(id);
     if (!alert) {
       return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    }
+
+    // Extract token from Authorization header (Bearer scheme)
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+    // Reject if token was passed via body (legacy insecure method)
+    if ("token" in body) {
+      logError("[api/alerts] PATCH: token passed in body (insecure)", new Error("Token in body"));
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (!verifyManageAlertsToken(alert.email, token)) {
@@ -211,7 +231,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// DELETE /api/alerts?id=xxx&email=xxx&token=xxx — deactivate an alert for a verified email
+// DELETE /api/alerts?id=xxx&email=xxx — deactivate an alert for a verified email (token in Authorization header)
 export async function DELETE(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
     namespace: "api:alerts:delete",
@@ -222,13 +242,23 @@ export async function DELETE(req: NextRequest) {
 
   const id = req.nextUrl.searchParams.get("id");
   const email = req.nextUrl.searchParams.get("email");
-  const token = req.nextUrl.searchParams.get("token");
   if (!id) {
     return NextResponse.json({ error: "Missing id param" }, { status: 400 });
   }
   if (!email) {
     return NextResponse.json({ error: "Missing email param" }, { status: 400 });
   }
+
+  // Extract token from Authorization header (Bearer scheme)
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  // Reject if token was passed via query params (legacy insecure method)
+  if (req.nextUrl.searchParams.has("token")) {
+    logError("[api/alerts] DELETE: token passed via query param (insecure)", new Error("Token in query params"));
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   if (!verifyManageAlertsToken(email, token)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
