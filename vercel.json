@@ -26,22 +26,5 @@
     "autoAssignCustomDomains": false,
     "autoCommentTeamOnPR": true,
     "autoCreateIssueForFailure": false
-  },
-  "preview": {
-    "bypassToken": null,
-    "previewCommits": true,
-    "previewBranches": [
-      "develop",
-      "staging"
-    ],
-    "deployment": {
-      "autoAssignCustomDomain": false,
-      "comments": true,
-      "teamReviewers": ["@keza-team"],
-      "allowlist": []
-    }
-  },
-  "production": {
-    "autoExposeSystemEnvs": false
   }
 }
