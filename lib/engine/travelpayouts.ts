@@ -15,6 +15,11 @@ export const TP_MARKER = "714947";
 // and make the miles comparison misleading. Anything below this is discarded.
 export const MIN_REALISTIC_PRICE_USD = 30;
 
+// TODO: Audit low-outlier prices (e.g., DSS→CDG showing $313 in high season July).
+// Likely explanations: (1) deep-discounted/non-refundable fares with restrictions,
+// (2) cached stale data from low-season, (3) Travelpayouts API anomaly.
+// Monitor and add price-history correlation check if outliers persist.
+
 // ─── Aviasales URL Building ──────────────────────────────────────────────────
 /**
  * Build an Aviasales booking URL for a given flight search.
