@@ -1,10 +1,21 @@
 // __tests__/api/cron-seat-alerts.test.ts
 
 const mockProcessAllSeatAlerts = jest.fn();
+const mockRedisSet = jest.fn();
+const mockRedisIncr = jest.fn();
+const mockRedisTtl = jest.fn();
 
 jest.mock("@/lib/seatAlerts", () => ({
   processAllSeatAlerts: (...args: unknown[]) =>
     mockProcessAllSeatAlerts(...args),
+}));
+
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    set: (...args: unknown[]) => mockRedisSet(...args),
+    incr: (...args: unknown[]) => mockRedisIncr(...args),
+    ttl: (...args: unknown[]) => mockRedisTtl(...args),
+  },
 }));
 
 import { NextRequest } from "next/server";
@@ -22,6 +33,9 @@ describe("GET /api/cron/seat-alerts", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env = { ...OLD_ENV, CRON_SECRET: "test-cron-secret" };
+    mockRedisSet.mockResolvedValue("OK");
+    mockRedisIncr.mockResolvedValue(1);
+    mockRedisTtl.mockResolvedValue(300);
   });
 
   afterAll(() => {

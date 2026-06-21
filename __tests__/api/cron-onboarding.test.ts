@@ -5,6 +5,8 @@ const mockSendOnboardingJ7Email = jest.fn();
 const mockFetchCalendarPrices = jest.fn();
 const mockRedisExists = jest.fn();
 const mockRedisSet = jest.fn();
+const mockRedisIncr = jest.fn();
+const mockRedisTtl = jest.fn();
 
 jest.mock("@/lib/alerts", () => ({
   getAllActiveRoutes: (...args: unknown[]) => mockGetAllActiveRoutes(...args),
@@ -22,6 +24,8 @@ jest.mock("@/lib/redis", () => ({
   redis: {
     exists: (...args: unknown[]) => mockRedisExists(...args),
     set: (...args: unknown[]) => mockRedisSet(...args),
+    incr: (...args: unknown[]) => mockRedisIncr(...args),
+    ttl: (...args: unknown[]) => mockRedisTtl(...args),
   },
 }));
 
@@ -60,6 +64,8 @@ describe("GET /api/cron/onboarding", () => {
     // Default: not yet sent
     mockRedisExists.mockResolvedValue(0);
     mockRedisSet.mockResolvedValue("OK");
+    mockRedisIncr.mockResolvedValue(1);
+    mockRedisTtl.mockResolvedValue(300);
     mockFetchCalendarPrices.mockResolvedValue([]);
     mockGetAllActiveRoutes.mockResolvedValue(["DSS:CDG"]);
   });

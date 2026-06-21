@@ -6,6 +6,9 @@ const mockVerify = jest.fn();
 const mockDiscord = jest.fn();
 const mockTrack = jest.fn();
 const mockLogSubscriptionEvent = jest.fn();
+const mockRedisSet = jest.fn();
+const mockRedisIncr = jest.fn();
+const mockRedisTtl = jest.fn();
 
 jest.mock("@/lib/lemonsqueezy", () => ({
   verifyLemonWebhook: (...args: unknown[]) => mockVerify(...args),
@@ -21,6 +24,13 @@ jest.mock("@/lib/discord", () => ({
 }));
 jest.mock("@/lib/analytics", () => ({
   trackServerEvent: (...args: unknown[]) => mockTrack(...args),
+}));
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    set: (...args: unknown[]) => mockRedisSet(...args),
+    incr: (...args: unknown[]) => mockRedisIncr(...args),
+    ttl: (...args: unknown[]) => mockRedisTtl(...args),
+  },
 }));
 
 import { NextRequest } from "next/server";
@@ -59,6 +69,9 @@ beforeEach(() => {
   mockRevokePro.mockResolvedValue(undefined);
   mockDiscord.mockResolvedValue(undefined);
   mockTrack.mockResolvedValue(undefined);
+  mockRedisSet.mockResolvedValue("OK");
+  mockRedisIncr.mockResolvedValue(1);
+  mockRedisTtl.mockResolvedValue(300);
 });
 
 describe("POST /api/webhooks/lemonsqueezy", () => {

@@ -4,6 +4,9 @@ const mockUpdateAlertAfterCheck = jest.fn();
 const mockSendPriceDropEmail = jest.fn();
 const mockSendPushToAll = jest.fn();
 const mockFetchCalendarPrices = jest.fn();
+const mockRedisSet = jest.fn();
+const mockRedisIncr = jest.fn();
+const mockRedisTtl = jest.fn();
 
 jest.mock("@/lib/alerts", () => ({
   getAllActiveRoutes: (...args: unknown[]) => mockGetAllActiveRoutes(...args),
@@ -21,6 +24,14 @@ jest.mock("@/lib/engine", () => ({
   CABIN_MULTIPLIER: { economy: 1.0, premium: 1.8, business: 4.0, first: 6.5 },
 }));
 
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    set: (...args: unknown[]) => mockRedisSet(...args),
+    incr: (...args: unknown[]) => mockRedisIncr(...args),
+    ttl: (...args: unknown[]) => mockRedisTtl(...args),
+  },
+}));
+
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/cron/alerts/route";
 
@@ -36,6 +47,9 @@ describe("GET /api/cron/alerts", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env = { ...OLD_ENV, CRON_SECRET: "test-cron-secret" };
+    mockRedisSet.mockResolvedValue("OK");
+    mockRedisIncr.mockResolvedValue(1);
+    mockRedisTtl.mockResolvedValue(300);
   });
 
   afterAll(() => {
