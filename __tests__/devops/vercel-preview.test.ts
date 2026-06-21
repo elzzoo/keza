@@ -36,36 +36,31 @@ describe("Vercel Preview Deployments", () => {
     expect(config.github.enabled).toBe(true);
   });
 
-  it("configures preview branch deployments", async () => {
+  it("disables auto-domain assignment for preview deployments", async () => {
     const fs = await import("fs");
     const path = await import("path");
     const configPath = path.join(process.cwd(), "vercel.json");
     const configStr = fs.readFileSync(configPath, "utf-8");
     const config = JSON.parse(configStr);
-    expect(config.preview).toBeDefined();
-    expect(config.preview.previewBranches).toBeDefined();
-    expect(Array.isArray(config.preview.previewBranches)).toBe(true);
-    // Should include at least 'develop' or 'staging'
-    const branches = config.preview.previewBranches;
-    expect(branches.length).toBeGreaterThan(0);
+    expect(config.github?.autoAssignCustomDomains).toBe(false);
   });
 
-  it("disables auto-assignment of custom domains for preview", async () => {
+  it("enables auto aliasing for deployments", async () => {
     const fs = await import("fs");
     const path = await import("path");
     const configPath = path.join(process.cwd(), "vercel.json");
     const configStr = fs.readFileSync(configPath, "utf-8");
     const config = JSON.parse(configStr);
-    expect(config.preview?.deployment?.autoAssignCustomDomain).toBe(false);
+    expect(config.github?.autoAlias).toBe(true);
   });
 
-  it("enables preview comments on GitHub PRs", async () => {
+  it("enables comments from team members on PRs", async () => {
     const fs = await import("fs");
     const path = await import("path");
     const configPath = path.join(process.cwd(), "vercel.json");
     const configStr = fs.readFileSync(configPath, "utf-8");
     const config = JSON.parse(configStr);
-    expect(config.preview?.deployment?.comments).toBe(true);
+    expect(config.github?.autoCommentTeamOnPR).toBe(true);
   });
 
   it("specifies build and output configuration", async () => {

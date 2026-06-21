@@ -63,12 +63,18 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // ── Request tracing: generate requestId for distributed tracing ────────────
+  const requestId = crypto.randomUUID();
+
   // ── Nonce-based CSP ───────────────────────────────────────────────────────
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce);
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("x-request-id", requestId);
+  // Forward tracing headers (OpenTelemetry / Jaeger conventions)
+  requestHeaders.set("traceparent", `00-${requestId.replace(/-/g, '')}-${Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('')}-01`);
   requestHeaders.set("Content-Security-Policy", csp);
   // Locale detection for root layout lang attribute
   const isEn = path === "/en" || path.startsWith("/en/");
@@ -76,6 +82,7 @@ export function middleware(req: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("x-request-id", requestId);
 
   return response;
 }
