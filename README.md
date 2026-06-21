@@ -138,12 +138,13 @@ Flying Blue, Singapore KrisFlyer, ANA Mileage Club, Japan Airlines Mileage Bank,
 
 **Important:** Program names must match exactly (from `costEngine.ts` `PROGRAM_TO_AIRLINE`).
 
-## Monitoring
+## Monitoring & Incident Response
 
 - **Sentry** — Error tracking, performance metrics, Duffel/Redis timeouts, subscription events
 - **Pre-push hook** — Enforces: TypeScript 0 errors, ESLint 0 violations, 1047 tests passing
 - **Vercel Analytics** — Core Web Vitals, deployment tracking
 - **Error rate SLA** — <0.1% in production
+- **[RUNBOOKS.md](./RUNBOOKS.md)** — Incident troubleshooting guides (search errors, Duffel failures, Redis alerts, latency, cache invalidation)
 
 ## Deployment
 
