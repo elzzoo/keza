@@ -78,12 +78,6 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   // S1-3: Dual-budget strategy (6.5s total, per-attempt 3.5s):
   // If TP finishes with results, we exit early instead of waiting for slow Duffel.
   // This reduces p99 latency by 2-3s and lowers timeout partial rate from 8-10% to <2%.
-  const searchStartTime = Date.now();
-  const DUAL_BUDGET_MS = 6_500; // 6.5s total search budget
-
-  // Create abort controller for early-exit when TP finishes with good results
-  const controller = new AbortController();
-  let tpDoneEarly = false;
 
   const fetchPromises = [
     fetchFromTravelpayouts(from, to, date, directOnly),
