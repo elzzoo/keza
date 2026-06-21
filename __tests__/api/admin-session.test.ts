@@ -19,13 +19,18 @@ import { POST, DELETE } from "@/app/api/admin/session/route";
 
 const OLD_ENV = process.env;
 
-function makeLoginRequest(secret?: string, method?: string): NextRequest {
+async function makeLoginRequest(secret?: string, method?: string): Promise<NextRequest> {
   const url = method === "DELETE"
     ? "http://localhost/api/admin/session?_method=DELETE"
     : "http://localhost/api/admin/session";
 
   const form = new FormData();
   if (secret) form.append("secret", secret);
+
+  // Add CSRF token (required by P0-2)
+  const { generateCsrfToken } = await import("@/lib/csrf");
+  const csrfToken = generateCsrfToken();
+  form.append("csrf", csrfToken);
 
   return new NextRequest(url, { method: "POST", body: form });
 }
@@ -46,7 +51,7 @@ describe("POST /api/admin/session", () => {
 
   describe("logout via _method=DELETE", () => {
     it("redirects to /admin and clears session cookie", async () => {
-      const req = makeLoginRequest(undefined, "DELETE");
+      const req = await makeLoginRequest(undefined, "DELETE");
       const res = await POST(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toMatch(/\/admin/);
@@ -55,7 +60,7 @@ describe("POST /api/admin/session", () => {
     });
 
     it("does NOT hit the rate limiter on logout", async () => {
-      const req = makeLoginRequest(undefined, "DELETE");
+      const req = await makeLoginRequest(undefined, "DELETE");
       await POST(req);
       expect(mockRateLimitResponse).not.toHaveBeenCalled();
     });
@@ -67,7 +72,8 @@ describe("POST /api/admin/session", () => {
       mockRateLimitResponse.mockResolvedValue(
         NextResponse.json({ error: "Too many requests" }, { status: 429 })
       );
-      const res = await POST(makeLoginRequest("wrong-secret"));
+      const req = await makeLoginRequest("wrong-secret");
+      const res = await POST(req);
       expect(res.status).toBe(429);
     });
   });
@@ -75,7 +81,8 @@ describe("POST /api/admin/session", () => {
   describe("wrong secret", () => {
     it("redirects to /admin without setting session cookie", async () => {
       mockSafeCompare.mockReturnValue(false);
-      const res = await POST(makeLoginRequest("wrong-secret"));
+      const req = await makeLoginRequest("wrong-secret");
+      const res = await POST(req);
       expect(res.status).toBe(303);
       const cookie = res.cookies.get("keza_admin_session");
       // Cookie cleared (maxAge=0) on failed login
@@ -86,7 +93,8 @@ describe("POST /api/admin/session", () => {
   describe("correct secret", () => {
     it("redirects to /admin and sets httpOnly session cookie", async () => {
       mockSafeCompare.mockReturnValue(true);
-      const res = await POST(makeLoginRequest("correct-secret"));
+      const req = await makeLoginRequest("correct-secret");
+      const res = await POST(req);
       expect(res.status).toBe(303);
       const cookie = res.cookies.get("keza_admin_session");
       expect(cookie?.value).toBe("session-token-abc");
@@ -97,7 +105,8 @@ describe("POST /api/admin/session", () => {
     it("clears session when token creation fails", async () => {
       mockSafeCompare.mockReturnValue(true);
       mockCreateAdminSessionToken.mockReturnValue(null);
-      const res = await POST(makeLoginRequest("correct-secret"));
+      const req = await makeLoginRequest("correct-secret");
+      const res = await POST(req);
       expect(res.status).toBe(303);
       const cookie = res.cookies.get("keza_admin_session");
       expect(cookie?.value).toBe("");

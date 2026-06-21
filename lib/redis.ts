@@ -36,11 +36,12 @@ export async function safeGet<T = unknown>(key: string): Promise<T | null> {
   }
 }
 
-export async function safeSet(key: string, value: unknown, options?: { ex?: number; nx?: boolean; xx?: boolean }): Promise<string> {
+export async function safeSet(key: string, value: unknown, options?: { ex?: number; nx?: boolean; xx?: boolean }): Promise<string | null> {
   try {
     const client = getRedis();
     const result = await client.set(key, value, options as Parameters<typeof client.set>[2]);
-    return result === "OK" ? "OK" : "ERROR";
+    // Returns "OK" on success, null when nx/xx condition not met
+    return result === "OK" ? "OK" : null;
   } catch (err) {
     logRedisError("SET", key, err);
     return "ERROR";

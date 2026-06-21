@@ -297,8 +297,9 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     })
   ).catch(() => null);
 
-  // 6. Cache (real + synthetic results together)
-  await redis.set(cacheKey, allResults, { ex: 3600 }).catch((err) => {
+  // 6. Cache (real + synthetic results together) with atomic NX flag
+  // Prevents race condition where concurrent requests could write stale data over fresh results
+  await redis.set(cacheKey, allResults, { ex: 3600, nx: true }).catch((err) => {
     logError("[engine] cache write failed", err, { requestId });
   });
 
