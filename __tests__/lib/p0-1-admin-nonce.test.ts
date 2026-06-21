@@ -19,8 +19,8 @@ describe("P0-1: Admin Session Token Nonce", () => {
     expect(token1).toBeTruthy();
     expect(token2).toBeTruthy();
     // Token format should be: exp.nonce.sig (3 parts separated by dots)
-    const parts1 = token1!.split(".");
-    const parts2 = token2!.split(".");
+    const parts1 = (token1 as string).split(".");
+    const parts2 = (token2 as string).split(".");
 
     expect(parts1.length).toBe(3);
     expect(parts2.length).toBe(3);
@@ -60,7 +60,7 @@ describe("P0-1: Admin Session Token Nonce", () => {
 
   test("nonce is different on every token call", () => {
     const tokens = Array.from({ length: 5 }, () => createAdminSessionToken());
-    const nonces = tokens.map((t) => t!.split(".")[1]);
+    const nonces = tokens.map((t) => (t as string).split(".")[1]);
 
     // All nonces should be unique
     const uniqueNonces = new Set(nonces);
