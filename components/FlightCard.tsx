@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, memo, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import type { SeatMapData } from "@/lib/seatMapsIntegration";
 import { querySeatAvailability } from "@/lib/seatMapsIntegration";
@@ -93,34 +93,52 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   const [variant, setVariant] = useState<"A" | "B">("A");
   const [seatMap, setSeatMap] = useState<SeatMapData | null>(null);
   const [seatMapLoading, setSeatMapLoading] = useState(false);
+  const seatMapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setVariant(getOrAssignVariant());
   }, []);
 
-  // Fetch seat map asynchronously
+  // S1-1: SeatMaps LCP Optimization
+  // Load seat maps only when card becomes visible (Intersection Observer).
+  // This prevents blocking initial page render (LCP) — seat maps are low-priority.
+  // Prefetch happens server-side via /api/search response for faster load.
   useEffect(() => {
-    const fetchSeatMap = async () => {
-      if (!flight.airlines || flight.airlines.length === 0) return;
+    if (!seatMapRef.current || !flight.airlines || flight.airlines.length === 0) return;
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
 
-      setSeatMapLoading(true);
-      try {
-        const data = await querySeatAvailability(
-          flight.airlines[0],
-          "B787", // Default aircraft — ideally from flight data
-          flight.from,
-          flight.to,
-          flight.cabin,
-        );
-        setSeatMap(data);
-      } catch (error) {
-        console.warn("[FlightCard] Seat map fetch error:", error);
-      } finally {
-        setSeatMapLoading(false);
-      }
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+
+        // Card is visible — fetch seat map in background
+        setSeatMapLoading(true);
+        try {
+          const data = await querySeatAvailability(
+            flight.airlines[0],
+            "B787", // Default aircraft — ideally from flight data
+            flight.from,
+            flight.to,
+            flight.cabin,
+          );
+          setSeatMap(data);
+        } catch (error) {
+          console.warn("[FlightCard] Seat map fetch error:", error);
+        } finally {
+          setSeatMapLoading(false);
+        }
+
+        // Unobserve after first intersection
+        observer.unobserve(seatMapRef.current!);
+      },
+      { rootMargin: "100px" } // Start loading 100px before card enters viewport
+    );
+
+    observer.observe(seatMapRef.current);
+
+    return () => {
+      if (seatMapRef.current) observer.unobserve(seatMapRef.current);
     };
-
-    fetchSeatMap();
   }, [flight.airlines, flight.from, flight.to, flight.cabin]);
 
   const cashCost   = flight.cashCost;
@@ -157,11 +175,13 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   const badge = CONFIDENCE_BADGE[confidence] ?? CONFIDENCE_BADGE.LOW;
 
   return (
-    <div className={clsx(
-      "bg-surface rounded-2xl border overflow-hidden hover-lift",
-      "transition-all duration-200 hover:shadow-card-hover",
-      isUseMiles ? "border-blue-500/30" : "border-border"
-    )}>
+    <div
+      ref={seatMapRef}
+      className={clsx(
+        "bg-surface rounded-2xl border overflow-hidden hover-lift",
+        "transition-all duration-200 hover:shadow-card-hover",
+        isUseMiles ? "border-blue-500/30" : "border-border"
+      )}>
 
       {/* DECISION BANNER */}
       <div className={clsx(
