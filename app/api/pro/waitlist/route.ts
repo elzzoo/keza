@@ -82,7 +82,8 @@ export async function GET() {
   try {
     const count = await redis.zcard(WAITLIST_KEY);
     return NextResponse.json({ count });
-  } catch {
+  } catch (err) {
+    logError("[api/pro/waitlist] GET", err);
     return NextResponse.json({ error: "Erreur" }, { status: 500 });
   }
 }

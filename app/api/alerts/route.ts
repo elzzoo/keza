@@ -139,16 +139,21 @@ export async function GET(req: NextRequest) {
   });
   if (limited) return limited;
 
-  const email = req.nextUrl.searchParams.get("email");
-  const token = req.nextUrl.searchParams.get("token");
-  if (!email) {
-    return NextResponse.json({ error: "Missing email param" }, { status: 400 });
+  try {
+    const email = req.nextUrl.searchParams.get("email");
+    const token = req.nextUrl.searchParams.get("token");
+    if (!email) {
+      return NextResponse.json({ error: "Missing email param" }, { status: 400 });
+    }
+    if (!verifyManageAlertsToken(email, token)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const alerts = await getAlertsByEmail(email);
+    return NextResponse.json({ alerts });
+  } catch (err) {
+    logError("[api/alerts] GET", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  if (!verifyManageAlertsToken(email, token)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const alerts = await getAlertsByEmail(email);
-  return NextResponse.json({ alerts });
 }
 
 // PATCH /api/alerts — update notification frequency for an alert

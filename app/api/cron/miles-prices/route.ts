@@ -5,6 +5,7 @@ import { recalibrate, getForexRate } from "@/lib/autoCalibrate";
 import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
+import { logError } from "@/lib/logger";
 
 // ─── Daily cron job: fully automatic data refresh ────────────────────────────
 // Runs every day at 03:00 UTC (configured in vercel.json)
@@ -77,6 +78,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     report.ok = true;
     return NextResponse.json(report);
   } catch (err) {
+    logError("[api/cron/miles-prices]", err);
     const message = err instanceof Error ? err.message : String(err);
     report.ok = false;
     report.error = message;

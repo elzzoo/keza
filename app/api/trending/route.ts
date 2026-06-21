@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { airportsMap } from "@/data/airports";
+import { logError } from "@/lib/logger";
 
 // GET /api/trending — top searched routes (last 3 days), max 6
 // Used by TrendingRoutesWidget on homepage
@@ -76,7 +77,8 @@ export async function GET() {
       { routes },
       { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
     );
-  } catch {
+  } catch (err) {
+    logError("[api/trending]", err);
     return NextResponse.json(
       { routes: [] },
       { headers: { "Cache-Control": "public, s-maxage=60" } }

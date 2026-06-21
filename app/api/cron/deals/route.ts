@@ -6,6 +6,7 @@ import { DEALS_KEY } from "@/lib/redisKeys";
 import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
+import { logError } from "@/lib/logger";
 
 const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
 const LAST_CRON_KEY = "keza:admin:last_cron_at";
@@ -57,30 +58,35 @@ export async function GET(request: Request) {
   }
 
   return Sentry.withMonitor("cron-deals", async () => {
-  const token = process.env.TRAVELPAYOUTS_TOKEN;
-  if (!token) {
-    return NextResponse.json({ error: "TRAVELPAYOUTS_TOKEN not set" }, { status: 500 });
-  }
+    try {
+      const token = process.env.TRAVELPAYOUTS_TOKEN;
+      if (!token) {
+        return NextResponse.json({ error: "TRAVELPAYOUTS_TOKEN not set" }, { status: 500 });
+      }
 
-  const enriched: RawDeal[] = [];
+      const enriched: RawDeal[] = [];
 
-  for (const route of ROUTES_TO_CHECK) {
-    const price = await fetchBestPrice(route.from, route.to, token);
-    if (price && price > 50) {
-      enriched.push({ ...route, cashPrice: price });
+      for (const route of ROUTES_TO_CHECK) {
+        const price = await fetchBestPrice(route.from, route.to, token);
+        if (price && price > 50) {
+          enriched.push({ ...route, cashPrice: price });
+        }
+      }
+
+      if (enriched.length === 0) {
+        return NextResponse.json({ ok: false, reason: "no prices fetched" });
+      }
+
+      const deals = sortDeals(enriched).slice(0, 8);
+      await Promise.all([
+        redis.set(DEALS_KEY, deals, { ex: DEALS_TTL }),
+        redis.set(LAST_CRON_KEY, new Date().toISOString(), { ex: 30 * 24 * 3600 }),
+      ]);
+
+      return NextResponse.json({ ok: true, count: deals.length });
+    } catch (err) {
+      logError("[api/cron/deals]", err);
+      return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
     }
-  }
-
-  if (enriched.length === 0) {
-    return NextResponse.json({ ok: false, reason: "no prices fetched" });
-  }
-
-  const deals = sortDeals(enriched).slice(0, 8);
-  await Promise.all([
-    redis.set(DEALS_KEY, deals, { ex: DEALS_TTL }),
-    redis.set(LAST_CRON_KEY, new Date().toISOString(), { ex: 30 * 24 * 3600 }),
-  ]);
-
-  return NextResponse.json({ ok: true, count: deals.length });
   }, { schedule: { type: "crontab", value: "0 6 * * *" } });
 }

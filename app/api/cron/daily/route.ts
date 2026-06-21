@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 // ─── Daily cron orchestrator ──────────────────────────────────────────────────
 // Vercel Hobby allows max 2 crons. This handler consolidates all non-alerts jobs
@@ -23,35 +24,40 @@ const DAILY_JOBS = [
 ] as const;
 
 export async function GET(request: Request): Promise<NextResponse> {
-  const limited = await rateLimitResponse(request, {
-    namespace: "api:cron:daily",
-    limit: 5,
-    windowSeconds: 300,
-  });
-  if (limited) return limited;
-
-  if (!hasCronSecret(request)) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
-  const secret = process.env.CRON_SECRET ?? "";
-  const headers = { Authorization: `Bearer ${secret}` };
-
-  // Fire all jobs in parallel as independent serverless invocations.
-  // We do NOT await — each sub-job runs in its own function context.
-  const triggered: string[] = [];
-  for (const path of DAILY_JOBS) {
-    fetch(`${base}${path}`, { method: "GET", headers }).catch(() => {
-      // Ignore errors — each job handles its own error logging
+  try {
+    const limited = await rateLimitResponse(request, {
+      namespace: "api:cron:daily",
+      limit: 5,
+      windowSeconds: 300,
     });
-    triggered.push(path);
-  }
+    if (limited) return limited;
 
-  return NextResponse.json({
-    ok: true,
-    triggered,
-    count: triggered.length,
-    note: "Jobs fired as independent invocations — check individual cron logs for results",
-  });
+    if (!hasCronSecret(request)) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+    const secret = process.env.CRON_SECRET ?? "";
+    const headers = { Authorization: `Bearer ${secret}` };
+
+    // Fire all jobs in parallel as independent serverless invocations.
+    // We do NOT await — each sub-job runs in its own function context.
+    const triggered: string[] = [];
+    for (const path of DAILY_JOBS) {
+      fetch(`${base}${path}`, { method: "GET", headers }).catch(() => {
+        // Ignore errors — each job handles its own error logging
+      });
+      triggered.push(path);
+    }
+
+    return NextResponse.json({
+      ok: true,
+      triggered,
+      count: triggered.length,
+      note: "Jobs fired as independent invocations — check individual cron logs for results",
+    });
+  } catch (err) {
+    logError("[api/cron/daily]", err);
+    return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
+  }
 }

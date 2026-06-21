@@ -4,6 +4,7 @@ import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import type { LiveDeal } from "@/lib/dealsEngine";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,8 +27,8 @@ export async function GET(request: Request) {
     if (cached && Array.isArray(cached) && cached.length > 0) {
       return NextResponse.json({ deals: cached, source: "live" });
     }
-  } catch {
-    // Redis unavailable — use fallback silently
+  } catch (err) {
+    logError("[api/deals]", err);
   }
   return NextResponse.json({ deals: FALLBACK_DEALS, source: "fallback" });
 }

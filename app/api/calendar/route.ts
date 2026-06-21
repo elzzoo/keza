@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchCalendarPrices, type CalendarDay } from "@/lib/engine";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 export const maxDuration = 25;
 
@@ -9,42 +10,47 @@ const IATA_RE = /^[A-Z]{3}$/;
 const MONTH_RE = /^\d{4}-\d{2}$/;
 
 export async function GET(request: Request) {
-  const limited = await rateLimitResponse(request, { namespace: "api:calendar", limit: 30, windowSeconds: 60 });
-  if (limited) return limited;
+  try {
+    const limited = await rateLimitResponse(request, { namespace: "api:calendar", limit: 30, windowSeconds: 60 });
+    if (limited) return limited;
 
-  const { searchParams } = new URL(request.url);
-  const from  = (searchParams.get("from") ?? "").toUpperCase().trim();
-  const to    = (searchParams.get("to") ?? "").toUpperCase().trim();
-  const month = (searchParams.get("month") ?? "").trim(); // YYYY-MM
+    const { searchParams } = new URL(request.url);
+    const from  = (searchParams.get("from") ?? "").toUpperCase().trim();
+    const to    = (searchParams.get("to") ?? "").toUpperCase().trim();
+    const month = (searchParams.get("month") ?? "").trim(); // YYYY-MM
 
-  if (!IATA_RE.test(from) || !IATA_RE.test(to) || !MONTH_RE.test(month)) {
-    return NextResponse.json(
-      { error: "Invalid params: from/to must be 3-letter IATA, month must be YYYY-MM" },
-      { status: 400 }
-    );
-  }
+    if (!IATA_RE.test(from) || !IATA_RE.test(to) || !MONTH_RE.test(month)) {
+      return NextResponse.json(
+        { error: "Invalid params: from/to must be 3-letter IATA, month must be YYYY-MM" },
+        { status: 400 }
+      );
+    }
 
-  // Cache key
-  const cacheKey = `keza:cal:${from}:${to}:${month}`;
+    // Cache key
+    const cacheKey = `keza:cal:${from}:${to}:${month}`;
 
-  // Check cache
-  const cached = await redis.get<CalendarDay[]>(cacheKey).catch(() => null);
-  if (cached) {
-    return NextResponse.json({ days: cached, cached: true }, {
+    // Check cache
+    const cached = await redis.get<CalendarDay[]>(cacheKey).catch(() => null);
+    if (cached) {
+      return NextResponse.json({ days: cached, cached: true }, {
+        headers: { "Cache-Control": "public, max-age=1800, s-maxage=3600" },
+      });
+    }
+
+    // Fetch fresh data — use first day of month as date param
+    const date = `${month}-01`;
+    const days = await fetchCalendarPrices(from, to, date).catch(() => []);
+
+    // Cache for 2 hours
+    if (days.length > 0) {
+      await redis.set(cacheKey, days, { ex: 7200 }).catch(() => null);
+    }
+
+    return NextResponse.json({ days, cached: false }, {
       headers: { "Cache-Control": "public, max-age=1800, s-maxage=3600" },
     });
+  } catch (err) {
+    logError("[api/calendar]", err, { params: { from: new URL(request.url).searchParams.get("from"), to: new URL(request.url).searchParams.get("to"), month: new URL(request.url).searchParams.get("month") } });
+    return NextResponse.json({ error: "Calendar fetch failed", days: [] }, { status: 500 });
   }
-
-  // Fetch fresh data — use first day of month as date param
-  const date = `${month}-01`;
-  const days = await fetchCalendarPrices(from, to, date).catch(() => []);
-
-  // Cache for 2 hours
-  if (days.length > 0) {
-    await redis.set(cacheKey, days, { ex: 7200 }).catch(() => null);
-  }
-
-  return NextResponse.json({ days, cached: false }, {
-    headers: { "Cache-Control": "public, max-age=1800, s-maxage=3600" },
-  });
 }

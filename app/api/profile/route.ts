@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { getServerProfile, saveServerProfile } from "@/lib/serverProfile";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { logError } from "@/lib/logger";
 
 // Zod schema for PATCH /api/profile — prevents arbitrary blob storage in Redis.
 // Mirrors UserProfile but with explicit size bounds on every field.
@@ -38,36 +39,47 @@ export async function GET(req: NextRequest) {
   const limited = await rateLimitResponse(req, { namespace: "api:profile:get", limit: 60, windowSeconds: 60 });
   if (limited) return limited;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const profile = await getServerProfile(session.user.email);
-  return NextResponse.json({ profile });
+    const profile = await getServerProfile(session.user.email);
+    return NextResponse.json({ profile });
+  } catch (err) {
+    logError("[api/profile] GET", err);
+    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
   const limited = await rateLimitResponse(req, { namespace: "api:profile:patch", limit: 20, windowSeconds: 60 });
   if (limited) return limited;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let raw: unknown;
   try {
-    raw = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const parsed = ProfilePatchSchema.safeParse(raw);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid profile data", details: parsed.error.flatten() }, { status: 400 });
-  }
+    let raw: unknown;
+    try {
+      raw = await req.json();
+    } catch (err) {
+      logError("[api/profile] PATCH - JSON parse", err);
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
 
-  await saveServerProfile(session.user.email, parsed.data as Parameters<typeof saveServerProfile>[1]);
-  return NextResponse.json({ ok: true });
+    const parsed = ProfilePatchSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid profile data", details: parsed.error.flatten() }, { status: 400 });
+    }
+
+    await saveServerProfile(session.user.email, parsed.data as Parameters<typeof saveServerProfile>[1]);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    logError("[api/profile] PATCH", err);
+    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+  }
 }
