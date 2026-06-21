@@ -46,8 +46,8 @@ export function OnboardingClient() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          loyaltyPrograms: selected,
-          onboardingCompleted: true,
+          programs: selected,
+          hasOnboarded: true,
         }),
       });
       if (res.ok) {

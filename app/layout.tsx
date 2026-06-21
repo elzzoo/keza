@@ -12,6 +12,7 @@ import { AuthSessionProvider } from "@/contexts/SessionContext";
 import { grantTrialIfNew } from "@/lib/lemonsqueezy";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { OnboardingRedirect } from "@/components/OnboardingRedirect";
 
 const inter = localFont({
   src: "./fonts/GeistVF.woff",
@@ -131,6 +132,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         <AuthSessionProvider>
           <ProfileProvider>
+            <OnboardingRedirect />
             {children}
             <SpeedInsights />
             <Toaster
