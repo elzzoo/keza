@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -148,6 +148,12 @@ export function RoutePageClient({
   const [hasSearched, setHasSearched] = useState(false);
   const fr = lang === "fr";
 
+  const handleSearchStart = useCallback(() => {
+    setResults([]);
+    setHasSearched(false);
+    setLoading(true);
+  }, []);
+
   const handleResults = (r: FlightResult[]) => {
     setResults(r);
     setHasSearched(true);
@@ -251,6 +257,7 @@ export function RoutePageClient({
           <SearchForm
             onResults={handleResults}
             onLoading={setLoading}
+            onSearchStart={handleSearchStart}
             lang={lang}
             initialFrom={from}
             initialTo={to}

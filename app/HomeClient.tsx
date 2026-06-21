@@ -117,6 +117,9 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
 
   const handleSearchStart = useCallback((params: {from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"}) => {
     setLastSearch(params);
+    setResults([]); // Clear previous results immediately to prevent contamination
+    setPartial(false);
+    setLoading(true);
   }, []);
 
   const handleBack = () => {
