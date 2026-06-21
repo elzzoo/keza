@@ -37,13 +37,13 @@ describe("P0-1: Admin Session Token Nonce", () => {
     const token = createAdminSessionToken();
     const now = Date.now();
 
-    const isValid = verifyAdminSessionToken(token, now);
+    const isValid = verifyAdminSessionToken(token ?? undefined, now);
     expect(isValid).toBe(true);
   });
 
   test("verification rejects token with tampered nonce", () => {
     const token = createAdminSessionToken();
-    const parts = token!.split(".");
+    const parts = (token as string).split(".");
     // Tamper with nonce
     const tamperedToken = `${parts[0]}.0000000000000000000000000000000.${parts[2]}`;
 
@@ -59,8 +59,13 @@ describe("P0-1: Admin Session Token Nonce", () => {
   });
 
   test("nonce is different on every token call", () => {
-    const tokens = Array.from({ length: 5 }, () => createAdminSessionToken());
-    const nonces = tokens.map((t) => (t as string).split(".")[1]);
+    const tokens = Array.from(
+      { length: 5 },
+      () => createAdminSessionToken() || ""
+    );
+    const nonces = tokens
+      .filter((t) => t !== "")
+      .map((t) => t.split(".")[1]);
 
     // All nonces should be unique
     const uniqueNonces = new Set(nonces);
