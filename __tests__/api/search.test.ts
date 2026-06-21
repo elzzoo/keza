@@ -141,6 +141,49 @@ describe("POST /api/search", () => {
         expect.any(String)
       );
     });
+
+    it("returns 400 when returnDate is equal to departure date for roundtrip", async () => {
+      const res = await POST(makeRequest({
+        ...VALID_BODY,
+        tripType: "roundtrip",
+        returnDate: FUTURE_DATE,
+        date: FUTURE_DATE,
+      }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date must be after departure date");
+    });
+
+    it("returns 400 when returnDate is before departure date for roundtrip", async () => {
+      const departureDate = FUTURE_DATE;
+      const earlierDate = new Date(new Date(departureDate).getTime() - 1 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const res = await POST(makeRequest({
+        ...VALID_BODY,
+        tripType: "roundtrip",
+        returnDate: earlierDate,
+        date: departureDate,
+      }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date must be after departure date");
+    });
+
+    it("allows roundtrip when returnDate is after departure date", async () => {
+      mockSearchEngine.mockResolvedValue([FLIGHT_RESULT]);
+      const departureDate = FUTURE_DATE;
+      const returnDate = new Date(new Date(departureDate).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const res = await POST(makeRequest({
+        ...VALID_BODY,
+        tripType: "roundtrip",
+        returnDate,
+        date: departureDate,
+      }));
+      expect(res.status).toBe(200);
+      expect(mockSearchEngine).toHaveBeenCalledWith(
+        expect.objectContaining({ tripType: "roundtrip", returnDate }),
+        expect.any(String)
+      );
+    });
   });
 
   describe("successful search", () => {

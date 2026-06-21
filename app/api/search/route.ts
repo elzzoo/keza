@@ -79,12 +79,23 @@ export async function POST(request: Request) {
 
     const passengers = Math.min(Math.max(Number(body.passengers) || 1, 1), 9);
 
+    const tripType = body.tripType === "roundtrip" ? "roundtrip" : "oneway";
+    const returnDate = isValidFutureDate(body.returnDate) ? body.returnDate : undefined;
+
+    // Validate return date is after departure date for roundtrips
+    if (tripType === "roundtrip" && returnDate && returnDate <= date) {
+      return NextResponse.json(
+        { error: "Return date must be after departure date" },
+        { status: 400 }
+      );
+    }
+
     const searchParams: SearchParams = {
       from,
       to,
       date,
-      returnDate:   isValidFutureDate(body.returnDate) ? body.returnDate : undefined,
-      tripType:     body.tripType === "roundtrip" ? "roundtrip" : "oneway",
+      returnDate,
+      tripType,
       stops:        body.stops === "direct" ? "direct" : "any",
       cabin:        ["economy", "premium", "business", "first"].includes(body.cabin ?? "") ? body.cabin! as "economy" | "premium" | "business" | "first" : "economy",
       passengers,
