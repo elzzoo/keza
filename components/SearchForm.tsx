@@ -478,7 +478,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
         {/* Error */}
         {error && (
-          <div role="alert" className="text-danger/90 text-sm bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 flex items-center gap-2">
+          <div role="alert" className="text-white text-sm bg-danger border border-danger/20 rounded-xl px-4 py-3 flex items-center gap-2">
             <span>⚠️</span>{error}
           </div>
         )}

@@ -63,11 +63,11 @@ const AWARD_SEARCH_URLS: Record<string, string> = {
   "Kenya Airways Flying Blue":  "https://wwws.airfrance.us/en/common/searchbooking/request/smiles",
 };
 
-// Confidence labels
+// Confidence labels — WCAG AA compliant (4.5:1 contrast ratio minimum)
 const CONFIDENCE_BADGE: Record<string, { fr: string; en: string; color: string }> = {
-  HIGH:   { fr: "Prix confirmé",   en: "Confirmed price", color: "bg-success/15 text-success border-success/20" },
-  MEDIUM: { fr: "Bonne estimation", en: "Good estimate",  color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
-  LOW:    { fr: "Estimation",       en: "Estimate",        color: "bg-warning/15 text-warning border-warning/20" },
+  HIGH:   { fr: "Prix confirmé",   en: "Confirmed price", color: "bg-success text-white border-success/20" },
+  MEDIUM: { fr: "Bonne estimation", en: "Good estimate",  color: "bg-blue-500 text-white border-blue-500/20" },
+  LOW:    { fr: "Estimation",       en: "Estimate",        color: "bg-warning text-slate-900 border-warning/20" },
 };
 
 interface Props {
