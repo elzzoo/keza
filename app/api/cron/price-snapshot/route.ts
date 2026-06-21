@@ -4,6 +4,7 @@ import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
 import * as Sentry from "@sentry/nextjs";
+import { logError } from "@/lib/logger";
 
 const POPULAR_ROUTES = [
   // Africa ↔ Europe (original)
@@ -79,46 +80,51 @@ export async function GET(req: NextRequest) {
   }
 
   return Sentry.withMonitor("cron-price-snapshot", async () => {
-  let recorded = 0;
-  const errors: string[] = [];
-
-  for (const route of POPULAR_ROUTES) {
-    const [from, to] = route.split("-");
-    if (!from || !to) continue;
-
     try {
-      const now = new Date();
-      const month1 = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      const month2 = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
+      let recorded = 0;
+      const errors: string[] = [];
 
-      const [prices1, prices2] = await Promise.all([
-        fetchCalendarPrices(from, to, month1).catch(() => []),
-        fetchCalendarPrices(from, to, month2).catch(() => []),
-      ]);
+      for (const route of POPULAR_ROUTES) {
+        const [from, to] = route.split("-");
+        if (!from || !to) continue;
 
-      const allPrices = [
-        ...prices1.map((day) => day.price),
-        ...prices2.map((day) => day.price),
-      ].filter((p) => typeof p === "number" && p > 0 && !isNaN(p));
+        try {
+          const now = new Date();
+          const month1 = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+          const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          const month2 = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
 
-      if (allPrices.length === 0) continue;
+          const [prices1, prices2] = await Promise.all([
+            fetchCalendarPrices(from, to, month1).catch(() => []),
+            fetchCalendarPrices(from, to, month2).catch(() => []),
+          ]);
 
-      const cheapest = Math.min(...allPrices);
+          const allPrices = [
+            ...prices1.map((day) => day.price),
+            ...prices2.map((day) => day.price),
+          ].filter((p) => typeof p === "number" && p > 0 && !isNaN(p));
 
-      // Fire-and-forget — never let a Redis failure crash the loop
-      recordDailyPrice(from, to, cheapest).catch(() => {});
+          if (allPrices.length === 0) continue;
 
-      recorded++;
+          const cheapest = Math.min(...allPrices);
+
+          // Fire-and-forget — never let a Redis failure crash the loop
+          recordDailyPrice(from, to, cheapest).catch(() => {});
+
+          recorded++;
+        } catch (err) {
+          errors.push(`${route}: ${(err as Error).message}`);
+        }
+      }
+
+      return NextResponse.json({
+        recorded,
+        total: POPULAR_ROUTES.length,
+        errors,
+      });
     } catch (err) {
-      errors.push(`${route}: ${(err as Error).message}`);
+      logError("[api/cron/price-snapshot]", err);
+      return NextResponse.json({ error: "Internal error" }, { status: 500 });
     }
-  }
-
-  return NextResponse.json({
-    recorded,
-    total: POPULAR_ROUTES.length,
-    errors,
-  });
   }, { schedule: { type: "crontab", value: "0 9 * * *" } });
 }

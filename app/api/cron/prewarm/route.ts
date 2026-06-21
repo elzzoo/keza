@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { searchEngine, type SearchParams } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { logWarn } from "@/lib/logger";
+import { logWarn, logError } from "@/lib/logger";
 import { TOP_ROUTES, getPreWarmDates } from "@/lib/prewarm";
 
 // ─── Hourly route pre-warming cron ────────────────────────────────────────────
@@ -94,6 +94,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       errors,
     });
   } catch (err) {
+    logError("[api/cron/prewarm]", err);
     logWarn(
       "[cron/prewarm-routes] Failed",
       err instanceof Error ? err.message : String(err)

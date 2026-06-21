@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
-import { logWarn } from "@/lib/logger";
+import { logWarn, logError } from "@/lib/logger";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { needsTrialReminder } from "@/lib/lemonsqueezy";
 import { sendTrialReminderEmail } from "@/lib/resend";
@@ -44,31 +44,41 @@ async function handleTrialReminder() {
 }
 
 export async function GET(request: Request) {
-  const limited = await rateLimitResponse(request, {
-    namespace: "api:cron:trial-reminder",
-    limit: 5,
-    windowSeconds: 300,
-  });
-  if (limited) return limited;
+  try {
+    const limited = await rateLimitResponse(request, {
+      namespace: "api:cron:trial-reminder",
+      limit: 5,
+      windowSeconds: 300,
+    });
+    if (limited) return limited;
 
-  if (!validateCronSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!validateCronSecret(request)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const result = await handleTrialReminder();
+    return NextResponse.json(result);
+  } catch (err) {
+    logError("[api/cron/trial-reminder] GET", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
-  const result = await handleTrialReminder();
-  return NextResponse.json(result);
 }
 
 export async function POST(request: Request) {
-  const limited = await rateLimitResponse(request, {
-    namespace: "api:cron:trial-reminder",
-    limit: 5,
-    windowSeconds: 300,
-  });
-  if (limited) return limited;
+  try {
+    const limited = await rateLimitResponse(request, {
+      namespace: "api:cron:trial-reminder",
+      limit: 5,
+      windowSeconds: 300,
+    });
+    if (limited) return limited;
 
-  if (!validateCronSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!validateCronSecret(request)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const result = await handleTrialReminder();
+    return NextResponse.json(result);
+  } catch (err) {
+    logError("[api/cron/trial-reminder] POST", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
-  const result = await handleTrialReminder();
-  return NextResponse.json(result);
 }

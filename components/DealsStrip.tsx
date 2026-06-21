@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { trackDealClick } from "@/lib/analytics";
 import type { LiveDeal } from "@/lib/dealsEngine";
 
@@ -27,7 +28,14 @@ export function DealsStrip({ lang, onDealClick }: Props) {
         setDeals(data.deals ?? []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("[DealsStrip] fetch /api/deals:", err);
+        Sentry.captureException(err, {
+          tags: { component: "DealsStrip" },
+          extra: { action: "fetch deals" }
+        });
+        setLoading(false);
+      });
   }, []);
 
   if (!loading && deals.length === 0) return null;
