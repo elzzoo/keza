@@ -110,7 +110,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
     e.stopPropagation();
     const nowFav = toggleFavoriteRoute(flight.from, flight.to);
     setIsFav(nowFav);
-  }, []);
+  }, [flight.from, flight.to]);
   const alternatives = (flight.milesOptions ?? [])
     .filter(o => !o.isBestDeal)
     .slice(0, 3);
