@@ -30,8 +30,11 @@ async function fetchBestPrice(from: string, to: string, token: string): Promise<
     const depart = new Date(Date.now() + 28 * 24 * 60 * 60 * 1000)
       .toISOString().split("T")[0];
 
-    const url = `https://api.travelpayouts.com/v2/prices/month-matrix?currency=usd&origin=${from}&destination=${to}&show_to_affiliates=true&month=${depart.slice(0,7)}&token=${token}`;
-    const res = await fetch(url, { next: { revalidate: 0 } });
+    const url = `https://api.travelpayouts.com/v2/prices/month-matrix?currency=usd&origin=${from}&destination=${to}&show_to_affiliates=true&month=${depart.slice(0,7)}`;
+    const res = await fetch(url, {
+      next: { revalidate: 0 },
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!res.ok) return null;
     const data = await res.json() as { data?: { price: number }[] };
     if (!data.data?.length) return null;

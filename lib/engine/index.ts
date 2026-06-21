@@ -54,10 +54,12 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   // 1. Cache check + effectivePrices in parallel
   // Each caller gets a fresh searchId — the cached results share flight/price
   // data but click-tracking must be per-session, not shared across users.
-  const [cached, effectivePrices] = await Promise.all([
+  const [cachedRaw, effectivePrices] = await Promise.all([
     redis.get<FlightResult[]>(cacheKey).catch(() => null),
     getEffectivePrices().catch(() => new Map<string, number>()),
   ]);
+  // Type guard: ensure cached value is actually an array of FlightResult
+  const cached = Array.isArray(cachedRaw) ? cachedRaw : null;
   if (cached) {
     const freshId = crypto.randomUUID();
     return cached.map((r) => ({ ...r, searchId: freshId }));
@@ -95,7 +97,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     const suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
     const coveredAirlines = new Set(rawOutbound.flatMap(f => f.airlines));
     const cheapestRaw = rawOutbound.length > 0
-      ? rawOutbound.reduce((best, f) => f.price < best.price ? f : best, rawOutbound[0])
+      ? rawOutbound.reduce((best, f) => f.price < best.price ? f : best)
       : undefined;
     const cheapestPrice = cheapestRaw?.price ?? 0;
     const cheapestCabinResolved = cheapestRaw?.cabinResolved ?? false;

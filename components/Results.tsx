@@ -428,7 +428,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       ) : (
         <div className="space-y-3 stagger-children">
           {filtered.map((f, i) => (
-            <div key={f.searchId || `flight-${i}`} className="animate-fade-up">
+            <div key={`${f.searchId}-${f.from}-${f.to}`} className="animate-fade-up">
               <FlightCard
                 flight={f}
                 lang={lang}
