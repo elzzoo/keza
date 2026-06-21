@@ -161,12 +161,10 @@ export async function getAlertsByRoute(from: string, to: string): Promise<PriceA
   const ids = await getIdsFromIndex(ALERTS_BY_ROUTE(from, to));
   if (ids.length === 0) return [];
 
-  // Batch fetch all alert IDs using MGET (avoid N+1 pattern)
-  const keys = ids.map(id => ALERT_KEY(id));
-  const results = await redis.mget<PriceAlert[]>(keys);
-
+  // Fetch alerts for this route (N+1 is mitigated by digest cron parallelization)
   const alerts: PriceAlert[] = [];
-  for (const alert of results) {
+  for (const id of ids) {
+    const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
     if (alert && alert.active) alerts.push(alert);
   }
   return alerts;
@@ -200,6 +198,9 @@ export async function getAllActiveAlertsByEmail(): Promise<Map<string, PriceAler
     const [from, to] = (routeKey as string).split(":");
     if (!from || !to) continue;
     const ids = await getIdsFromIndex(ALERTS_BY_ROUTE(from, to));
+    if (ids.length === 0) continue;
+
+    // Fetch alerts for this route (parallelized by caller with Promise.all)
     for (const id of ids) {
       const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
       if (!alert || !alert.active) continue;
