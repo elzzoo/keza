@@ -139,12 +139,26 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         isUseMiles ? "bg-blue-500/10" : "bg-surface"
       )}>
 
-        {/* Global best badge — top-right corner */}
-        {isGlobalBest && (
-          <div className="absolute top-3 right-3 bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
-            🥇 {fr ? "Meilleure offre" : "Best deal"}
-          </div>
-        )}
+        {/* Verdict badge — top-right corner (or next to global best if present) */}
+        <div className="absolute top-3 right-3 flex gap-2 items-center">
+          {isGlobalBest && (
+            <div className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
+              🥇 {fr ? "Meilleure offre" : "Best deal"}
+            </div>
+          )}
+          {flight.verdictLabel && (
+            <div className={clsx(
+              "text-[10px] font-bold px-2 py-0.5 rounded-full border",
+              flight.verdictLabel === "MILES_WINS"
+                ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
+                : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+            )}>
+              {flight.verdictLabel === "MILES_WINS"
+                ? (fr ? "💎 Miles gagnent" : "💎 Miles win")
+                : (fr ? "💵 Cash gagne" : "💵 Cash wins")}
+            </div>
+          )}
+        </div>
 
         {/* Favourite button — top-left */}
         <button

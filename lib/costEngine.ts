@@ -47,6 +47,12 @@ export async function initializeBonusTransfers(): Promise<void> {
 // ─── Public types ─────────────────────────────────────────────────────────────
 
 export type Recommendation = "USE_MILES" | "USE_CASH" | "IF_HAVE_MILES";
+export type Verdict = "MILES_WINS" | "CASH_WINS" | "NO_OPTION";
+
+export function generateVerdictLabel(recommendation: Recommendation, hasBestOption: boolean): Verdict {
+  if (!hasBestOption) return "NO_OPTION";
+  return recommendation === "USE_MILES" ? "MILES_WINS" : "CASH_WINS";
+}
 
 export interface FlightInput {
   from: string;
@@ -91,6 +97,7 @@ export interface CostComparison {
   explanation: string;            // kept for backward compat
   displayMessage: string;         // "🔥 Tu économises $X" or "❌ Les miles coûtent $X de plus"
   disclaimer: string;             // trust disclaimer shown on every result
+  verdictLabel?: Verdict;         // explicit verdict: MILES_WINS | CASH_WINS | NO_OPTION
 }
 
 // ─── Helper: which airlines are in each program's network ────────────────────
@@ -1091,6 +1098,8 @@ export function buildCostOptions(
         : `Quasi identique — cash légèrement avantageux de ${Math.round(Math.abs(savings))}.`
     : `Aucune option miles disponible. Payez en cash (${cashTotal}).`;
 
+  const verdictLabel = generateVerdictLabel(recommendation, bestOption !== null);
+
   return {
     cashCost: cashTotal,
     milesCost: bestOption ? bestMilesCost : 0,
@@ -1102,6 +1111,7 @@ export function buildCostOptions(
     milesOptions: dedupedOptions,
     scenarios: buildScenarios(dedupedOptions),
     explanation,
+    verdictLabel,
   };
 }
 

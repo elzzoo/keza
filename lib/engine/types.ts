@@ -65,6 +65,10 @@ export interface FlightResult {
   source?: "DUFFEL" | "TP" | "SYNTHETIC";
   /** How reliable the price is — HIGH = Duffel live price, LOW = TP cached, ESTIMATED = synthetic floor */
   priceConfidence?: "HIGH" | "LOW" | "ESTIMATED";
+
+  // ── Verdict (for UI display) ───────────────────────────────────────────────
+  /** Explicit verdict for user decision: "Cash wins / Miles win / Need transfer" */
+  verdictLabel?: string;
 }
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
