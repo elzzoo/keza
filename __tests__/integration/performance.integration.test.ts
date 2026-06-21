@@ -1,5 +1,24 @@
+const mockRedisSet = jest.fn();
+const mockRedisIncr = jest.fn();
+const mockRedisTtl = jest.fn();
+
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    set: (...args: unknown[]) => mockRedisSet(...args),
+    incr: (...args: unknown[]) => mockRedisIncr(...args),
+    ttl: (...args: unknown[]) => mockRedisTtl(...args),
+  },
+}));
+
 import { POST as searchStream } from "@/app/api/search/stream/route";
 import { POST as prewarmPost } from "@/app/api/cron/prewarm/route";
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockRedisSet.mockResolvedValue("OK");
+  mockRedisIncr.mockResolvedValue(1);
+  mockRedisTtl.mockResolvedValue(300);
+});
 
 describe("Performance Integration", () => {
   it("streaming endpoint returns fast", async () => {
