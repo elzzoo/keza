@@ -42,6 +42,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   // Load profile from server (if authenticated) or localStorage (if not)
   useEffect(() => {
     const loadProfileData = async () => {
+      // Only fetch on the client side
+      if (typeof window === "undefined") {
+        setProfile(loadProfile());
+        return;
+      }
+
       if (session?.user?.email) {
         // Authenticated: fetch from Redis via server
         setIsLoadingFromServer(true);
@@ -79,8 +85,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       // Save to localStorage (always)
       saveProfile(updated);
 
-      // Save to server if authenticated
-      if (session?.user?.email) {
+      // Save to server if authenticated and in browser
+      if (typeof window !== "undefined" && session?.user?.email) {
         fetch("/api/portfolio", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
