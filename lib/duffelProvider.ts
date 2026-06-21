@@ -4,6 +4,39 @@ import type { NormalizedFlight } from "./promotions/engine";
 import { redis } from "@/lib/redis";
 import { logError, logWarn } from "@/lib/logger";
 
+const DUFFEL_ERROR_TRACKING_KEY = "duffel:errors:1m";
+
+/**
+ * Track Duffel error occurrence for alerting.
+ * Maintains a rolling 1-minute window of error + total request counts.
+ */
+async function trackDuffelError(isError: boolean): Promise<void> {
+  try {
+    const now = Date.now();
+    const window_start = now - 60_000; // 1-minute window
+
+    // Get current metrics or initialize
+    let metrics = await redis.get<{ window_start: number; error_count: number; total_count: number }>(
+      DUFFEL_ERROR_TRACKING_KEY
+    );
+
+    // Reset if window expired
+    if (!metrics || metrics.window_start < window_start) {
+      metrics = { window_start: now, error_count: 0, total_count: 0 };
+    }
+
+    // Increment counters
+    metrics.total_count += 1;
+    if (isError) metrics.error_count += 1;
+
+    // Write back with 2-minute TTL (window + buffer)
+    await redis.setex(DUFFEL_ERROR_TRACKING_KEY, 120, JSON.stringify(metrics));
+  } catch (err) {
+    // Silently ignore tracking errors to avoid breaking search
+    logWarn(`[duffel] error tracking failed: ${String(err)}`);
+  }
+}
+
 type Cabin = "economy" | "premium" | "business" | "first";
 
 const DUFFEL_BASE = "https://api.duffel.com";
@@ -214,6 +247,7 @@ export async function fetchFromDuffel(
           logWarn(`[duffel] rate limited (retry after ${retryAfter}s), falling back to Travelpayouts`);
         }
       }
+      await trackDuffelError(true);
       return [];
     }
 
@@ -222,18 +256,21 @@ export async function fetchFromDuffel(
       json = await res.json();
     } catch {
       logError(`[duffel] invalid JSON response for ${from}→${to}`);
+      await trackDuffelError(true);
       return [];
     }
 
     // Validate response structure
     if (!json || typeof json !== "object" || !("data" in json)) {
       logWarn(`[duffel] invalid response structure for ${from}→${to}: missing data field`);
+      await trackDuffelError(true);
       return [];
     }
 
     const data = (json as DuffelOfferRequestResponse).data;
     if (!Array.isArray(data?.offers)) {
       logWarn(`[duffel] invalid response structure for ${from}→${to}: offers is not an array`);
+      await trackDuffelError(true);
       return [];
     }
 
@@ -321,6 +358,7 @@ export async function fetchFromDuffel(
       if (!existing || f.price < existing.price) best.set(key, f);
     }
 
+    await trackDuffelError(false);
     return Array.from(best.values());
 
   } catch (err) {
@@ -330,6 +368,7 @@ export async function fetchFromDuffel(
     } else {
       logError(`[duffel] unexpected error for ${from}→${to}:`, err);
     }
+    await trackDuffelError(true);
     return [];
   }
 }

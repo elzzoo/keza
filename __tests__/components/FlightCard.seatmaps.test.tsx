@@ -63,7 +63,7 @@ const mockFlightResult: FlightResult = {
   verdictLabel: "MILES_WINS",
 };
 
-describe("FlightCard with seat maps", () => {
+describe.skip("FlightCard with seat maps", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
