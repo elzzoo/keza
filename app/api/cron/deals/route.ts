@@ -85,8 +85,12 @@ export async function GET(request: Request) {
 
       return NextResponse.json({ ok: true, count: deals.length });
     } catch (err) {
-      logError("[api/cron/deals]", err);
-      return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
+      logError("[api/cron/deals] failed", err);
+      // Generic error message to prevent information disclosure (API tokens, service errors)
+      return NextResponse.json(
+        { ok: false, error: "Internal server error" },
+        { status: 500 }
+      );
     }
   }, { schedule: { type: "crontab", value: "0 6 * * *" } });
 }

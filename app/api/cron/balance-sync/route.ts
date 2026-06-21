@@ -44,9 +44,10 @@ export async function GET(req: NextRequest) {
         timestamp: new Date().toISOString(),
       });
     } catch (err) {
-      logError("Cron balance-sync failed", err);
+      logError("[api/cron/balance-sync] failed", err);
+      // Generic error message to prevent information disclosure (credentials, decryption details)
       return NextResponse.json(
-        { error: "Internal server error", details: String(err) },
+        { error: "Internal server error" },
         { status: 500 }
       );
     }

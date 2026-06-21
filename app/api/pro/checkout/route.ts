@@ -26,19 +26,23 @@ export async function POST(req: NextRequest) {
       const url = await createCheckoutUrl(email.trim().toLowerCase());
       return NextResponse.json({ url });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
       logError("[api/pro/checkout] Failed to create checkout", err);
       Sentry.captureException(err, {
         tags: { route: "checkout" },
       });
       // If env vars not set, return 503 with clear message
+      const message = err instanceof Error ? err.message : "Unknown error";
       if (message.includes("not configured")) {
         return NextResponse.json(
           { error: "Payments not yet configured" },
           { status: 503 }
         );
       }
-      return NextResponse.json({ error: message }, { status: 500 });
+      // Generic error message to prevent information disclosure
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      );
     }
   });
 }

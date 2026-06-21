@@ -3,6 +3,7 @@ import { redis } from "@/lib/redis";
 import { hasAdminSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { updateMilesPricesSchema } from "@/lib/adminSchemas";
+import { logError } from "@/lib/logger";
 
 // ── Admin endpoint to update miles values dynamically ────────────────────────
 // POST /api/admin/update-data
@@ -93,8 +94,12 @@ export async function POST(request: Request): Promise<NextResponse> {
       ttlDays: 7,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    logError("[api/admin/update-data] POST failed", err);
+    // Generic error message to prevent information disclosure (Redis tokens, etc.)
+    return NextResponse.json(
+      { ok: false, error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -135,7 +140,11 @@ export async function GET(request: Request): Promise<NextResponse> {
       note: "Redis values override static. TTL = 7 days. Use POST to update.",
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    logError("[api/admin/update-data] GET failed", err);
+    // Generic error message to prevent information disclosure (Redis tokens, etc.)
+    return NextResponse.json(
+      { ok: false, error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

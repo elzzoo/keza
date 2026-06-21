@@ -118,9 +118,10 @@ export async function GET(req: NextRequest) {
       ts: new Date().toISOString(),
     });
   } catch (err) {
-    logError("[cron/onboarding] fatal", err);
+    logError("[api/cron/onboarding] fatal error", err);
+    // Generic error message to prevent information disclosure (database schema, Prisma errors, etc.)
     return NextResponse.json(
-      { ok: false, error: (err as Error).message },
+      { ok: false, error: "Internal server error" },
       { status: 500 }
     );
   }

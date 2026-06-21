@@ -78,10 +78,10 @@ export async function GET(request: Request): Promise<NextResponse> {
     report.ok = true;
     return NextResponse.json(report);
   } catch (err) {
-    logError("[api/cron/miles-prices]", err);
-    const message = err instanceof Error ? err.message : String(err);
+    logError("[api/cron/miles-prices] failed", err);
+    // Generic error message to prevent information disclosure (ML infrastructure, etc.)
     report.ok = false;
-    report.error = message;
+    report.error = "Internal server error";
     return NextResponse.json(report, { status: 500 });
   }
   }, { schedule: { type: "crontab", value: "0 3 * * *" } });

@@ -54,9 +54,10 @@ export async function GET(request: Request) {
         filtered: TRANSFER_BONUSES.length - validTransfers.length,
       });
     } catch (err) {
-      logError("[cron/bonus-transfers] error:", err);
+      logError("[api/cron/bonus-transfers] failed", err);
+      // Generic error message to prevent information disclosure (Redis cluster details, etc.)
       return NextResponse.json(
-        { error: "Failed to sync bonus transfers" },
+        { error: "Internal server error" },
         { status: 500 }
       );
     }
