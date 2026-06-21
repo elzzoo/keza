@@ -254,7 +254,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
   return (
     <form onSubmit={submit}>
-      <div className="bg-surface rounded-3xl border border-border p-5 space-y-4 shadow-card">
+      <div className="bg-surface rounded-3xl border border-border p-4 sm:p-5 space-y-3 sm:space-y-4 shadow-card">
 
         {/* Trip type toggle */}
         <div className="flex gap-1 bg-bg rounded-2xl p-1 border border-border">
@@ -293,10 +293,10 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         </div>
 
         {/* Dates */}
-        <div className={clsx("grid gap-3", tripType === "roundtrip" ? "grid-cols-2" : "grid-cols-1")}>
+        <div className={clsx("grid gap-2 sm:gap-3", tripType === "roundtrip" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
           {/* Departure date */}
           <div>
-            <label htmlFor="keza-dep-date" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 block">
+            <label htmlFor="keza-dep-date" className="text-[11px] sm:text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 block">
               {fr ? "Date aller" : "Departure"}
             </label>
             <div className="flex gap-1.5">
@@ -345,7 +345,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
           {/* Return date */}
           {tripType === "roundtrip" && (
             <div>
-              <label htmlFor="keza-ret-date" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 block">
+              <label htmlFor="keza-ret-date" className="text-[11px] sm:text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 block">
                 {fr ? "Date retour" : "Return"}
               </label>
               <div className="flex gap-1.5">
@@ -417,29 +417,29 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         )}
 
         {/* Cabin + Passengers */}
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <p id="keza-cabin-label" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3">
+          <div>
+            <p id="keza-cabin-label" className="text-[11px] sm:text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Classe" : "Cabin"}
             </p>
-            <div className="flex gap-1.5" role="group" aria-labelledby="keza-cabin-label">
+            <div className="flex gap-1.5 flex-wrap sm:flex-nowrap" role="group" aria-labelledby="keza-cabin-label">
               <button type="button" onClick={() => setCabin("economy")} aria-pressed={cabin === "economy"} className={cabinBtn(cabin === "economy")}>
-                {fr ? "Éco" : "Economy"}
+                {fr ? "Éco" : "Eco"}
               </button>
               <button type="button" onClick={() => setCabin("premium")} aria-pressed={cabin === "premium"} className={cabinBtn(cabin === "premium")}>
-                {fr ? "Prem+" : "Prem+"}
+                {fr ? "Prem" : "Prem"}
               </button>
               <button type="button" onClick={() => setCabin("business")} aria-pressed={cabin === "business"} className={cabinBtn(cabin === "business")}>
-                {fr ? "Affaires" : "Business"}
+                {fr ? "Bus." : "Bus."}
               </button>
               <button type="button" onClick={() => setCabin("first")} aria-pressed={cabin === "first"} className={cabinBtn(cabin === "first")}>
-                {fr ? "1ère" : "First"}
+                {fr ? "1ère" : "1st"}
               </button>
             </div>
           </div>
 
-          <div className="w-32">
-            <p id="keza-pax-label" className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
+          <div>
+            <p id="keza-pax-label" className="text-[11px] sm:text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Passagers" : "Passengers"}
             </p>
             <div className="flex items-center justify-between bg-surface-2 border border-border rounded-xl px-3 py-2.5 h-[42px]">
@@ -465,7 +465,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
         {/* Miles programs */}
         <div>
-          <label className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
+          <label className="text-[11px] sm:text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
             {fr ? "Programmes miles" : "Miles programs"}
             <span className="font-normal normal-case text-subtle tracking-normal">— {fr ? "optionnel" : "optional"}</span>
           </label>
@@ -488,7 +488,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
           type="submit"
           disabled={busy || !canGo}
           className={clsx(
-            "w-full py-3.5 rounded-2xl text-white font-semibold text-sm transition-all duration-150",
+            "w-full py-3 sm:py-3.5 rounded-2xl text-white font-semibold text-base sm:text-sm transition-all duration-150",
             busy || !canGo
               ? "opacity-40 cursor-not-allowed bg-primary"
               : "bg-primary hover:bg-primary-hover active:scale-[0.99] shadow-blue"

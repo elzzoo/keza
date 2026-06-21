@@ -34,7 +34,8 @@ describe("P0-2: CSRF Protection", () => {
   test("verifyCsrfToken uses timing-safe comparison", () => {
     // Both tokens have same length, verify should compare safely
     const token = generateCsrfToken();
-    const tamperedToken = token.replace(/a/g, "0"); // Change all 'a' to '0'
+    // Flip the first character to guarantee a different token
+    const tamperedToken = String.fromCharCode((parseInt(token.charAt(0), 16) + 1) % 16) + token.slice(1);
     const isValid = verifyCsrfToken(token, tamperedToken);
     expect(isValid).toBe(false);
   });
