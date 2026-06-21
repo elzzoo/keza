@@ -147,7 +147,7 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
       <p className="text-xs text-muted uppercase tracking-wider mb-3">
         {fr ? "Meilleure période pour voler" : "Best time to fly"}
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
         {monthData.map(({ month, minPrice }) => {
           const [yearStr, monthStr] = month.split("-");
           const monthIndex = parseInt(monthStr, 10) - 1;
@@ -160,7 +160,7 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
               key={month}
               type="button"
               onClick={() => onSelectMonth?.(month)}
-              className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 min-w-[60px] transition-all hover:scale-105 hover:brightness-110 cursor-pointer ${colorClass}`}
+              className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 transition-all hover:scale-105 hover:brightness-110 cursor-pointer ${colorClass}`}
             >
               {isCheapest && (
                 <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[9px] font-bold bg-emerald-400 text-black px-1.5 rounded-full whitespace-nowrap">
