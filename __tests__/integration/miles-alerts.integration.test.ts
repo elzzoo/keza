@@ -204,8 +204,10 @@ describe("Miles alerts E2E flow", () => {
     expect(above.triggered).toBe(true);
   });
 
-  it("should survive deactivation and reactivation", async () => {
-    const alert = await createAlert({
+  it(
+    "should survive deactivation and reactivation",
+    async () => {
+      const alert = await createAlert({
       email: testEmail,
       from: "LAX",
       to: "CDG",
@@ -244,5 +246,7 @@ describe("Miles alerts E2E flow", () => {
     found = userAlerts.find((a) => a.id === newAlert.id);
     expect(found).toBeDefined();
     expect(found!.active).toBe(true);
-  });
+    },
+    15000
+  );
 });

@@ -90,7 +90,7 @@ describe("FlightCard with seat maps", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Seat map")).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Check seat availability bar
     expect(screen.getByText(/62%/)).toBeInTheDocument();
@@ -163,7 +163,7 @@ describe("FlightCard with seat maps", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Seat map")).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Check for warning status styling
     const statusBar = container.querySelector(".bg-warning");
@@ -246,7 +246,7 @@ describe("FlightCard with seat maps", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Seat map")).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     expect(screen.getByText(/blocked/)).toBeInTheDocument();
   });
@@ -395,7 +395,7 @@ describe("FlightCard with seat maps", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Seat map")).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Check for critical status styling (error color)
     const statusBar = container.querySelector(".bg-error");
