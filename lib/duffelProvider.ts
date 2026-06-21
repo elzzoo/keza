@@ -7,8 +7,8 @@ import { logError, logWarn } from "@/lib/logger";
 type Cabin = "economy" | "premium" | "business" | "first";
 
 const DUFFEL_BASE = "https://api.duffel.com";
-const TIMEOUT_MS = 4_200;  // 4.2s per attempt — aggressive but sustainable (4.2s + 600ms backoff + 4.2s retry = 9s worst-case)
-const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 4.2s + 600ms + 4.2s = 9s)
+const DUFFEL_TIMEOUT = 3_500;  // S1-3: Reduced from 4200 to 3500ms per attempt (dual-budget strategy: 6.5s total)
+const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 3.5s + 600ms + 3.5s = 7.6s)
 const RETRY_BACKOFF_MS = [600, 1200] as const; // wait before attempt 2, 3
 
 /** Map KEZA cabin names to Duffel cabin class values */
@@ -156,7 +156,7 @@ export async function fetchFromDuffel(
   // Helper: single attempt with its own abort controller
   async function attemptFetch(): Promise<Response> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), DUFFEL_TIMEOUT);
     try {
       const r = await fetch(`${DUFFEL_BASE}/air/offer_requests`, {
         method:  "POST",
