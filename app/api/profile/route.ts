@@ -45,7 +45,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const profile = await getServerProfile(session.user.email);
+    // SECURITY: Always fetch the current user's profile, never allow cross-user access.
+    // Explicitly verify email format to prevent edge cases.
+    const email = session.user.email.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      return NextResponse.json({ error: "Invalid email in session" }, { status: 401 });
+    }
+
+    const profile = await getServerProfile(email);
     return NextResponse.json({ profile });
   } catch (err) {
     logError("[api/profile] GET", err);
@@ -63,6 +70,13 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // SECURITY: Always update the current user's profile, never allow cross-user access.
+    // Explicitly verify email format to prevent edge cases.
+    const email = session.user.email.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      return NextResponse.json({ error: "Invalid email in session" }, { status: 401 });
+    }
+
     let raw: unknown;
     try {
       raw = await req.json();
@@ -76,7 +90,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid profile data", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    await saveServerProfile(session.user.email, parsed.data as Parameters<typeof saveServerProfile>[1]);
+    await saveServerProfile(email, parsed.data as Parameters<typeof saveServerProfile>[1]);
     return NextResponse.json({ ok: true });
   } catch (err) {
     logError("[api/profile] PATCH", err);
