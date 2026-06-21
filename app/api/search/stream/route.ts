@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { searchEngineStream } from "@/lib/engine/stream";
-import { CACHE_VERSION } from "@/lib/engine";
+import { CACHE_VERSION, CACHE_VERSION_FALLBACKS } from "@/lib/engine";
 import type { SearchParams, FlightResult } from "@/lib/engine";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { rateLimitResponse } from "@/lib/ratelimit";
@@ -91,7 +91,6 @@ export async function POST(request: Request) {
 
   const encoder = new TextEncoder();
   let partialSent = false;
-  const CACHE_VERSION_FALLBACKS = ["v27", "v26"] as const;
 
   function buildCacheKey(
     version: string,

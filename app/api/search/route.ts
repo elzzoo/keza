@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { searchEngine, CACHE_VERSION, type SearchParams, type FlightResult } from "@/lib/engine";
+import { searchEngine, CACHE_VERSION, CACHE_VERSION_FALLBACKS, type SearchParams, type FlightResult } from "@/lib/engine";
 import * as Sentry from "@sentry/nextjs";
 import { trackSearchPerformance } from "@/lib/performance";
 
@@ -17,13 +17,6 @@ import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
 // Must be < maxDuration (10s) to ensure graceful partial response fires before
 // Vercel kills the function. 8s leaves 2s for response serialization + Redis write.
 const SEARCH_TIMEOUT_MS = 8_000;
-
-/**
- * Build the versioned cache key that searchEngine uses.
- * Bump CACHE_VERSION in lib/engine.ts — it is re-exported and imported here
- * so the version is always in sync between the engine and the search route.
- */
-const CACHE_VERSION_FALLBACKS = ["v20", "v19", "v18"] as const;
 
 function buildCacheKey(
   version: string,

@@ -16,6 +16,7 @@ const mockSentryCaptureMessage = jest.fn();
 jest.mock("@/lib/engine", () => ({
   searchEngine: (...args: unknown[]) => mockSearchEngine(...args),
   CACHE_VERSION: "vTEST",
+  CACHE_VERSION_FALLBACKS: ["v27", "v26"],
 }));
 
 jest.mock("@/lib/autoCalibrate", () => ({

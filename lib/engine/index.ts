@@ -20,6 +20,11 @@ import { logError } from "../logger";
 // See keza-project skill for full rules.
 export const CACHE_VERSION = "v29"; // bumped: P5 final validation + comprehensive testing
 
+// Fallback cache versions — checked in order on timeout/cache miss
+// Allows graceful degradation when current version is bumped (cold cache)
+// by falling back to previous versions' cached results
+export const CACHE_VERSION_FALLBACKS = ["v28", "v27", "v26"] as const;
+
 /**
  * Main flight search orchestrator. Fetches flights from Duffel (real-time) + Travelpayouts (fallback),
  * merges results, applies home carrier guarantees, enriches with miles options across 50+ programs,
