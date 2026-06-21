@@ -30,7 +30,6 @@ export interface CppHistory {
 // ─── Redis keys ─────────────────────────────────────────────────────────────
 
 const BASELINE_KEY = (routeKey: string) => `keza:cpp:baseline:${routeKey}`;
-const HISTORY_KEY = (routeKey: string) => `keza:cpp:history:${routeKey}`;
 const FAVORITE_ROUTES_KEY = (email: string) => `keza:favorite:routes:${email.toLowerCase()}`;
 
 // ─── Baseline tracking (per route+program) ──────────────────────────────────
