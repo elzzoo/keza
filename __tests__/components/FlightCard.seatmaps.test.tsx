@@ -6,7 +6,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { FlightCard } from "@/components/FlightCard";
-import { querySeatAvailability } from "@/lib/seatMapsIntegration";
+import { querySeatAvailability } from "@/lib/seatMapsIntegration-server";
 import type { FlightResult } from "@/lib/engine";
 
 jest.mock("@/lib/redis", () => ({

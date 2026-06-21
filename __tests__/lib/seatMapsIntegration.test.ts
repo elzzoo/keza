@@ -6,8 +6,8 @@
 import {
   querySeatAvailability,
   querySeatAvailabilityBatch,
-  type SeatMapData,
-} from "@/lib/seatMapsIntegration";
+} from "@/lib/seatMapsIntegration-server";
+import type { SeatMapData } from "@/lib/seatMapsIntegration";
 import { safeGet, safeSet } from "@/lib/redis";
 
 // Mock Redis cache

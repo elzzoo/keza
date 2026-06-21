@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import type { SeatMapData } from "@/lib/seatMapsIntegration";
-import { querySeatAvailability } from "@/lib/seatMapsIntegration";
+import { querySeatAvailability } from "@/lib/seatMapsIntegration-server";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
