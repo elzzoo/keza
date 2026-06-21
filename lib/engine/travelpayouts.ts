@@ -118,7 +118,7 @@ export async function fetchV3(
         Accept: "application/json",
         "X-Access-Token": token,
       },
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(3500),
     }));
   } catch (err) {
     logError(`[engine] aviasales v3 network error for ${from}→${to}:`, err);
@@ -200,7 +200,7 @@ export async function fetchMonthMatrix(
         Accept: "application/json",
         "X-Access-Token": token,
       },
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(3500),
     }));
   } catch (err) {
     logError(`[engine] month-matrix network error for ${from}→${to}:`, err);

@@ -7,8 +7,8 @@ import { logError, logWarn } from "@/lib/logger";
 type Cabin = "economy" | "premium" | "business" | "first";
 
 const DUFFEL_BASE = "https://api.duffel.com";
-const TIMEOUT_MS = 5_500;  // 5.5s — leaves room for 1 retry + processing within 10s client timeout
-const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 5.5s + 600ms + 5.5s = 11.6s)
+const TIMEOUT_MS = 4_200;  // 4.2s per attempt — aggressive but sustainable (4.2s + 600ms backoff + 4.2s retry = 9s worst-case)
+const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 4.2s + 600ms + 4.2s = 9s)
 const RETRY_BACKOFF_MS = [600, 1200] as const; // wait before attempt 2, 3
 
 /** Map KEZA cabin names to Duffel cabin class values */

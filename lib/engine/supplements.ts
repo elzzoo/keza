@@ -671,7 +671,7 @@ export async function discoverRouteAirlines(
       const res = await fetch(url.toString(), {
         next: { revalidate: 86400 },          // cache 24h — airline roster changes slowly
         headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(3500),
       });
       if (!res.ok) continue;
       const json = (await res.json()) as { data?: Array<{ airline: string }> };

@@ -223,6 +223,7 @@ export async function POST(request: Request) {
     },
   });
 
+  const responseTime = Date.now() - _t0;
   return new Response(stream, {
     headers: {
       "Content-Type":    "text/event-stream",
@@ -230,6 +231,7 @@ export async function POST(request: Request) {
       "X-Accel-Buffering": "no",
       "Connection":      "keep-alive",
       "X-Request-Id":    requestId,
+      "X-Response-Time": `${responseTime}ms`,
     },
   });
 }
