@@ -17,3 +17,12 @@ jest.mock('@upstash/redis', () => ({
     del: jest.fn(),
   })),
 }));
+
+// Mock Resend to avoid postal-mime TextEncoder issue in Jest
+jest.mock('resend', () => ({
+  Resend: jest.fn(() => ({
+    emails: {
+      send: jest.fn().mockResolvedValue({ id: 'mock-email-id' }),
+    },
+  })),
+}));
