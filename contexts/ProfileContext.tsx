@@ -36,45 +36,35 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(loadProfile);
   const [isLoadingFromServer, setIsLoadingFromServer] = useState(false);
 
-  // Load profile from server (if authenticated) or localStorage (if not)
+  // Load profile from server if authenticated (but start with localStorage)
   useEffect(() => {
-    const loadProfileData = async () => {
-      // Only fetch on the client side
-      if (typeof window === "undefined") {
-        setProfile(loadProfile());
-        return;
-      }
+    // Only fetch on the client side
+    if (typeof window === "undefined" || !session?.user?.email) {
+      return;
+    }
 
-      if (session?.user?.email) {
-        // Authenticated: fetch from Redis via server
-        setIsLoadingFromServer(true);
-        try {
-          const res = await fetch("/api/portfolio");
-          if (res.ok) {
-            const data = await res.json();
-            if (data.portfolio) {
-              setProfile(data.portfolio);
-            } else {
-              // No server profile yet — fall back to localStorage
-              setProfile(loadProfile());
-            }
-          } else {
-            setProfile(loadProfile());
+    // Authenticated: fetch from Redis via server
+    const loadFromServer = async () => {
+      setIsLoadingFromServer(true);
+      try {
+        const res = await fetch("/api/portfolio");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.portfolio) {
+            setProfile(data.portfolio);
           }
-        } catch {
-          setProfile(loadProfile());
-        } finally {
-          setIsLoadingFromServer(false);
         }
-      } else {
-        // Unauthenticated: use localStorage only
-        setProfile(loadProfile());
+      } catch {
+        // Silently fail — localStorage is the fallback
+      } finally {
+        setIsLoadingFromServer(false);
       }
     };
-    loadProfileData();
+
+    loadFromServer();
   }, [session?.user?.email]);
 
   const update = useCallback((updates: Partial<UserProfile>) => {
