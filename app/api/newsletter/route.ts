@@ -20,7 +20,6 @@ export async function POST(req: NextRequest) {
 
   // CSRF protection
   const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
-  const formCsrf = req.headers.get("X-CSRF-Token-Form") ?? "";
   if (!headerCsrf || !verifyCsrfToken(headerCsrf, headerCsrf)) {
     return NextResponse.json({ error: "CSRF token required or invalid" }, { status: 401 });
   }
