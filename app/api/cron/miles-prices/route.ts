@@ -3,6 +3,7 @@ import { redis } from "@/lib/redis";
 import { MILES_PRICE_MAP } from "@/data/milesPrices";
 import { recalibrate, getForexRate } from "@/lib/autoCalibrate";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
 
 // ─── Daily cron job: fully automatic data refresh ────────────────────────────
@@ -16,6 +17,13 @@ import * as Sentry from "@sentry/nextjs";
 // 4. REPORT what changed
 
 export async function GET(request: Request): Promise<NextResponse> {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:miles-prices",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   // Verify CRON_SECRET (Vercel cron sends this automatically)
   if (!hasCronSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });

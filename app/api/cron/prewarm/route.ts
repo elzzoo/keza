@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchEngine, type SearchParams } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { logWarn } from "@/lib/logger";
 import { TOP_ROUTES, getPreWarmDates } from "@/lib/prewarm";
 
@@ -20,6 +21,13 @@ function validateCronSecret(req: Request): boolean {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:prewarm",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!validateCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

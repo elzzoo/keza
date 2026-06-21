@@ -15,6 +15,7 @@ import { buildCostOptions } from "@/lib/costEngine";
 import { getEffectivePrices } from "@/lib/costEngine";
 import { logError } from "@/lib/logger";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
@@ -24,6 +25,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.a
 
 // GET /api/cron/alerts — check prices and send drop notifications
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:cron:alerts",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

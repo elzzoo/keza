@@ -7,11 +7,19 @@ import {
   lemonWebhookPayloadSchema,
   type LemonWebhookPayload,
 } from "@/lib/lemonsqueezy";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { sendDiscordAlert } from "@/lib/discord";
 import { trackServerEvent } from "@/lib/analytics";
 
 // POST /api/webhooks/lemonsqueezy — handle Lemon Squeezy subscription events
 export async function POST(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:webhooks:lemonsqueezy",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   const signature = req.headers.get("x-signature") ?? "";
   const rawBody = await req.text();
 

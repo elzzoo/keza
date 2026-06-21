@@ -7,6 +7,7 @@ import {
 } from "@/lib/alerts";
 import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { redis } from "@/lib/redis";
 import { logError } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
@@ -14,6 +15,13 @@ import * as Sentry from "@sentry/nextjs";
 // GET /api/cron/onboarding — send J3 and J7 onboarding emails
 // Called by Vercel Cron daily at 11am UTC (after digest at 10am)
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:cron:onboarding",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

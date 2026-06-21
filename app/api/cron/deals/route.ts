@@ -4,6 +4,7 @@ import { redis } from "@/lib/redis";
 import { sortDeals, type RawDeal } from "@/lib/dealsEngine";
 import { DEALS_KEY } from "@/lib/redisKeys";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
 
 const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
@@ -41,6 +42,13 @@ async function fetchBestPrice(from: string, to: string, token: string): Promise<
 }
 
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:deals",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

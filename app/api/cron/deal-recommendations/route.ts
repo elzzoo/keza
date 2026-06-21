@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { getRouteBaseline } from "@/lib/mlPipeline";
 import { getCachedBalances } from "@/lib/balanceSync";
 import { scoreRoute, isGoodDeal, DealScore } from "@/lib/dealScorer";
@@ -8,6 +9,13 @@ import * as Sentry from "@sentry/nextjs";
 import { safeSet } from "@/lib/redis";
 
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:cron:deal-recommendations",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchCalendarPrices } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
 import * as Sentry from "@sentry/nextjs";
 
@@ -66,6 +67,13 @@ const POPULAR_ROUTES = [
 
 // GET /api/cron/price-snapshot — record daily prices for popular routes
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:cron:price-snapshot",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

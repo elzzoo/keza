@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // ─── Daily cron orchestrator ──────────────────────────────────────────────────
 // Vercel Hobby allows max 2 crons. This handler consolidates all non-alerts jobs
@@ -22,6 +23,13 @@ const DAILY_JOBS = [
 ] as const;
 
 export async function GET(request: Request): Promise<NextResponse> {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:daily",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }

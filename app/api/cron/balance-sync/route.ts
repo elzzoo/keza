@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { getAllUserPortfolios, getUserCredentials } from "@/lib/portfolio";
 import { syncUserBalances } from "@/lib/balanceSync";
 import { logError } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:cron:balance-sync",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

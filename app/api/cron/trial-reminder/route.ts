@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { logWarn } from "@/lib/logger";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { needsTrialReminder } from "@/lib/lemonsqueezy";
 import { sendTrialReminderEmail } from "@/lib/resend";
 
@@ -43,6 +44,13 @@ async function handleTrialReminder() {
 }
 
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:trial-reminder",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!validateCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -51,6 +59,13 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:trial-reminder",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!validateCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

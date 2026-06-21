@@ -1,6 +1,7 @@
 import "server-only";
 import { Redis } from "@upstash/redis";
-import { logRedisError } from "./logger";
+import { logRedisError, logWarn } from "./logger";
+import * as Sentry from "@sentry/nextjs";
 
 // Lazily create the Redis client so the module can be imported at build time
 // without crashing when env vars are placeholders. The error surfaces at
@@ -259,6 +260,36 @@ async function safeTtl(key: string): Promise<number> {
   }
 }
 
+/**
+ * Get a value from Redis with exponential backoff retry logic.
+ * Retries up to 2x with 100ms backoff on failure before returning null.
+ * Logs retry attempts to Sentry to track Redis resilience issues.
+ *
+ * @template T The expected type of the cached value
+ * @param key The Redis key to retrieve
+ * @returns The cached value, or null if not found or after all retries fail
+ */
+async function getWithRetry<T = unknown>(key: string, retries: number = 2): Promise<T | null> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const client = getRedis();
+      return await client.get<T>(key);
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        const backoffMs = Math.pow(2, attempt) * 100; // 100ms, 200ms
+        logWarn(`[Redis GET retry ${attempt + 1}/${retries}]`, key, { backoffMs });
+        Sentry.captureMessage(`Redis GET retry attempt ${attempt + 1}`, "warning");
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
+      }
+    }
+  }
+  // All retries exhausted
+  logRedisError("GET_EXHAUSTED", key, lastErr);
+  return null;
+}
+
 // Create a wrapper object that mimics Redis interface with error-safe methods
 export const redis: Redis = new Proxy({} as Redis, {
   get(_target, prop) {
@@ -266,6 +297,8 @@ export const redis: Redis = new Proxy({} as Redis, {
     switch (prop) {
       case "get":
         return safeGet;
+      case "getWithRetry":
+        return getWithRetry;
       case "set":
         return safeSet;
       case "del":

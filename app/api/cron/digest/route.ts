@@ -8,6 +8,7 @@ import {
 } from "@/lib/alerts";
 import { fetchCalendarPrices, CABIN_MULTIPLIER } from "@/lib/engine";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { notifyCronSummary } from "@/lib/discord";
 import { logError } from "@/lib/logger";
 import { trackServerEvent } from "@/lib/analytics";
@@ -19,6 +20,13 @@ import type { LiveDeal } from "@/lib/dealsEngine";
 // GET /api/cron/digest — send daily/weekly digest emails
 // Called by Vercel Cron daily (separate schedule from /api/cron/alerts)
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:cron:digest",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -4,10 +4,18 @@ import path from "path";
 import { redis } from "@/lib/redis";
 import { PROMOS_KEY, PROMOS_TTL_SECONDS } from "@/lib/promotions/engine";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
 import { logError } from "@/lib/logger";
 
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:promotions",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   // CRON_SECRET is mandatory — timing-safe comparison to prevent timing attacks
   if (!hasCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

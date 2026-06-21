@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { TRANSFER_BONUSES } from "@/data/transferBonuses";
 import { syncBonusTransfersToRedis } from "@/lib/bonusTransfersRedis";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
 import { logError } from "@/lib/logger";
 
@@ -12,6 +13,13 @@ import { logError } from "@/lib/logger";
  * Future: Replace hardcoded TRANSFER_BONUSES with CMS/database query.
  */
 export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:cron:bonus-transfers",
+    limit: 5,
+    windowSeconds: 300,
+  });
+  if (limited) return limited;
+
   // CRON_SECRET is mandatory — timing-safe comparison to prevent timing attacks
   if (!hasCronSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
