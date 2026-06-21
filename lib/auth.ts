@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual, randomBytes } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import * as Sentry from "@sentry/nextjs";
@@ -83,8 +83,8 @@ function getAdminSecret(): string | undefined {
   return secret;
 }
 
-function signAdminSession(exp: number, secret: string): string {
-  return createHmac("sha256", secret).update(String(exp)).digest("base64url");
+function signAdminSession(exp: number, nonce: string, secret: string): string {
+  return createHmac("sha256", secret).update(`${exp}.${nonce}`).digest("base64url");
 }
 
 export function createAdminSessionToken(now = Date.now()): string | null {
@@ -92,8 +92,9 @@ export function createAdminSessionToken(now = Date.now()): string | null {
   if (!secret) return null;
 
   const exp = Math.floor(now / 1000) + ADMIN_SESSION_TTL_SECONDS;
-  const sig = signAdminSession(exp, secret);
-  return `${exp}.${sig}`;
+  const nonce = randomBytes(16).toString("hex");
+  const sig = signAdminSession(exp, nonce, secret);
+  return `${exp}.${nonce}.${sig}`;
 }
 
 export function verifyAdminSessionToken(token: string | undefined, now = Date.now()): boolean {
@@ -107,8 +108,8 @@ export function verifyAdminSessionToken(token: string | undefined, now = Date.no
     return false;
   }
 
-  const [expRaw, sig] = token.split(".");
-  if (!expRaw || !sig) {
+  const [expRaw, nonce, sig] = token.split(".");
+  if (!expRaw || !nonce || !sig) {
     Sentry.captureMessage("[auth] Admin session verification failed: malformed token", "error");
     return false;
   }
@@ -123,7 +124,7 @@ export function verifyAdminSessionToken(token: string | undefined, now = Date.no
     return false;
   }
 
-  const expected = signAdminSession(exp, secret);
+  const expected = signAdminSession(exp, nonce, secret);
   const valid = safeCompare(sig, expected);
   if (!valid) {
     Sentry.captureMessage("[auth] Admin session verification failed: invalid signature", "error");
