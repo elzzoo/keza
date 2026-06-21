@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 type PushState = "unsupported" | "idle" | "loading" | "subscribed" | "denied";
 
@@ -63,7 +64,7 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
   async function subscribe() {
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!vapidKey) {
-      console.warn("[PushAlertButton] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set");
+      toast.error(fr ? "Configuration manquante" : "Configuration missing");
       return;
     }
 
@@ -105,11 +106,17 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
           // localStorage unavailable
         }
         setState("subscribed");
+        toast.success(fr ? "Notifications activées ✓" : "Notifications enabled ✓");
       } else {
+        const errMsg = res.status === 401
+          ? (fr ? "Token invalide" : "Invalid token")
+          : (fr ? "Erreur — réessaie plus tard" : "Error — try again later");
+        toast.error(errMsg);
         setState("idle");
       }
     } catch (err) {
-      console.error("[PushAlertButton] subscription failed:", err);
+      const msg = fr ? "Échec de l'activation" : "Failed to enable notifications";
+      toast.error(msg);
       setState("idle");
     }
   }
@@ -120,13 +127,16 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         await sub.unsubscribe();
-        await fetch(
+        const res = await fetch(
           `/api/push/unsubscribe?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}&endpoint=${encodeURIComponent(sub.endpoint)}`,
           { method: "DELETE" }
         );
+        if (!res.ok) {
+          toast.error(fr ? "Erreur lors de la désactivation" : "Error disabling notifications");
+        }
       }
     } catch (err) {
-      console.error("[PushAlertButton] unsubscribe failed:", err);
+      toast.error(fr ? "Échec de la désactivation" : "Failed to disable notifications");
     } finally {
       try {
         localStorage.removeItem(storageKey(email));
