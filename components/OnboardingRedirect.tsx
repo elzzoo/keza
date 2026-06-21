@@ -39,7 +39,7 @@ export function OnboardingRedirect() {
     ) {
       router.push("/onboarding");
     }
-  }, [session, profile, pathname, router]);
+  }, [session, profile, isLoaded, pathname, router]);
 
   return null;
 }
