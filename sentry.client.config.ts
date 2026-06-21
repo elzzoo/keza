@@ -25,4 +25,30 @@ Sentry.init({
 
   // Use the Sentry debug transport to see what's being sent
   debug: false,
+
+  // Enable Web Vitals auto-capture (LCP, FID, CLS)
+  // These will be attached to transactions automatically
+  integrations: [
+    Sentry.captureConsoleIntegration({ levels: ["error", "warn"] }),
+    Sentry.httpClientIntegration(),
+    Sentry.replayIntegration(),
+    Sentry.breadcrumbsIntegration({ console: true, dom: true, fetch: true, xhr: true }),
+  ],
+});
+
+// Auto-capture Web Vitals (LCP, FID, CLS, etc.)
+// This enables monitoring of Core Web Vitals in Sentry
+Sentry.captureWebVitals((metric) => {
+  // Log each Web Vital for monitoring
+  // Expected: LCP < 2.5s, FID < 100ms, CLS < 0.1
+  const isGood = metric.rating === "good";
+  const isNeedsImprovement = metric.rating === "needs-improvement";
+
+  if (isNeedsImprovement || !isGood) {
+    // Capture poor-performing vitals as transactions for visibility
+    Sentry.captureMessage(
+      `Web Vital: ${metric.name} = ${metric.value?.toFixed(2)}ms (${metric.rating})`,
+      metric.rating === "poor" ? "error" : "warning"
+    );
+  }
 });
