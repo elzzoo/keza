@@ -11,6 +11,7 @@ import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
 import { isBusinessMode as checkBusinessMode, buildBusinessChips } from "@/lib/businessMode";
 import { MilesAlertButton } from "@/components/MilesAlertButton";
+import { SeatAlertButton } from "@/components/SeatAlertButton";
 import { AwardAvailabilityDisclaimer } from "@/components/AwardAvailabilityDisclaimer";
 import { toggleFavoriteRoute, isFavoriteRoute } from "@/lib/userProfile";
 import { getAchievedCpp, rateCpp, CPP_RATING_DISPLAY } from "@/lib/mileValue";
@@ -233,6 +234,17 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         >
           {isFav ? "❤️" : "🤍"}
         </button>
+
+        {/* Seat alert button — top-right */}
+        <div className="absolute top-1 right-1 z-10">
+          <SeatAlertButton
+            from={flight.from}
+            to={flight.to}
+            cabin={flight.cabin}
+            currentPrice={isUseMiles ? (bestOption?.taxes ?? 0) : flight.cashCost}
+            lang={lang}
+          />
+        </div>
 
         {/* Primary message — generated client-side so it uses the user's currency */}
         <div className={clsx(

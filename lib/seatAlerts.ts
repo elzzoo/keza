@@ -313,9 +313,16 @@ export async function processAllSeatAlerts(): Promise<{
           try {
             // Check if deal meets subscriber's minPrice threshold
             if (subscriber.minPrice > 0 && adjustedPrice <= subscriber.minPrice) {
-              // Placeholder: Task 1.3 will implement sendSeatAlertEmail
-              // For now just log
-              notified++;
+              const emailSent = await sendSeatAlertEmail(
+                subscriber.email,
+                route,
+                cabin,
+                adjustedPrice,
+                subscriber.minPrice
+              );
+              if (emailSent) {
+                notified++;
+              }
             }
           } catch (err) {
             errors.push(
@@ -334,4 +341,99 @@ export async function processAllSeatAlerts(): Promise<{
   }
 
   return { checked, notified, errors };
+}
+
+// ── Email notifications (via Resend) ──────────────────────────────────────────
+
+import { Resend } from "resend";
+import { airportsMap } from "@/data/airports";
+import { logError } from "@/lib/logger";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const SENDER_EMAIL = process.env.KEZA_EMAIL_SENDER || "alerts@keza.app";
+
+/**
+ * Send seat alert email notification to a subscriber
+ */
+export async function sendSeatAlertEmail(
+  email: string,
+  route: string,
+  cabin: CabinType,
+  currentPrice: number,
+  subscribedPrice: number
+): Promise<boolean> {
+  try {
+    const [from, to] = route.split("-");
+    const fromAirport = airportsMap[from];
+    const toAirport = airportsMap[to];
+
+    const fromCity = fromAirport?.city || from;
+    const toCity = toAirport?.city || to;
+    const cabinLabel = {
+      ECONOMY: "Economy",
+      PREMIUM_ECONOMY: "Premium Economy",
+      BUSINESS: "Business",
+      FIRST: "First Class",
+    }[cabin] || cabin;
+
+    const savings = subscribedPrice - currentPrice;
+    const savingsPercent = Math.round((savings / subscribedPrice) * 100);
+
+    const subject = `🎯 Alert: ${from} → ${to} ${cabinLabel} now $${currentPrice}`;
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; text-align: center; }
+    .price { font-size: 48px; font-weight: bold; }
+    .savings { background: #dcfce7; color: #166534; padding: 10px 20px; border-radius: 4px; display: inline-block; margin-top: 10px; }
+    .cta { background: #667eea; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none; display: inline-block; margin-top: 20px; }
+    .footer { color: #999; font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✈️ Great Deal Found!</h1>
+      <div class="price">$${currentPrice}</div>
+      <p>${fromCity} → ${toCity} • ${cabinLabel}</p>
+      <div class="savings">Save $${savings} (${savingsPercent}%)</div>
+    </div>
+
+    <p style="margin-top: 20px;">Your alert for ${fromCity} to ${toCity} found a great deal!</p>
+    <p>You set your alert at <strong>$${subscribedPrice}</strong> and flights are now available at <strong>$${currentPrice}</strong>.</p>
+
+    <center>
+      <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://keza.app"}/flights/${route}" class="cta">
+        View Flights →
+      </a>
+    </center>
+
+    <div class="footer">
+      <p>This is an automated alert from KEZA. You received this because you set a price alert for ${from}→${to}.</p>
+      <p><a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://keza.app"}/alertes" style="color: #667eea;">Manage alerts</a></p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const result = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject,
+      html: htmlContent,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(result && (result as any).id); // true if email sent successfully
+  } catch (err) {
+    logError("[sendSeatAlertEmail] Failed to send alert", err);
+    return false;
+  }
 }
