@@ -28,6 +28,7 @@ const L = {
 export function DealSpotlight({ lang, onDealClick }: Props) {
   const t = L[lang];
   const [deal, setDeal] = useState<LiveDeal | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/deals")
@@ -37,11 +38,18 @@ export function DealSpotlight({ lang, onDealClick }: Props) {
           .filter(d => d.recommendation === "USE_MILES")
           .sort((a, b) => b.ratio - a.ratio)[0] ?? null;
         setDeal(best);
+        setLoading(false);
       })
-      .catch(() => {});
+      .catch(() => setLoading(false));
   }, []);
 
-  if (!deal) return null;
+  if (!loading && !deal) return null;
+
+  if (loading || !deal) {
+    return (
+      <div className="w-full h-16 bg-surface rounded-2xl animate-pulse border border-amber-500/10" />
+    );
+  }
 
   const savingPct = Math.round((1 - (deal.milesRequired * deal.ratio / 100) / deal.cashPrice) * 100);
   const cpp = deal.ratio.toFixed(1);

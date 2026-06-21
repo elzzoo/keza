@@ -28,6 +28,7 @@ export function CheapestRouteBanner({ lang, onDealClick, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
   const [deal, setDeal] = useState<LiveDeal | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/deals")
@@ -38,11 +39,18 @@ export function CheapestRouteBanner({ lang, onDealClick, formatPrice }: Props) {
           .filter(d => d.cashPrice > 0)
           .sort((a, b) => a.cashPrice - b.cashPrice)[0] ?? null;
         setDeal(cheapest);
+        setLoading(false);
       })
-      .catch(() => {});
+      .catch(() => setLoading(false));
   }, []);
 
-  if (!deal) return null;
+  if (!loading && !deal) return null;
+
+  if (loading || !deal) {
+    return (
+      <div className="w-full h-12 bg-surface rounded-2xl animate-pulse border border-success/10" />
+    );
+  }
 
   return (
     <button
