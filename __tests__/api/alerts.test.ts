@@ -46,9 +46,15 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should accept milesAlert payload", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
+    const csrfToken = generateCsrfToken();
+
     const mockRequest = new Request("http://localhost:3000/api/alerts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         email: "user@example.com",
         from: "SIN",
@@ -75,9 +81,15 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should reject invalid milesAlert with targetCpp >20", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
+    const csrfToken = generateCsrfToken();
+
     const mockRequest = new Request("http://localhost:3000/api/alerts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         email: "user@example.com",
         from: "SIN",
@@ -100,9 +112,15 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should reject invalid milesAlert with targetCpp <= 0", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
+    const csrfToken = generateCsrfToken();
+
     const mockRequest = new Request("http://localhost:3000/api/alerts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         email: "user@example.com",
         from: "SIN",
@@ -125,9 +143,15 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should reject invalid milesAlert with empty program", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
+    const csrfToken = generateCsrfToken();
+
     const mockRequest = new Request("http://localhost:3000/api/alerts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         email: "user@example.com",
         from: "SIN",
@@ -150,12 +174,17 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should accept milesAlert with valid targetCpp range (0.1 to 20)", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
     const validRanges = [0.1, 1.0, 1.5, 5.0, 10.0, 20.0];
 
     for (const cpp of validRanges) {
+      const csrfToken = generateCsrfToken();
       const mockRequest = new Request("http://localhost:3000/api/alerts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
         body: JSON.stringify({
           email: "user@example.com",
           from: "SIN",
@@ -179,9 +208,15 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should handle missing milesAlert (backward compatibility)", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
+    const csrfToken = generateCsrfToken();
+
     const mockRequest = new Request("http://localhost:3000/api/alerts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         email: "user@example.com",
         from: "SIN",
@@ -200,9 +235,15 @@ describe("POST /api/alerts with milesAlert", () => {
   });
 
   it("should validate baseCpp is a number", async () => {
+    const { generateCsrfToken } = await import("@/lib/csrf");
+    const csrfToken = generateCsrfToken();
+
     const mockRequest = new Request("http://localhost:3000/api/alerts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         email: "user@example.com",
         from: "SIN",

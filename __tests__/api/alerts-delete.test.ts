@@ -21,9 +21,14 @@ const mockGetAlertById = getAlertById as jest.MockedFunction<typeof getAlertById
 
 function makeDeleteRequest(id?: string): NextRequest {
   const url = id
-    ? `http://localhost/api/alerts?id=${id}&email=user%40example.com&token=test-token`
+    ? `http://localhost/api/alerts?id=${id}&email=user%40example.com`
     : `http://localhost/api/alerts`;
-  return new NextRequest(url, { method: "DELETE" });
+  return new NextRequest(url, {
+    method: "DELETE",
+    headers: new Headers({
+      "Authorization": "Bearer test-token",
+    }),
+  });
 }
 
 describe("DELETE /api/alerts", () => {
