@@ -42,14 +42,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     // Measure latency with ping samples
     const latencies: number[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const redisClient = redis as any;
+    // Redis client has ping method for health checks
+    const redisWithPing = redis as { ping: () => Promise<string> };
 
     for (let i = 0; i < LATENCY_SAMPLE_COUNT; i++) {
       const start = Date.now();
       try {
         await Promise.race([
-          redisClient.ping(),
+          redisWithPing.ping(),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error("ping timeout")), 1000)
           ),
