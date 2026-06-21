@@ -20,6 +20,31 @@ export const MIN_REALISTIC_PRICE_USD = 30;
 // (2) cached stale data from low-season, (3) Travelpayouts API anomaly.
 // Monitor and add price-history correlation check if outliers persist.
 
+/**
+ * Build a unified fallback attempt list for (origin, destination) pairs.
+ * Used by both fetchFromTravelpayouts() and fetchCalendarPrices() to ensure
+ * consistent fallback behavior across single-date and calendar pricing.
+ *
+ * Attempt order:
+ *  1. Exact codes (from, to)
+ *  2. From metro, exact to
+ *  3. Exact from, to metro
+ *  4. Both metro codes
+ *
+ * @param from - Origin airport code
+ * @param to - Destination airport code
+ * @returns Array of [origin, destination] tuples to attempt in order
+ */
+function buildFallbackAttempts(from: string, to: string): Array<[string, string]> {
+  const fromMetro = metroFor(from);
+  const toMetro = metroFor(to);
+  const attempts: Array<[string, string]> = [[from, to]];
+  if (fromMetro) attempts.push([fromMetro, to]);
+  if (toMetro) attempts.push([from, toMetro]);
+  if (fromMetro && toMetro) attempts.push([fromMetro, toMetro]);
+  return attempts;
+}
+
 // ─── Aviasales URL Building ──────────────────────────────────────────────────
 /**
  * Build an Aviasales booking URL for a given flight search.
@@ -371,6 +396,7 @@ export async function fetchV3Calendar(
 /**
  * Public: fetch calendar prices for a route + month.
  * Tries v3 first (better data), falls back to month-matrix.
+ * Uses unified fallback attempt order for consistency with fetchFromTravelpayouts().
  */
 export async function fetchCalendarPrices(
   from: string,
@@ -380,20 +406,15 @@ export async function fetchCalendarPrices(
   const token = process.env.TRAVELPAYOUTS_TOKEN;
   if (!token || token === "xxx") return [];
 
-  const fromMetro = metroFor(from);
-  const toMetro   = metroFor(to);
-  const attempts: Array<[string, string]> = [[from, to]];
-  if (fromMetro) attempts.push([fromMetro, to]);
-  if (toMetro)   attempts.push([from, toMetro]);
-  if (fromMetro && toMetro) attempts.push([fromMetro, toMetro]);
+  const attempts = buildFallbackAttempts(from, to);
 
-  // Try v3 first
+  // Try v3 first (better data — includes price trends, airline codes)
   for (const [o, d] of attempts) {
     const v3 = await fetchV3Calendar(o, d, date, false, token);
     if (v3.length > 0) return v3;
   }
 
-  // Fallback to month-matrix
+  // Fallback to month-matrix (broader coverage, price history)
   for (const [o, d] of attempts) {
     const mm = await fetchMonthMatrixFull(o, d, date, false, token);
     if (mm.length > 0) return mm;
@@ -434,15 +455,8 @@ export async function fetchFromTravelpayouts(
     return [];
   }
 
-  // Candidate (origin, destination) pairs to try in order. We always start with
-  // the exact codes the user asked for, then fall back to metro codes so that
-  // DSS→JFK retries as DKR→NYC (which is how most carriers index that route).
-  const fromMetro = metroFor(from);
-  const toMetro   = metroFor(to);
-  const attempts: Array<[string, string]> = [[from, to]];
-  if (fromMetro) attempts.push([fromMetro, to]);
-  if (toMetro)   attempts.push([from, toMetro]);
-  if (fromMetro && toMetro) attempts.push([fromMetro, toMetro]);
+  // Use unified fallback attempt order for consistency with fetchCalendarPrices()
+  const attempts = buildFallbackAttempts(from, to);
 
   try {
     // ── Pass 1: v3 with exact month — best data (airline + deep links + price) ──
