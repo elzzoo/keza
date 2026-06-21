@@ -21,16 +21,17 @@ function validateCronSecret(req: Request): boolean {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  // Verify cron secret first before rate limiting (auth before limiting)
+  if (!validateCronSecret(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const limited = await rateLimitResponse(request, {
     namespace: "api:cron:prewarm",
     limit: 5,
     windowSeconds: 300,
   });
   if (limited) return limited;
-
-  if (!validateCronSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     logWarn("[cron/prewarm-routes] Starting route pre-warming");
