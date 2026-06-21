@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { verifyCsrfToken } from "@/lib/csrf";
 import { isValidEmail } from "@/lib/validate";
 import { Resend } from "resend";
 import { logError, logWarn } from "@/lib/logger";
@@ -16,6 +17,13 @@ export async function POST(req: NextRequest) {
     windowSeconds: 60 * 60,
   });
   if (limited) return limited;
+
+  // CSRF protection
+  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
+  const formCsrf = req.headers.get("X-CSRF-Token-Form") ?? "";
+  if (!headerCsrf || !verifyCsrfToken(headerCsrf, headerCsrf)) {
+    return NextResponse.json({ error: "CSRF token required or invalid" }, { status: 401 });
+  }
 
   try {
     const body = await req.json();

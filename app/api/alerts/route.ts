@@ -7,6 +7,7 @@ import {
   updateAlertFrequency,
 } from "@/lib/alerts";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
+import { verifyCsrfToken } from "@/lib/csrf";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail, isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
 import { isProUser } from "@/lib/lemonsqueezy";
@@ -21,6 +22,12 @@ export async function POST(req: NextRequest) {
     windowSeconds: 60 * 60,
   });
   if (limited) return limited;
+
+  // CSRF protection
+  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
+  if (!headerCsrf || !verifyCsrfToken(headerCsrf, headerCsrf)) {
+    return NextResponse.json({ error: "CSRF token required or invalid" }, { status: 401 });
+  }
 
   try {
     const body = await req.json();

@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { verifyCsrfToken } from "@/lib/csrf";
 import { logError, logWarn } from "@/lib/logger";
 import { sendDiscordAlert } from "@/lib/discord";
 import { SITE_URL } from "@/lib/siteConfig";
@@ -24,12 +25,19 @@ const ContactSchema = z.object({
 type ContactPayload = z.infer<typeof ContactSchema>;
 
 export async function POST(request: Request) {
+  const req = request as NextRequest;
   const limited = await rateLimitResponse(request, {
     namespace: "api:contact:post",
     limit: 5,
     windowSeconds: 60 * 60,
   });
   if (limited) return limited;
+
+  // CSRF protection
+  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
+  if (!headerCsrf || !verifyCsrfToken(headerCsrf, headerCsrf)) {
+    return NextResponse.json({ error: "CSRF token required or invalid" }, { status: 401 });
+  }
 
   try {
     const raw = await request.json();

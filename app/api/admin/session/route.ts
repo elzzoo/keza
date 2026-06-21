@@ -5,6 +5,7 @@ import {
   createAdminSessionToken,
   safeCompare,
 } from "@/lib/auth";
+import { verifyCsrfToken } from "@/lib/csrf";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
 function redirectToAdmin(req: NextRequest): NextResponse {
@@ -40,6 +41,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const form = await req.formData();
   const submittedSecret = String(form.get("secret") ?? "");
+  const submittedCsrf = String(form.get("csrf") ?? "");
+  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
+
+  // Verify CSRF token from form or header
+  if (!submittedCsrf && !headerCsrf) {
+    return NextResponse.json({ error: "CSRF token required" }, { status: 401 });
+  }
+
+  const csrfToVerify = submittedCsrf || headerCsrf;
+  const csrfFromRequest = headerCsrf || submittedCsrf;
+  if (!verifyCsrfToken(csrfToVerify, csrfFromRequest)) {
+    return NextResponse.json({ error: "CSRF token mismatch" }, { status: 401 });
+  }
+
   // Never fall back to CRON_SECRET — compromise of cron token must not grant admin access.
   const expectedSecret = process.env.ADMIN_SECRET;
 
