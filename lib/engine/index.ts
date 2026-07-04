@@ -9,7 +9,10 @@ import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
 import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
-import { logError } from "../logger";
+import { logError, logWarn } from "../logger";
+import { ENABLE_MULTI_LEG_ROUTING } from "../config";
+import { searchMultiLegRoutes, validateMultiLegRoute } from "../multiLeg";
+import type { FlightLeg, MultiLegRoute } from "../multiLeg";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -205,6 +208,91 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     return cheapestReturn;
   }
 
+  // ── Multi-Leg Routing (experimental) ──────────────────────────────────────────
+  let multiLegResults: FlightResult[] = [];
+  if (ENABLE_MULTI_LEG_ROUTING && !isRoundtrip && stops !== "direct") {
+    try {
+      // Convert flights to FlightLeg format for multi-leg routing
+      const flightLegs: FlightLeg[] = withPromos.flatMap((f) => {
+        const legs: FlightLeg[] = [];
+        // Use first airline in the list as the primary operating carrier
+        const airline = f.airlines?.[0] ?? "XX";
+        // Assume outbound departs today, arrives next day for proper connection times
+        // (in reality these would come from the actual API response)
+        const depart = new Date(date);
+        const arrive = new Date(depart.getTime() + (f.duration ?? 360) * 60 * 1000);
+
+        legs.push({
+          origin: from,
+          destination: to,
+          departureTime: depart.toISOString(),
+          arrivalTime: arrive.toISOString(),
+          airline,
+          flightNumber: "0000", // Placeholder from normalized results
+          aircraft: "000",      // Not available in normalized results
+          cabin: (cabin as any) ?? "economy",
+          price: f.price,
+        });
+        return legs;
+      });
+
+      if (flightLegs.length > 0) {
+        const multiLegRoutes = await searchMultiLegRoutes(
+          flightLegs,
+          from,
+          to,
+          passengers,
+          3, // Return top 3 multi-leg routes
+          ["ORD", "DEN", "ATL", "DFW", "IAH"] // Preferred hubs
+        );
+
+        // Enrich multi-leg routes
+        const searchId = crypto.randomUUID();
+        for (const route of multiLegRoutes) {
+          // Create synthetic flight result from multi-leg route
+          // Use the cheapest leg's airline for display
+          const cheapestLeg = route.legs.reduce((best, leg) =>
+            leg.price < best.price ? leg : best
+          );
+
+          const syntheticFlight: NormalizedFlight = {
+            from,
+            to,
+            price: route.totalPrice,
+            airlines: [cheapestLeg.airline],
+            stops: route.legs.length - 1,
+            duration: route.legs.reduce((total, leg) => {
+              const depart = new Date(leg.departureTime).getTime();
+              const arrive = new Date(leg.arrivalTime).getTime();
+              return total + Math.round((arrive - depart) / (1000 * 60));
+            }, 0),
+            source: "MULTI_LEG" as const,
+            priceConfidence: "ESTIMATED" as const,
+          };
+
+          // Enrich with miles options
+          const enriched = enrich(
+            syntheticFlight,
+            cabin,
+            passengers,
+            userPrograms,
+            "oneway",
+            effectivePrices,
+            undefined,
+            date,
+            undefined
+          );
+          enriched.searchId = searchId;
+          enriched.priceConfidence = "ESTIMATED"; // Mark as multi-leg estimate
+          multiLegResults.push(enriched);
+        }
+      }
+    } catch (err) {
+      logWarn(`[multileg] search failed: ${String(err)}`);
+      // Continue with direct/normal results even if multi-leg fails
+    }
+  }
+
   const searchId = crypto.randomUUID();
   const results: FlightResult[] = withPromos.map((f) => {
     const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date, returnDate);
@@ -243,7 +331,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     r.searchId = searchId;
     return r;
   });
-  const allResults = [...results, ...syntheticResults];
+  const allResults = [...results, ...syntheticResults, ...multiLegResults];
 
   // ── Home Carrier Guarantee ────────────────────────────────────────────────────
   // After all providers are merged, ensure signature programs (KrisFlyer, ANA,
