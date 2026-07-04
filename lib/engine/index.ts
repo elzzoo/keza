@@ -266,7 +266,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
               const arrive = new Date(leg.arrivalTime).getTime();
               return total + Math.round((arrive - depart) / (1000 * 60));
             }, 0),
-            source: "MULTI_LEG" as const,
+            source: "SYNTHETIC" as const,
             priceConfidence: "ESTIMATED" as const,
           };
 
