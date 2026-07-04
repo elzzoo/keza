@@ -6,17 +6,21 @@ import { MultiLegRoute } from '@/lib/multiLeg';
 interface RouteSequenceSelectorProps {
   routes: MultiLegRoute[];
   onSelect: (route: MultiLegRoute) => void;
+  lang?: 'fr' | 'en';
 }
 
 /**
  * Component for selecting and displaying multi-leg flight routes
  * Shows route sequence, airlines, prices, and connection times
+ * Matches KEZA design system (Tailwind CSS + theme variables)
  */
-export function RouteSequenceSelector({ routes, onSelect }: RouteSequenceSelectorProps) {
+export function RouteSequenceSelector({ routes, onSelect, lang = 'en' }: RouteSequenceSelectorProps) {
+  const fr = lang === 'fr';
+
   if (routes.length === 0) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        <p>No routes available</p>
+      <div className="p-6 text-center text-muted">
+        <p>{fr ? "Aucune route disponible" : "No routes available"}</p>
       </div>
     );
   }
@@ -50,33 +54,45 @@ export function RouteSequenceSelector({ routes, onSelect }: RouteSequenceSelecto
     return `${hours}h ${mins}m`;
   };
 
+  const formatPrice = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-900">Route Sequence</h2>
+      <h2 className="text-xl font-bold text-fg">
+        {fr ? "Sélectionner un itinéraire" : "Route Sequence"}
+      </h2>
 
       {routes.map((route, routeIndex) => (
-        <div key={routeIndex} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+        <div
+          key={routeIndex}
+          className="border border-border rounded-xl p-5 hover:shadow-lg transition-all duration-200 hover:border-primary/50 bg-surface"
+        >
           {/* Route sequence visualization */}
-          <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="mb-6 flex items-center gap-3 overflow-x-auto pb-2">
             {route.legs.map((leg, legIndex) => (
               <React.Fragment key={legIndex}>
+                {/* Departure airport */}
                 <div className="text-center min-w-max">
-                  <div className="font-bold text-lg text-gray-900">{leg.origin}</div>
-                  <div className="text-xs text-gray-500">{formatDate(leg.departureTime)}</div>
-                  <div className="text-xs text-gray-500">{formatTime(leg.departureTime)}</div>
+                  <div className="font-bold text-xl text-fg">{leg.origin}</div>
+                  <div className="text-xs text-muted">{formatDate(leg.departureTime)}</div>
+                  <div className="text-xs text-muted font-medium">{formatTime(leg.departureTime)}</div>
                 </div>
 
-                {/* Arrow between airports */}
+                {/* Connection indicator with airline info */}
                 {legIndex < route.legs.length - 1 && (
-                  <div className="flex flex-col items-center gap-1 min-w-max px-2">
-                    <div className="text-xs font-medium text-blue-600">{leg.airline}</div>
-                    <div className="text-xs text-gray-600">{leg.flightNumber}</div>
-                    <div className="text-xs text-gray-600">{leg.aircraft}</div>
-                    <svg className="w-8 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <div className="flex flex-col items-center gap-1 min-w-max px-3">
+                    <div className="text-xs font-bold text-primary uppercase tracking-wide">{leg.airline}</div>
+                    <div className="text-xs text-muted">{leg.flightNumber}</div>
+                    <svg className="w-6 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 12h12M18 9l3 3-3 3" strokeWidth={2} fill="none" stroke="currentColor" strokeLinecap="round" />
                     </svg>
-                    <div className="text-xs text-gray-600 font-medium">
-                      {calculateConnectionTime(leg.arrivalTime, route.legs[legIndex + 1].departureTime)} min
+                    <div className="text-xs text-fg font-medium">
+                      {calculateConnectionTime(leg.arrivalTime, route.legs[legIndex + 1].departureTime)}m
                     </div>
                   </div>
                 )}
@@ -84,9 +100,9 @@ export function RouteSequenceSelector({ routes, onSelect }: RouteSequenceSelecto
                 {/* Arrival airport */}
                 {legIndex === route.legs.length - 1 && (
                   <div className="text-center min-w-max">
-                    <div className="font-bold text-lg text-gray-900">{leg.destination}</div>
-                    <div className="text-xs text-gray-500">{formatDate(leg.arrivalTime)}</div>
-                    <div className="text-xs text-gray-500">{formatTime(leg.arrivalTime)}</div>
+                    <div className="font-bold text-xl text-fg">{leg.destination}</div>
+                    <div className="text-xs text-muted">{formatDate(leg.arrivalTime)}</div>
+                    <div className="text-xs text-muted font-medium">{formatTime(leg.arrivalTime)}</div>
                   </div>
                 )}
               </React.Fragment>
@@ -94,23 +110,23 @@ export function RouteSequenceSelector({ routes, onSelect }: RouteSequenceSelecto
           </div>
 
           {/* Leg details */}
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2 mb-6 border-t border-b border-border/50 py-4">
             {route.legs.map((leg, legIndex) => (
-              <div key={legIndex} className="text-sm bg-gray-50 p-3 rounded">
-                <div className="flex justify-between items-start mb-2">
+              <div key={legIndex} className="text-sm bg-surface-2 p-3 rounded-lg">
+                <div className="flex justify-between items-start mb-1">
                   <div>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-bold text-fg">
                       {leg.origin} → {leg.destination}
                     </span>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-muted mt-0.5">
                       {leg.airline} {leg.flightNumber} • {leg.aircraft} • {leg.cabin}
                     </div>
                   </div>
-                  <div className="text-right font-medium text-gray-900">${leg.price}</div>
+                  <div className="text-right font-bold text-fg">{formatPrice(leg.price)}</div>
                 </div>
                 {legIndex < route.legs.length - 1 && (
-                  <div className="text-xs text-orange-600">
-                    ✈ Connection: {formatConnectionTime(calculateConnectionTime(leg.arrivalTime, route.legs[legIndex + 1].departureTime))}
+                  <div className="text-xs text-orange-600 font-medium mt-1">
+                    🔗 {fr ? "Connexion" : "Connection"}: {formatConnectionTime(calculateConnectionTime(leg.arrivalTime, route.legs[legIndex + 1].departureTime))}
                   </div>
                 )}
               </div>
@@ -118,17 +134,19 @@ export function RouteSequenceSelector({ routes, onSelect }: RouteSequenceSelecto
           </div>
 
           {/* Route summary */}
-          <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+          <div className="flex justify-between items-center">
             <div>
-              <div className="text-sm text-gray-600">Total Price</div>
-              <div className="text-2xl font-bold text-gray-900">${route.totalPrice}</div>
-              <div className="text-xs text-gray-500">{route.passengers} passenger(s)</div>
+              <div className="text-sm text-muted">{fr ? "Prix total" : "Total price"}</div>
+              <div className="text-2xl font-bold text-fg">{formatPrice(route.totalPrice)}</div>
+              <div className="text-xs text-muted mt-0.5">
+                {route.passengers} {route.passengers === 1 ? (fr ? "passager" : "passenger") : (fr ? "passagers" : "passengers")}
+              </div>
             </div>
             <button
               onClick={() => onSelect(route)}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/80 transition-colors shadow-sm hover:shadow-md"
             >
-              Book Now
+              {fr ? "Réserver" : "Book Now"}
             </button>
           </div>
         </div>
