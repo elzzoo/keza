@@ -4,6 +4,7 @@ import type { NormalizedFlight } from "./promotions/engine";
 import { redis } from "@/lib/redis";
 import { logError, logWarn } from "@/lib/logger";
 import { roundPrice } from "@/lib/roundPrice";
+import { DUFFEL_TIMEOUT_MS } from "@/lib/config";
 
 const DUFFEL_ERROR_TRACKING_KEY = "duffel:errors:1m";
 
@@ -41,8 +42,8 @@ async function trackDuffelError(isError: boolean): Promise<void> {
 type Cabin = "economy" | "premium" | "business" | "first";
 
 const DUFFEL_BASE = "https://api.duffel.com";
-const DUFFEL_TIMEOUT = 3_500;  // S1-3: Reduced from 4200 to 3500ms per attempt (dual-budget strategy: 6.5s total)
-const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 3.5s + 600ms + 3.5s = 7.6s)
+const DUFFEL_TIMEOUT = DUFFEL_TIMEOUT_MS;  // Configurable via env var (default 4000ms)
+const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 4s + 600ms + 4s = 8.6s)
 const RETRY_BACKOFF_MS = [600, 1200] as const; // wait before attempt 2, 3
 
 /** Map KEZA cabin names to Duffel cabin class values */
@@ -173,6 +174,7 @@ export async function fetchFromDuffel(
     return [];
   }
 
+  const startMs = Date.now();
   const passengerList = Array.from({ length: Math.min(passengers, 9) }, () => ({
     type: "adult",
   }));
@@ -235,6 +237,12 @@ export async function fetchFromDuffel(
     }
 
     if (!res) throw lastErr;
+
+    // Track timing metrics
+    const elapsedMs = Date.now() - startMs;
+    if (res.ok) {
+      logWarn(`[duffel] latency ${elapsedMs}ms for ${from}→${to}`);
+    }
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
