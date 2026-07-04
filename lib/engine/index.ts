@@ -11,8 +11,8 @@ import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements"
 import { enrich, mergeFlights, filterByStops } from "./enrich";
 import { logError, logWarn } from "../logger";
 import { ENABLE_MULTI_LEG_ROUTING } from "../config";
-import { searchMultiLegRoutes, validateMultiLegRoute } from "../multiLeg";
-import type { FlightLeg, MultiLegRoute } from "../multiLeg";
+import { searchMultiLegRoutes } from "../multiLeg";
+import type { FlightLeg, Cabin } from "../multiLeg";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -209,7 +209,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   }
 
   // ── Multi-Leg Routing (experimental) ──────────────────────────────────────────
-  let multiLegResults: FlightResult[] = [];
+  const multiLegResults: FlightResult[] = [];
   if (ENABLE_MULTI_LEG_ROUTING && !isRoundtrip && stops !== "direct") {
     try {
       // Convert flights to FlightLeg format for multi-leg routing
@@ -230,7 +230,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
           airline,
           flightNumber: "0000", // Placeholder from normalized results
           aircraft: "000",      // Not available in normalized results
-          cabin: (cabin as any) ?? "economy",
+          cabin: (cabin as Cabin) ?? "economy",
           price: f.price,
         });
         return legs;
