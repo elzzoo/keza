@@ -43,8 +43,8 @@ type Cabin = "economy" | "premium" | "business" | "first";
 
 const DUFFEL_BASE = "https://api.duffel.com";
 const DUFFEL_TIMEOUT = DUFFEL_TIMEOUT_MS;  // Configurable via env var (default 4000ms)
-const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 4s + 600ms + 4s = 8.6s)
-const RETRY_BACKOFF_MS = [600, 1200] as const; // wait before attempt 2, 3
+const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 4s + 200ms + 4s = 8.2s)
+const RETRY_BACKOFF_MS = [200, 500] as const; // fast retry on timeout (fail-fast improves p95)
 
 /** Map KEZA cabin names to Duffel cabin class values */
 const CABIN_MAP: Record<Cabin, string> = {
