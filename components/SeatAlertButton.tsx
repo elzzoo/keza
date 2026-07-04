@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { saveSeatAlert } from "@/lib/seatAlerts";
+import { saveAlertAction } from "@/lib/actions/seatAlertActions";
 import type { CabinType } from "@/lib/seatAlerts";
 
 interface SeatAlertButtonProps {
@@ -35,17 +35,12 @@ export function SeatAlertButton({ from, to, cabin, currentPrice, lang }: SeatAle
     setLoading(true);
     try {
       const route = `${from}-${to}`;
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 90);
-
-      await saveSeatAlert({
-        email: email.trim().toLowerCase(),
+      await saveAlertAction(
+        email.trim().toLowerCase(),
         route,
-        cabin: CABIN_MAP[cabin] || "ECONOMY",
-        minPrice: Math.round(price),
-        createdAt: new Date(),
-        expiresAt,
-      });
+        CABIN_MAP[cabin] || "ECONOMY",
+        Math.round(price)
+      );
 
       setSubmitted(true);
       setTimeout(() => {
