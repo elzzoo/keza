@@ -38,6 +38,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "SFO-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
   "NRT-ORD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
   "ORD-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "NRT-SYD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "SYD-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
 
   // Emirates Skywards — DXB hub
   "DXB-LHR": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
@@ -86,6 +88,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "LAX-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
   "ICN-JFK": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
   "JFK-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "ICN-BKK": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "BKK-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
 
   // Cathay Pacific Asia Miles — HKG hub
   "HKG-LHR": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
@@ -192,6 +196,14 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-BKK": [{ airline: "Air France", programs: ["Flying Blue"] }],
   "BKK-NRT": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "NRT-BKK": [{ airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+
+  // NRT ↔ SYD (ANA/JAL ↔ Qantas) — Additional Asia-Pacific connectivity
+  "NRT-SYD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "SYD-NRT": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+
+  // ICN ↔ BKK (Korean Air ↔ Thai Airways) — Seoul-Bangkok regional corridor
+  "ICN-BKK": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "BKK-ICN": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
 
   // ─── Europe Hubs (P5 Scaling Task 1.1) ───────────────────────────────────────
   // Lufthansa Miles & More — FRA hub (Frankfurt)
