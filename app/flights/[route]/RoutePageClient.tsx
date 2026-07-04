@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SearchForm } from "@/components/SearchForm";
 import { Results } from "@/components/Results";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
-import { PriceHistoryChart } from "@/components/PriceHistoryChart";
-import { PriceHeatmap } from "@/components/PriceHeatmap";
+
+// Lazy-load below-the-fold components to reduce initial JS bundle
+const PriceHeatmap = dynamic(() => import("@/components/PriceHeatmap").then(m => m.PriceHeatmap), { ssr: false });
+const PriceHistoryChartLazy = dynamic(() => import("@/components/PriceHistoryChart").then(m => m.PriceHistoryChart), { ssr: false });
 import type { FlightResult } from "@/lib/engine";
 import { airportsMap } from "@/data/airports";
 import { useProAccess } from "@/hooks/useProAccess";
@@ -517,7 +520,7 @@ export function RoutePageClient({
 
             {/* ── Price history chart (Pro only) ── */}
             {hasProAccess ? (
-              <PriceHistoryChart from={from} to={to} lang={lang} />
+              <PriceHistoryChartLazy from={from} to={to} lang={lang} />
             ) : (
               <div className="bg-surface-2 border border-dashed border-primary/40 rounded-xl px-6 py-8 text-center">
                 <p className="text-sm text-muted mb-3">
