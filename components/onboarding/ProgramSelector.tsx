@@ -90,7 +90,7 @@ export function ProgramSelector({ onNext }: Props) {
     <div className="w-full max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-2">Select Your Loyalty Programs</h2>
       <p className="text-gray-600 mb-6">
-        Choose the programs you're a member of. We'll show you the best value for each flight.
+        {"Choose the programs you're a member of. We'll show you the best value for each flight."}
       </p>
 
       <div className="space-y-6">
