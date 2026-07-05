@@ -4,6 +4,9 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import { PriceCalendar } from "./PriceCalendar";
+import { OnboardingFlow } from "./onboarding/OnboardingFlow";
+import { getVisitedFlag } from "@/lib/storage";
+import { useOnboarding } from "@/lib/contexts/onboardingContext";
 import { trackSearch } from "@/lib/analytics";
 import { toast } from "sonner";
 import clsx from "clsx";
@@ -47,6 +50,7 @@ const addDays = (base: string, n: number) => {
  * @param Props - SearchForm props including initial values, callbacks, and formatting function
  */
 export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax, onLiveRefreshing }: Props) {
+  const enableOnboarding = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === "true";
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");
   const [tripType,   setTripType]   = useState<TripType>(initialTripType ?? "roundtrip");
@@ -58,6 +62,8 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
   const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
   const [showCalendar, setShowCalendar] = useState<"dep" | "ret" | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { state: onboardingState } = useOnboarding();
 
   // React to external route selection (popular routes / URL params)
   useEffect(() => { if (initialFrom) setFrom(initialFrom); }, [initialFrom]);
@@ -91,6 +97,31 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     // Profile cabin only applies if URL didn't supply one
     if (savedCabin && !initialCabin) { setCabin(savedCabin); setProfileLoaded(true); }
   }, [savedPrograms, savedCabin, initialCabin, profileLoaded]);
+
+  // Show onboarding modal to first-time visitors
+  useEffect(() => {
+    if (typeof window !== "undefined" && !getVisitedFlag()) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  // Pre-fill programs from onboarding state
+  useEffect(() => {
+    if (onboardingState.selectedPrograms.length > 0 && !programs) {
+      setPrograms(onboardingState.selectedPrograms.join(", "));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingState.selectedPrograms, programs]);
+
+  // Pre-fill routes from onboarding state
+  useEffect(() => {
+    if (onboardingState.favoriteRoutes.length > 0 && !from && !to) {
+      const [fromAirport, toAirport] = onboardingState.favoriteRoutes[0];
+      setFrom(fromAirport);
+      setTo(toAirport);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingState.favoriteRoutes, from, to]);
 
   const canGo = !!from && !!to && from !== to;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
@@ -253,8 +284,12 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
   const canShowCalendar = !!from && !!to && from !== to;
 
   return (
-    <form onSubmit={submit}>
-      <div className="bg-surface rounded-3xl border border-border p-4 sm:p-5 space-y-3 sm:space-y-4 shadow-card">
+    <>
+      {enableOnboarding && showOnboarding && (
+        <OnboardingFlow onComplete={() => setShowOnboarding(false)} />
+      )}
+      <form onSubmit={submit}>
+        <div className="bg-surface rounded-3xl border border-border p-4 sm:p-5 space-y-3 sm:space-y-4 shadow-card">
 
         {/* Trip type toggle */}
         <div className="flex gap-1 bg-bg rounded-2xl p-1 border border-border">
@@ -502,7 +537,8 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             : `${fr ? "Optimiser mon vol" : "Optimize my flight"} →`
           }
         </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </>
   );
 }
