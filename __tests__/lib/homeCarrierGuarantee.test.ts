@@ -46,6 +46,7 @@ const KNOWN_PROGRAMS = new Set([
   "Kenya Airways Mileage Club",   // P5 Task 2.4: African programs (NBO hub)
   "Aeromexico Club Premier",      // P5 Task 3.1: Latin America market (MEX hub)
   "Air New Zealand Airpoints",    // P5 Task 3.2: South Pacific expansion (NZL hub)
+  "TAAG Frequent Flyer",          // P5 Task 3.3: Route expansion to 110+ corridors (LAD hub)
 ]);
 
 

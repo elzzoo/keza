@@ -162,4 +162,169 @@ describe("supplements — home carrier guarantees & route airlines", () => {
       }
     });
   });
+
+  describe("P5 Task 3.3: Route Expansion to 110+ corridors", () => {
+    test("Tier 3 — African Routes: LAD hub coverage", () => {
+      // LAD↔LHR (TAAG Angola Airlines)
+      expect(HOME_CARRIER_PROGRAMS["LAD-LHR"]).toBeDefined();
+      expect(HOME_CARRIER_PROGRAMS["LAD-LHR"][0].airline).toBe("TAAG Angola Airlines");
+      expect(HOME_CARRIER_PROGRAMS["LAD-LHR"][0].programs).toContain("TAAG Frequent Flyer");
+
+      expect(HOME_CARRIER_PROGRAMS["LHR-LAD"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LAD-LHR"]).toContain("TAAG Angola Airlines");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LHR-LAD"]).toContain("TAAG Angola Airlines");
+    });
+
+    test("Tier 3 — African Routes: LAD↔JFK", () => {
+      expect(HOME_CARRIER_PROGRAMS["LAD-JFK"]).toBeDefined();
+      expect(HOME_CARRIER_PROGRAMS["LAD-JFK"][0].airline).toBe("TAAG Angola Airlines");
+      expect(HOME_CARRIER_PROGRAMS["JFK-LAD"]).toBeDefined();
+    });
+
+    test("Tier 4 — Asia-Asia: ICN↔BKK (Korean Air + Thai Airways)", () => {
+      expect(HOME_CARRIER_PROGRAMS["ICN-BKK"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["ICN-BKK"].map(e => e.airline);
+      expect(airlines).toContain("Korean Air");
+      expect(airlines).toContain("Thai Airways");
+
+      expect(HOME_CARRIER_PROGRAMS["BKK-ICN"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["ICN-BKK"]).toContain("Korean Air");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["ICN-BKK"]).toContain("Thai Airways");
+    });
+
+    test("Tier 4 — Asia-Asia: BKK↔HKG (Thai Airways + Cathay Pacific)", () => {
+      expect(HOME_CARRIER_PROGRAMS["BKK-HKG"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["BKK-HKG"].map(e => e.airline);
+      expect(airlines).toContain("Thai Airways");
+      expect(airlines).toContain("Cathay Pacific");
+
+      expect(HOME_CARRIER_PROGRAMS["HKG-BKK"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["BKK-HKG"]).toContain("Thai Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["BKK-HKG"]).toContain("Cathay Pacific");
+    });
+
+    test("Tier 4 — Asia-Asia: BKK↔SIN (Thai Airways + Singapore Airlines)", () => {
+      expect(HOME_CARRIER_PROGRAMS["BKK-SIN"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["BKK-SIN"].map(e => e.airline);
+      expect(airlines).toContain("Thai Airways");
+      expect(airlines).toContain("Singapore Airlines");
+
+      expect(HOME_CARRIER_PROGRAMS["SIN-BKK"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["BKK-SIN"]).toContain("Thai Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["BKK-SIN"]).toContain("Singapore Airlines");
+    });
+
+    test("Tier 4 — Trans-Pacific: NRT↔CDG (ANA + JAL + Air France)", () => {
+      expect(HOME_CARRIER_PROGRAMS["NRT-CDG"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["NRT-CDG"].map(e => e.airline);
+      expect(airlines).toContain("All Nippon Airways");
+      expect(airlines).toContain("Japan Airlines");
+      expect(airlines).toContain("Air France");
+
+      expect(HOME_CARRIER_PROGRAMS["CDG-NRT"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["NRT-CDG"]).toContain("All Nippon Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["NRT-CDG"]).toContain("Air France");
+    });
+
+    test("Tier 4 — Trans-Pacific: ICN↔CDG (Korean Air + Air France)", () => {
+      expect(HOME_CARRIER_PROGRAMS["ICN-CDG"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["ICN-CDG"].map(e => e.airline);
+      expect(airlines).toContain("Korean Air");
+      expect(airlines).toContain("Air France");
+
+      expect(HOME_CARRIER_PROGRAMS["CDG-ICN"]).toBeDefined();
+    });
+
+    test("Tier 4 — Asia-Asia: HKG↔NRT (Cathay Pacific + ANA/JAL)", () => {
+      expect(HOME_CARRIER_PROGRAMS["HKG-NRT"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["HKG-NRT"].map(e => e.airline);
+      expect(airlines).toContain("Cathay Pacific");
+      expect(airlines).toContain("All Nippon Airways");
+
+      expect(HOME_CARRIER_PROGRAMS["NRT-HKG"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["HKG-NRT"]).toContain("Cathay Pacific");
+    });
+
+    test("Tier 4 — Asia-Asia: SIN↔NRT (Singapore Airlines + ANA/JAL)", () => {
+      expect(HOME_CARRIER_PROGRAMS["SIN-NRT"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["SIN-NRT"].map(e => e.airline);
+      expect(airlines).toContain("Singapore Airlines");
+      expect(airlines).toContain("All Nippon Airways");
+
+      expect(HOME_CARRIER_PROGRAMS["NRT-SIN"]).toBeDefined();
+    });
+
+    test("Tier 4 — Asia-Asia: HKG↔SIN (Cathay Pacific + Singapore Airlines)", () => {
+      expect(HOME_CARRIER_PROGRAMS["HKG-SIN"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["HKG-SIN"].map(e => e.airline);
+      expect(airlines).toContain("Cathay Pacific");
+      expect(airlines).toContain("Singapore Airlines");
+
+      expect(HOME_CARRIER_PROGRAMS["SIN-HKG"]).toBeDefined();
+    });
+
+    test("Premium corridor: LHR↔SIN (Singapore Airlines guaranteed)", () => {
+      expect(HOME_CARRIER_PROGRAMS["LHR-SIN"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["LHR-SIN"].map(e => e.airline);
+      // Existing entry guarantees SQ, supplements include BA via ROUTE_AIRLINE_SUPPLEMENTS
+      expect(airlines).toContain("Singapore Airlines");
+
+      expect(HOME_CARRIER_PROGRAMS["SIN-LHR"]).toBeDefined();
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LHR-SIN"]).toContain("British Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LHR-SIN"]).toContain("Singapore Airlines");
+    });
+
+    test("Premium corridor: FRA↔BKK (Lufthansa + Thai Airways)", () => {
+      expect(HOME_CARRIER_PROGRAMS["FRA-BKK"]).toBeDefined();
+      const airlines = HOME_CARRIER_PROGRAMS["FRA-BKK"].map(e => e.airline);
+      expect(airlines).toContain("Lufthansa");
+      expect(airlines).toContain("Thai Airways");
+
+      expect(HOME_CARRIER_PROGRAMS["BKK-FRA"]).toBeDefined();
+    });
+
+    test("all new routes are bidirectional", () => {
+      const newRoutes = [
+        "LAD-LHR", "LAD-JFK",
+        "ICN-BKK", "BKK-HKG", "BKK-SIN",
+        "NRT-CDG", "ICN-CDG",
+        "HKG-NRT", "SIN-NRT", "HKG-SIN",
+        "LHR-SIN", "FRA-BKK"
+      ];
+
+      for (const route of newRoutes) {
+        const [from, to] = route.split("-");
+        const reverse = `${to}-${from}`;
+        expect(HOME_CARRIER_PROGRAMS[route]).toBeDefined();
+        expect(HOME_CARRIER_PROGRAMS[reverse]).toBeDefined();
+      }
+    });
+
+    test("all new routes have corresponding airline supplements", () => {
+      const newRoutes = [
+        "LAD-LHR", "LAD-JFK",
+        "ICN-BKK", "BKK-HKG", "BKK-SIN",
+        "NRT-CDG", "ICN-CDG",
+        "HKG-NRT", "SIN-NRT", "HKG-SIN",
+        "LHR-SIN", "FRA-BKK"
+      ];
+
+      for (const route of newRoutes) {
+        const [from, to] = route.split("-");
+        const reverse = `${to}-${from}`;
+
+        // At least one direction should have airline supplements
+        const hasSupplements =
+          (ROUTE_AIRLINE_SUPPLEMENTS[route] && ROUTE_AIRLINE_SUPPLEMENTS[route].length > 0) ||
+          (ROUTE_AIRLINE_SUPPLEMENTS[reverse] && ROUTE_AIRLINE_SUPPLEMENTS[reverse].length > 0);
+
+        expect(hasSupplements).toBe(true);
+      }
+    });
+
+    test("route count increased to 110+ corridors", () => {
+      const totalRoutes = Object.keys(HOME_CARRIER_PROGRAMS).length;
+      expect(totalRoutes).toBeGreaterThanOrEqual(110);
+    });
+  });
 });

@@ -314,6 +314,51 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "SFO-NZL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
   "NZL-LHR": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
   "LHR-NZL": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+
+  // ─── P5 Task 3.3: Route Expansion to 110+ Corridors ─────────────────────────
+  // Tier 3: African Routes — Angola gateway (LAD hub)
+  // TAAG Angola Airlines — strategic gateway to southern Africa
+  "LAD-LHR": [{ airline: "TAAG Angola Airlines", programs: ["TAAG Frequent Flyer"] }],
+  "LHR-LAD": [{ airline: "TAAG Angola Airlines", programs: ["TAAG Frequent Flyer"] }],
+  "LAD-JFK": [{ airline: "TAAG Angola Airlines", programs: ["TAAG Frequent Flyer"] }],
+  "JFK-LAD": [{ airline: "TAAG Angola Airlines", programs: ["TAAG Frequent Flyer"] }],
+
+  // Tier 4: Asia-Asia Corridors — Intra-Asia expansion
+  // Seoul ↔ Bangkok (Korean Air + Thai Airways)
+  "ICN-BKK": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "BKK-ICN": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }, { airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+
+  // Bangkok ↔ Hong Kong (Thai Airways + Cathay Pacific)
+  "BKK-HKG": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }, { airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+  "HKG-BKK": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+
+  // Bangkok ↔ Singapore (Thai Airways + Singapore Airlines)
+  "BKK-SIN": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }, { airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "SIN-BKK": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+
+  // Tokyo (NRT) ↔ Paris CDG (ANA/JAL + Air France)
+  "NRT-CDG": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }, { airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-NRT": [{ airline: "Air France", programs: ["Flying Blue"] }, { airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+
+  // Seoul (ICN) ↔ Paris CDG (Korean Air + Air France)
+  "ICN-CDG": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }, { airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-ICN": [{ airline: "Air France", programs: ["Flying Blue"] }, { airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+
+  // Hong Kong ↔ Tokyo (Cathay Pacific + ANA/JAL)
+  "HKG-NRT": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }, { airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "NRT-HKG": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }, { airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+
+  // Singapore ↔ Tokyo (Singapore Airlines + ANA/JAL)
+  "SIN-NRT": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }, { airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "NRT-SIN": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }, { airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+
+  // Hong Kong ↔ Singapore (Cathay Pacific + Singapore Airlines)
+  "HKG-SIN": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }, { airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }],
+  "SIN-HKG": [{ airline: "Singapore Airlines", programs: ["Singapore KrisFlyer"] }, { airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
+
+  // Frankfurt ↔ Bangkok (Lufthansa + Thai Airways)
+  "FRA-BKK": [{ airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "BKK-FRA": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }, { airline: "Lufthansa", programs: ["Lufthansa Miles & More"] }],
 };
 
 // ─── Static airline supplements ──────────────────────────────────────────────
@@ -641,6 +686,50 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "SFO-NZL": ["Air New Zealand", "United"],
   "NZL-LHR": ["Air New Zealand", "British Airways"],
   "LHR-NZL": ["British Airways", "Air New Zealand"],
+
+  // ─── P5 Task 3.3: Route Expansion to 110+ Corridors ────────────────────
+  // Tier 3: African Routes — Angola gateway (LAD hub)
+  "LAD-LHR": ["TAAG Angola Airlines", "British Airways"],
+  "LHR-LAD": ["TAAG Angola Airlines", "British Airways"],
+  "LAD-JFK": ["TAAG Angola Airlines", "United"],
+  "JFK-LAD": ["TAAG Angola Airlines", "United"],
+
+  // Tier 4: Intra-Asia Corridors
+  // Seoul ↔ Bangkok
+  "ICN-BKK": ["Korean Air", "Thai Airways"],
+  "BKK-ICN": ["Thai Airways", "Korean Air"],
+
+  // Bangkok ↔ Hong Kong
+  "BKK-HKG": ["Thai Airways", "Cathay Pacific"],
+  "HKG-BKK": ["Cathay Pacific", "Thai Airways"],
+
+  // Bangkok ↔ Singapore
+  "BKK-SIN": ["Thai Airways", "Singapore Airlines"],
+  "SIN-BKK": ["Singapore Airlines", "Thai Airways"],
+
+  // Tokyo (NRT) ↔ Paris CDG
+  "NRT-CDG": ["All Nippon Airways", "Japan Airlines", "Air France"],
+  "CDG-NRT": ["Air France", "All Nippon Airways", "Japan Airlines"],
+
+  // Seoul (ICN) ↔ Paris CDG
+  "ICN-CDG": ["Korean Air", "Air France"],
+  "CDG-ICN": ["Air France", "Korean Air"],
+
+  // Hong Kong ↔ Tokyo (NRT)
+  "HKG-NRT": ["Cathay Pacific", "All Nippon Airways", "Japan Airlines"],
+  "NRT-HKG": ["All Nippon Airways", "Japan Airlines", "Cathay Pacific"],
+
+  // Singapore ↔ Tokyo (NRT)
+  "SIN-NRT": ["Singapore Airlines", "All Nippon Airways", "Japan Airlines"],
+  "NRT-SIN": ["All Nippon Airways", "Japan Airlines", "Singapore Airlines"],
+
+  // Hong Kong ↔ Singapore
+  "HKG-SIN": ["Cathay Pacific", "Singapore Airlines"],
+  "SIN-HKG": ["Singapore Airlines", "Cathay Pacific"],
+
+  // Frankfurt ↔ Bangkok
+  "FRA-BKK": ["Lufthansa", "Thai Airways"],
+  "BKK-FRA": ["Thai Airways", "Lufthansa"],
 };
 
 /**

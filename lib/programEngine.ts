@@ -58,6 +58,8 @@ export const PROGRAM_TO_AIRLINE: Record<string, string> = {
   "Emirates Skywards":       "Emirates",
   "Etihad Guest":            "Etihad",            // matches alliances.ts key
   "Virgin Atlantic Flying Club": "Virgin Atlantic",
+  // ─── P5 Task 3.3: African & Regional Programs ──────────────────────────────
+  "TAAG Frequent Flyer":     "TAAG Angola Airlines",  // Angola gateway, LAD hub
 };
 
 // ─── Operator → flagship program (hard guarantees) ───────────────────────────
@@ -125,6 +127,8 @@ const OPERATOR_TO_PROGRAM: Record<string, string> = {
   "Etihad":              "Etihad Guest",
   "Virgin Atlantic":     "Virgin Atlantic Flying Club",
   "Alaska Airlines":     "Alaska Mileage Plan",
+  // P5 Task 3.3: African & Regional Programs
+  "TAAG Angola Airlines": "TAAG Frequent Flyer",  // Angola gateway, LAD hub
 };
 
 // Airlines whose native program is Flying Blue (Air France-KLM group).
