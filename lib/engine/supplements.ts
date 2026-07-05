@@ -155,7 +155,7 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "JNB-LHR": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "LHR-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "JNB-CDG": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
-  "CDG-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
+  "CDG-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }, { airline: "Air France", programs: ["Flying Blue"] }],
   "JNB-FRA": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "FRA-JNB": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
   "JNB-LAX": [{ airline: "South African Airways", programs: ["South African Voyager"] }],
@@ -189,7 +189,7 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "BKK-LAX": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "LAX-BKK": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "BKK-CDG": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
-  "CDG-BKK": [{ airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-BKK": [{ airline: "Air France", programs: ["Flying Blue"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "BKK-NRT": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "NRT-BKK": [{ airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
 
