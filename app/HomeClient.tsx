@@ -130,7 +130,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
     <div className="min-h-screen bg-bg flex flex-col">
       {/* Onboarding wizard — shown once to new users, lazy-loaded */}
       <OnboardingWizard lang={lang} />
-      <Header lang={lang} onLangChange={handleLangChange} currency={currency} onCurrencyChange={setCurrency} />
+      <Header lang={lang} onLangChange={handleLangChange} />
       <TrustBar lang={lang} />
       {/* Hide social widgets in results mode — avoids /api/stats + /api/trending fetches */}
       {!hasSearched && <TrendingRoutesWidget lang={lang} />}

@@ -149,16 +149,8 @@ describe("Header", () => {
     expect(onLangChange).toHaveBeenCalledWith("fr");
   });
 
-  it("renders currency picker when currency prop is provided", () => {
-    const onCurrencyChange = jest.fn();
-    render(
-      <Header
-        {...defaultProps}
-        currency="USD"
-        onCurrencyChange={onCurrencyChange}
-      />
-    );
-
+  it("renders currency picker always", () => {
+    render(<Header {...defaultProps} />);
     expect(screen.getByTestId("currency-picker")).toBeInTheDocument();
   });
 

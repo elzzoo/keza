@@ -2,13 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { CURRENCIES, QUICK_CURRENCIES, type CurrencyCode } from "@/lib/currency";
+import { useProfile } from "@/hooks/useProfile";
 
-interface Props {
-  currency: CurrencyCode;
-  onCurrencyChange: (code: CurrencyCode) => void;
-}
-
-export function CurrencyPicker({ currency, onCurrencyChange }: Props) {
+export function CurrencyPicker() {
+  const { profile } = useProfile();
+  const { setCurrency } = useProfile();
+  const currency = (profile?.currency || "USD") as CurrencyCode;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -48,7 +47,7 @@ export function CurrencyPicker({ currency, onCurrencyChange }: Props) {
             return (
               <button
                 key={code}
-                onClick={() => { onCurrencyChange(code); setOpen(false); }}
+                onClick={() => { setCurrency(code); setOpen(false); }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs transition-colors ${
                   isActive
                     ? "bg-primary/10 text-primary font-bold"

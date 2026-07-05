@@ -6,13 +6,10 @@ import clsx from "clsx";
 import { CurrencyPicker } from "./CurrencyPicker";
 import { ThemeToggle } from "./ThemeToggle";
 import { AuthButton } from "@/components/AuthButton";
-import type { CurrencyCode } from "@/lib/currency";
 
 interface Props {
   lang: "fr" | "en";
   onLangChange?: (l: "fr" | "en") => void;
-  currency?: CurrencyCode;
-  onCurrencyChange?: (code: CurrencyCode) => void;
 }
 
 const NAV = {
@@ -42,7 +39,7 @@ const NAV = {
   ],
 };
 
-export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChange }: Props) {
+export function Header({ lang, onLangChange = () => {} }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = NAV[lang];
 
@@ -95,9 +92,7 @@ export function Header({ lang, onLangChange = () => {}, currency, onCurrencyChan
           </Link>
 
           {/* Currency picker */}
-          {currency && onCurrencyChange && (
-            <CurrencyPicker currency={currency} onCurrencyChange={onCurrencyChange} />
-          )}
+          <CurrencyPicker />
 
           {/* Auth button */}
           <AuthButton lang={lang} />
