@@ -39,7 +39,7 @@ interface HomeClientProps {
 
 export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
   const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
-  const { currency, setCurrency, formatPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
 
   const [lang,            setLang]           = useState<"fr" | "en">(defaultLang);
   const [results,         setResults]        = useState<FlightResult[]>([]);

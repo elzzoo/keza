@@ -16,6 +16,7 @@ import { getDefaultCurrencyForCountry } from "@/lib/currencyDetection";
 
 interface ProfileContextValue {
   profile:       UserProfile | null;
+  currency:      string;
   isLoaded:      boolean;
   isSyncing:     boolean;
   exchangeRates: ExchangeRates;
@@ -159,7 +160,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, isLoaded: profile !== null, isSyncing: isLoadingFromServer, exchangeRates,
+      profile, currency: profile?.currency || "USD", isLoaded: profile !== null, isSyncing: isLoadingFromServer, exchangeRates,
       update, setPrograms, setLang, setCurrency, setCabin,
       setBalances, setBankPoints, recordSearch, toggleFavorite,
     }}>
