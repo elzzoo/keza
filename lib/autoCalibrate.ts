@@ -103,11 +103,15 @@ export async function recalibrate(): Promise<Record<string, { before: number; af
 
     if (observations.length < 10) continue;
 
-    // Weighted median: recent observations get more weight
+    // P2.7 FIX: Self-Learning Decay Tuning
+    // Use 14-day decay instead of 30 days to respond faster to market changes.
+    // This ensures calibration lags only 7-14 days instead of 2-3 weeks.
+    // At 14 days old, observations get ~5% weight; at 7 days, ~50% weight.
     const now = Date.now();
+    const DECAY_DAYS = 14; // was 30 — reduced to respond faster to market changes
     const weighted = observations.map((o) => ({
       value: o.impliedValueCents,
-      weight: Math.max(0.1, 1 - (now - o.timestamp) / (30 * 24 * 60 * 60 * 1000)), // decay over 30 days
+      weight: Math.max(0.01, 1 - (now - o.timestamp) / (DECAY_DAYS * 24 * 60 * 60 * 1000)),
     }));
 
     // Sort by value
