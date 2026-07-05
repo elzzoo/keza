@@ -78,6 +78,25 @@ describe("onboardingContext", () => {
     expect(result.current.state.favoriteRoutes.length).toBe(5);
   });
 
+  it("removes routes with case-insensitive comparison", () => {
+    const wrapper = ({ children }: any) => <OnboardingProvider>{children}</OnboardingProvider>;
+    const { result } = renderHook(() => useOnboarding(), { wrapper });
+
+    act(() => {
+      result.current.addRoute("SIN", "LAX");
+      result.current.addRoute("CDG", "JFK");
+    });
+
+    expect(result.current.state.favoriteRoutes.length).toBe(2);
+
+    // Remove with lowercase - should still work
+    act(() => {
+      result.current.removeRoute("sin", "lax");
+    });
+
+    expect(result.current.state.favoriteRoutes).toEqual([["CDG", "JFK"]]);
+  });
+
   it("persists state to localStorage", () => {
     const wrapper = ({ children }: any) => <OnboardingProvider>{children}</OnboardingProvider>;
     const { result } = renderHook(() => useOnboarding(), { wrapper });

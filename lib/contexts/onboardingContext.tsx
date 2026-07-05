@@ -88,9 +88,10 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   };
 
   const removeRoute = (from: string, to: string) => {
+    const normalized: [string, string] = [from.toUpperCase(), to.toUpperCase()];
     setState((prev) => ({
       ...prev,
-      favoriteRoutes: prev.favoriteRoutes.filter((r) => !(r[0] === from && r[1] === to)),
+      favoriteRoutes: prev.favoriteRoutes.filter((r) => !(r[0] === normalized[0] && r[1] === normalized[1])),
     }));
   };
 
