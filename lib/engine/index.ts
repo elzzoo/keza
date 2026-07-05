@@ -113,11 +113,36 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   // IMPORTANT: synthetics are kept in a SEPARATE array — they never enter the
   // miles engine (no buildCostOptions) and are appended AFTER the sorted real
   // results so they never displace a real flight in the ranking.
+  //
+  // P2.5 FIX: Zone Fallback Restriction
+  // Restrict fallback to only corridor-guaranteed programs to avoid flooding
+  // the calendar with 5-10 irrelevant programs on unknown zones (e.g. BJS→LAX).
+  // Filter suppAirlines to only those that appear in getCorridorGuarantees() results.
   const syntheticFlights: NormalizedFlight[] = [];
   {
     const suppKey = `${from.toUpperCase()}-${to.toUpperCase()}`;
-    const suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
+    let suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
     const coveredAirlines = new Set(rawOutbound.flatMap(f => f.airlines));
+
+    // Import getCorridorGuarantees to filter only corridor-guaranteed programs
+    const { getCorridorGuarantees, PROGRAM_TO_AIRLINE } = await import("../programEngine");
+    const { getZone } = await import("../zones");
+    const originZone = getZone(from) ?? "UNKNOWN";
+    const destZone = getZone(to) ?? "UNKNOWN";
+    const corridorGuarantees = getCorridorGuarantees(originZone, destZone, rawOutbound.flatMap(f => f.airlines));
+
+    // Build set of airlines from corridor-guaranteed programs only
+    const corridorAirlines = new Set(
+      corridorGuarantees
+        .map(g => PROGRAM_TO_AIRLINE[g.program])
+        .filter((a): a is string => a !== undefined)
+    );
+
+    // Filter suppAirlines to only those in corridor guarantees
+    if (corridorAirlines.size > 0) {
+      suppAirlines = suppAirlines.filter(a => corridorAirlines.has(a));
+    }
+
     const cheapestRaw = rawOutbound.length > 0
       ? rawOutbound.reduce((best, f) => f.price < best.price ? f : best, rawOutbound[0])
       : undefined;
