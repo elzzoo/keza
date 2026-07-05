@@ -24,7 +24,7 @@ describe("Resend Email Client - Miles Alert", () => {
   });
 
   it("should generate email with correct structure and content", async () => {
-    mockSend.mockResolvedValue({ id: "test-message-id", error: null });
+    mockSend.mockResolvedValue({ data: { id: "test-message-id" }, error: null });
 
     const params = {
       email: "user@example.com",
@@ -73,7 +73,7 @@ describe("Resend Email Client - Miles Alert", () => {
   });
 
   it("should handle flight details correctly when provided", async () => {
-    mockSend.mockResolvedValue({ id: "test-id-2", error: null });
+    mockSend.mockResolvedValue({ data: { id: "test-id-2" }, error: null });
 
     const params = {
       email: "test@example.com",
@@ -123,7 +123,7 @@ describe("Resend Email Client - Miles Alert", () => {
   });
 
   it("should include footer with unsubscribe link", async () => {
-    mockSend.mockResolvedValue({ id: "footer-test", error: null });
+    mockSend.mockResolvedValue({ data: { id: "footer-test" }, error: null });
 
     const params = {
       email: "footer@example.com",
@@ -142,7 +142,7 @@ describe("Resend Email Client - Miles Alert", () => {
   });
 
   it("should format CPP values correctly in subject and body", async () => {
-    mockSend.mockResolvedValue({ id: "cpp-test", error: null });
+    mockSend.mockResolvedValue({ data: { id: "cpp-test" }, error: null });
 
     const params = {
       email: "cpp@example.com",
