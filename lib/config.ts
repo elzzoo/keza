@@ -22,9 +22,9 @@ export const CABIN_MULTIPLIER_FIRST = parseFloat(
 );
 
 // ── Search latency & timeouts ─────────────────────────────────────────────────
-/** Duffel API timeout in milliseconds (default: 4000ms = 4s) */
+/** Duffel API timeout in milliseconds (default: 2000ms = 2s) */
 export const DUFFEL_TIMEOUT_MS = parseInt(
-  process.env.DUFFEL_TIMEOUT_MS ?? "4000",
+  process.env.DUFFEL_TIMEOUT_MS ?? "2000",
   10
 );
 

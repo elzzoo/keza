@@ -4,10 +4,10 @@
  */
 
 describe("S1-3: Duffel Timeout Optimization", () => {
-  it("should define DUFFEL_TIMEOUT as 3500ms or less per attempt", () => {
-    // The optimization requires reducing per-attempt timeout from 4200ms to 3500ms
-    const DUFFEL_TIMEOUT = 3500;
-    expect(DUFFEL_TIMEOUT).toBeLessThanOrEqual(3500);
+  it("should define DUFFEL_TIMEOUT as 2000ms or less per attempt", () => {
+    // The optimization requires reducing per-attempt timeout from 4000ms to 2000ms
+    const DUFFEL_TIMEOUT = 2000;
+    expect(DUFFEL_TIMEOUT).toBeLessThanOrEqual(2000);
   });
 
   it("should calculate remaining time correctly: max(1000, 6500 - elapsed)", () => {
