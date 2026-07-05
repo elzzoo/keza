@@ -3,6 +3,7 @@ import { roundPrice } from "./roundPrice";
 import { getZone } from "./zones";
 import { getAwardTaxes } from "@/data/awardTaxes";
 import { getMilesRequired } from "@/data/awardCharts";
+import { logWarn } from "./logger";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
 import { TRANSFER_BONUSES as TRANSFER_BONUSES_STATIC, getEffectiveRatio } from "@/data/transferBonuses";
 import type { TransferBonusRecord } from "@/data/transferBonuses";
@@ -706,6 +707,11 @@ export function buildCostOptions(
     const safeOriginZone = originZone || "EUROPE";
     const safeDestZone = destZone || "EUROPE";
     if (!originZone || !destZone) {
+      // Fallback for unknown zones: use EUROPE as conservative estimate.
+      // Unknown zones typically occur on regional/secondary airports (e.g., BJS, DSS).
+      // EUROPE fallback is conservative (2-3x multiplier on some routes), so results
+      // should be treated as estimates. Consider distance-based fallback in future.
+      logWarn(`[costEngine] Unknown zone for ${from}→${to}: using EUROPE fallback`);
       const { miles, source } = getMilesRequired(entry.program, "EUROPE", "EUROPE", cabin, tripType, passengers);
       const taxes = getAwardTaxes(airlineForTaxes, cabin, passengers, from, to, safeOriginZone, safeDestZone)
         * (tripType === "roundtrip" ? 2 : 1);
