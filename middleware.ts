@@ -80,9 +80,16 @@ export function middleware(req: NextRequest) {
   const isEn = path === "/en" || path.startsWith("/en/");
   requestHeaders.set("x-locale", isEn ? "en" : "fr");
 
+  // Geo-detection via Vercel cf-country header (production only)
+  // In development (local), defaults to "US". In production, Vercel's Edge Network
+  // sets cf-country based on user's IP. ProfileContext reads this to detect default currency.
+  const country = req.headers.get("cf-country") || "US";
+  requestHeaders.set("x-country", country);
+
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("x-request-id", requestId);
+  response.headers.set("x-country", country);
 
   return response;
 }

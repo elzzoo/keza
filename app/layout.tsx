@@ -63,6 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const headersList = await headers();
   const nonce = headersList.get("x-nonce") ?? "";
   const locale = headersList.get("x-locale") ?? "fr";
+  const country = headersList.get("x-country") ?? "US";
   const cookieStore = await cookies();
   const theme = cookieStore.get("keza_theme")?.value ?? "dark";
   const session = await getServerSession(authOptions);
@@ -73,7 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang={locale} className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} data-geo-country={country} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="preconnect" href="https://api.keza.app" />
