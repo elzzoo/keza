@@ -982,17 +982,18 @@ export function buildCostOptions(
       !(originZone ?? "").startsWith("AFRICA_") &&
       !(destZone ?? "").startsWith("AFRICA_")
     ) return false;
-    // Americas-only programs: LATAM Pass / Aeromexico only meaningful on routes
-    // involving South or North America. They appear via Oneworld ALLIANCE matches
-    // (e.g. LATAM Pass on CMN→CDG via BA/Oneworld) but with no real chart entry
-    // the distance fallback gives unrealistically low miles (9 000 for Africa→Europe)
-    // — the redemption is physically impossible on non-LATAM/non-Americas metal.
-    if (
-      (opt.program === "LATAM Pass" || opt.program === "Aeromexico Club Premier") &&
-      opt.type === "ALLIANCE" &&
-      originZone !== "SOUTH_AMERICA" && destZone !== "SOUTH_AMERICA" &&
-      originZone !== "NORTH_AMERICA" && destZone !== "NORTH_AMERICA"
-    ) return false;
+    // TODO: LATAM Pass / Aeromexico filtering is too aggressive
+    // It blocks valid codeshare redemptions on non-Americas routes.
+    // Should instead: only filter if LATAM has ZERO presence on this route.
+    // For now: commented out to let codeshare options surface.
+    // Revisit: implement presence-check (if no LATAM/Aeromexico flights found,
+    // then filter Alliance options; otherwise keep them visible).
+    // if (
+    //   (opt.program === "LATAM Pass" || opt.program === "Aeromexico Club Premier") &&
+    //   opt.type === "ALLIANCE" &&
+    //   originZone !== "SOUTH_AMERICA" && destZone !== "SOUTH_AMERICA" &&
+    //   originZone !== "NORTH_AMERICA" && destZone !== "NORTH_AMERICA"
+    // ) return false;
     return true;
   });
 
