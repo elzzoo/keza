@@ -206,6 +206,15 @@ describe("POST /api/search", () => {
       expect(body.results).toHaveLength(0);
       expect(body.count).toBe(0);
     });
+
+    it("includes X-Response-Time header with duration in milliseconds", async () => {
+      mockSearchEngine.mockResolvedValue([FLIGHT_RESULT]);
+      const res = await POST(makeRequest(VALID_BODY));
+      expect(res.status).toBe(200);
+      const responseTimeHeader = res.headers.get("x-response-time");
+      expect(responseTimeHeader).toBeTruthy();
+      expect(responseTimeHeader).toMatch(/^\d+ms$/);
+    });
   });
 
   describe("rate limiting", () => {
