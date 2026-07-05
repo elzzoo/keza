@@ -9,6 +9,7 @@ import { trackAlertDeleted } from "@/lib/analytics";
 import { PushAlertButton } from "@/components/PushAlertButton";
 import { ReferralCard } from "@/components/ReferralCard";
 import { MilesValueScore } from "@/components/MilesValueScore";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProfile } from "@/hooks/useProfile";
 import { useProAccess } from "@/hooks/useProAccess";
 
@@ -254,7 +255,9 @@ export function AlertesClient() {
         </div>
 
         {/* Push notifications opt-in */}
-        <PushAlertButton lang={lang} email={email} token={manageToken} />
+        <ErrorBoundary lang={lang} fallback={<div className="text-xs text-red-400 mb-4">Failed to load push notifications</div>}>
+          <PushAlertButton lang={lang} email={email} token={manageToken} />
+        </ErrorBoundary>
 
         {/* Multi-passenger selector (gated) */}
         <div className="mt-6 mb-8">
@@ -344,7 +347,9 @@ export function AlertesClient() {
               </div>
               {/* Show referral even with 0 alerts — users can still earn credits */}
               {manageToken && (
-                <ReferralCard email={email} token={manageToken} lang={lang} />
+                <ErrorBoundary lang={lang} fallback={<div className="text-xs text-red-400">Failed to load referral</div>}>
+                  <ReferralCard email={email} token={manageToken} lang={lang} />
+                </ErrorBoundary>
               )}
             </div>
           ) : (
@@ -432,8 +437,12 @@ export function AlertesClient() {
         {/* Miles value score + Referral card — shown when alerts are loaded */}
         {alerts !== null && email && manageToken && (
           <div className="mt-6 space-y-4">
-            <MilesValueScore savedPrograms={profile?.programs} lang={lang} />
-            <ReferralCard email={email} token={manageToken} lang={lang} />
+            <ErrorBoundary lang={lang} fallback={<div className="text-xs text-red-400">Failed to load miles score</div>}>
+              <MilesValueScore savedPrograms={profile?.programs} lang={lang} />
+            </ErrorBoundary>
+            <ErrorBoundary lang={lang} fallback={<div className="text-xs text-red-400">Failed to load referral</div>}>
+              <ReferralCard email={email} token={manageToken} lang={lang} />
+            </ErrorBoundary>
           </div>
         )}
       </main>
