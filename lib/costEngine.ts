@@ -863,7 +863,7 @@ export function buildCostOptions(
       // Market value of miles — constant per program, no contextual adjustment
       const baseCents = effectivePrices.get(prog.name) ?? prog.marketValueCents;
       const valuePerMile = baseCents;
-      const milesCost = Math.round((estimate.milesRequired * valuePerMile) / 100 * 100) / 100;
+      const milesCost = roundPrice((estimate.milesRequired * valuePerMile) / 100);
       const totalMilesCost = roundPrice(milesCost + taxes);
       const savings = roundPrice(cashTotal - totalMilesCost);
 
@@ -919,7 +919,7 @@ export function buildCostOptions(
         valuePerMile: roundPrice((acquisition.cheapest.costUsd / opt.milesRequired) * 100),
         milesCost: acquisition.cheapest.costUsd,
         totalMilesCost: totalAcquisitionCost,
-        savings: Math.round((cashTotal - totalAcquisitionCost) * 100) / 100,
+        savings: roundPrice(cashTotal - totalAcquisitionCost),
         confidence: "MEDIUM",
         explanation: buildOptionExplanation("TRANSFER", opt.program, `Achat ${acquisition.cheapest.source}`, opt.milesRequired, opt.taxes, undefined),
         isBestDeal: false,
