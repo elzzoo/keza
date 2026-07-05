@@ -1046,7 +1046,7 @@ export function buildCostOptions(
   let bestOption: MilesOption | null = null;
   if (sortedOptions.length > 0) {
     const cheapestAccessible = sortedOptions.find(
-      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2,
+      (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2,
     ) ?? null;
 
     // Look for an accessible DIRECT program within 5% of cheapest accessible
@@ -1054,7 +1054,7 @@ export function buildCostOptions(
       ? (sortedOptions.find(
           (o) =>
             o.type === "DIRECT" &&
-            (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2 &&
+            (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 2) <= 2 &&
             o.totalMilesCost <= cheapestAccessible.totalMilesCost * 1.05,
         ) ?? null)
       : null;
