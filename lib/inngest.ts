@@ -1,5 +1,6 @@
 import { Inngest } from "inngest";
 import { updateRatesInCache } from "@/lib/exchange-rates";
+import { searchEngine } from "@/lib/engine";
 
 export const inngest = new Inngest({
   id: "keza",
@@ -83,6 +84,82 @@ export const updateExchangeRates = inngest.createFunction(
       success: Object.keys(rates).length > 0,
       ratesUpdated: updatedCount,
       ratesFetched: Object.keys(rates).length,
+    };
+  }
+);
+
+/**
+ * Redis pre-warming cron for hot routes
+ *
+ * Runs every 6 hours to pre-cache search results for high-traffic routes.
+ * This reduces cold-start latency and improves hit rate for these popular searches.
+ * Routes: SIN-LAX, NRT-LAX, DXB-LHR
+ * Search parameters: 1 passenger, economy cabin, date=tomorrow
+ * Cache TTL: 1 hour (refreshed every 6 hours, so ~30% cache hit rate)
+ *
+ * @returns Success status with count of routes pre-warmed
+ */
+export const preWarmHotRoutes = inngest.createFunction(
+  {
+    id: "pre-warm-hot-routes",
+    triggers: [{ cron: "0 */6 * * *" }], // Every 6 hours at :00 UTC (same as exchange rates)
+    retries: 3,
+  },
+  async ({ step }): Promise<{ success: boolean; routesWarmed: number }> => {
+    const hotRoutes = [
+      { from: "SIN", to: "LAX" },
+      { from: "NRT", to: "LAX" },
+      { from: "DXB", to: "LHR" },
+    ];
+
+    let successCount = 0;
+
+    for (const route of hotRoutes) {
+      try {
+        // Calculate tomorrow's date
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD
+
+        await step.run(`warm-${route.from}-${route.to}`, async () => {
+          try {
+            const results = await searchEngine(
+              {
+                from: route.from,
+                to: route.to,
+                date: tomorrowStr,
+                passengers: 1,
+                cabin: "economy",
+              },
+              `pre-warm-${route.from}-${route.to}`
+            );
+
+            if (results && results.length > 0) {
+              successCount++;
+              console.log(
+                `[Inngest] Pre-warmed ${route.from}-${route.to} with ${results.length} flights`
+              );
+            } else {
+              console.warn(`[Inngest] No flights found for ${route.from}-${route.to}`);
+            }
+          } catch (error) {
+            console.error(
+              `[Inngest] Failed to pre-warm ${route.from}-${route.to}:`,
+              error
+            );
+          }
+        });
+      } catch (error) {
+        console.error(
+          `[Inngest] Error warming route ${route.from}-${route.to}:`,
+          error
+        );
+      }
+    }
+
+    return {
+      success: successCount > 0,
+      routesWarmed: successCount,
     };
   }
 );
