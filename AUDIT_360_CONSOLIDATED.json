@@ -1,0 +1,424 @@
+{
+  "audit_date": "2026-07-05",
+  "deployment_sha": "d413fef512d6367bb6cc96d1d8ff843936d19989",
+  "overall_health_score": 62,
+  "summary": "KEZA is functional but has critical gaps in test coverage, Farelytics accuracy, and UX clarity. Direct program bias bug is revenue-blocking.",
+  "findings_by_category": {
+    "farelytics_business_logic": {
+      "health_score": 65,
+      "total_issues": 12,
+      "critical": 4,
+      "medium": 6,
+      "low": 2,
+      "findings": [
+        {
+          "id": "FARE_001",
+          "severity": "Critical",
+          "title": "Direct Program Bias",
+          "location": "lib/costEngine.ts:1048",
+          "description": "Overrides cheapest option by 40% to show expensive home-carrier as best deal",
+          "impact": "Revenue-blocking: costs users $50-500 per booking, erodes trust",
+          "recommendation": "Reduce threshold to 5-10% or require DIRECT within $5 of cheapest",
+          "effort": "1 hour"
+        },
+        {
+          "id": "FARE_002",
+          "severity": "Critical",
+          "title": "Unknown Zone Fallback to EUROPE",
+          "location": "lib/costEngine.ts:709",
+          "description": "Silently treats unmapped airports as EUROPE, causing 2-3x cost overestimation",
+          "impact": "App loses credibility on non-hub routes (e.g., BJS→LAX shows 150k vs 80k correct)",
+          "recommendation": "Implement distance-based fallback or add logging",
+          "effort": "2 hours"
+        },
+        {
+          "id": "FARE_003",
+          "severity": "Critical",
+          "title": "Rounding Inconsistency in Acquisition Savings",
+          "location": "lib/costEngine.ts:916",
+          "description": "Uses Math.round instead of roundPrice(), causing $0.01-0.05 discrepancies",
+          "impact": "Users see inconsistent savings figures between acquisition and transfer options",
+          "recommendation": "Replace Math.round with roundPrice()",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "FARE_004",
+          "severity": "Critical",
+          "title": "Dynamic Estimation Formula Inconsistency",
+          "location": "lib/costEngine.ts:860",
+          "description": "Inline rounding loses precision vs roundPrice elsewhere",
+          "impact": "Small redemptions and premium cabins lose accuracy ($10-50 errors)",
+          "recommendation": "Use roundPrice((estimate.milesRequired * valuePerMile) / 100)",
+          "effort": "1 hour"
+        },
+        {
+          "id": "FARE_005",
+          "severity": "Medium",
+          "title": "Zone Fallback Floods Calendar",
+          "location": "lib/costEngine.ts:622-670",
+          "description": "Zone fallback adds 5-10 irrelevant programs to month-matrix results",
+          "impact": "Calendar searches confusing rankings",
+          "recommendation": "Restrict fallback to corridor-guaranteed programs only",
+          "effort": "2 hours"
+        },
+        {
+          "id": "FARE_006",
+          "severity": "Medium",
+          "title": "Auto-Calibration Too Conservative",
+          "location": "lib/autoCalibrate.ts:42",
+          "description": "Outlier rejection threshold ignores premium cabin sweet spots (>5¢/mile)",
+          "impact": "Auto-calibration biased toward economy, ignores business class data",
+          "recommendation": "Make thresholds cabin/route-aware",
+          "effort": "3 hours"
+        },
+        {
+          "id": "FARE_007",
+          "severity": "Medium",
+          "title": "Self-Learning System Lags Market",
+          "location": "lib/autoCalibrate.ts:99",
+          "description": "Time decay weights old observations too heavily (30-day decay)",
+          "impact": "Self-calibration lags 2-3 weeks behind mile value changes",
+          "recommendation": "Use 7-14 day decay; 14-day observations <5% weight",
+          "effort": "2 hours"
+        },
+        {
+          "id": "FARE_008",
+          "severity": "Medium",
+          "title": "Potential Double-Counting of Roundtrip Taxes",
+          "location": "lib/costEngine.ts:710-717, 752-753",
+          "description": "Roundtrip tax multiplication may be applied at wrong level",
+          "impact": "Roundtrip taxes may show 2x too high",
+          "recommendation": "Verify getMilesRequired semantics; standardize on ONE-WAY returns",
+          "effort": "2 hours"
+        },
+        {
+          "id": "FARE_009",
+          "severity": "Medium",
+          "title": "Accessibility Score Fallback Contradictory",
+          "location": "lib/costEngine.ts:1045",
+          "description": "Treats score-3 as accessible when should default to score-2",
+          "impact": "Undefined program scores chosen over better scores",
+          "recommendation": "Use ?? 2 as fallback (not 3)",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "FARE_010",
+          "severity": "Medium",
+          "title": "LATAM Pass Filtering Blocks Valid Redemptions",
+          "location": "lib/costEngine.ts:980-989",
+          "description": "Filtering blocks ALLIANCE redemptions on codeshare flights outside Americas",
+          "impact": "Users miss LATAM on codeshare flights",
+          "recommendation": "Remove filter or apply only on routes with 0 LATAM presence",
+          "effort": "1 hour"
+        },
+        {
+          "id": "FARE_011",
+          "severity": "Low",
+          "title": "UK APD Tax Cap Not Zone-Aware",
+          "location": "data/awardTaxes.ts:89-92",
+          "description": "UK APD cap doesn't vary by destination zone",
+          "impact": "LHR→JFK shows $150 when should be $200 (understates by $25-50)",
+          "recommendation": "Check destination zone; apply $200 for non-EU departures",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "FARE_012",
+          "severity": "Low",
+          "title": "Estimated Cabin Price Downgrade Too Conservative",
+          "location": "lib/engine/enrich.ts:92-93",
+          "description": "Calendar downgrade too aggressive, hides savings",
+          "impact": "Calendar searches show neutral recommendation when miles 15% cheaper",
+          "recommendation": "Only downgrade if savings <$20 or <2% of cash price",
+          "effort": "1 hour"
+        }
+      ]
+    },
+    "test_coverage": {
+      "health_score": 42,
+      "total_issues": 4,
+      "critical": 3,
+      "high": 1,
+      "findings": [
+        {
+          "id": "TEST_001",
+          "severity": "Critical",
+          "title": "Stream API Endpoint Zero Coverage",
+          "location": "app/api/search/stream/route.ts:235 lines",
+          "description": "No tests for streaming search endpoint (error propagation, disconnect, partial results)",
+          "impact": "Streaming can hang or lose data silently",
+          "recommendation": "Write comprehensive test suite",
+          "effort": "2-3 days"
+        },
+        {
+          "id": "TEST_002",
+          "severity": "Critical",
+          "title": "Calendar API Endpoint Zero Coverage",
+          "location": "app/api/calendar/route.ts:50 lines",
+          "description": "No tests for calendar/heatmap endpoint (month validation, cache, fallback)",
+          "impact": "Users see incomplete/wrong 6-month heatmap data",
+          "recommendation": "Write comprehensive test suite",
+          "effort": "2-3 days"
+        },
+        {
+          "id": "TEST_003",
+          "severity": "Critical",
+          "title": "Flight Enrichment Zero Coverage",
+          "location": "lib/engine/enrich.ts:159 lines",
+          "description": "No unit tests on core enrich() function (program attachment, price calculation, edge cases)",
+          "impact": "Silent bugs in flight data transformation",
+          "recommendation": "Write comprehensive test suite",
+          "effort": "2-3 days"
+        },
+        {
+          "id": "TEST_004",
+          "severity": "High",
+          "title": "No Coverage Thresholds in CI",
+          "location": "jest.config.js",
+          "description": "Coverage can regress to 0% without detection",
+          "impact": "Test quality degrades silently",
+          "recommendation": "Add coverage thresholds (lines: 80%, branches: 70%)",
+          "effort": "1 hour"
+        }
+      ]
+    },
+    "ux_ui": {
+      "health_score": 68,
+      "total_issues": 31,
+      "high": 10,
+      "medium": 16,
+      "low": 5,
+      "findings": [
+        {
+          "id": "UX_001",
+          "severity": "High",
+          "title": "Missing Result Counts on Filter Tabs",
+          "location": "components/Results.tsx",
+          "description": "Tab headers don't show how many results in each tab",
+          "impact": "Users don't know what to expect when clicking tab",
+          "recommendation": "Add 'All (47)', 'Business (12)', 'Economy (35)' labels",
+          "effort": "5 minutes"
+        },
+        {
+          "id": "UX_002",
+          "severity": "High",
+          "title": "Generic Empty States",
+          "location": "components/Results.tsx",
+          "description": "Empty state doesn't explain why results are missing",
+          "impact": "Users confused about search criteria",
+          "recommendation": "Show 'No flights found for this cabin/date. Try adjusting criteria.'",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "UX_003",
+          "severity": "High",
+          "title": "Cabin Abbreviations Confusing",
+          "location": "components/SearchForm.tsx",
+          "description": "Uses 'Prem', 'Bus', 'Eco' — new users confused",
+          "impact": "Cognitive load for non-expert users",
+          "recommendation": "Use 'Premium Economy', 'Business', 'Economy' in UI",
+          "effort": "1 hour"
+        },
+        {
+          "id": "UX_004",
+          "severity": "High",
+          "title": "Form Validation Missing",
+          "location": "components/SearchForm.tsx",
+          "description": "No validation for identical airports (LGA→LAX vs LGA→LAX)",
+          "impact": "Silent server errors",
+          "recommendation": "Add client-side validation: from !== to",
+          "effort": "1 hour"
+        },
+        {
+          "id": "UX_005",
+          "severity": "High",
+          "title": "Auto-Cabin-Refire Has No Feedback",
+          "location": "components/SearchForm.tsx",
+          "description": "When user changes cabin, page silently re-searches without indication",
+          "impact": "Users think page is broken or frozen",
+          "recommendation": "Show 'Searching with [Cabin]...' toast",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "UX_006",
+          "severity": "High",
+          "title": "Filter Tab With No Results Shows Nothing",
+          "location": "components/Results.tsx",
+          "description": "Clicking 'Business' tab with 0 results shows blank — looks like bug",
+          "impact": "Appears broken, not helpful",
+          "recommendation": "Show empty state with suggestion to adjust filters",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "UX_007",
+          "severity": "High",
+          "title": "Results Heading Lacks Sort Indicator",
+          "location": "components/Results.tsx",
+          "description": "Doesn't show what field is primary sort",
+          "impact": "Users don't understand ranking",
+          "recommendation": "Show 'Showing 12 flights (sorted by best value)'",
+          "effort": "15 minutes"
+        },
+        {
+          "id": "UX_008",
+          "severity": "High",
+          "title": "Miles Programs Input Not Autocompleted",
+          "location": "components/PortefeuillePage.tsx",
+          "description": "Users must know exact program names",
+          "impact": "Users give up if they forget exact name",
+          "recommendation": "Add autocomplete dropdown with 20+ programs",
+          "effort": "2 hours"
+        },
+        {
+          "id": "UX_009",
+          "severity": "High",
+          "title": "Mobile Form Layout Cramped",
+          "location": "components/SearchForm.tsx",
+          "description": "Form buttons overlap on <375px screens",
+          "impact": "Users can't search on phones",
+          "recommendation": "Stack fields vertically on mobile",
+          "effort": "1-2 hours"
+        },
+        {
+          "id": "UX_010",
+          "severity": "High",
+          "title": "Back Button Low Visibility",
+          "location": "app/flights/[route]/page.tsx",
+          "description": "Back button is small text, not prominent",
+          "impact": "Users scroll to find it",
+          "recommendation": "Make prominent back arrow in header",
+          "effort": "30 minutes"
+        }
+      ]
+    },
+    "architecture": {
+      "health_score": 72,
+      "total_issues": 15,
+      "high": 4,
+      "medium": 11
+    },
+    "security": {
+      "health_score": 75,
+      "total_issues": 3,
+      "critical": 1,
+      "medium": 2,
+      "findings": [
+        {
+          "id": "SEC_001",
+          "severity": "Critical",
+          "title": "TRAVELPAYOUTS_TOKEN in URL",
+          "location": "app/api/cron/deals/route.ts:32",
+          "description": "API token passed in query string, leaks via Referer header and browser history",
+          "impact": "Token compromise risk, potential account takeover",
+          "recommendation": "Move to POST body + Authorization header immediately",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "SEC_002",
+          "severity": "Medium",
+          "title": "Duffel Errors Not Sanitized",
+          "location": "lib/duffelProvider.ts:207",
+          "description": "Error responses logged without filtering sensitive fields",
+          "impact": "API key may leak to Sentry if included in error",
+          "recommendation": "Filter sensitive fields before logging",
+          "effort": "1 hour"
+        },
+        {
+          "id": "SEC_003",
+          "severity": "Medium",
+          "title": "Rate Limit Handling Missing",
+          "location": "lib/duffelProvider.ts:187-190",
+          "description": "Duffel 429 responses don't parse Retry-After header",
+          "impact": "Silent fallback to TP without user transparency",
+          "recommendation": "Implement exponential backoff + user notification",
+          "effort": "2 hours"
+        }
+      ]
+    },
+    "performance": {
+      "health_score": 71,
+      "total_issues": 5,
+      "findings": [
+        {
+          "id": "PERF_001",
+          "severity": "High",
+          "title": "Array Index as React Key",
+          "location": "components/Results.tsx:421",
+          "description": "Using array index breaks animation/state on sort/filter",
+          "impact": "List re-renders incorrectly, state not preserved",
+          "recommendation": "Use flight.id instead of index",
+          "effort": "15 minutes"
+        },
+        {
+          "id": "PERF_002",
+          "severity": "High",
+          "title": "Missing Error Boundary on Calendar",
+          "location": "components/PriceHeatmap.tsx:87",
+          "description": "API failure silently hangs forever",
+          "impact": "Users see frozen heatmap indefinitely",
+          "recommendation": "Add .catch() handler",
+          "effort": "30 minutes"
+        },
+        {
+          "id": "PERF_003",
+          "severity": "High",
+          "title": "Missing Client-Side Cache for Calendar",
+          "location": "components/PriceHeatmap.tsx:63-92",
+          "description": "6 API calls fire on every route change despite server-side Redis",
+          "impact": "6x unnecessary API load, hits rate limits",
+          "recommendation": "Use SWR or localStorage",
+          "effort": "3 hours"
+        },
+        {
+          "id": "PERF_004",
+          "severity": "Medium",
+          "title": "Missing React.memo on Expensive Components",
+          "location": "components/Results.tsx, components/PriceHeatmap.tsx",
+          "description": "Components re-render unnecessarily",
+          "impact": "Recalculates expensive logic on parent updates",
+          "recommendation": "Wrap with React.memo()",
+          "effort": "1 hour"
+        },
+        {
+          "id": "PERF_005",
+          "severity": "Medium",
+          "title": "Missing useCallback on Event Handlers",
+          "location": "components/FlightCard.tsx:109",
+          "description": "New function created on every render",
+          "impact": "Wastes reconciliation work",
+          "recommendation": "Wrap with useCallback if passed to memoized children",
+          "effort": "1 hour"
+        }
+      ]
+    }
+  },
+  "critical_p0_fixes": [
+    {
+      "id": "P0_001",
+      "title": "Direct Program Bias (Revenue-Blocking)",
+      "location": "costEngine.ts:1048",
+      "effort": "1 hour",
+      "priority": "Fix this week"
+    },
+    {
+      "id": "P0_002",
+      "title": "TRAVELPAYOUTS_TOKEN Security Leak",
+      "location": "app/api/cron/deals/route.ts:32",
+      "effort": "30 min",
+      "priority": "Fix immediately"
+    },
+    {
+      "id": "P0_003",
+      "title": "Unsafe Redis Type Casting",
+      "location": "lib/redis.ts:165",
+      "effort": "30 min",
+      "priority": "Fix this week"
+    }
+  ],
+  "roadmap": {
+    "week_1_p0": "Critical fixes (3.5 hours) + deploy",
+    "weeks_2_3_p1": "Add test coverage + fix core stability (10 days)",
+    "weeks_4_5_p2": "Refactor + Farelytics accuracy (8 days)",
+    "weeks_6_8_p3": "Features: alerts, performance, onboarding (6 weeks)",
+    "estimated_to_world_class": "2-3 months"
+  }
+}
