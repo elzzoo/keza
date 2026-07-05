@@ -163,3 +163,6 @@ export const preWarmHotRoutes = inngest.createFunction(
     };
   }
 );
+
+// Export the miles alerts cron job
+export { checkMilesAlerts } from "@/lib/inngest-miles-alerts";
