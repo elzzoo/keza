@@ -41,8 +41,19 @@ export async function recordObservation(
 
   const impliedValueCents = ((cashPrice - taxes) / milesRequired) * 100;
 
-  // Sanity check: discard outliers (values below 0.3¢ or above 5¢ are likely errors)
-  if (impliedValueCents < 0.3 || impliedValueCents > 5.0) return;
+  // P2.6 FIX: Auto-Calibration Business Cabin
+  // Make outlier rejection threshold cabin-aware to prevent biasing auto-calibration
+  // toward economy. Business and first class often have sweet spots >5¢/mile.
+  // Thresholds: economy: 5¢, business: 8¢, first: 10¢
+  let outlierThreshold = 5.0; // default for economy
+  if (cabin === "business") {
+    outlierThreshold = 8.0;
+  } else if (cabin === "first") {
+    outlierThreshold = 10.0;
+  }
+
+  // Sanity check: discard outliers (values below 0.3¢ or above threshold are likely errors)
+  if (impliedValueCents < 0.3 || impliedValueCents > outlierThreshold) return;
 
   const obs: Observation = {
     program,
