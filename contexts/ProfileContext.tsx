@@ -9,6 +9,8 @@ import {
   type UserProfile,
   type RecentSearch,
 } from "@/lib/userProfile";
+import type { ExchangeRates } from "@/lib/exchange-rates";
+import { getDefaultCurrencyForCountry } from "@/lib/currencyDetection";
 
 // ---- types ----
 
@@ -16,6 +18,7 @@ interface ProfileContextValue {
   profile:       UserProfile | null;
   isLoaded:      boolean;
   isSyncing:     boolean;
+  exchangeRates: ExchangeRates;
   update:        (updates: Partial<UserProfile>) => void;
   setPrograms:   (programs: string[]) => void;
   setLang:       (lang: "fr" | "en") => void;
@@ -36,9 +39,11 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(loadProfile);
   const [isLoadingFromServer, setIsLoadingFromServer] = useState(false);
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({});
 
   // On mount, try to sync with server (if user is authenticated)
   // Server checks authentication; endpoint returns null if not authenticated
+  // Also initialize currency from localStorage or geo-detection, and fetch exchange rates
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -59,7 +64,56 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Initialize currency from localStorage, or detect from geo-country header
+    const initializeCurrency = () => {
+      const currentProfile = loadProfile();
+
+      // If currency is already set in profile, use it
+      if (currentProfile.currency) {
+        return;
+      }
+
+      // Try to get geo country from Vercel header (set via HTML attribute by middleware)
+      const geoCountry = document.documentElement.getAttribute("data-geo-country");
+      if (geoCountry) {
+        const detectedCurrency = getDefaultCurrencyForCountry(geoCountry);
+        currentProfile.currency = detectedCurrency;
+        saveProfile(currentProfile);
+      }
+    };
+
+    // Fetch exchange rates
+    const fetchRates = async () => {
+      try {
+        const res = await fetch("/api/exchange-rates");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.rates) {
+            setExchangeRates(data.rates);
+            // Cache in localStorage for offline fallback
+            try {
+              localStorage.setItem("keza:exchange-rates", JSON.stringify(data.rates));
+            } catch {
+              // Storage full — silently fail
+            }
+          }
+        }
+      } catch {
+        // Fallback to localStorage if available
+        try {
+          const cached = localStorage.getItem("keza:exchange-rates");
+          if (cached) {
+            setExchangeRates(JSON.parse(cached));
+          }
+        } catch {
+          // Fallback to empty object, convertPrice will use defaults
+        }
+      }
+    };
+
+    initializeCurrency();
     syncWithServer();
+    fetchRates();
   }, []);
 
   const update = useCallback((updates: Partial<UserProfile>) => {
@@ -105,7 +159,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, isLoaded: profile !== null, isSyncing: isLoadingFromServer,
+      profile, isLoaded: profile !== null, isSyncing: isLoadingFromServer, exchangeRates,
       update, setPrograms, setLang, setCurrency, setCabin,
       setBalances, setBankPoints, recordSearch, toggleFavorite,
     }}>
