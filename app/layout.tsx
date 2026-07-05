@@ -9,6 +9,7 @@ import "./globals.css";
 import { SITE_URL } from "@/lib/siteConfig";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthSessionProvider } from "@/contexts/SessionContext";
+import { OnboardingProvider } from "@/lib/contexts/onboardingContext";
 import { grantTrialIfNew } from "@/lib/lemonsqueezy";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -132,20 +133,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         <AuthSessionProvider>
           <ProfileProvider>
-            <OnboardingRedirect />
-            {children}
-            <SpeedInsights />
-            <Toaster
-              position="bottom-center"
-              toastOptions={{
-                style: {
-                  background: "rgb(var(--surface))",
-                  border: "1px solid rgb(var(--border))",
-                  color: "rgb(var(--fg))",
-                },
-              }}
-              richColors
-            />
+            <OnboardingProvider>
+              <OnboardingRedirect />
+              {children}
+              <SpeedInsights />
+              <Toaster
+                position="bottom-center"
+                toastOptions={{
+                  style: {
+                    background: "rgb(var(--surface))",
+                    border: "1px solid rgb(var(--border))",
+                    color: "rgb(var(--fg))",
+                  },
+                }}
+                richColors
+              />
+            </OnboardingProvider>
           </ProfileProvider>
         </AuthSessionProvider>
         <Script
