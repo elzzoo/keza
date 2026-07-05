@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import type { FlightResult } from "@/lib/engine";
 import { Header }        from "@/components/Header";
 import { Footer }        from "@/components/Footer";
 import { TrustBar }      from "@/components/TrustBar";
 import { SearchForm }    from "@/components/SearchForm";
+import { SearchSkeleton } from "@/components/SearchSkeleton";
 
 // Below-the-fold homepage components — lazy loaded
 const OnboardingWizard     = dynamic(() => import("@/components/OnboardingWizard").then(m => m.OnboardingWizard), { ssr: false });
@@ -271,16 +272,18 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
               </div>
             )}
             <ErrorBoundary lang={lang}>
-              <Results
-                results={results}
-                loading={loading}
-                lang={lang}
-                onBack={handleBack}
-                partial={partial}
-                liveRefreshing={liveRefreshing}
-                searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
-                formatPrice={formatPrice}
-              />
+              <Suspense fallback={<SearchSkeleton />}>
+                <Results
+                  results={results}
+                  loading={loading}
+                  lang={lang}
+                  onBack={handleBack}
+                  partial={partial}
+                  liveRefreshing={liveRefreshing}
+                  searchMeta={lastSearch ? { from: lastSearch.from, to: lastSearch.to, cabin: lastSearch.cabin } : undefined}
+                  formatPrice={formatPrice}
+                />
+              </Suspense>
             </ErrorBoundary>
             {hasSearched && !loading && results.length > 0 && lastSearch && (
               <div className="mt-4">
