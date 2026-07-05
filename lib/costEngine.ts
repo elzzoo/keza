@@ -1031,27 +1031,25 @@ export function buildCostOptions(
   // no accessible (score ≤ 2) option exists.
   //
   // DIRECT-program preference (UX policy):
-  // When a DIRECT program (home-carrier redemption) exists and its cost is within 40%
+  // When a DIRECT program (home-carrier redemption) exists and its cost is within 5%
   // of the cheapest accessible option, prefer it as the headline recommendation.
   // Rationale: on SIN→LAX operated by Singapore Airlines, showing KrisFlyer as #1
-  // (even if slightly more expensive than Delta SkyMiles ALLIANCE) is more useful —
-  // it confirms the home-carrier redemption option the user expects to see first.
-  // 40% threshold: conservative enough to not override genuinely better programs
-  // (a 41%+ premium is real money worth surfacing to the user), but wide enough
-  // to cover typical DIRECT vs ALLIANCE spreads on hub-carrier routes.
+  // (if competitively priced) is more useful — it confirms the home-carrier redemption
+  // option the user expects. But never override a significantly cheaper program.
+  // 5% threshold ensures we show best value while respecting home-carrier when competitive.
   let bestOption: MilesOption | null = null;
   if (sortedOptions.length > 0) {
     const cheapestAccessible = sortedOptions.find(
       (o) => (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2,
     ) ?? null;
 
-    // Look for an accessible DIRECT program within 40% of cheapest accessible
+    // Look for an accessible DIRECT program within 5% of cheapest accessible
     const directAccessible = cheapestAccessible
       ? (sortedOptions.find(
           (o) =>
             o.type === "DIRECT" &&
             (PROGRAMS_BY_NAME[o.program]?.accessibilityScore ?? 3) <= 2 &&
-            o.totalMilesCost <= cheapestAccessible.totalMilesCost * 1.40,
+            o.totalMilesCost <= cheapestAccessible.totalMilesCost * 1.05,
         ) ?? null)
       : null;
 

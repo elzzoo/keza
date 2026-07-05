@@ -119,7 +119,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     const suppAirlines = ROUTE_AIRLINE_SUPPLEMENTS[suppKey] ?? [];
     const coveredAirlines = new Set(rawOutbound.flatMap(f => f.airlines));
     const cheapestRaw = rawOutbound.length > 0
-      ? rawOutbound.reduce((best, f) => f.price < best.price ? f : best)
+      ? rawOutbound.reduce((best, f) => f.price < best.price ? f : best, rawOutbound[0])
       : undefined;
     const cheapestPrice = cheapestRaw?.price ?? 0;
     const cheapestCabinResolved = cheapestRaw?.cabinResolved ?? false;
