@@ -18,4 +18,20 @@ describe("convertPrice", () => {
   test("handles missing rates gracefully", () => {
     expect(convertPrice(100, "USD", "XYZ", {})).toBe(100); // fallback to USD
   });
+
+  test("converts EUR to GBP correctly", () => {
+    // 100 EUR in USD = 100 / 0.92 = 108.7 USD
+    // 108.7 USD in GBP = 108.7 * 0.79 = 85.87 GBP
+    expect(convertPrice(100, "EUR", "GBP", rates)).toBeCloseTo(85.87, 1);
+  });
+
+  test("converts GBP to USD correctly", () => {
+    // 100 GBP in USD = 100 / 0.79 = 126.58 USD
+    expect(convertPrice(100, "GBP", "USD", rates)).toBeCloseTo(126.58, 1);
+  });
+
+  test("returns amount unchanged if source rate missing", () => {
+    // XYZ rate missing
+    expect(convertPrice(100, "XYZ", "EUR", rates)).toBe(100);
+  });
 });

@@ -12,7 +12,7 @@ export type ExchangeRates = Record<string, number>;
 /**
  * Convert an amount from one currency to another
  *
- * @param amountUSD - The amount in USD (base currency)
+ * @param amount - The amount in source currency
  * @param fromCurrency - Source currency code (e.g., "USD", "EUR")
  * @param toCurrency - Target currency code (e.g., "EUR", "GBP")
  * @param rates - Exchange rates map (currency → rate from USD)
@@ -22,45 +22,40 @@ export type ExchangeRates = Record<string, number>;
  * const rates = { EUR: 0.92, GBP: 0.79 };
  * convertPrice(100, "USD", "EUR", rates); // 92
  * convertPrice(100, "EUR", "USD", rates); // ~108.7 (100 / 0.92)
+ * convertPrice(100, "EUR", "GBP", rates); // ~85.87 (100 / 0.92 * 0.79)
  */
 export function convertPrice(
-  amountUSD: number,
+  amount: number,
   fromCurrency: string,
   toCurrency: string,
   rates: ExchangeRates
 ): number {
-  // If currencies match, return amount unchanged
+  // No conversion needed if same currency
   if (fromCurrency === toCurrency) {
-    return amountUSD;
+    return amount;
   }
 
-  // If target is USD, return amount unchanged
+  // If target is USD, divide by source rate
   if (toCurrency === "USD") {
-    return amountUSD;
+    const rate = rates[fromCurrency];
+    if (!rate) return amount; // fallback: return unchanged
+    return Math.round((amount / rate) * 100) / 100;
   }
 
-  // If fromCurrency is not USD, first convert to USD
-  let baseAmount = amountUSD;
-  if (fromCurrency !== "USD") {
-    const fromRate = rates[fromCurrency];
-    if (!fromRate) {
-      // Fallback: no rate available, return original amount
-      return amountUSD;
-    }
-    // Convert from source currency to USD: amount / rate
-    baseAmount = amountUSD / fromRate;
+  // If source is USD, multiply by target rate
+  if (fromCurrency === "USD") {
+    const rate = rates[toCurrency];
+    if (!rate) return amount; // fallback: return unchanged
+    return Math.round(amount * rate * 100) / 100;
   }
 
-  // Convert from USD to target currency
+  // Both are non-USD: convert through USD intermediate
+  const fromRate = rates[fromCurrency];
   const toRate = rates[toCurrency];
-  if (!toRate) {
-    // Fallback: no rate available, return original amount
-    return amountUSD;
-  }
+  if (!fromRate || !toRate) return amount; // fallback if either missing
 
-  // Perform conversion: amount * rate, rounded to 2 decimals
-  const converted = baseAmount * toRate;
-  return Math.round(converted * 100) / 100;
+  const amountInUSD = amount / fromRate;
+  return Math.round(amountInUSD * toRate * 100) / 100;
 }
 
 /**
