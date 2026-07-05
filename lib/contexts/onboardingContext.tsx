@@ -50,6 +50,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       ...prev,
       selectedPrograms: prev.selectedPrograms.filter((p) => p !== program),
       programBalances: (() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [program]: _, ...rest } = prev.programBalances;
         return rest;
       })(),

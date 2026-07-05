@@ -10,7 +10,7 @@ interface Props {
 }
 
 // Top 100 routes by approximate search volume
-const TOP_ROUTES = [
+const TOP_ROUTES: Array<[string, string]> = [
   ["SIN", "LAX"],
   ["LAX", "SIN"],
   ["CDG", "JFK"],
@@ -169,7 +169,7 @@ export function FavoriteRoutes({ onNext, onSkip }: Props) {
     <div className="w-full max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-2">Your Favorite Routes</h2>
       <p className="text-gray-600 mb-6">
-        Add routes you search often. We'll pre-fill and show relevant deals.
+        {"Add routes you search often. We'll pre-fill and show relevant deals."}
       </p>
 
       <div className="mb-6">
