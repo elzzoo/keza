@@ -124,6 +124,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       alternates: { languages: { fr: `${BASE_URL}/alertes`, en: `${BASE_URL}/en/alertes` } },
     },
     {
+      url: `${BASE_URL}/miles-alerts`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+      alternates: { languages: { fr: `${BASE_URL}/miles-alerts`, en: `${BASE_URL}/en/miles-alerts` } },
+    },
+    {
+      url: `${BASE_URL}/en/miles-alerts`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
+      alternates: { languages: { fr: `${BASE_URL}/miles-alerts`, en: `${BASE_URL}/en/miles-alerts` } },
+    },
+    {
       url: `${BASE_URL}/comparer`,
       lastModified: now,
       changeFrequency: "monthly" as const,
