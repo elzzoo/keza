@@ -19,12 +19,19 @@ const PROGRAMS_BY_CATEGORY: Record<string, string[]> = {
     "COPA ConnectMiles",
     "Avianca LifeMiles",
     "Thai Royal Orchid Plus",
+    "Asiana Club",
   ],
   "SkyTeam": [
     "Flying Blue",
     "Delta SkyMiles",
     "Korean Air SKYPASS",
     "Kenya Airways Mileage Club",
+    "China Eastern Sky Pearl",
+    "Vietnam Airlines Frequent Flyer",
+    "Garuda Indonesia Frequent Flyer",
+    "Alitalia MilleMiglia",
+    "TAP Air Portugal Miles&Go",
+    "China Southern Sky Pearl",
   ],
   "Oneworld": [
     "American AAdvantage",
@@ -36,12 +43,18 @@ const PROGRAMS_BY_CATEGORY: Record<string, string[]> = {
     "Qantas Frequent Flyer",
     "Air New Zealand Airpoints",
     "Finnair Plus",
+    "Malaysia Airlines Enrich",
+    "Cathay Pacific Asia Miles",
   ],
   "Independent": [
     "Emirates Skywards",
     "Etihad Guest",
     "Virgin Atlantic Flying Club",
     "Alaska Airlines Mileage Plan",
+    "VistaJet Jet Membership",
+    "OnePass by Netjets",
+    "XO (formerly Blade) Rewards",
+    "Luxury Card Portfolio Rewards",
   ],
 };
 
