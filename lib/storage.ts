@@ -28,7 +28,7 @@ const STORAGE_KEYS = {
  */
 export function getOnboardingState(): OnboardingState {
   try {
-    // In Node environment (testing), localStorage is polyfilled
+    // SSR safety: localStorage is unavailable in Node and may be restricted in browsers
     if (typeof localStorage === "undefined") {
       return { selectedPrograms: [], programBalances: {}, favoriteRoutes: [] };
     }
@@ -42,7 +42,8 @@ export function getOnboardingState(): OnboardingState {
       programBalances: typeof balances === "object" && balances !== null ? balances : {},
       favoriteRoutes: Array.isArray(routes) ? routes : [],
     };
-  } catch {
+  } catch (error) {
+    console.warn("Failed to retrieve onboarding state from localStorage", error);
     return { selectedPrograms: [], programBalances: {}, favoriteRoutes: [] };
   }
 }
@@ -71,7 +72,8 @@ export function getVisitedFlag(): boolean {
     if (typeof localStorage === "undefined") return false;
 
     return localStorage.getItem(STORAGE_KEYS.VISITED) === "true";
-  } catch {
+  } catch (error) {
+    console.warn("Failed to retrieve visited flag from localStorage", error);
     return false;
   }
 }
