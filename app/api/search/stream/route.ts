@@ -114,6 +114,8 @@ export async function POST(request: Request) {
       let cacheHitTime = 0;
       let duffelTime = 0;
       let tpTime = 0;
+      let duffelResultCount = 0;
+      let tpResultCount = 0;
 
       try {
         const searchStart = Date.now();
@@ -121,6 +123,7 @@ export async function POST(request: Request) {
           searchParams,
           async (partial: FlightResult[]) => {
             partialSent = true;
+            duffelResultCount = partial.length;
             const forexRate = await forexPromise;
             send({ type: "partial", results: partial, forexRate });
             // Duffel results arrive in the partial — measure from start to here
@@ -130,13 +133,21 @@ export async function POST(request: Request) {
         );
         const totalTime = Date.now() - _t0;
 
-        // Track performance metrics
+        // Calculate TP contribution (merged results minus Duffel-only)
         tpTime = totalTime - duffelTime;
-        await trackSearchPerformance("stream", {
+        tpResultCount = Math.max(0, finalResults.length - duffelResultCount);
+
+        // Track performance metrics with detailed breakdown
+        await trackSearchPerformance(`${from}-${to}`, {
           cacheHitTime,
           duffelTime,
           tpTime,
           totalTime,
+          partial: !partialSent,
+          fromCache: false,
+          duffelResultCount,
+          tpResultCount,
+          totalResultCount: finalResults.length,
         });
 
         // Log performance warning if unacceptable
@@ -149,6 +160,9 @@ export async function POST(request: Request) {
               totalTime,
               duffelTime,
               tpTime,
+              duffelResults: duffelResultCount,
+              tpResults: tpResultCount,
+              totalResults: finalResults.length,
               passengers,
               cabin: searchParams.cabin,
             },

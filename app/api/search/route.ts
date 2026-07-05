@@ -201,18 +201,29 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ results, count: results.length, forexRate, partial, fromCache });
     response.headers.set("x-request-id", requestId);
-    response.headers.set("x-response-time", `${Date.now() - _t0}ms`);
+    const responseTimeMs = Date.now() - _t0;
+    response.headers.set("x-response-time", `${responseTimeMs}ms`);
+    response.headers.set("x-results-count", String(results.length));
+    response.headers.set("x-from-cache", fromCache ? "true" : "false");
+    response.headers.set("x-partial", partial ? "true" : "false");
+    // Provider source indicator: where primary results came from
+    const providerSource = results.length > 0
+      ? results[0]?.source === "DUFFEL" ? "duffel" : "travelpayouts"
+      : "none";
+    response.headers.set("x-provider-source", providerSource);
     // S1-2: HTTP Cache Headers (14x CDN speedup on cache hits)
     const cacheControl = "public, max-age=120, s-maxage=3600";
     response.headers.set("Cache-Control", cacheControl);
 
-    // Track performance metrics
-    const responseTimeMs = Date.now() - _t0;
+    // Track performance metrics with detailed breakdown
     await trackSearchPerformance(`${from}-${to}`, {
       cacheHitTime: fromCache ? 100 : 0,
       duffelTime: partial ? 0 : responseTimeMs,
       tpTime: partial ? responseTimeMs : 0,
       totalTime: responseTimeMs,
+      partial,
+      fromCache,
+      totalResultCount: results.length,
     });
 
     return response;

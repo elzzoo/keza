@@ -1015,7 +1015,7 @@ describe("POST /api/search/stream", () => {
       await POST(request);
 
       expect(mockTrackSearchPerformance).toHaveBeenCalledWith(
-        "stream",
+        expect.stringMatching(/^[A-Z]{3}-[A-Z]{3}$/), // Any route like SIN-LAX
         expect.objectContaining({
           cacheHitTime: expect.any(Number),
           duffelTime: expect.any(Number),
