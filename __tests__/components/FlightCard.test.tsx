@@ -9,7 +9,12 @@ import type { FlightResult } from "@/lib/engine";
 
 // Mock external dependencies
 jest.mock("@/hooks/useProfile", () => ({
-  useProfile: jest.fn(() => ({ profile: null, isLoaded: false })),
+  useProfile: jest.fn(() => ({
+    profile: null,
+    isLoaded: false,
+    currency: "USD",
+    exchangeRates: { EUR: 0.92, GBP: 0.79, JPY: 110 },
+  })),
 }));
 
 jest.mock("@/lib/analytics", () => ({
@@ -81,8 +86,8 @@ describe("FlightCard", () => {
 
   it("renders cash cost price", () => {
     render(<FlightCard flight={baseFlight} lang="en" />);
-    // $800 cash cost should appear
-    expect(screen.getByText("$800")).toBeInTheDocument();
+    // $800 cash cost should appear (may be formatted as $800.00)
+    expect(screen.getByText(/\$800/)).toBeInTheDocument();
   });
 
   it("renders USE_MILES recommendation — shows savings message", () => {

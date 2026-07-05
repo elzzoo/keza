@@ -11,6 +11,8 @@ import { TPCacheDisclaimer } from "./TPCacheDisclaimer";
 import PortfolioCheck from "@/components/PortfolioCheck";
 import clsx from "clsx";
 import { isBusinessMode } from "@/lib/businessMode";
+import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { useProfile } from "@/hooks/useProfile";
 
 interface Props {
   results: FlightResult[];
@@ -105,7 +107,14 @@ function SkeletonCard() {
  */
 export function Results({ results, loading, lang, onBack, partial, liveRefreshing, searchMeta, formatPrice }: Props) {
   const t = L[lang];
-  const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
+  const { currency, exchangeRates } = useProfile();
+
+  // Use provided formatPrice, or convert USD to user's currency and format
+  const fmt = formatPrice ?? ((usd: number) => {
+    const converted = convertPrice(usd, "USD", currency, exchangeRates);
+    return formatCurrency(converted, currency);
+  });
+
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
   const [stopFilter, setStopFilter] = useState<"all" | "direct" | "stops">("all");
   const [sortBy, setSortBy] = useState<SortBy>("value");

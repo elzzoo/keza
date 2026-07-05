@@ -7,6 +7,16 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PriceHeatmap } from "@/components/PriceHeatmap";
 
+// Mock useProfile
+jest.mock("@/hooks/useProfile", () => ({
+  useProfile: jest.fn(() => ({
+    profile: null,
+    isLoaded: false,
+    currency: "USD",
+    exchangeRates: { EUR: 0.92, GBP: 0.79, JPY: 110 },
+  })),
+}));
+
 // Mock fetch
 global.fetch = jest.fn();
 

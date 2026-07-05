@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 import { trackDealClick } from "@/lib/analytics";
+import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { useProfile } from "@/hooks/useProfile";
 import type { LiveDeal } from "@/lib/dealsEngine";
 
 interface Props {
@@ -18,6 +20,7 @@ const L = {
 
 export function DealsStrip({ lang, onDealClick }: Props) {
   const t = L[lang];
+  const { currency, exchangeRates } = useProfile();
   const [deals, setDeals] = useState<LiveDeal[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -99,7 +102,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
                     {isMilesWin ? `✈ ${deal.multiplier}` : "💰"}
                   </div>
                   <div className="text-[11px] font-bold text-fg mt-0.5">
-                    ${Math.round(deal.cashPrice)}
+                    {formatCurrency(convertPrice(deal.cashPrice, "USD", currency, exchangeRates), currency)}
                   </div>
                 </div>
               </button>
