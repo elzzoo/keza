@@ -70,7 +70,7 @@ export async function sendMilesAlertEmail(
 
     return {
       success: true,
-      messageId: response.id,
+      messageId: response.data?.id,
     };
   } catch (error) {
     console.error("[miles-alert-email] Failed to send email", {

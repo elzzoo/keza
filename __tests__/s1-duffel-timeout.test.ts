@@ -42,7 +42,8 @@ describe("S1-3: Duffel Timeout Optimization", () => {
     // If we race these, TP should win
     return Promise.race([tpPromise, duffelPromise]).then((result) => {
       expect(result).toHaveLength(1);
-      expect((result as any)[0].id).toBe("tp-flight-1");
+      const resultArray = result as Array<{ id: string }>;
+      expect(resultArray[0].id).toBe("tp-flight-1");
     });
   });
 });

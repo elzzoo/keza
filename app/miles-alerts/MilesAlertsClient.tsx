@@ -23,7 +23,7 @@ export function MilesAlertsClient() {
       const data = await res.json();
       setAlerts(data.alerts || []);
       setSearched(true);
-    } catch (err) {
+    } catch {
       toast.error("Error loading alerts");
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ export function MilesAlertsClient() {
       if (!res.ok) throw new Error("Failed to delete");
       setAlerts(alerts.filter((a) => !(a.email === email && a.route === route && a.program === program)));
       toast.success("Alert deleted");
-    } catch (err) {
+    } catch {
       toast.error("Error deleting alert");
     }
   };

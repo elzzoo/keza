@@ -140,7 +140,7 @@ test.describe("Multi-Currency User Journey", () => {
     expect(selectedCurrency).toBe("EUR");
 
     // Verify prices show EUR symbol
-    let content = await page.content();
+    const content = await page.content();
     expect(content).toContain("€");
   });
 
@@ -158,7 +158,7 @@ test.describe("Multi-Currency User Journey", () => {
     await page.waitForTimeout(500);
 
     // Verify JPY display
-    let content = await page.content();
+    const content = await page.content();
     expect(content).toContain("¥");
   });
 
@@ -176,7 +176,7 @@ test.describe("Multi-Currency User Journey", () => {
     await page.waitForTimeout(500);
 
     // Verify XOF symbol/code is present
-    let content = await page.content();
+    const content = await page.content();
     expect(content).toContain("FCFA");
   });
 
@@ -225,7 +225,7 @@ test.describe("Multi-Currency User Journey", () => {
     await page.waitForSelector('[data-test="flight-details"]', { timeout: 5000 });
 
     // Verify EUR prices on details page
-    let content = await page.content();
+    const content = await page.content();
     expect(content).toContain("€");
   });
 

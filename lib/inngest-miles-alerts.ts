@@ -127,7 +127,6 @@ export const checkMilesAlerts = inngest.createFunction(
 
             // 3d. Find best CPP for this program
             let bestCpp: number | null = null;
-            let bestFlight = null;
 
             for (const flight of searchResults) {
               // Look for the alert.program in milesOptions
@@ -142,7 +141,6 @@ export const checkMilesAlerts = inngest.createFunction(
 
                   if (bestCpp === null || cpp < bestCpp) {
                     bestCpp = cpp;
-                    bestFlight = flight;
                   }
                 }
               }
@@ -161,7 +159,6 @@ export const checkMilesAlerts = inngest.createFunction(
                   program: alert.program,
                   cpp: bestCpp,
                   threshold: alert.thresholdCpp,
-                  flight: bestFlight,
                 });
 
                 await updateAlertLastFired(email, alert.route, alert.program, now);
