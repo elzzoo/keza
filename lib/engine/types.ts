@@ -69,6 +69,21 @@ export interface FlightResult {
   // ── Verdict (for UI display) ───────────────────────────────────────────────
   /** Explicit verdict for user decision: "Cash wins / Miles win / Need transfer" */
   verdictLabel?: string;
+
+  // ── Value Scoring (P5 Pricing Optimization) ────────────────────────────────────
+  /** Value badge: "GREAT_DEAL" | "FAIR_DEAL" | "EXPENSIVE" | "UNKNOWN" */
+  valueBadge?: string;
+  /** CPP percentile (0-100): where this flight sits in the distribution */
+  cppPercentile?: number;
+  /** 7-day price trend: "up" | "down" | "stable" | "unknown" */
+  priceTrend?: "up" | "down" | "stable" | "unknown";
+  /** Cost per point reference values for the best miles option */
+  cppStats?: {
+    cpp: number;           // actual cost per point (cents)
+    p25: number;           // 25th percentile
+    p50: number;           // 50th percentile (median)
+    p75: number;           // 75th percentile
+  };
 }
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
