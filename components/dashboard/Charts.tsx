@@ -248,9 +248,12 @@ export function PieChartComponent({
               borderColor: isDarkMode ? "#4b5563" : "#e5e7eb",
               color: textColor,
             }}
-            formatter={(value: number) => {
-              const percentage = ((value / total) * 100).toFixed(1);
-              return `${value} (${percentage}%)`;
+            formatter={(value) => {
+              if (typeof value === "number") {
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${value} (${percentage}%)`;
+              }
+              return value;
             }}
           />
         </PieChart>

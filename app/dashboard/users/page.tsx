@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { LineChartComponent } from "@/components/dashboard/Charts";
 
-interface UserMetrics {
+interface UserMetricsPoint {
   date: string;
   totalUsers: number;
-  newUsers: number;
-  totalSearches: number;
+}
+
+interface ConversionsPoint {
+  date: string;
   totalConversions: number;
-  revenue: number;
-  activeUsers: number;
 }
 
 interface DailyBreakdown {
@@ -36,7 +36,10 @@ interface ApiResponse {
       days: number;
     };
   };
-  chartData: UserMetrics[];
+  chartData: {
+    activeUsers: UserMetricsPoint[];
+    conversions: ConversionsPoint[];
+  };
   dailyBreakdown: DailyBreakdown[];
 }
 
@@ -77,10 +80,10 @@ export default function UsersPage() {
 
   if (state.loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-bg text-fg">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted">Loading dashboard metrics...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard metrics...</p>
         </div>
       </div>
     );
@@ -88,7 +91,7 @@ export default function UsersPage() {
 
   if (state.error) {
     return (
-      <div className="min-h-screen bg-bg p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 p-8">
         <div className="max-w-4xl mx-auto">
           <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:bg-red-900/20 dark:border-red-800">
             <h3 className="text-lg font-semibold text-red-800 dark:text-red-300">
@@ -103,26 +106,15 @@ export default function UsersPage() {
 
   if (!state.metrics) {
     return (
-      <div className="min-h-screen bg-bg p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 p-8">
         <div className="max-w-4xl mx-auto">
-          <p className="text-muted">No data available</p>
+          <p className="text-gray-600 dark:text-gray-400">No data available</p>
         </div>
       </div>
     );
   }
 
   const { summary, chartData, dailyBreakdown } = state.metrics;
-
-  // Separate data for charts
-  const activeUsersChartData = chartData.map((d) => ({
-    date: d.date,
-    totalUsers: d.activeUsers,
-  }));
-
-  const conversionsChartData = chartData.map((d) => ({
-    date: d.date,
-    totalConversions: d.totalConversions,
-  }));
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat("en-US", {
@@ -147,12 +139,14 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="bg-gray-50 dark:bg-slate-950 min-h-screen p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-fg mb-2">User Analytics</h1>
-          <p className="text-muted text-sm">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            User Analytics
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             Last {summary.period.days} days · {formatDate(summary.period.startDate)} to{" "}
             {formatDate(summary.period.endDate)}
           </p>
@@ -184,10 +178,10 @@ export default function UsersPage() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="rounded-xl border border-border bg-surface-1 p-6 dark:bg-slate-900 dark:border-slate-700">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 dark:bg-slate-900 dark:border-slate-700">
             <LineChartComponent
               title="Active Users Over Time"
-              data={activeUsersChartData}
+              data={chartData.activeUsers}
               dataKey="totalUsers"
               xKey="date"
               stroke="#3b82f6"
@@ -195,10 +189,10 @@ export default function UsersPage() {
             />
           </div>
 
-          <div className="rounded-xl border border-border bg-surface-1 p-6 dark:bg-slate-900 dark:border-slate-700">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 dark:bg-slate-900 dark:border-slate-700">
             <LineChartComponent
               title="Conversions Trend"
-              data={conversionsChartData}
+              data={chartData.conversions}
               dataKey="totalConversions"
               xKey="date"
               stroke="#10b981"
@@ -208,39 +202,44 @@ export default function UsersPage() {
         </div>
 
         {/* Daily Breakdown Table */}
-        <div className="rounded-xl border border-border bg-surface-1 overflow-hidden dark:bg-slate-900 dark:border-slate-700">
-          <div className="border-b border-border px-6 py-4 dark:border-slate-700">
-            <h2 className="text-lg font-semibold text-fg">Daily Breakdown</h2>
+        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:bg-slate-900 dark:border-slate-700">
+          <div className="border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Daily Breakdown
+            </h2>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-surface-2 dark:border-slate-700 dark:bg-slate-800">
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">
+                <tr className="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Active Users
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     New Users
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Searches
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Conversions
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-muted uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Revenue
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border dark:divide-slate-700">
+              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
                 {dailyBreakdown.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted">
+                    <td
+                      colSpan={6}
+                      className="px-6 py-8 text-center text-gray-600 dark:text-gray-400"
+                    >
                       No data available
                     </td>
                   </tr>
@@ -248,24 +247,24 @@ export default function UsersPage() {
                   dailyBreakdown.map((row) => (
                     <tr
                       key={row.date}
-                      className="hover:bg-surface-2 dark:hover:bg-slate-800 transition-colors"
+                      className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                     >
-                      <td className="px-6 py-3 text-fg font-medium">
+                      <td className="px-6 py-3 text-gray-900 dark:text-white font-medium">
                         {formatDate(row.date)}
                       </td>
-                      <td className="px-6 py-3 text-right text-fg font-semibold">
+                      <td className="px-6 py-3 text-right text-gray-900 dark:text-white font-semibold">
                         {formatNumber(row.activeUsers)}
                       </td>
-                      <td className="px-6 py-3 text-right text-fg">
+                      <td className="px-6 py-3 text-right text-gray-900 dark:text-white">
                         {formatNumber(row.newUsers)}
                       </td>
-                      <td className="px-6 py-3 text-right text-fg">
+                      <td className="px-6 py-3 text-right text-gray-900 dark:text-white">
                         {formatNumber(row.searches)}
                       </td>
-                      <td className="px-6 py-3 text-right text-fg font-semibold text-green-600 dark:text-green-400">
+                      <td className="px-6 py-3 text-right text-green-600 dark:text-green-400 font-semibold">
                         {formatNumber(row.conversions)}
                       </td>
-                      <td className="px-6 py-3 text-right text-fg font-semibold text-blue-600 dark:text-blue-400">
+                      <td className="px-6 py-3 text-right text-blue-600 dark:text-blue-400 font-semibold">
                         {formatCurrency(row.revenue)}
                       </td>
                     </tr>
