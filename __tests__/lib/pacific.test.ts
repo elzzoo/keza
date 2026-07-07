@@ -298,11 +298,11 @@ describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
       expect(HOME_CARRIER_PROGRAMS).toHaveProperty("AUH-SYD");
     });
 
-    it("NRT-SYD already exists and includes ANA/JAL", () => {
+    it("NRT-SYD already exists and includes ANA and Qantas (P3 Expansion)", () => {
       const nrtSyd = HOME_CARRIER_PROGRAMS["NRT-SYD"] ?? [];
       const allPrograms = nrtSyd.flatMap(c => c.programs);
       expect(allPrograms).toContain("ANA Mileage Club");
-      expect(allPrograms).toContain("Japan Airlines Mileage Bank");
+      expect(allPrograms).toContain("Qantas Frequent Flyer");
     });
   });
 });

@@ -240,11 +240,11 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     }
   });
 
-  it("NRT-ORD route includes ANA and JAL programs (ORD-NRT set in Asia hub)", () => {
+  it("NRT-ORD route includes ANA and United programs (P3 Expansion)", () => {
     const nrtOrd = HOME_CARRIER_PROGRAMS["NRT-ORD"] ?? [];
     const allPrograms = nrtOrd.flatMap(c => c.programs);
     expect(allPrograms).toContain("ANA Mileage Club");
-    expect(allPrograms).toContain("Japan Airlines Mileage Bank");
+    expect(allPrograms).toContain("United MileagePlus");
 
     // ORD-NRT is already in Asia hub section and should NOT be duplicated
     const ordNrt = HOME_CARRIER_PROGRAMS["ORD-NRT"] ?? [];
@@ -475,15 +475,16 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     expect(bkkSydPrograms).toContain("Thai Royal Orchid Plus");
   });
 
-  it("Qantas Frequent Flyer on SYD→NRT outbound, ANA/JAL on reverse", () => {
+  it("SYD-NRT and NRT-SYD: ANA + Qantas (P3 Expansion)", () => {
     const sydNrt = HOME_CARRIER_PROGRAMS["SYD-NRT"] ?? [];
     const sydNrtPrograms = sydNrt.flatMap(c => c.programs);
     expect(sydNrtPrograms).toContain("Qantas Frequent Flyer");
+    expect(sydNrtPrograms).toContain("ANA Mileage Club");
 
     const nrtSyd = HOME_CARRIER_PROGRAMS["NRT-SYD"] ?? [];
     const nrtSydPrograms = nrtSyd.flatMap(c => c.programs);
     expect(nrtSydPrograms).toContain("ANA Mileage Club");
-    expect(nrtSydPrograms).toContain("Japan Airlines Mileage Bank");
+    expect(nrtSydPrograms).toContain("Qantas Frequent Flyer");
   });
 
   it("Air New Zealand Airpoints guaranteed on NZL→LAX and reverse", () => {

@@ -163,6 +163,185 @@ describe("supplements — home carrier guarantees & route airlines", () => {
     });
   });
 
+  describe("P3 Expansion: 10 High-Demand Flight Corridors", () => {
+    test("P3 Asia-Pacific to US: BKK-LAX and LAX-BKK (Thai Airways + United)", () => {
+      expect(HOME_CARRIER_PROGRAMS["BKK-LAX"]).toBeDefined();
+      const bkkLaxAirlines = HOME_CARRIER_PROGRAMS["BKK-LAX"].map(e => e.airline);
+      expect(bkkLaxAirlines).toContain("Thai Airways");
+      expect(bkkLaxAirlines).toContain("United");
+
+      expect(HOME_CARRIER_PROGRAMS["LAX-BKK"]).toBeDefined();
+      const laxBkkAirlines = HOME_CARRIER_PROGRAMS["LAX-BKK"].map(e => e.airline);
+      expect(laxBkkAirlines).toContain("Thai Airways");
+      expect(laxBkkAirlines).toContain("United");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["BKK-LAX"]).toContain("Thai Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["BKK-LAX"]).toContain("United");
+    });
+
+    test("P3 Australia to US: SYD-LAX and LAX-SYD (Qantas + United)", () => {
+      expect(HOME_CARRIER_PROGRAMS["SYD-LAX"]).toBeDefined();
+      const sydLaxAirlines = HOME_CARRIER_PROGRAMS["SYD-LAX"].map(e => e.airline);
+      expect(sydLaxAirlines).toContain("Qantas");
+      expect(sydLaxAirlines).toContain("United");
+
+      expect(HOME_CARRIER_PROGRAMS["LAX-SYD"]).toBeDefined();
+      const laxSydAirlines = HOME_CARRIER_PROGRAMS["LAX-SYD"].map(e => e.airline);
+      expect(laxSydAirlines).toContain("Qantas");
+      expect(laxSydAirlines).toContain("United");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["SYD-LAX"]).toContain("Qantas");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["SYD-LAX"]).toContain("United");
+    });
+
+    test("P3 Australia to Asia: NRT-SYD and SYD-NRT (ANA + Qantas)", () => {
+      expect(HOME_CARRIER_PROGRAMS["NRT-SYD"]).toBeDefined();
+      const nrtSydAirlines = HOME_CARRIER_PROGRAMS["NRT-SYD"].map(e => e.airline);
+      expect(nrtSydAirlines).toContain("All Nippon Airways");
+      expect(nrtSydAirlines).toContain("Qantas");
+
+      expect(HOME_CARRIER_PROGRAMS["SYD-NRT"]).toBeDefined();
+      const sydNrtAirlines = HOME_CARRIER_PROGRAMS["SYD-NRT"].map(e => e.airline);
+      expect(sydNrtAirlines).toContain("All Nippon Airways");
+      expect(sydNrtAirlines).toContain("Qantas");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["NRT-SYD"]).toContain("All Nippon Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["NRT-SYD"]).toContain("Qantas");
+    });
+
+    test("P3 EU to Australia: CDG-SYD and SYD-CDG (Air France + Qantas)", () => {
+      expect(HOME_CARRIER_PROGRAMS["CDG-SYD"]).toBeDefined();
+      const cdgSydAirlines = HOME_CARRIER_PROGRAMS["CDG-SYD"].map(e => e.airline);
+      expect(cdgSydAirlines).toContain("Air France");
+      expect(cdgSydAirlines).toContain("Qantas");
+
+      expect(HOME_CARRIER_PROGRAMS["SYD-CDG"]).toBeDefined();
+      const sydCdgAirlines = HOME_CARRIER_PROGRAMS["SYD-CDG"].map(e => e.airline);
+      expect(sydCdgAirlines).toContain("Qantas");
+      expect(sydCdgAirlines).toContain("Air France");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["CDG-SYD"]).toContain("Air France");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["CDG-SYD"]).toContain("Qantas");
+    });
+
+    test("P3 Middle East to Australia: DXB-SYD and SYD-DXB (Emirates + Qantas)", () => {
+      expect(HOME_CARRIER_PROGRAMS["DXB-SYD"]).toBeDefined();
+      const dxbSydAirlines = HOME_CARRIER_PROGRAMS["DXB-SYD"].map(e => e.airline);
+      expect(dxbSydAirlines).toContain("Emirates");
+      expect(dxbSydAirlines).toContain("Qantas");
+
+      expect(HOME_CARRIER_PROGRAMS["SYD-DXB"]).toBeDefined();
+      const sydDxbAirlines = HOME_CARRIER_PROGRAMS["SYD-DXB"].map(e => e.airline);
+      expect(sydDxbAirlines).toContain("Qantas");
+      expect(sydDxbAirlines).toContain("Emirates");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["DXB-SYD"]).toContain("Emirates");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["DXB-SYD"]).toContain("Qantas");
+    });
+
+    test("P3 UK to Australia: LHR-SYD and SYD-LHR (British Airways + Qantas)", () => {
+      expect(HOME_CARRIER_PROGRAMS["LHR-SYD"]).toBeDefined();
+      const lhrSydAirlines = HOME_CARRIER_PROGRAMS["LHR-SYD"].map(e => e.airline);
+      expect(lhrSydAirlines).toContain("British Airways");
+      expect(lhrSydAirlines).toContain("Qantas");
+
+      expect(HOME_CARRIER_PROGRAMS["SYD-LHR"]).toBeDefined();
+      const sydLhrAirlines = HOME_CARRIER_PROGRAMS["SYD-LHR"].map(e => e.airline);
+      expect(sydLhrAirlines).toContain("Qantas");
+      expect(sydLhrAirlines).toContain("British Airways");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LHR-SYD"]).toContain("British Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LHR-SYD"]).toContain("Qantas");
+    });
+
+    test("P3 US Midwest to Japan: ORD-NRT and NRT-ORD (United + ANA)", () => {
+      expect(HOME_CARRIER_PROGRAMS["ORD-NRT"]).toBeDefined();
+      const ordNrtAirlines = HOME_CARRIER_PROGRAMS["ORD-NRT"].map(e => e.airline);
+      expect(ordNrtAirlines).toContain("United");
+      expect(ordNrtAirlines).toContain("All Nippon Airways");
+
+      expect(HOME_CARRIER_PROGRAMS["NRT-ORD"]).toBeDefined();
+      const nrtOrdAirlines = HOME_CARRIER_PROGRAMS["NRT-ORD"].map(e => e.airline);
+      expect(nrtOrdAirlines).toContain("All Nippon Airways");
+      expect(nrtOrdAirlines).toContain("United");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["ORD-NRT"]).toContain("All Nippon Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["ORD-NRT"]).toContain("United");
+    });
+
+    test("P3 US West to Japan: SFO-NRT and NRT-SFO (United + ANA)", () => {
+      expect(HOME_CARRIER_PROGRAMS["SFO-NRT"]).toBeDefined();
+      const sfoNrtAirlines = HOME_CARRIER_PROGRAMS["SFO-NRT"].map(e => e.airline);
+      expect(sfoNrtAirlines).toContain("United");
+      expect(sfoNrtAirlines).toContain("All Nippon Airways");
+
+      expect(HOME_CARRIER_PROGRAMS["NRT-SFO"]).toBeDefined();
+      const nrtSfoAirlines = HOME_CARRIER_PROGRAMS["NRT-SFO"].map(e => e.airline);
+      expect(nrtSfoAirlines).toContain("All Nippon Airways");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["SFO-NRT"]).toContain("All Nippon Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["SFO-NRT"]).toContain("United");
+    });
+
+    test("P3 US to Tokyo Haneda: LAX-HND and HND-LAX (ANA + United)", () => {
+      expect(HOME_CARRIER_PROGRAMS["LAX-HND"]).toBeDefined();
+      const laxHndAirlines = HOME_CARRIER_PROGRAMS["LAX-HND"].map(e => e.airline);
+      expect(laxHndAirlines).toContain("All Nippon Airways");
+      expect(laxHndAirlines).toContain("United");
+
+      expect(HOME_CARRIER_PROGRAMS["HND-LAX"]).toBeDefined();
+      const hndLaxAirlines = HOME_CARRIER_PROGRAMS["HND-LAX"].map(e => e.airline);
+      expect(hndLaxAirlines).toContain("All Nippon Airways");
+      expect(hndLaxAirlines).toContain("United");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LAX-HND"]).toContain("All Nippon Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["LAX-HND"]).toContain("United");
+    });
+
+    test("P3 US East to Tokyo Haneda: JFK-HND and HND-JFK (ANA + United)", () => {
+      expect(HOME_CARRIER_PROGRAMS["JFK-HND"]).toBeDefined();
+      const jfkHndAirlines = HOME_CARRIER_PROGRAMS["JFK-HND"].map(e => e.airline);
+      expect(jfkHndAirlines).toContain("All Nippon Airways");
+      expect(jfkHndAirlines).toContain("United");
+
+      expect(HOME_CARRIER_PROGRAMS["HND-JFK"]).toBeDefined();
+      const hndJfkAirlines = HOME_CARRIER_PROGRAMS["HND-JFK"].map(e => e.airline);
+      expect(hndJfkAirlines).toContain("All Nippon Airways");
+      expect(hndJfkAirlines).toContain("United");
+
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["JFK-HND"]).toContain("All Nippon Airways");
+      expect(ROUTE_AIRLINE_SUPPLEMENTS["JFK-HND"]).toContain("United");
+    });
+
+    test("P3 Expansion: All 10 corridors bidirectional coverage", () => {
+      const p3Routes = [
+        "BKK-LAX",
+        "SYD-LAX",
+        "NRT-SYD",
+        "CDG-SYD",
+        "DXB-SYD",
+        "LHR-SYD",
+        "ORD-NRT",
+        "SFO-NRT",
+        "LAX-HND",
+        "JFK-HND",
+      ];
+
+      for (const route of p3Routes) {
+        const [from, to] = route.split("-");
+        const reverse = `${to}-${from}`;
+
+        expect(HOME_CARRIER_PROGRAMS[route]).toBeDefined();
+        expect(HOME_CARRIER_PROGRAMS[reverse]).toBeDefined();
+      }
+    });
+
+    test("P3 Expansion: Total corridor count increased", () => {
+      const totalRoutes = Object.keys(HOME_CARRIER_PROGRAMS).length;
+      expect(totalRoutes).toBeGreaterThanOrEqual(120);
+    });
+  });
+
   describe("P5 Task 3.3: Route Expansion to 110+ corridors", () => {
     test("Tier 3 — African Routes: LAD hub coverage", () => {
       // LAD↔LHR (TAAG Angola Airlines)

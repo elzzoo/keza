@@ -30,14 +30,16 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   // ANA + JAL — NRT/HND hub outbound
   "NRT-LAX": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
   "LAX-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
-  "HND-LAX": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
-  "LAX-HND": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "HND-LAX": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "LAX-HND": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "United", programs: ["United MileagePlus"] }],
   "NRT-JFK": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
   "JFK-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
-  "NRT-SFO": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
-  "SFO-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
-  "NRT-ORD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
-  "ORD-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "HND-JFK": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "JFK-HND": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "NRT-SFO": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "SFO-NRT": [{ airline: "United", programs: ["United MileagePlus"] }, { airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }],
+  "NRT-ORD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "ORD-NRT": [{ airline: "United", programs: ["United MileagePlus"] }, { airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }],
 
   // Emirates Skywards — DXB hub
   "DXB-LHR": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
@@ -50,8 +52,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "FRA-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
   "DXB-LAX": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
   "LAX-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
-  "DXB-SYD": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
-  "SYD-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
+  "DXB-SYD": [{ airline: "Emirates", programs: ["Emirates Skywards"] }, { airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "SYD-DXB": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "Emirates", programs: ["Emirates Skywards"] }],
   "DXB-BKK": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
   "BKK-DXB": [{ airline: "Emirates", programs: ["Emirates Skywards"] }],
 
@@ -186,8 +188,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-HKG": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
 
   // Thai Airways Royal Orchid Plus — BKK hub (Bangkok) — NEW
-  "BKK-LAX": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
-  "LAX-BKK": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "BKK-LAX": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "LAX-BKK": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }, { airline: "United", programs: ["United MileagePlus"] }],
   "BKK-CDG": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "CDG-BKK": [{ airline: "Air France", programs: ["Flying Blue"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "BKK-NRT": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
@@ -294,16 +296,16 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
 
   // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
   // Qantas Frequent Flyer — Sydney (SYD) hub
-  "SYD-LAX": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
-  "LAX-SYD": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "SYD-LAX": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "United", programs: ["United MileagePlus"] }],
+  "LAX-SYD": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "United", programs: ["United MileagePlus"] }],
   "SYD-JFK": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
   "JFK-SYD": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
-  "SYD-LHR": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
-  "LHR-SYD": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
-  "SYD-CDG": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
-  "CDG-SYD": [{ airline: "Air France", programs: ["Flying Blue"] }],
-  "SYD-NRT": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
-  "NRT-SYD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "SYD-LHR": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "British Airways", programs: ["British Airways Avios"] }],
+  "LHR-SYD": [{ airline: "British Airways", programs: ["British Airways Avios"] }, { airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "SYD-CDG": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "Air France", programs: ["Flying Blue"] }],
+  "CDG-SYD": [{ airline: "Air France", programs: ["Flying Blue"] }, { airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "SYD-NRT": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
+  "NRT-SYD": [{ airline: "All Nippon Airways", programs: ["ANA Mileage Club"] }, { airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
   "SYD-BKK": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
   "BKK-SYD": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
 
@@ -469,14 +471,14 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "LAX-NRT": ["All Nippon Airways", "Japan Airlines"],
   "NRT-JFK": ["All Nippon Airways", "Japan Airlines"],
   "JFK-NRT": ["All Nippon Airways", "Japan Airlines"],
-  "NRT-SFO": ["All Nippon Airways", "Japan Airlines"],
-  "SFO-NRT": ["All Nippon Airways", "Japan Airlines"],
-  "NRT-ORD": ["All Nippon Airways", "Japan Airlines"],
-  "ORD-NRT": ["All Nippon Airways", "Japan Airlines"],
-  "HND-LAX": ["All Nippon Airways", "Japan Airlines"],
-  "LAX-HND": ["All Nippon Airways", "Japan Airlines"],
-  "HND-JFK": ["All Nippon Airways", "Japan Airlines"],
-  "JFK-HND": ["All Nippon Airways", "Japan Airlines"],
+  "NRT-SFO": ["All Nippon Airways", "Japan Airlines", "United"],
+  "SFO-NRT": ["All Nippon Airways", "Japan Airlines", "United"],
+  "NRT-ORD": ["All Nippon Airways", "Japan Airlines", "United"],
+  "ORD-NRT": ["All Nippon Airways", "Japan Airlines", "United"],
+  "HND-LAX": ["All Nippon Airways", "United"],
+  "LAX-HND": ["All Nippon Airways", "United"],
+  "HND-JFK": ["All Nippon Airways", "United"],
+  "JFK-HND": ["All Nippon Airways", "United"],
 
   // ── Gulf–Europe/Americas (B4 fix: Emirates Skywards absent on DXB routes) ──
   // Emirates operates DXB→LHR, DXB→JFK, DXB→CDG etc. directly (EK).
@@ -491,8 +493,8 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "FRA-DXB": ["Emirates", "Lufthansa"],
   "DXB-LAX": ["Emirates"],
   "LAX-DXB": ["Emirates"],
-  "DXB-SYD": ["Emirates"],
-  "SYD-DXB": ["Emirates"],
+  "DXB-SYD": ["Emirates", "Qantas"],
+  "SYD-DXB": ["Qantas", "Emirates"],
   "DXB-BKK": ["Emirates"],
   "BKK-DXB": ["Emirates"],
 
@@ -567,10 +569,10 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   // ── Asia–Europe additional ───────────────────────────────────────────────
   "CDG-BKK": ["Air France", "Thai Airways"],
   "BKK-CDG": ["Air France", "Thai Airways"],
-  "LAX-BKK": ["Thai Airways"],
-  "BKK-LAX": ["Thai Airways"],
-  "NRT-SYD": ["All Nippon Airways", "Japan Airlines"],
-  "SYD-NRT": ["All Nippon Airways", "Japan Airlines"],
+  "LAX-BKK": ["Thai Airways", "United"],
+  "BKK-LAX": ["Thai Airways", "United"],
+  "NRT-SYD": ["All Nippon Airways", "Japan Airlines", "Qantas"],
+  "SYD-NRT": ["All Nippon Airways", "Japan Airlines", "Qantas"],
   "NRT-BKK": ["Japan Airlines", "Thai Airways"],
   "BKK-NRT": ["Japan Airlines", "Thai Airways"],
 
