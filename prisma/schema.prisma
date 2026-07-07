@@ -1,12 +1,120 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+}
+
+// ==================== Analytics Models ====================
+
+model AnalyticsSearch {
+  id           String   @id @default(cuid())
+  searchId     String   @unique
+  userId       String?
+  route        String   // "CDG-DKR" format
+  program      String?
+  passengers   Int      @default(1)
+  cabin        String   @default("economy")
+  tripType     String   @default("oneway")
+  stops        String   @default("any")
+  device       String?  // mobile | tablet | desktop
+  cacheHit     Boolean  @default(false)
+  source       String?  // DUFFEL | TP | SYNTHETIC
+  confidence   String?  // HIGH | LOW | ESTIMATED
+  resultCount  Int      @default(0)
+  duration     Int?     // milliseconds
+  timestamp    DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([route])
+  @@index([timestamp])
+  @@index([device])
+}
+
+model AnalyticsAlert {
+  id              String   @id @default(cuid())
+  alertId         String   @unique
+  userId          String   @unique
+  route           String   // "CDG-DKR" format
+  program         String?
+  priceThreshold  Float?   // USD
+  firedAt         DateTime @default(now())
+  conversionValue Float?   // USD value if converted to booking
+  conversionDate  DateTime?
+  currency        String   @default("USD")
+  source          String?  // DUFFEL | TP
+  status          String   @default("active")
+  metadata        String?  // JSON field
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([route])
+  @@index([firedAt])
+  @@index([status])
+}
+
+model AnalyticsConversion {
+  id               String   @id @default(cuid())
+  conversionId     String   @unique
+  userId           String
+  route            String   // "CDG-DKR" format
+  program          String?
+  priceUSD         Float    // Final booking price in USD
+  currency         String   @default("USD")
+  milesBurned      Int?
+  pricingSource    String   // DUFFEL | TP
+  bookingReference String?  // Airline confirmation code
+  conversionValue  Float    // Revenue attributed to KEZA
+  source           String   // organic | referral | paid_ad
+  referrer         String?  // Referring URL or campaign
+  timestamp        DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@index([route])
+  @@index([timestamp])
+}
+
+model AnalyticsUser {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  firstSeen   DateTime @default(now())
+  lastSeen    DateTime @default(now())
+  country     String?  // User's country from IP
+  device      String?  // Primary device: mobile | tablet | desktop
+  browser     String?  // Browser family
+  sessionCount Int     @default(1)
+  searchCount  Int     @default(0)
+  alertCount   Int     @default(0)
+  conversions  Int     @default(0)
+  totalSpent   Float   @default(0) // USD
+  source      String?  // organic | referral | paid_ad
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lastSeen])
+  @@index([country])
+}
+
+model AnalyticsDailyMetrics {
+  id                String   @id @default(cuid())
+  date              DateTime @unique
+  searchCount       Int      @default(0)
+  uniqueUsers       Int      @default(0)
+  alertsFired       Int      @default(0)
+  conversions       Int      @default(0)
+  totalRevenue      Float    @default(0)
+  avgSearchDuration Int      @default(0)
+  cacheHitRate      Float    @default(0)
+  topRoute          String?  // Most popular route that day
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([date])
 }
