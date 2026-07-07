@@ -10,10 +10,9 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
 import { logError, logWarn } from "@/lib/logger";
 import { calculateCppPercentiles, storePercentiles } from "@/lib/valueScoring";
-import { redis } from "@/lib/redis";
 
 // Popular routes with their primary loyalty programs
-const ROUTE_PROGRAMS = [
+const ROUTE_PROGRAMS: Array<[string, string, string[]]> = [
   // [from, to, programs[]]
   ["DSS", "CDG", ["Flying Blue", "Air Senegal"]],
   ["ABJ", "CDG", ["Flying Blue"]],
@@ -50,22 +49,22 @@ export async function GET(req: NextRequest) {
   return Sentry.withMonitor("cron-cpp-stats", async () => {
     try {
       let processed = 0;
-      let errors: string[] = [];
+      const errors: string[] = [];
 
       // Process each route-program combination
       for (const [from, to, programs] of ROUTE_PROGRAMS) {
         for (const program of programs) {
           try {
             // Calculate percentiles from accumulated observations
-            const percentiles = await calculateCppPercentiles(from, to, program);
+            const percentiles = await calculateCppPercentiles(String(from), String(to), String(program));
 
             if (percentiles) {
               // Store calculated percentiles for fast lookup during search
-              await storePercentiles(from, to, program, percentiles);
+              await storePercentiles(String(from), String(to), String(program), percentiles);
               processed++;
             }
           } catch (err) {
-            errors.push(`${from}-${to}/${program}: ${(err as Error).message}`);
+            errors.push(`${String(from)}-${String(to)}/${String(program)}: ${err instanceof Error ? err.message : String(err)}`);
           }
         }
       }
@@ -77,7 +76,7 @@ export async function GET(req: NextRequest) {
         // Note: Redis doesn't have built-in date-based cleanup for sorted sets
         // The expire() call in recordCppObservation handles this
       } catch (err) {
-        logWarn("[cron/cpp-stats] Cleanup error", err as Error);
+        logWarn("[cron/cpp-stats] Cleanup error", err instanceof Error ? err.message : String(err));
       }
 
       return NextResponse.json({

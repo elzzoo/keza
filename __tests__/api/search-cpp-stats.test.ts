@@ -200,6 +200,7 @@ describe("Search API CPP Statistics Integration", () => {
         cabinPriceEstimated: false,
         searchId: "test",
         optimization: { type: "LOWEST_MILES" as const },
+        valueBadge: undefined,
         // P5 fields are optional
       };
 

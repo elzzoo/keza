@@ -27,9 +27,12 @@ const COLORS = [
   "#ec4899", // pink
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ChartData = Array<Record<string, any>>;
+
 interface LineChartProps {
   title: string;
-  data: Array<Record<string, any>>;
+  data: ChartData;
   dataKey: string;
   xKey: string;
   stroke?: string;
@@ -38,7 +41,7 @@ interface LineChartProps {
 
 interface BarChartProps {
   title: string;
-  data: Array<Record<string, any>>;
+  data: ChartData;
   xKey: string;
   yKey: string;
   fill?: string;

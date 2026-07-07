@@ -16,6 +16,8 @@
     "bundle:check": "next build && node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@sentry/nextjs": "^10.50.0",
     "@upstash/redis": "^1.37.0",

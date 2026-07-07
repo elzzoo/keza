@@ -4,19 +4,26 @@
  */
 
 import { getbestValueRecommendations, getProgramSwitchRecommendations } from "@/lib/recommendationEngine";
-import type { FlightResult, MilesOption } from "@/lib/engine";
+import type { FlightResult } from "@/lib/engine";
+import type { MilesOption } from "@/lib/costEngine";
 
 describe("Recommendation Engine - Best Value", () => {
   // Helper to create mock MilesOption
   function createMilesOption(overrides: Partial<MilesOption> = {}): MilesOption {
     return {
       program: "Test Program",
-      miles: 50000,
+      milesRequired: 50000,
+      operatingAirline: "TEST",
       taxes: 50,
       type: "DIRECT",
       isBestDeal: true,
-      chartSource: "AWARD_CHART",
+      chartSource: "REAL",
+      valuePerMile: 1.5,
+      milesCost: 750,
+      totalMilesCost: 800,
+      savings: 100,
       confidence: "HIGH",
+      explanation: "Test option",
       ...overrides,
     };
   }
@@ -44,7 +51,7 @@ describe("Recommendation Engine - Best Value", () => {
       disclaimer: "Test",
       cabinPriceEstimated: false,
       searchId: "test",
-      optimization: { type: "LOWEST_MILES" },
+      optimization: { type: "CASH" },
       ...overrides,
     };
   }
@@ -149,7 +156,7 @@ describe("Recommendation Engine - Best Value", () => {
     it("should return empty when only one option available", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
         ],
       });
 
@@ -160,8 +167,8 @@ describe("Recommendation Engine - Best Value", () => {
     it("should recommend switching for 20%+ miles savings", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "Program B", miles: 35000 }), // 30% cheaper
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "Program B", milesRequired:35000 }), // 30% cheaper
         ],
       });
 
@@ -172,8 +179,8 @@ describe("Recommendation Engine - Best Value", () => {
     it("should not recommend for < 20% miles savings", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "Program B", miles: 48000 }), // 4% savings
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "Program B", milesRequired:48000 }), // 4% savings
         ],
       });
 
@@ -184,8 +191,8 @@ describe("Recommendation Engine - Best Value", () => {
     it("should not recommend for < 5000 miles difference", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "Program B", miles: 49000 }), // Only 1000 miles saved
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "Program B", milesRequired:49000 }), // Only 1000 miles saved
         ],
       });
 
@@ -196,8 +203,8 @@ describe("Recommendation Engine - Best Value", () => {
     it("should include alternative program name", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "KrisFlyer", miles: 30000 }),
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "KrisFlyer", milesRequired:30000 }),
         ],
       });
 
@@ -210,8 +217,8 @@ describe("Recommendation Engine - Best Value", () => {
     it("should calculate miles saved correctly", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "Program B", miles: 35000 }),
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "Program B", milesRequired:35000 }),
         ],
       });
 
@@ -225,8 +232,8 @@ describe("Recommendation Engine - Best Value", () => {
     it("should use French text for fr locale", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "Program B", miles: 35000 }),
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "Program B", milesRequired:35000 }),
         ],
       });
 
@@ -237,10 +244,10 @@ describe("Recommendation Engine - Best Value", () => {
     it("should limit to 2 alternative programs", async () => {
       const flight = createFlight({
         milesOptions: [
-          createMilesOption({ program: "Program A", miles: 50000 }),
-          createMilesOption({ program: "Program B", miles: 35000 }),
-          createMilesOption({ program: "Program C", miles: 32000 }),
-          createMilesOption({ program: "Program D", miles: 30000 }),
+          createMilesOption({ program: "Program A", milesRequired: 50000 }),
+          createMilesOption({ program: "Program B", milesRequired:35000 }),
+          createMilesOption({ program: "Program C", milesRequired:32000 }),
+          createMilesOption({ program: "Program D", milesRequired:30000 }),
         ],
       });
 

@@ -30,7 +30,7 @@ describe("Recommendation Engine", () => {
       disclaimer: "Test",
       cabinPriceEstimated: false,
       searchId: "test-id",
-      optimization: { type: "LOWEST_MILES" },
+      optimization: { type: "CASH" },
       ...overrides,
     };
   }

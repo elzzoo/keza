@@ -3,10 +3,8 @@
  * Provides "You should consider these options" style recommendations
  */
 
-import type { FlightResult, Cabin } from "@/lib/engine";
-import { getPercentiles, calculateValueScore } from "@/lib/valueScoring";
+import type { FlightResult } from "@/lib/engine";
 import { getPriceHistory } from "@/lib/priceHistoryRedis";
-import type { PriceTrend } from "@/lib/priceHistory";
 
 export interface Recommendation {
   type: "BEST_VALUE" | "ALTERNATIVE_ROUTE" | "TIMING" | "PROGRAM_SWITCH";
@@ -25,7 +23,7 @@ export interface Recommendation {
  */
 export async function getbestValueRecommendations(
   results: FlightResult[],
-  userPrograms: string[] = [],
+  _userPrograms: string[] = [],
   lang: "fr" | "en" = "en"
 ): Promise<Recommendation[]> {
   const recommendations: Recommendation[] = [];
@@ -174,8 +172,8 @@ export async function getProgramSwitchRecommendations(
   for (const alt of alternativeOptions) {
     if (!cheapest || !alt) continue;
 
-    const milesSaved = cheapest.miles - alt.miles;
-    const savePercent = cheapest.miles > 0 ? (milesSaved / cheapest.miles) * 100 : 0;
+    const milesSaved = cheapest.milesRequired - alt.milesRequired;
+    const savePercent = cheapest.milesRequired > 0 ? (milesSaved / cheapest.milesRequired) * 100 : 0;
 
     if (milesSaved > 5000 && savePercent > 20) {
       recommendations.push({

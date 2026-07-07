@@ -83,7 +83,7 @@ export async function calculateCppPercentiles(
     const members = await redis.zrange(key, 0, -1);
     if (!members || members.length === 0) return null;
 
-    const values = members.map((m) => parseInt(m, 10)).filter((v) => !isNaN(v));
+    const values = members.map((m) => parseInt(String(m), 10)).filter((v) => !isNaN(v));
     if (values.length === 0) return null;
 
     values.sort((a, b) => a - b);
@@ -143,7 +143,7 @@ export async function getPercentiles(
     const raw = await redis.hget(key, programKey);
 
     if (!raw) return null;
-    return JSON.parse(raw);
+    return JSON.parse(String(raw));
   } catch {
     return null;
   }
