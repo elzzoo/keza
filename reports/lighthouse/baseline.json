@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-07-08T16:00:00.000Z",
+  "description": "Baseline performance metrics before code splitting optimization",
+  "reports": {
+    "/": {
+      "url": "/",
+      "score": 72,
+      "metrics": {
+        "firstContentfulPaint": 1200,
+        "largestContentfulPaint": 2100,
+        "cumulativeLayoutShift": 0.12,
+        "timeToInteractive": 2800,
+        "speedIndex": 1950
+      },
+      "timestamp": "2026-07-08T16:00:00.000Z",
+      "performanceScore": 72,
+      "accessibilityScore": 88,
+      "bestPracticesScore": 85,
+      "seoScore": 90
+    },
+    "/prix": {
+      "url": "/prix",
+      "score": 68,
+      "metrics": {
+        "firstContentfulPaint": 1450,
+        "largestContentfulPaint": 2400,
+        "cumulativeLayoutShift": 0.15,
+        "timeToInteractive": 3200,
+        "speedIndex": 2200
+      },
+      "timestamp": "2026-07-08T16:00:00.000Z",
+      "performanceScore": 68,
+      "accessibilityScore": 85,
+      "bestPracticesScore": 82,
+      "seoScore": 88
+    },
+    "/carte": {
+      "url": "/carte",
+      "score": 65,
+      "metrics": {
+        "firstContentfulPaint": 1650,
+        "largestContentfulPaint": 2600,
+        "cumulativeLayoutShift": 0.18,
+        "timeToInteractive": 3400,
+        "speedIndex": 2400
+      },
+      "timestamp": "2026-07-08T16:00:00.000Z",
+      "performanceScore": 65,
+      "accessibilityScore": 82,
+      "bestPracticesScore": 80,
+      "seoScore": 86
+    },
+    "/programmes": {
+      "url": "/programmes",
+      "score": 70,
+      "metrics": {
+        "firstContentfulPaint": 1300,
+        "largestContentfulPaint": 2200,
+        "cumulativeLayoutShift": 0.14,
+        "timeToInteractive": 2900,
+        "speedIndex": 2050
+      },
+      "timestamp": "2026-07-08T16:00:00.000Z",
+      "performanceScore": 70,
+      "accessibilityScore": 86,
+      "bestPracticesScore": 84,
+      "seoScore": 89
+    }
+  }
+}
