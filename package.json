@@ -5,7 +5,7 @@
   "sideEffects": false,
   "scripts": {
     "dev": "next dev",
-    "build": "tsc --noEmit && next lint && next build",
+    "build": "prisma generate && tsc --noEmit && next lint && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
