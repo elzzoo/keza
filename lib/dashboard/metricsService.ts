@@ -182,7 +182,7 @@ export async function getRouteMetrics(
 
   // For each route, get detailed metrics
   const routes = await Promise.all(
-    routeSearches.map(async (rs) => {
+    routeSearches.map(async (rs: typeof routeSearches[0]) => {
       const [conversions, topProgramData] = await Promise.all([
         // Get conversion metrics for this route
         prisma.analyticsConversion.aggregate({
@@ -257,7 +257,7 @@ export async function getUserMetrics(days: number = 30): Promise<UserMetrics> {
 
   // Create a map for quick lookup
   const dailyMetricsMap = new Map(
-    dailyMetricsDb.map((m) => [m.date.toISOString().split("T")[0], m]),
+    dailyMetricsDb.map((m: typeof dailyMetricsDb[0]) => [m.date.toISOString().split("T")[0], m]),
   );
 
   // For each date, compile metrics
@@ -274,12 +274,12 @@ export async function getUserMetrics(days: number = 30): Promise<UserMetrics> {
       if (cached) {
         return {
           date: dateStr,
-          totalUsers: cached.uniqueUsers,
+          totalUsers: cached.uniqueUsers as number,
           newUsers: 0, // Would need separate tracking
-          activeUsers: cached.uniqueUsers,
-          totalSearches: cached.searchCount,
-          totalConversions: cached.conversions,
-          totalRevenue: Math.round(cached.totalRevenue * 100) / 100,
+          activeUsers: cached.uniqueUsers as number,
+          totalSearches: cached.searchCount as number,
+          totalConversions: cached.conversions as number,
+          totalRevenue: Math.round((cached.totalRevenue as number) * 100) / 100,
         };
       }
 
