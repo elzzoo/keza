@@ -1,9 +1,21 @@
 // app/programmes/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ProgramsTable } from "./ProgramsTable";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ProgramListSkeleton } from "@/components/Skeletons";
 import { SITE_URL } from "@/lib/siteConfig";
+
+// Dynamically import ProgramsTable with ProgramListSkeleton fallback
+// Lazy loads on-demand to reduce main bundle size
+// ProgramsTable is already a "use client" component, so no ssr: false needed
+const ProgramsTable = dynamic(
+  () => import("./ProgramsTable").then((mod) => ({ default: mod.ProgramsTable })),
+  {
+    loading: () => <ProgramListSkeleton />,
+  }
+);
 
 export const metadata: Metadata = {
   title: "Meilleurs programmes miles & points 2026 | KEZA",
@@ -58,7 +70,9 @@ export default function ProgrammesPage() {
 
         {/* Table */}
         <ErrorBoundary lang="fr">
-          <ProgramsTable lang="fr" />
+          <Suspense fallback={<ProgramListSkeleton />}>
+            <ProgramsTable lang="fr" />
+          </Suspense>
         </ErrorBoundary>
 
         {/* Editorial note */}

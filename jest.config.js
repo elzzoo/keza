@@ -50,7 +50,7 @@ const config = {
       displayName: "jsdom",
       preset: "ts-jest",
       testEnvironment: "jsdom",
-      testMatch: ["**/__tests__/components/**/*.test.tsx", "**/__tests__/lib/contexts/**/*.test.tsx"],
+      testMatch: ["**/__tests__/components/**/*.test.tsx", "**/__tests__/lib/contexts/**/*.test.tsx", "**/__tests__/app/**/*.test.tsx"],
       testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
       modulePathIgnorePatterns: ["/.worktrees/"],
       transform: {
