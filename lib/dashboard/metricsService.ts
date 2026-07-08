@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { AnalyticsDailyMetrics } from "@prisma/client";
 
 /**
  * Dashboard Metrics Service
@@ -256,7 +257,7 @@ export async function getUserMetrics(days: number = 30): Promise<UserMetrics> {
   });
 
   // Create a map for quick lookup
-  const dailyMetricsMap = new Map(
+  const dailyMetricsMap: Map<string, AnalyticsDailyMetrics> = new Map(
     dailyMetricsDb.map((m: typeof dailyMetricsDb[0]) => [m.date.toISOString().split("T")[0], m]),
   );
 
