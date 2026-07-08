@@ -57,16 +57,21 @@ export function calculateAccessibilitySignal(ctx: SignalContext): number {
  * Normalizes against typical route pricing
  */
 export function calculatePriceSignal(ctx: SignalContext): number {
-  const { price } = ctx.flight;
+  const flight = ctx.flight;
+  // Use the best available price (miles cost if available and cheaper, otherwise cash cost)
+  const bestCost = flight.milesCost > 0
+    ? Math.min(flight.cashCost, flight.milesCost)
+    : flight.cashCost;
+
+  if (bestCost <= 0) return 50; // Unknown price, default to middle
 
   // Define typical price ranges for different routes
-  // Route from SIN to LAX typically: $600-$2000
-  // This is a simplified model - can be enhanced with historical data
+  // Use cashCost as baseline for typical pricing
   const minPrice = 400;   // floor price (heavily discounted) = 100
   const maxPrice = 3000;  // ceiling price (premium) = 0
 
   // Simple linear inversion: lower price = higher score
-  const normalized = (maxPrice - price) / (maxPrice - minPrice);
+  const normalized = (maxPrice - bestCost) / (maxPrice - minPrice);
   const score = normalized * 100;
   return Math.min(100, Math.max(0, score));
 }

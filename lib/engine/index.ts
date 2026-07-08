@@ -13,6 +13,7 @@ import { logError, logWarn } from "../logger";
 import { ENABLE_MULTI_LEG_ROUTING } from "../config";
 import { searchMultiLegRoutes } from "../multiLeg";
 import type { FlightLeg, Cabin } from "../multiLeg";
+import { scoreFlights } from "../scoring/scoringEngine";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -21,7 +22,7 @@ import type { FlightLeg, Cabin } from "../multiLeg";
 //  2. A post-processing fix is deployed that must invalidate stale results
 //  3. New field added to miles options or cost comparison
 // See keza-project skill for full rules.
-export const CACHE_VERSION = "v29"; // bumped: P5 final validation + comprehensive testing
+export const CACHE_VERSION = "v30"; // bumped: P5.2 scoring engine integration
 
 // Fallback cache versions — checked in order on timeout/cache miss
 // Allows graceful degradation when current version is bumped (cold cache)
@@ -70,7 +71,25 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   const cached = Array.isArray(cachedRaw) ? cachedRaw : null;
   if (cached) {
     const freshId = crypto.randomUUID();
-    return cached.map((r) => ({ ...r, searchId: freshId }));
+    const results = cached.map((r) => ({ ...r, searchId: freshId }));
+
+    // P5.2: Apply scoring to cached results if not already scored
+    // This ensures consistent sorting even for cached results
+    try {
+      let scoredResults = results;
+      if (results.length > 0 && !results[0].scoringResult) {
+        scoredResults = await scoreFlights(results, undefined, new Date());
+        scoredResults.sort((a, b) => {
+          const scoreA = a.scoringResult?.overallScore ?? 0;
+          const scoreB = b.scoringResult?.overallScore ?? 0;
+          return scoreB - scoreA;
+        });
+      }
+      return scoredResults as any;
+    } catch (err) {
+      logWarn(`[scoring] Failed to score cached results: ${String(err)}`);
+      return results;
+    }
   }
 
   // 2. Fetch outbound + return flights — ALL four provider calls in parallel.
@@ -325,12 +344,8 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     return r;
   });
 
-  // Sort: best effective cost first (what the user actually pays, cash OR miles).
-  // Apply a confidence penalty so TP-cached prices (LOW) are treated as slightly
-  // more expensive than Duffel real-time prices (HIGH) for ranking purposes only.
-  // This does NOT change the displayed price — it only affects tie-breaking.
-  //   HIGH (Duffel) → ×1.00  (no penalty)
-  //   LOW  (TP)     → ×1.05  (5% penalty — reflects pricing uncertainty)
+  // Sort: best effective cost first (as temporary ordering before final P5.2 scoring)
+  // This will be re-sorted by P5.2 scoring at the end if enabled
   const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };
   const effectiveCost = (r: FlightResult) => {
     const penalty = CONFIDENCE_PENALTY[r.priceConfidence ?? "LOW"] ?? 1.05;
@@ -356,7 +371,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     r.searchId = searchId;
     return r;
   });
-  const allResults = [...results, ...syntheticResults, ...multiLegResults];
+  let allResults = [...results, ...syntheticResults, ...multiLegResults];
 
   // ── Home Carrier Guarantee ────────────────────────────────────────────────────
   // After all providers are merged, ensure signature programs (KrisFlyer, ANA,
@@ -428,6 +443,24 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
       );
     })
   ).catch(() => null);
+
+  // 5c. P5.2: Apply scoring engine to all enriched results
+  // This aggregates 6 signals (cabin, accessibility, price, connections, layover, carrier)
+  // into a single overall score and re-sorts by that score
+  try {
+    const scoredResults = await scoreFlights(allResults, undefined, new Date());
+    scoredResults.sort((a, b) => {
+      const scoreA = a.scoringResult?.overallScore ?? 0;
+      const scoreB = b.scoringResult?.overallScore ?? 0;
+      // Sort descending (highest score first)
+      return scoreB - scoreA;
+    });
+    // Update allResults with scored and sorted results
+    allResults = scoredResults as any;
+  } catch (err) {
+    logWarn(`[scoring] P5.2 scoring failed, keeping cost-based ranking: ${String(err)}`);
+    // Keep existing cost-based ranking if scoring fails
+  }
 
   // 6. Cache (real + synthetic results together) with atomic NX flag
   // Prevents race condition where concurrent requests could write stale data over fresh results

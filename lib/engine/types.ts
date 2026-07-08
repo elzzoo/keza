@@ -84,6 +84,21 @@ export interface FlightResult {
     p50: number;           // 50th percentile (median)
     p75: number;           // 75th percentile
   };
+
+  // ── P5.2 Advanced Scoring ──────────────────────────────────────────────────────
+  /** Scoring result from 6-signal aggregation (cabin, accessibility, price, connections, layover, carrier) */
+  scoringResult?: {
+    overallScore: number;   // 0-100
+    breakdown: {
+      cabin: number;
+      accessibility: number;
+      price: number;
+      connections: number;
+      layover: number;
+      carrier: number;
+    };
+    reasoning: string;
+  };
 }
 
 // ─── Cabin price multipliers (estimation when API doesn't filter by cabin) ───
