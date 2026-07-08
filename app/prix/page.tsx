@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
-import { PriceChart } from "./PriceChart";
 import { SITE_URL } from "@/lib/siteConfig";
 import { logError } from "@/lib/logger";
+import { CalendarSkeleton } from "@/components/Skeletons";
+
+// Dynamically import PriceChart with CalendarSkeleton fallback
+// Lazy loads on-demand to reduce main bundle size
+// PriceChart is already a "use client" component, so no ssr: false needed
+const PriceChart = dynamic(() => import("./PriceChart").then((mod) => ({ default: mod.PriceChart })), {
+  loading: () => <CalendarSkeleton />,
+});
 
 export const metadata: Metadata = {
   title: "Meilleur moment pour voyager | KEZA",
@@ -82,12 +91,14 @@ export default function PrixPage() {
           </div>
         ) : (
           <>
-            {/* Interactive chart */}
-            <PriceChart
-              histories={histories}
-              destinations={DESTINATIONS}
-              lang="fr"
-            />
+            {/* Interactive chart - lazy loaded with Suspense boundary */}
+            <Suspense fallback={<CalendarSkeleton />}>
+              <PriceChart
+                histories={histories}
+                destinations={DESTINATIONS}
+                lang="fr"
+              />
+            </Suspense>
 
             {/* CTA */}
             <div className="mt-8 text-center">
