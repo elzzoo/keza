@@ -23,7 +23,7 @@ export function calculateAccessibilitySignal(ctx: SignalContext): number {
 }
 
 export function calculatePriceSignal(ctx: SignalContext): number {
-  const price = ctx.flight.cashPrice || 0
+  const price = ctx.flight.totalPrice || ctx.flight.price || 0
   return Math.max(0, 100 - (price / 5000) * 100)
 }
 
@@ -33,8 +33,9 @@ export function calculateConnectionsSignal(ctx: SignalContext): number {
 }
 
 export function calculateLayoverSignal(ctx: SignalContext): number {
-  const hours = (ctx.flight.layoverDuration || 0) / 60
-  return hours < 2 ? 100 : hours < 4 ? 80 : hours < 8 ? 50 : 20
+  const duration = ctx.flight.duration || 0
+  const durationHours = duration / 60
+  return durationHours < 2 ? 100 : durationHours < 4 ? 80 : durationHours < 8 ? 50 : 20
 }
 
 export function calculateCarrierSignal(ctx: SignalContext): number {
