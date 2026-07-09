@@ -1,12 +1,21 @@
 // app/carte/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import type { DestinationWithRec } from "./WorldMap";
-import { WorldMapDynamic } from "./WorldMapDynamic";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { MapSkeleton } from "@/components/Skeletons";
 import { SITE_URL } from "@/lib/siteConfig";
+
+// Dynamically import WorldMap with MapSkeleton fallback
+// Lazy loads on-demand to reduce main bundle size (map libraries are heavy)
+const WorldMapDynamic = dynamic(() => import("./WorldMapDynamic").then((mod) => ({ default: mod.WorldMapDynamic })), {
+  loading: () => <MapSkeleton />,
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   title: "Carte des destinations miles | KEZA",
