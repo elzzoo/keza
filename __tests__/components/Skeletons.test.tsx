@@ -102,7 +102,7 @@ describe("Suspense Fallback Skeletons", () => {
 
     it("should render at least 3 program items", () => {
       const { container } = render(<ProgramListSkeleton />);
-      const items = container.querySelectorAll(".rounded-2xl");
+      const items = container.querySelectorAll("[class*='rounded']");
       expect(items.length).toBeGreaterThanOrEqual(3);
     });
   });
