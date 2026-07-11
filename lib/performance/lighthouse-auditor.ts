@@ -9,6 +9,10 @@ import lighthouse from 'lighthouse';
 import * as chromeLauncher from 'chrome-launcher';
 import * as fs from 'fs';
 import * as path from 'path';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ChromeInstance = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LighthouseReportJson = any;
 
 export interface MetricsData {
   firstContentfulPaint: number;
@@ -65,7 +69,7 @@ export class LighthouseAuditor {
   private baseUrl: string;
   private outputDir: string;
   private chromePort: number = 9222;
-  private chrome: any | null = null;
+  private chrome: ChromeInstance | null = null;
 
   constructor(options: LighthouseAuditorOptions) {
     this.baseUrl = options.baseUrl;
@@ -96,7 +100,7 @@ export class LighthouseAuditor {
   async closeChrome(): Promise<void> {
     if (this.chrome) {
       try {
-        await (this.chrome as any).kill();
+        await (this.chrome as ChromeInstance).kill();
       } catch (error) {
         console.error('Error killing Chrome:', error);
       }
@@ -157,7 +161,7 @@ export class LighthouseAuditor {
   /**
    * Extract performance metrics from Lighthouse report
    */
-  private extractMetrics(lhr: any): MetricsData {
+  private extractMetrics(lhr: LighthouseReportJson): MetricsData {
     const metrics: MetricsData = {
       firstContentfulPaint: 0,
     };
@@ -198,7 +202,7 @@ export class LighthouseAuditor {
   /**
    * Extract category scores from Lighthouse report
    */
-  private extractScores(lhr: any): {
+  private extractScores(lhr: LighthouseReportJson): {
     performance: number;
     accessibility: number;
     bestPractices: number;
@@ -245,6 +249,7 @@ export class LighthouseAuditor {
     baseline: BaselineReport,
     current: Record<string, LighthouseReport>
   ): ComparisonResult {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const comparison: Record<string, any> = {};
 
     for (const [url, currentReport] of Object.entries(current)) {

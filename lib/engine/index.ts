@@ -89,7 +89,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
           });
         }
       }
-      return scoredResults as any;
+      return scoredResults;
     } catch (err) {
       logWarn(`[scoring] Failed to score cached results: ${String(err)}`);
       return results;
@@ -464,7 +464,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
         });
       }
       // Update allResults with scored (or scored+sorted) results
-      allResults = scoredResults as any;
+      allResults = scoredResults;
     }
   } catch (err) {
     logWarn(`[scoring] P5.2 scoring failed, keeping cost-based ranking: ${String(err)}`);

@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Suspense } from "react";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import type { DestinationWithRec } from "./WorldMap";
