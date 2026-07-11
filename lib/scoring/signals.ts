@@ -4,7 +4,7 @@ export interface SignalContext {
   flight: FlightResult
   userProgram: string
   bookingDate: Date
-  historicalData?: Record<string, any>
+  historicalData?: Record<string, unknown>
 }
 
 export function calculateCabinSignal(ctx: SignalContext): number {
@@ -38,6 +38,6 @@ export function calculateLayoverSignal(ctx: SignalContext): number {
   return durationHours < 2 ? 100 : durationHours < 4 ? 80 : durationHours < 8 ? 50 : 20
 }
 
-export function calculateCarrierSignal(ctx: SignalContext): number {
+export function calculateCarrierSignal(_ctx: SignalContext): number {
   return 75
 }
