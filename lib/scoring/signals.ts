@@ -11,6 +11,7 @@ export function calculateCabinSignal(ctx: SignalContext): number {
   const cabin = ctx.flight.cabin?.toLowerCase() || 'economy'
   const cabinScores: Record<string, number> = {
     'economy': 20,
+    'premium': 50,
     'premium-economy': 50,
     'business': 80,
     'first': 100,

@@ -16,7 +16,7 @@ describe("Suspense Fallback Skeletons", () => {
 
     it("should render a container with proper styling", () => {
       const { container } = render(<CalendarSkeleton />);
-      const skeletonDiv = container.querySelector(".bg-surface");
+      const skeletonDiv = container.querySelector(".bg-surface-2");
       expect(skeletonDiv).toBeInTheDocument();
     });
 
