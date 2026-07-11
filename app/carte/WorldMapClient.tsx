@@ -9,6 +9,6 @@ const WorldMapDynamic = dynamic(() => import('./WorldMapDynamic').then((mod) => 
   ssr: false,
 });
 
-export function WorldMapClient({ destinations, lang }: { destinations: DestinationWithRec[], lang: string }) {
+export function WorldMapClient({ destinations, lang }: { destinations: DestinationWithRec[], lang: 'fr' | 'en' }) {
   return <WorldMapDynamic destinations={destinations} lang={lang} />
 }
