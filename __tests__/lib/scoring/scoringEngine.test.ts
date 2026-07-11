@@ -31,7 +31,8 @@ function createMockFlight(overrides?: Partial<FlightResult>): FlightResult {
     explanation: 'Test flight',
     displayMessage: 'Test',
     disclaimer: 'Test disclaimer',
-    optimization: { method: 'default' },
+    cabinPriceEstimated: false,
+    optimization: { type: 'CASH' },
     searchId: 'test-search-123',
   };
   return { ...defaultFlight, ...overrides };
