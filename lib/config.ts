@@ -95,6 +95,12 @@ export const ENABLE_SUSPENSE_STREAMING = process.env.ENABLE_SUSPENSE_STREAMING =
 /** Enable Redis pre-warming for popular routes */
 export const ENABLE_REDIS_PREWARM = process.env.ENABLE_REDIS_PREWARM === "true";
 
+/** P5.2 Advanced Pricing soft launch (Week 1-2: analytics collection only) */
+export const ENABLE_P5_2_SOFT_LAUNCH = process.env.ENABLE_P5_2_SOFT_LAUNCH === "true";
+
+/** P5.2 soft launch mode: 100% baseline cohort (Week 1-2), no signal/ML variants yet */
+export const P5_2_BASELINE_ONLY = process.env.P5_2_BASELINE_ONLY === "true";
+
 // ── Validation helpers ────────────────────────────────────────────────────────
 /**
  * Validate all config values are within reasonable bounds
