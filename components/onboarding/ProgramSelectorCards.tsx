@@ -8,6 +8,14 @@ interface Props {
   onNext: () => void;
 }
 
+const DEFAULT_PROGRAMS = [
+  "United MileagePlus",
+  "AAdvantage",
+  "Delta SkyMiles",
+  "Alaska Mileage Plan",
+  "Singapore KrisFlyer",
+];
+
 /**
  * ProgramSelectorCards: Grid-based loyalty program selector component.
  *
@@ -22,15 +30,6 @@ interface Props {
  */
 export function ProgramSelectorCards({ onNext }: Props) {
   const { state, addProgram, removeProgram, setPrograms } = useOnboarding();
-
-  // Initialize with top 5 programs on first load
-  const DEFAULT_PROGRAMS = [
-    "United MileagePlus",
-    "AAdvantage",
-    "Delta SkyMiles",
-    "Alaska Mileage Plan",
-    "Singapore KrisFlyer",
-  ];
 
   useEffect(() => {
     // If no programs are selected, set the defaults
