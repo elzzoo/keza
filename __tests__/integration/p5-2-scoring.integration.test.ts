@@ -168,6 +168,8 @@ describe("P5.2 Task 2: Scoring Engine Integration", () => {
    * Tests that scoring works consistently across economy, premium, business cabins
    */
   it("scores flights correctly across different cabin classes", async () => {
+    // Increase timeout for API calls (Duffel can take 3-5s)
+    jest.setTimeout(15000);
     const cabins = ["economy", "premium"];
     const resultsPerCabin: Record<string, FlightResult[]> = {};
 
