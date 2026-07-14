@@ -62,6 +62,12 @@ export function enrich(
     ? roundPrice((outboundPrice + returnPrice) * passengers)
     : roundPrice(outboundPrice * passengers);
 
+  // Debug logging for zero prices
+  if (totalPrice <= 0) {
+    const { logWarn } = await import("../logger");
+    logWarn(`[enrich] Zero totalPrice calculated: ${f.from}→${f.to} | outboundPrice=${outboundPrice} returnPrice=${returnPrice} passengers=${passengers} | raw price=${f.price} multiplier=${outboundMultiplier}`);
+  }
+
   // Estimated cabin prices should remain within 10x base price (sanity check)
   const basePrice = returnPrice !== undefined
     ? roundPrice((f.price + (returnFlight?.price ?? 0)) * passengers)
@@ -138,12 +144,14 @@ export function enrich(
     // Round-trip TP: build a proper RT Aviasales search URL.
     // ALWAYS build from f.from / f.to (already rebranded by rebrandRoute) rather
     // than re-using f.bookingLink which may contain a stale/incorrect origin.
-    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, returnDate, passengers);
+    const cabinClass = cabin === "premium" ? "premium" : cabin === "business" ? "business" : cabin === "first" ? "first" : "economy";
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, returnDate, passengers, cabinClass);
   } else if (searchDate && f.from && f.to) {
     // One-way: ALWAYS build from known f.from/f.to to guarantee correct origin.
     // Do NOT fall through to f.bookingLink (TP v3 deep links may carry wrong origin
     // after metro-code fallback attempts, e.g. DKR appearing in a DXB→JFK link).
-    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, undefined, passengers ?? 1);
+    const cabinClass = cabin === "premium" ? "premium" : cabin === "business" ? "business" : cabin === "first" ? "first" : "economy";
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, undefined, passengers ?? 1, cabinClass);
   }
 
   return result;

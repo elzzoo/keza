@@ -835,9 +835,9 @@ export function enrichSynthetic(
   };
 
   if (tripType === "roundtrip" && searchDate && returnDate && f.from && f.to) {
-    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, returnDate, passengers);
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, returnDate, passengers, cabin);
   } else if (searchDate && f.from && f.to) {
-    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, undefined, passengers);
+    result.bookingLink = buildAviasalesUrl(f.from, f.to, searchDate, undefined, passengers, cabin);
   }
 
   return result;

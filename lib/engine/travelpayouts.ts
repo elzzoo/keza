@@ -50,14 +50,15 @@ function buildFallbackAttempts(from: string, to: string): Array<[string, string]
  * Build an Aviasales booking URL for a given flight search.
  *
  * Format:
- * - Oneway: https://www.aviasales.com/search/{FROM}{DATE}{TO}{PASSENGERS}?marker={MARKER}
- * - Roundtrip: https://www.aviasales.com/search/{FROM}{DATE}{TO}{RETURN_DATE}{FROM}{PASSENGERS}?marker={MARKER}
+ * - Oneway: https://www.aviasales.com/search/{FROM}{DATE}{TO}?passengers={N}&class={CABIN}&marker={MARKER}
+ * - Roundtrip: https://www.aviasales.com/search/{FROM}{DATE}{TO}{RETURN_DATE}?passengers={N}&class={CABIN}&marker={MARKER}
  *
  * @param from - Origin airport code (e.g., "CDG", "SIN")
  * @param to - Destination airport code (e.g., "JFK", "LAX")
  * @param searchDate - Departure date in YYYY-MM-DD format
  * @param returnDate - Return date in YYYY-MM-DD format (undefined for one-way)
  * @param passengers - Number of passengers (defaults to 1)
+ * @param cabin - Cabin class: "economy", "premium", "business", "first" (defaults to "economy")
  * @returns Full Aviasales booking URL
  */
 export function buildAviasalesUrl(
@@ -65,18 +66,24 @@ export function buildAviasalesUrl(
   to: string,
   searchDate: string,
   returnDate: string | undefined,
-  passengers: number = 1
+  passengers: number = 1,
+  cabin: string = "economy"
 ): string {
   const departureDateCompact = searchDate.replace(/-/g, "");
+  const url = new URL(`${AVIASALES_BASE_URL}/search/${from}${departureDateCompact}${to}`);
 
   if (returnDate) {
-    // Roundtrip: return to origin (FROM)
+    // Roundtrip: append return date to path
     const returnDateCompact = returnDate.replace(/-/g, "");
-    return `${AVIASALES_BASE_URL}/search/${from}${departureDateCompact}${to}${returnDateCompact}${from}${passengers}?marker=${TP_MARKER}`;
-  } else {
-    // One-way
-    return `${AVIASALES_BASE_URL}/search/${from}${departureDateCompact}${to}${passengers}?marker=${TP_MARKER}`;
+    url.pathname = `${url.pathname}${returnDateCompact}`;
   }
+
+  // Add query parameters
+  url.searchParams.set("passengers", String(passengers));
+  url.searchParams.set("class", cabin);
+  url.searchParams.set("marker", TP_MARKER);
+
+  return url.toString();
 }
 
 // ─── Retry helper ────────────────────────────────────────────────────────────
@@ -462,7 +469,10 @@ export async function fetchFromTravelpayouts(
     // ── Pass 1: v3 with exact month — best data (airline + deep links + price) ──
     for (const [o, d] of attempts) {
       const v3 = await fetchV3(o, d, date, direct, token);
-      if (v3.length > 0) return rebrandRoute(v3, from, to);
+      if (v3.length > 0) {
+        logWarn(`[engine] fetchFromTP: v3 returned ${v3.length} results for ${from}→${to}`);
+        return rebrandRoute(v3, from, to);
+      }
     }
 
     // ── Pass 2: month-matrix for prices, then enrich with airline discovery ──
@@ -474,23 +484,30 @@ export async function fetchFromTravelpayouts(
     for (const [o, d] of attempts) {
       const mm = await fetchMonthMatrix(o, d, date, direct, token);
       if (mm.length > 0) {
+        logWarn(`[engine] fetchFromTP: month-matrix returned ${mm.length} results for ${from}→${to}`);
         mmFlights = rebrandRoute(mm, from, to);
         break;
       }
     }
 
-    if (mmFlights.length === 0) return [];
+    if (mmFlights.length === 0) {
+      logWarn(`[engine] fetchFromTP: No results from v3 or month-matrix for ${from}→${to}`);
+      return [];
+    }
 
     // Discover airlines operating this route (any date)
     const { discoverRouteAirlines } = await import("./supplements");
     const routeAirlines = await discoverRouteAirlines(attempts, token);
 
     if (routeAirlines.length > 0) {
+      logWarn(`[engine] fetchFromTP: Discovered ${routeAirlines.length} airlines for ${from}→${to}`);
       // Assign discovered airlines to each month-matrix flight.
       // This enables the cost engine to compute miles options.
       for (const f of mmFlights) {
         f.airlines = routeAirlines;
       }
+    } else {
+      logWarn(`[engine] fetchFromTP: No airlines discovered for ${from}→${to}`);
     }
 
     return mmFlights;
