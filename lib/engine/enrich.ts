@@ -109,7 +109,7 @@ export function enrich(
     cabin,
     passengers,
     totalPrice,
-    cashCost:            comparison.cashCost,
+    cashCost:            comparison.cashCost > 0 ? comparison.cashCost : totalPrice, // Fallback to totalPrice if comparison returned 0
     milesCost:           comparison.milesCost,
     savings:             comparison.savings,
     recommendation:      safeRecommendation,

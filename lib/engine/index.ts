@@ -348,6 +348,17 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
     return r;
   });
 
+  // Debug: log cash prices distribution
+  const cashPrices = results.map(r => r.cashCost).filter(p => p > 0);
+  const zeroCashCount = results.filter(r => r.cashCost <= 0).length;
+  const milesRecommendations = results.filter(r => r.recommendation === "USE_MILES").length;
+  const cashRecommendations = results.filter(r => r.recommendation === "USE_CASH").length;
+  const ifHaveMilesRecommendations = results.filter(r => r.recommendation === "IF_HAVE_MILES").length;
+  logWarn(`[engine] Results for ${from}→${to}: ${results.length} total | USE_MILES: ${milesRecommendations} | USE_CASH: ${cashRecommendations} | IF_HAVE_MILES: ${ifHaveMilesRecommendations} | cashCost>0: ${cashPrices.length} | cashCost<=0: ${zeroCashCount} | avg cashCost: ${cashPrices.length > 0 ? (cashPrices.reduce((a, b) => a + b, 0) / cashPrices.length).toFixed(0) : 'N/A'}`);
+  if (zeroCashCount > 0) {
+    logWarn(`[engine] Some results have zero cashCost. First result: ${JSON.stringify({ from: results[0].from, to: results[0].to, cashCost: results[0].cashCost, totalPrice: results[0].totalPrice, recommendation: results[0].recommendation, priceConfidence: results[0].priceConfidence })}`);
+  }
+
   // Sort: best effective cost first (as temporary ordering before final P5.2 scoring)
   // This will be re-sorted by P5.2 scoring at the end if enabled
   const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };

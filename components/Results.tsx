@@ -137,7 +137,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const counts = useMemo(() => ({
     miles: stopsFiltered.filter(r => r.recommendation === "USE_MILES").length,
-    cash:  stopsFiltered.filter(r => r.recommendation === "USE_CASH").length,
+    cash:  stopsFiltered.filter(r => r.recommendation === "USE_CASH" || r.recommendation === "IF_HAVE_MILES").length,
   }), [stopsFiltered]);
 
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
@@ -163,7 +163,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   const filtered = useMemo(() => {
     let r = [...stopsFiltered];
     if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES");
-    if (tab === "cash")  r = r.filter(x => x.recommendation === "USE_CASH");
+    if (tab === "cash")  r = r.filter(x => x.recommendation === "USE_CASH" || x.recommendation === "IF_HAVE_MILES");
     if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
     else r.sort((a, b) => b.savings - a.savings);
     return r;

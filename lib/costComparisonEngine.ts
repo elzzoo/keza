@@ -98,6 +98,7 @@ export function buildCostOptions(
 
   // Guard: no valid cash price → skip miles comparison entirely
   if (!cashTotal || cashTotal <= 0) {
+    logWarn(`[costEngine] Zero cash price for ${from}→${to} (cabin=${cabin}, tripType=${tripType}). Input: ${JSON.stringify({ cashTotal, airlines, passengers })}`);
     return {
       cashCost: 0, milesCost: 0, savings: 0,
       recommendation: "USE_CASH",
