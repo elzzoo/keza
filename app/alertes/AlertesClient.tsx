@@ -61,10 +61,18 @@ function FrequencySelector({
     try {
       const res = await fetch("/api/alerts", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: alertId, notifFrequency: freq, token }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: alertId, notifFrequency: freq }),
       });
       if (res.ok) onChange(freq);
+      else {
+        console.error("[FrequencySelector] PATCH failed:", res.status);
+      }
+    } catch (err) {
+      console.error("[FrequencySelector] PATCH error:", err);
     } finally {
       setUpdating(false);
     }
@@ -139,15 +147,24 @@ export function AlertesClient() {
     setAlerts(null);
     try {
       const res = await fetch(
-        `/api/alerts?email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(tokenArg)}`
+        `/api/alerts?email=${encodeURIComponent(normalizedEmail)}`,
+        {
+          headers: {
+            "Authorization": `Bearer ${tokenArg}`
+          }
+        }
       );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        console.error(`[AlertesClient] fetchAlerts failed with status ${res.status}`);
+        throw new Error(`HTTP ${res.status}`);
+      }
       const data: { alerts: PriceAlert[] } = await res.json();
       if (!Array.isArray(data.alerts)) throw new Error("Unexpected payload");
       setAlerts(data.alerts.filter((a) => a.active));
       localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
       localStorage.setItem(TOKEN_STORAGE_KEY, tokenArg);
-    } catch {
+    } catch (err) {
+      console.error("[AlertesClient] fetchAlerts error:", err);
       setFetchError(true);
     } finally {
       setLoading(false);
@@ -195,7 +212,8 @@ export function AlertesClient() {
         ? "✅ Lien envoyé à cet email. Vérifiez vos alertes existantes ou créez-en une nouvelle depuis la recherche."
         : "✅ Check your email for the management link. Create a new alert from search results.");
       localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
-    } catch {
+    } catch (err) {
+      console.error("[AlertesClient] handleFetch error:", err);
       setFetchError(true);
     } finally {
       setLoading(false);
@@ -210,8 +228,13 @@ export function AlertesClient() {
       setDeleteError(null);
       const normalizedEmail = email.trim().toLowerCase();
       const res = await fetch(
-        `/api/alerts?id=${encodeURIComponent(id)}&email=${encodeURIComponent(normalizedEmail)}&token=${encodeURIComponent(manageToken)}`,
-        { method: "DELETE" }
+        `/api/alerts?id=${encodeURIComponent(id)}&email=${encodeURIComponent(normalizedEmail)}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${manageToken}`
+          }
+        }
       );
       if (res.ok) {
         if (alertToDelete) {
@@ -227,8 +250,12 @@ export function AlertesClient() {
           return next;
         });
       } else {
+        console.error("[AlertesClient] DELETE failed:", res.status);
         setDeleteError(fr ? "Erreur lors de la suppression." : "Deletion failed.");
       }
+    } catch (err) {
+      console.error("[AlertesClient] handleDelete error:", err);
+      setDeleteError(fr ? "Erreur lors de la suppression." : "Deletion failed.");
     } finally {
       setDeletingId(null);
     }
