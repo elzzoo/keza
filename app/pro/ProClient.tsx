@@ -21,6 +21,7 @@ interface ProClientProps {
   isLoggedIn?: boolean;
   proStatus?: ProAccessStatus | null;
   userEmail?: string;
+  initialEmail?: string;
 }
 
 export function ProClient({
@@ -28,10 +29,11 @@ export function ProClient({
   isLoggedIn,
   proStatus,
   userEmail,
+  initialEmail,
 }: ProClientProps) {
   const router = useRouter();
   const [lang] = useState<"fr" | "en">("fr");
-  const [email, setEmail] = useState(userEmail || "");
+  const [email, setEmail] = useState(userEmail || initialEmail || "");
   const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
   const [checkoutError, setCheckoutError] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
@@ -63,13 +65,17 @@ export function ProClient({
   async function handleCheckout(e: React.FormEvent) {
     e.preventDefault();
 
-    // If not logged in, redirect to sign in with return URL
+    const trimmed = email.trim();
+
+    // If not logged in, redirect to sign in with return URL + email
     if (!isLoggedIn) {
-      router.push("/connexion?callbackUrl=/pro");
+      const callbackUrl = trimmed
+        ? `/pro?email=${encodeURIComponent(trimmed)}`
+        : "/pro";
+      router.push(`/connexion?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
     }
 
-    const trimmed = email.trim();
     if (!trimmed || checkoutStatus === "loading") return;
     setCheckoutStatus("loading");
     setCheckoutError("");

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export default async function ProPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ upgraded?: string }>;
+  searchParams?: Promise<{ upgraded?: string; email?: string }>;
 }) {
   const sp = await searchParams;
   const session = await getServerSession(authOptions);
@@ -40,6 +40,7 @@ export default async function ProPage({
       isLoggedIn={!!session?.user?.email}
       proStatus={proStatus}
       userEmail={session?.user?.email ?? undefined}
+      initialEmail={sp?.email ?? undefined}
     />
   );
 }
