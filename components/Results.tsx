@@ -426,13 +426,27 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       {filtered.length === 0 ? (
         <div className="bg-surface rounded-2xl border border-border py-12 px-6 flex flex-col items-center gap-3 max-w-md mx-auto">
           <span className="text-5xl animate-float">✈️</span>
-          <p className="font-bold text-fg text-center">{t.empty}</p>
-          <p className="text-sm text-muted text-center">{t.emptyDesc}</p>
-          <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
-            {t.emptyTips.map((tip, i) => (
-              <li key={`empty-tip-${i}`}>{tip}</li>
-            ))}
-          </ul>
+          <p className="font-bold text-fg text-center">
+            {tab === "cash" ? (
+              lang === "fr" ? "Aucun vol en cash trouvé" : "No cash options found"
+            ) : (
+              t.empty
+            )}
+          </p>
+          <p className="text-sm text-muted text-center">
+            {tab === "cash" ? (
+              lang === "fr" ? "Tous les vols trouvés offrent une meilleure valeur avec les miles. Consultez l'onglet « Utilisez miles »." : "All flights offer better value with miles. Check the 'Use miles' tab."
+            ) : (
+              t.emptyDesc
+            )}
+          </p>
+          {tab !== "cash" && (
+            <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
+              {t.emptyTips.map((tip, i) => (
+                <li key={`empty-tip-${i}`}>{tip}</li>
+              ))}
+            </ul>
+          )}
         </div>
       ) : (
         <div className="space-y-3 stagger-children">
