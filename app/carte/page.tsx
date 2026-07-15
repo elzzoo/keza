@@ -72,8 +72,18 @@ export default function CartePage() {
           </p>
         </div>
 
-        {/* Map */}
-        <ErrorBoundary lang="fr">
+        {/* Map - wrapped in error boundary to catch any rendering errors */}
+        <ErrorBoundary lang="fr" fallback={
+          <div className="bg-surface rounded-2xl border border-border p-8 flex flex-col items-center gap-4 text-center min-h-96">
+            <span className="text-4xl">🗺️</span>
+            <p className="font-bold text-fg text-base">
+              La carte ne peut pas s'afficher
+            </p>
+            <p className="text-sm text-muted">
+              Veuillez rafraîchir la page et réessayer
+            </p>
+          </div>
+        }>
           <WorldMapClient destinations={DESTINATIONS_WITH_REC} lang="fr" />
         </ErrorBoundary>
 
