@@ -65,6 +65,22 @@ const AWARD_SEARCH_URLS: Record<string, string> = {
   "LATAM Pass":                 "https://www.latamairlines.com/us/en/latam-pass/reward-tickets",
   "Ethiopian ShebaMiles":       "https://www.ethiopianairlines.com/aa/sheba-miles/use-miles",
   "Kenya Airways Flying Blue":  "https://wwws.airfrance.us/en/common/searchbooking/request/smiles",
+  "Lufthansa Miles & More":     "https://www.lufthansa.com/en/en/booking/award-flights",
+  "Korean Air SKYPASS":         "https://skypass.koreanair.com/rd/redeem",
+  "Virgin Atlantic Flying Club":"https://www.virginatlantic.com/en/flying-club/redeem-miles.html",
+  "Cathay Pacific Asia Miles":  "https://www.cathaypacific.com/en/flying-club/use-miles.html",
+  "Qantas Frequent Flyer":      "https://www.qantas.com/en/en/frequent-flyer/rewards/flights.html",
+  "Alaska Mileage Plan":        "https://www.alaskaair.com/en/mileageplan/redeem/award-flights",
+  "Malaysia Airlines Enrich":   "https://www.malaysiaairlines.com/en/en/enrich.html",
+  "LifeMiles":                  "https://www.avianca.com/en-us/lifemiles",
+  "South African Voyager":      "https://www.flysaa.com/voyager/redeem-miles",
+  "Air China PhoenixMiles":     "https://www.airchina.com.cn/en/",
+  "China Eastern Eastern Miles":"https://www.ceair.com/en/",
+  "EgyptAir Plus":              "https://www.egyptair.com/en/",
+  "SriLankan FlySmiLes":        "https://www.srilankan.lk/flysmiles/",
+  "COPA ConnectMiles":          "https://www.copaair.com/en/",
+  "Royal Jordanian Royal Plus": "https://www.rj.com/en/",
+  "Garuda GarudaMiles":         "https://www.garuda-indonesia.com/en/",
 };
 
 // Confidence labels — WCAG AA compliant (4.5:1 contrast ratio minimum)

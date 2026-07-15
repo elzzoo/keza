@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { DESTINATIONS, type Destination, type Region } from "@/data/destinations";
 import { trackDestinationClick } from "@/lib/analytics";
+import { useCurrency } from "@/hooks/useCurrency";
+import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
 
 interface Props {
   lang: "fr" | "en";
@@ -37,6 +39,7 @@ function DestinationCard({
 }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const t = L[lang];
+  const { formatPrice } = useCurrency();
 
   const [photoLoading, setPhotoLoading] = useState(true);
 
@@ -76,7 +79,7 @@ function DestinationCard({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold bg-white/20 backdrop-blur-sm text-white rounded-md px-2 py-0.5">
-            {t.from} ${dest.cashEstimateUsd}
+            {t.from} {formatPrice(dest.cashEstimateUsd)}
           </span>
           <span className="text-[11px] font-bold bg-primary/80 text-white rounded-md px-2 py-0.5">
             {(dest.milesEstimate / 1000).toFixed(0)}k {t.pts}
