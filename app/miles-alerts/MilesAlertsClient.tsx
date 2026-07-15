@@ -51,21 +51,21 @@ export function MilesAlertsClient() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="bg-gray-50 p-6 rounded-lg">
+      <form onSubmit={handleSearch} className="bg-surface border border-border rounded-2xl p-5">
         <div className="flex gap-2">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="flex-1 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 bg-bg border border-border rounded-xl text-fg placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
           />
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+            className="px-6 py-2 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {loading ? "Loading..." : "Search"}
           </button>
@@ -74,30 +74,32 @@ export function MilesAlertsClient() {
 
       {/* Results */}
       {searched && alerts.length === 0 && (
-        <p className="text-gray-600 text-center">No alerts found for this email.</p>
+        <div className="text-center py-8">
+          <p className="text-muted">No alerts found for this email.</p>
+        </div>
       )}
 
       {alerts.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold">Your Alerts ({alerts.length})</h2>
+        <div className="space-y-3">
+          <h2 className="text-lg font-bold text-fg">Your Alerts ({alerts.length})</h2>
           {alerts.map((alert) => (
             <div
               key={`${alert.email}:${alert.route}:${alert.program}`}
-              className="border rounded-lg p-4 flex items-start justify-between"
+              className="bg-surface border border-border rounded-xl p-4 flex items-start justify-between"
             >
               <div>
-                <p className="font-medium">{alert.route}</p>
-                <p className="text-sm text-gray-600">{alert.program}</p>
-                <p className="text-sm text-blue-600 mt-2">
+                <p className="font-semibold text-fg">{alert.route}</p>
+                <p className="text-sm text-muted">{alert.program}</p>
+                <p className="text-sm text-primary mt-2">
                   Alert when CPP ≤ {alert.thresholdCpp.toFixed(2)}¢
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-muted/60 mt-1">
                   Created {new Date(alert.createdAt * 1000).toLocaleDateString()}
                 </p>
               </div>
               <button
                 onClick={() => handleDelete(alert.email, alert.route, alert.program)}
-                className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50"
+                className="px-3 py-1 text-sm text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/10 transition-colors"
               >
                 Delete
               </button>

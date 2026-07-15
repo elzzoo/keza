@@ -78,9 +78,9 @@ export function ProgramsWidget({ lang }: Props) {
       {/* Mes soldes — balance inputs */}
       {profile && (
         <>
-          <div className="border-t border-white/10 my-3" />
+          <div className="border-t border-border my-3" />
 
-          <p className="text-sm font-semibold text-white/70 mt-4 mb-2">{t.balances}</p>
+          <p className="text-sm font-semibold text-fg mt-4 mb-2">{t.balances}</p>
 
           {/* Per-program balances */}
           <div className="space-y-2">
@@ -95,9 +95,9 @@ export function ProgramsWidget({ lang }: Props) {
                   onBlur={(e) =>
                     setBalances({ ...profile.balances, [prog]: Number(e.target.value) || 0 })
                   }
-                  className="bg-white/10 border border-white/20 rounded px-2 py-1 w-20 text-right text-sm text-white"
+                  className="bg-surface-2 border border-border rounded px-2 py-1 w-20 text-right text-sm text-fg placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all"
                 />
-                <span className="text-xs opacity-50">{t.miles}</span>
+                <span className="text-xs text-muted">{t.miles}</span>
               </div>
             ))}
           </div>
@@ -119,9 +119,9 @@ export function ProgramsWidget({ lang }: Props) {
                         [bank.key]: Number(e.target.value) || 0,
                       })
                     }
-                    className="bg-white/10 border border-white/20 rounded px-2 py-1 w-20 text-right text-sm text-white"
+                    className="bg-surface-2 border border-border rounded px-2 py-1 w-20 text-right text-sm text-fg placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all"
                   />
-                  <span className="text-xs opacity-50">{t.pts}</span>
+                  <span className="text-xs text-muted">{t.pts}</span>
                 </div>
               ))}
             </div>

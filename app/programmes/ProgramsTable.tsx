@@ -3,6 +3,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PROGRAMS, type ProgramType, type Alliance } from "@/data/programs";
 import { trackProgramClick } from "@/lib/analytics";
 
@@ -62,6 +63,7 @@ const ALLIANCE_FILTERS: { key: AllianceFilter; label: string }[] = [
 ];
 
 export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
+  const router = useRouter();
   const t = L[lang];
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [allianceFilter, setAllianceFilter] = useState<AllianceFilter>("all");
@@ -173,15 +175,15 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
               <tr
                 key={program.id}
                 id={program.id}
-                className="border-b border-border/50 hover:bg-surface-2 transition-colors"
+                className="border-b border-border/50 hover:bg-surface-2 transition-colors cursor-pointer"
+                onClick={() => {
+                  trackProgramClick({ id: program.id, name: program.name });
+                  router.push(`/programmes/${program.id}`);
+                }}
               >
                 <td className="px-4 py-3 text-xs font-black text-muted">{index + 1}</td>
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/programmes/${program.id}`}
-                    className="flex items-center gap-2 no-underline"
-                    onClick={() => trackProgramClick({ id: program.id, name: program.name })}
-                  >
+                  <div className="flex items-center gap-2">
                     <span className="text-base">{program.flag}</span>
                     <div>
                       <div className="font-bold text-fg text-sm">{program.name}</div>
@@ -192,7 +194,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
                         {program.alliance}
                       </span>
                     )}
-                  </Link>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="text-base font-black text-primary">{program.score}</span>

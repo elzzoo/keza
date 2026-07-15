@@ -24,6 +24,9 @@ interface ProClientProps {
   initialEmail?: string;
 }
 
+// Basic email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function ProClient({
   upgraded,
   isLoggedIn,
@@ -34,10 +37,23 @@ export function ProClient({
   const router = useRouter();
   const [lang] = useState<"fr" | "en">("fr");
   const [email, setEmail] = useState(userEmail || initialEmail || "");
+  const [emailError, setEmailError] = useState("");
   const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
   const [checkoutError, setCheckoutError] = useState("");
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [paymentsAvailable, setPaymentsAvailable] = useState(true);
+
+  // Validate email on change
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (value.trim() === "") {
+      setEmailError("Veuillez entrer votre email");
+    } else if (!EMAIL_REGEX.test(value.trim())) {
+      setEmailError("Veuillez entrer une adresse email valide");
+    } else {
+      setEmailError("");
+    }
+  };
 
   async function joinWaitlist(emailValue: string): Promise<boolean> {
     try {
@@ -67,6 +83,16 @@ export function ProClient({
 
     const trimmed = email.trim();
 
+    // Validate email before proceeding
+    if (!trimmed) {
+      setEmailError("Veuillez entrer votre email");
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setEmailError("Veuillez entrer une adresse email valide");
+      return;
+    }
+
     // If not logged in, redirect to sign in with return URL + email
     if (!isLoggedIn) {
       const callbackUrl = trimmed
@@ -76,7 +102,7 @@ export function ProClient({
       return;
     }
 
-    if (!trimmed || checkoutStatus === "loading") return;
+    if (checkoutStatus === "loading") return;
     setCheckoutStatus("loading");
     setCheckoutError("");
 
@@ -199,17 +225,25 @@ export function ProClient({
                 : "Les paiements ouvriront très bientôt — sois prévenu en premier."}
             </p>
             <form onSubmit={handleCheckout} className="space-y-2">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ton@email.com"
-                className="w-full rounded-xl border border-border bg-bg px-4 py-3 text-sm text-fg placeholder:text-muted focus:outline-none focus:border-amber-500/50"
-              />
+              <div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="ton@email.com"
+                  className={`w-full rounded-xl border bg-bg px-4 py-3 text-sm text-fg placeholder:text-muted focus:outline-none transition-all ${
+                    emailError
+                      ? "border-red-500/50 focus:border-red-500"
+                      : "border-border focus:border-amber-500/50"
+                  }`}
+                />
+                {emailError && (
+                  <p className="mt-1.5 text-xs text-red-500">{emailError}</p>
+                )}
+              </div>
               <button
                 type="submit"
-                disabled={checkoutStatus === "loading" || !email.trim()}
+                disabled={checkoutStatus === "loading" || !email.trim() || !!emailError}
                 className="w-full rounded-xl bg-amber-500 text-black text-sm font-black py-3 hover:bg-amber-400 transition-colors disabled:opacity-50"
               >
                 {checkoutStatus === "loading"

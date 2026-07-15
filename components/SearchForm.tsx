@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
+import { ProgramsPicker } from "./ProgramsPicker";
 import { PriceCalendar } from "./PriceCalendar";
 import { OnboardingFlow } from "./onboarding/OnboardingFlow";
 import { getVisitedFlag } from "@/lib/storage";
@@ -338,7 +339,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
               {/* The date input is overlaid transparently over the button so the
                   native date picker opens on click — this works cross-browser,
                   including iOS Safari which doesn't support showPicker(). */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 cursor-pointer">
                 <div className="flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg pointer-events-none">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
                     <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
@@ -384,7 +385,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
                 {fr ? "Date retour" : "Return"}
               </label>
               <div className="flex gap-1.5">
-                <div className="relative flex-1">
+                <div className="relative flex-1 cursor-pointer">
                   <div className="flex items-center gap-2.5 bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm text-fg pointer-events-none">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-muted flex-shrink-0">
                       <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
@@ -504,11 +505,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             {fr ? "Programmes miles" : "Miles programs"}
             <span className="font-normal normal-case text-subtle tracking-normal">— {fr ? "optionnel" : "optional"}</span>
           </label>
-          <input
-            type="text" value={programs} onChange={e => setPrograms(e.target.value)}
-            placeholder="Flying Blue, Chase UR, Amex MR…"
-            className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-fg placeholder-muted/40 text-sm focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/40 transition-all"
-          />
+          <ProgramsPicker value={programs} onChange={setPrograms} lang={lang} />
         </div>
 
         {/* Error */}

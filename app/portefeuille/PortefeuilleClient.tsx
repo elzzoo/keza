@@ -230,7 +230,37 @@ export function PortefeuilleClient() {
     setBankPoints({ ...profile.bankPoints, [key]: value });
   }
 
-  // ── Skeleton while loading ──────────────────────────────────────────────────
+  // ── Auth check: redirect to sign-in if not authenticated ────────────────
+
+  if (!session?.user?.email) {
+    return (
+      <div className="min-h-screen bg-bg flex flex-col">
+        <Header lang={lang} onLangChange={setLang} />
+        <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12 flex flex-col items-center justify-center gap-6">
+          <div className="text-center">
+            <span className="text-5xl mb-4 block">🔐</span>
+            <h1 className="text-2xl font-black text-fg mb-2">
+              {lang === "fr" ? "Connectez-vous" : "Sign in"}
+            </h1>
+            <p className="text-sm text-muted mb-6 max-w-xs">
+              {lang === "fr"
+                ? "Vous devez être connecté pour accéder à votre portefeuille de miles."
+                : "You must be signed in to access your miles portfolio."}
+            </p>
+            <a
+              href="/api/auth/signin"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              {lang === "fr" ? "Se connecter" : "Sign in"}
+            </a>
+          </div>
+        </main>
+        <Footer lang={lang} />
+      </div>
+    );
+  }
+
+  // ── Skeleton while loading profile/pro data ─────────────────────────────
 
   if (!isLoaded || loading) {
     return (
