@@ -191,8 +191,8 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
               </h1>
               <p className="text-base text-muted max-w-lg mx-auto leading-relaxed">
                 {lang === "fr"
-                  ? "KEZA calcule en secondes si payer en cash ou utiliser tes miles est moins cher — en tenant compte des taxes, de la valeur réelle du mile et de 46 programmes de fidélité."
-                  : "KEZA instantly calculates whether paying cash or redeeming miles is cheaper — factoring in taxes, real mile value, and 46 loyalty programs."}
+                  ? "KEZA calcule en secondes si payer en cash ou utiliser tes miles est moins cher — en tenant compte des taxes, de la valeur réelle du mile et de 33 programmes de fidélité."
+                  : "KEZA instantly calculates whether paying cash or redeeming miles is cheaper — factoring in taxes, real mile value, and 33 loyalty programs."}
               </p>
               <p className="text-sm text-muted/70 max-w-md mx-auto">
                 {lang === "fr"

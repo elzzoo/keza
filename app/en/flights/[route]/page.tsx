@@ -154,7 +154,7 @@ export default async function EnRoutePage({ params }: Props) {
         "@type": "Answer",
         text: routeMeta
           ? `Economy class typically requires around ${routeMeta.milesToEconomy.toLocaleString("en-US")} miles, and business class around ${routeMeta.milesToBusiness.toLocaleString("en-US")} miles. The best programs for this route are ${routeMeta.bestPrograms.join(", ")}.`
-          : `Miles requirements vary by program and availability. KEZA checks all 46 loyalty programs in real time to find the best redemption for your dates.`,
+          : `Miles requirements vary by program and availability. KEZA checks all 33 loyalty programs in real time to find the best redemption for your dates.`,
       },
     },
     {

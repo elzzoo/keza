@@ -192,7 +192,7 @@ export default async function RoutePage({ params }: Props) {
           "@type": "Answer",
           text: routeMeta
             ? `En classe économique, comptez environ ${routeMeta.milesToEconomy.toLocaleString("fr-FR")} miles, et ${routeMeta.milesToBusiness.toLocaleString("fr-FR")} miles en business. Les meilleurs programmes sur cette route sont ${routeMeta.bestPrograms.join(", ")}.`
-            : `Les besoins en miles varient selon le programme et les disponibilités. KEZA vérifie les 46 programmes de fidélité en temps réel pour trouver le meilleur rachat.`,
+            : `Les besoins en miles varient selon le programme et les disponibilités. KEZA vérifie les 33 programmes de fidélité en temps réel pour trouver le meilleur rachat.`,
         },
       },
       {

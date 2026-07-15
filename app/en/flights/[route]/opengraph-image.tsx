@@ -98,7 +98,7 @@ export default async function Image({ params }: Props) {
           </div>
         </div>
 
-        {ogBottomBar("Cash vs miles · 46 loyalty programs · updated daily")}
+        {ogBottomBar("Cash vs miles · 33 loyalty programs · updated daily")}
       </>
     ),
     { width: OG_WIDTH, height: OG_HEIGHT }

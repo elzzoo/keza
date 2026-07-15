@@ -461,8 +461,8 @@ export function RoutePageClient({
               <div className="space-y-3 text-sm text-muted leading-relaxed">
                 <p>
                   {fr
-                    ? `KEZA compare automatiquement le prix cash et le coût en miles pour ${displayFromCity} → ${displayToCity}. Nous analysons 46 programmes de fidélité et vérifions si un transfert de points bancaires (Amex MR, Chase UR, Citi ThankYou) serait moins cher.`
-                    : `KEZA automatically compares the cash price and miles cost for ${displayFromCity} → ${displayToCity}. We analyze 46 loyalty programs and check if transferring bank points (Amex MR, Chase UR, Citi ThankYou) would be cheaper.`
+                    ? `KEZA compare automatiquement le prix cash et le coût en miles pour ${displayFromCity} → ${displayToCity}. Nous analysons 33 programmes de fidélité et vérifions si un transfert de points bancaires (Amex MR, Chase UR, Citi ThankYou) serait moins cher.`
+                    : `KEZA automatically compares the cash price and miles cost for ${displayFromCity} → ${displayToCity}. We analyze 33 loyalty programs and check if transferring bank points (Amex MR, Chase UR, Citi ThankYou) would be cheaper.`
                   }
                 </p>
                 <p>
