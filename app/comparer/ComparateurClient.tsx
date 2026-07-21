@@ -64,7 +64,12 @@ export function ComparateurClient() {
   const slotC = searchParams.get("c")?.toUpperCase() ?? "";
 
   function updateSlot(slot: "a" | "b" | "c", iata: string) {
-    const params = new URLSearchParams(searchParams.toString());
+    // Read from window.location.search rather than the `searchParams` closure:
+    // two selects changed in quick succession (e.g. picking A then B before the
+    // first router.replace has propagated back through useSearchParams) would
+    // otherwise both build off the same stale snapshot, and the second call
+    // silently drops the first selection. window.location.search is always current.
+    const params = new URLSearchParams(window.location.search);
     if (iata) {
       // Clear any other slot that already holds this IATA to prevent duplicates
       (["a", "b", "c"] as const)

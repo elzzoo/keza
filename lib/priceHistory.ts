@@ -39,11 +39,29 @@ function percentileValue(sortedAsc: number[], p: number): number {
   return sortedAsc[Math.floor(sortedAsc.length * p)];
 }
 
+// Deterministic 0-1 hash of a string (destination IATA code), stable across
+// renders/builds/tests. Used to give each destination its own seasonality
+// "signature" instead of every destination in a region sharing an identical
+// curve shape (e.g. all African destinations showed byte-identical monthly
+// price charts before this — see audit bug: "duplicate price charts").
+function hashUnit(seed: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 1000) / 1000;
+}
+
 export function getMonthlyPrices(dest: Destination): DestinationPriceHistory {
   const multipliers = REGIONAL_SEASONALITY[dest.region];
 
+  // Per-destination jitter (±6% max) derived from the IATA code + month index.
+  // Keeps the regional seasonality *pattern* (real peaks/troughs by hemisphere
+  // and season) while ensuring no two destinations render an identical curve.
   const monthlyPrices: MonthlyPrice[] = multipliers.map((mult, i) => {
-    const price = Math.round(dest.cashEstimateUsd * mult);
+    const jitter = 1 + (hashUnit(`${dest.iata}-${i}`) - 0.5) * 0.12;
+    const price = Math.round(dest.cashEstimateUsd * mult * jitter);
     const cpm = computeDealRatio(price, dest.milesEstimate);
     return {
       month: i,

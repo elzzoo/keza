@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useId } from "react";
-import { PROGRAM_TO_AIRLINE } from "@/lib/costEngine";
+import { PROGRAM_TO_AIRLINE } from "@/lib/programEngine";
 import clsx from "clsx";
 
 interface Props {

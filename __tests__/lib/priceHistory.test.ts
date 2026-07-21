@@ -23,11 +23,33 @@ describe("getMonthlyPrices", () => {
     });
   });
 
-  it("price for CDG January = Math.round(cashEstimateUsd * europe[0])", () => {
+  it("price for CDG January ≈ cashEstimateUsd * europe[0] within ±6% per-destination jitter", () => {
     const history = getMonthlyPrices(CDG);
     const janMultiplier = REGIONAL_SEASONALITY["europe"][0]; // 0.82
-    const expected = Math.round(CDG.cashEstimateUsd * janMultiplier);
-    expect(history.monthlyPrices[0].price).toBe(expected);
+    const base = CDG.cashEstimateUsd * janMultiplier;
+    // A deterministic ±6% jitter (seeded by IATA code) is applied on top of the
+    // regional curve so destinations sharing a region don't render identical
+    // monthly price charts. See lib/priceHistory.ts hashUnit().
+    expect(history.monthlyPrices[0].price).toBeGreaterThanOrEqual(Math.round(base * 0.94));
+    expect(history.monthlyPrices[0].price).toBeLessThanOrEqual(Math.round(base * 1.06));
+  });
+
+  it("is deterministic — same destination always yields the same curve", () => {
+    const a = getMonthlyPrices(CDG);
+    const b = getMonthlyPrices(CDG);
+    expect(a.monthlyPrices.map((m) => m.price)).toEqual(b.monthlyPrices.map((m) => m.price));
+  });
+
+  it("two destinations in the same region do not render an identical curve", () => {
+    const sameRegionPair = DESTINATIONS.filter((d) => d.region === CDG.region && d.iata !== CDG.iata);
+    expect(sameRegionPair.length).toBeGreaterThan(0);
+    const other = getMonthlyPrices(sameRegionPair[0]);
+    const cdgPrices = getMonthlyPrices(CDG).monthlyPrices.map((m) => m.price);
+    const otherPrices = other.monthlyPrices.map((m) => m.price);
+    // Normalize both to their January value so we compare *shape*, not absolute price level
+    const cdgShape = cdgPrices.map((p) => p / cdgPrices[0]);
+    const otherShape = otherPrices.map((p) => p / otherPrices[0]);
+    expect(cdgShape).not.toEqual(otherShape);
   });
 
   it("bestMonths contains only months with price <= percentile 33", () => {
