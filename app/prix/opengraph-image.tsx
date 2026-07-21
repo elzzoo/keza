@@ -32,7 +32,7 @@ export default async function Image() {
             Prix mois par mois
           </span>
           <span style={{ color: "#a5b4fc", fontSize: 22 }}>
-            20 destinations · quand partir pour payer moins
+            24 destinations · quand partir pour payer moins
           </span>
         </div>
         {ogBottomBar("keza.app/prix")}

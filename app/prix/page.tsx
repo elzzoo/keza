@@ -18,17 +18,17 @@ const PriceChart = dynamic(() => import("./PriceChart").then((mod) => ({ default
 export const metadata: Metadata = {
   title: "Meilleur moment pour voyager | KEZA",
   description:
-    "Découvrez le meilleur mois pour voyager vers 20 destinations depuis Dakar — prix cash et recommandation miles estimés mois par mois.",
+    "Découvrez le meilleur mois pour voyager vers 24 destinations depuis Dakar — prix cash et recommandation miles estimés mois par mois.",
   openGraph: {
     title: "Meilleur moment pour voyager | KEZA",
     description:
-      "20 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
+      "24 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
     url: `${SITE_URL}/prix`,
   },
   twitter: {
     card: "summary_large_image",
     title: "Meilleur moment pour voyager | KEZA",
-    description: "20 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
+    description: "24 destinations · prix estimés mois par mois · miles vs cash recalculé chaque mois.",
   },
   alternates: {
     canonical: `${SITE_URL}/prix`,

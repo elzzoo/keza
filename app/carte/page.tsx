@@ -11,16 +11,16 @@ import { WorldMapClient } from "./WorldMapClient";
 export const metadata: Metadata = {
   title: "Carte des destinations miles | KEZA",
   description:
-    "Explorez 20 destinations en avion — carte interactive cash vs miles. Trouvez où vos points valent le plus.",
+    "Explorez 24 destinations en avion — carte interactive cash vs miles. Trouvez où vos points valent le plus.",
   openGraph: {
     title: "Carte des destinations miles | KEZA",
-    description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA : miles gagnent, cash gagne.",
+    description: "24 destinations sur une carte interactive. Points colorés par recommandation KEZA : miles gagnent, cash gagne.",
     url: `${SITE_URL}/carte`,
   },
   twitter: {
     card: "summary_large_image",
     title: "Carte des destinations miles | KEZA",
-    description: "20 destinations sur une carte interactive. Points colorés par recommandation KEZA.",
+    description: "24 destinations sur une carte interactive. Points colorés par recommandation KEZA.",
   },
   alternates: {
     canonical: `${SITE_URL}/carte`,

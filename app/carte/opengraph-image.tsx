@@ -32,7 +32,7 @@ export default async function Image() {
             Explore le monde
           </span>
           <span style={{ color: "#a5b4fc", fontSize: 22 }}>
-            20 destinations depuis Dakar — miles ou cash ?
+            24 destinations depuis Dakar — miles ou cash ?
           </span>
         </div>
         {ogBottomBar("keza.app/carte")}

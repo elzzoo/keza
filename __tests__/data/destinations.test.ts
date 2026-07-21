@@ -2,8 +2,9 @@
 import { DESTINATIONS } from "@/data/destinations";
 
 describe("DESTINATIONS GPS data integrity", () => {
-  it("contains exactly 20 destinations", () => {
-    expect(DESTINATIONS).toHaveLength(20);
+  it("contains exactly 24 destinations", () => {
+    // 20 + LAX, ORD, ICN, JNB added for the P3 corridor expansion
+    expect(DESTINATIONS).toHaveLength(24);
   });
 
   it("every destination has lat and lon", () => {

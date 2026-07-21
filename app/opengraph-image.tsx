@@ -43,7 +43,7 @@ export default async function Image() {
             Compare le vrai coût de chaque vol depuis Dakar
           </span>
         </div>
-        {ogBottomBar("20 destinations · mise à jour mensuelle")}
+        {ogBottomBar("24 destinations · mise à jour mensuelle")}
       </>
     ),
     { width: OG_WIDTH, height: OG_HEIGHT }

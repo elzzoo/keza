@@ -79,9 +79,9 @@ describe("getMonthlyPrices", () => {
 });
 
 describe("getAllDestinationPriceHistories", () => {
-  it("returns 20 entries (one per destination)", () => {
+  it("returns 24 entries (one per destination)", () => {
     const all = getAllDestinationPriceHistories();
-    expect(all).toHaveLength(20);
+    expect(all).toHaveLength(24);
   });
 
   it("each entry has a valid iata matching DESTINATIONS", () => {
