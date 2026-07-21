@@ -186,7 +186,15 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
                   <div className="flex items-center gap-2">
                     <span className="text-base">{program.flag}</span>
                     <div>
-                      <div className="font-bold text-fg text-sm">{program.name}</div>
+                      {/* Real link keeps rows crawlable + keyboard/middle-click friendly;
+                          the row onClick is just a bigger touch target on top. */}
+                      <Link
+                        href={`/programmes/${program.id}`}
+                        className="font-bold text-fg text-sm hover:text-primary transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {program.name}
+                      </Link>
                       <div className="text-[11px] text-muted">{program.company}</div>
                     </div>
                     {program.alliance && (

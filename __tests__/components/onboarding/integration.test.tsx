@@ -81,7 +81,7 @@ describe("Onboarding Integration Tests", () => {
 
     // Verify the programs input field exists
     const programsInput = screen.getByPlaceholderText(
-      "Flying Blue, Chase UR, Amex MR…"
+      "Search programs (e.g., Flying Blue)"
     );
     expect(programsInput).toBeInTheDocument();
   });

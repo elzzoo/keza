@@ -3,6 +3,11 @@ import { render, screen } from '@testing-library/react';
 import { ProgramsTable } from '@/app/programmes/ProgramsTable';
 import { PROGRAMS } from '@/data/programs';
 
+// ProgramsTable rows navigate with useRouter().push — mock the app router
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), prefetch: jest.fn(), replace: jest.fn() }),
+}));
+
 describe('ProgramsTable', () => {
   it('renders programmes table in desktop view', () => {
     render(<ProgramsTable lang="en" />);

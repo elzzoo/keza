@@ -11,6 +11,9 @@ import {
   getFavoriteRoutes,
 } from "@/lib/alertsEngine";
 
+// Live Redis + engine calls — allow slow network
+jest.setTimeout(30000);
+
 describe("Miles alerts E2E flow", () => {
   const testEmail = `test-miles-${Date.now()}@example.com`;
   const routeKey = `SIN:LAX:Singapore KrisFlyer:${Date.now()}`;

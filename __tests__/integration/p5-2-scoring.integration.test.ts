@@ -4,6 +4,9 @@
 import { searchEngine } from "@/lib/engine/index";
 import type { FlightResult } from "@/lib/engine/types";
 
+// Live Duffel/TP calls — allow slow network
+jest.setTimeout(30000);
+
 describe("P5.2 Task 2: Scoring Engine Integration", () => {
   /**
    * Test 1: Verify scoring engine is integrated into search pipeline
@@ -168,8 +171,6 @@ describe("P5.2 Task 2: Scoring Engine Integration", () => {
    * Tests that scoring works consistently across economy, premium, business cabins
    */
   it("scores flights correctly across different cabin classes", async () => {
-    // Increase timeout for API calls (Duffel can take 3-5s)
-    jest.setTimeout(15000);
     const cabins = ["economy", "premium"];
     const resultsPerCabin: Record<string, FlightResult[]> = {};
 
