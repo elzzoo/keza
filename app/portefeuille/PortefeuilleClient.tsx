@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useProfile } from "@/hooks/useProfile";
@@ -247,12 +247,12 @@ export function PortefeuilleClient() {
                 ? "Vous devez être connecté pour accéder à votre portefeuille de miles."
                 : "You must be signed in to access your miles portfolio."}
             </p>
-            <a
-              href="/api/auth/signin"
+            <button
+              onClick={() => signIn()}
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
             >
               {lang === "fr" ? "Se connecter" : "Sign in"}
-            </a>
+            </button>
           </div>
         </main>
         <Footer lang={lang} />

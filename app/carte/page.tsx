@@ -77,7 +77,7 @@ export default function CartePage() {
           <div className="bg-surface rounded-2xl border border-border p-8 flex flex-col items-center gap-4 text-center min-h-96">
             <span className="text-4xl">🗺️</span>
             <p className="font-bold text-fg text-base">
-              La carte ne peut pas s'afficher
+              La carte ne peut pas s&apos;afficher
             </p>
             <p className="text-sm text-muted">
               Veuillez rafraîchir la page et réessayer
