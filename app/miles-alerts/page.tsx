@@ -3,7 +3,7 @@ import { MilesAlertsClient } from "./MilesAlertsClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Alertes Miles — KEZA",
+  title: "Alertes Miles — Xalifly",
   description: "Gérez vos alertes miles et recevez une notification quand une excellente affaire est disponible.",
   alternates: {
     canonical: `${SITE_URL}/miles-alerts`,

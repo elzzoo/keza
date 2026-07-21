@@ -93,7 +93,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
   const bestLabels = history.bestMonths.map((i) => history.monthlyPrices[i].monthLabel);
   const worstLabels = history.worstMonths.map((i) => history.monthlyPrices[i].monthLabel);
 
-  // KEZA note — cheapest month
+  // Xalifly note — cheapest month
   const cheapestMonth = useMemo(
     () => history.monthlyPrices.reduce((min, m) => m.price < min.price ? m : min),
     [history]
@@ -112,7 +112,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
         {/* Breadcrumb */}
         <nav className="pt-4 pb-2 text-xs text-muted">
-          <Link href="/" className="hover:text-fg transition-colors">KEZA</Link>
+          <Link href="/" className="hover:text-fg transition-colors">Xalifly</Link>
           <span className="mx-1.5">/</span>
           <Link href="/carte" className="hover:text-fg transition-colors">
             {"Destinations"}
@@ -284,7 +284,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
             </div>
           </div>
 
-          {/* KEZA note */}
+          {/* Xalifly note */}
           <p className="text-xs text-muted mt-3 border-t border-border pt-3">
             💡 {fr
               ? `En ${cheapestMonth.monthLabel}, tes miles valent ${cheapestMonth.cpm.toFixed(1)}¢/mile → ${REC_LABELS_FR[cheapestMonth.recommendation]}`

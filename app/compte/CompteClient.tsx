@@ -81,7 +81,7 @@ export function CompteClient() {
   return (
     <div className="min-h-screen bg-bg">
       <nav className="sticky top-0 z-40 bg-bg/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link href="/" className="text-muted hover:text-fg transition-colors text-sm">← KEZA</Link>
+        <Link href="/" className="text-muted hover:text-fg transition-colors text-sm">← Xalifly</Link>
         <span className="text-border">·</span>
         <span className="text-sm font-bold text-fg">Mon compte</span>
       </nav>

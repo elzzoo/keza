@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — KEZA",
-  description: "Politique de confidentialité et protection des données personnelles de KEZA.",
+  title: "Politique de confidentialité — Xalifly",
+  description: "Politique de confidentialité et protection des données personnelles de Xalifly.",
 };
 
 export default function Confidentialite() {
@@ -26,7 +26,7 @@ export default function Confidentialite() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Introduction</h2>
             <p>
-              KEZA s&apos;engage à protéger la vie privée de ses utilisateurs. Cette politique de
+              Xalifly s&apos;engage à protéger la vie privée de ses utilisateurs. Cette politique de
               confidentialité décrit les données que nous collectons, comment nous les utilisons et
               les droits dont vous disposez conformément au Règlement Général sur la Protection des
               Données (RGPD).
@@ -35,7 +35,7 @@ export default function Confidentialite() {
 
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Données collectées</h2>
-            <p className="mb-2">KEZA collecte les données suivantes :</p>
+            <p className="mb-2">Xalifly collecte les données suivantes :</p>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
               <li><strong className="text-fg">Recherches de vols</strong> : aéroports de départ et d&apos;arrivée, dates, classe de voyage. Ces données sont stockées localement sur votre appareil (localStorage) et ne sont pas transmises à nos serveurs.</li>
               <li><strong className="text-fg">Adresse email</strong> : uniquement si vous créez une alerte prix. Utilisée exclusivement pour vous envoyer des notifications de baisse de prix.</li>
@@ -46,7 +46,7 @@ export default function Confidentialite() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Cookies</h2>
             <p>
-              KEZA <strong className="text-fg">ne dépose aucun cookie</strong> sur votre appareil.
+              Xalifly <strong className="text-fg">ne dépose aucun cookie</strong> sur votre appareil.
               Vos préférences (langue, devise, thème) sont stockées dans le localStorage de votre
               navigateur et ne sont pas accessibles par des tiers.
             </p>
@@ -68,7 +68,7 @@ export default function Confidentialite() {
 
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Services tiers</h2>
-            <p className="mb-2">KEZA utilise les services tiers suivants :</p>
+            <p className="mb-2">Xalifly utilise les services tiers suivants :</p>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
               <li><strong className="text-fg">Plausible Analytics</strong> : statistiques anonymes de navigation (sans cookies, conforme RGPD)</li>
               <li><strong className="text-fg">Vercel</strong> : hébergement du site (données de performance)</li>

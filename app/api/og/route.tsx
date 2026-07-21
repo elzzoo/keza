@@ -64,11 +64,11 @@ export async function GET(request: NextRequest) {
           background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)",
         }} />
 
-        {/* Top row: KEZA logo + cabin badge */}
+        {/* Top row: Xalifly logo + cabin badge */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div style={{ fontSize: "28px", fontWeight: 900, color: "#3B82F6", letterSpacing: "-1px" }}>
-              KE<span style={{ color: "#F1F5F9" }}>ZA</span>
+              Xali<span style={{ color: "#F1F5F9" }}>fly</span>
             </div>
             <div style={{
               fontSize: "12px",
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
               lineHeight: 1.1,
             }}>
               Cash ou Miles ?<br />
-              <span style={{ color: "#3B82F6" }}>KEZA décide.</span>
+              <span style={{ color: "#3B82F6" }}>Xalifly décide.</span>
             </div>
           )}
         </div>

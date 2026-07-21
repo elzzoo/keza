@@ -6,19 +6,19 @@ import { iataToSlug } from "@/lib/routeSlug";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "All Routes — Cash vs Miles Flights | KEZA",
+  title: "All Routes — Cash vs Miles Flights | Xalifly",
   description:
     "Compare cash vs miles on 50+ international routes. " +
-    "Africa, Europe, USA, Asia — KEZA calculates which option is cheaper.",
+    "Africa, Europe, USA, Asia — Xalifly calculates which option is cheaper.",
   alternates: {
     canonical: `${SITE_URL}/en/vol`,
     languages: { fr: `${SITE_URL}/vol`, en: `${SITE_URL}/en/vol` },
   },
   openGraph: {
-    title: "Cash vs Miles Flights — All Routes | KEZA",
+    title: "Cash vs Miles Flights — All Routes | Xalifly",
     description: "50+ international routes compared cash vs miles in real time.",
     url: `${SITE_URL}/en/vol`,
-    siteName: "KEZA",
+    siteName: "Xalifly",
     images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630 }],
   },
 };
@@ -68,7 +68,7 @@ export default function EnVolIndexPage() {
       <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/en" className="font-black text-lg">
-            <span className="text-primary">KE</span><span className="text-fg">ZA</span>
+            <span className="text-primary">Xali</span><span className="text-fg">fly</span>
           </Link>
           <Link href="/en" className="text-xs font-semibold px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
             Search a flight →
@@ -122,7 +122,7 @@ export default function EnVolIndexPage() {
       </main>
 
       <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted">
-        <Link href="/en" className="hover:text-fg transition-colors">KEZA</Link>
+        <Link href="/en" className="hover:text-fg transition-colors">Xalifly</Link>
         {" · "}Compare cash vs miles on every flight
       </footer>
     </div>

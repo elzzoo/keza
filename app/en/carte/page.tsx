@@ -9,18 +9,18 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Flight Price Map — Find Cheap Destinations | KEZA",
+  title: "Flight Price Map — Find Cheap Destinations | Xalifly",
   description:
     "Explore cheap flights from your city on an interactive map. Compare cash prices and miles redemptions.",
   openGraph: {
-    title: "Flight Price Map — Find Cheap Destinations | KEZA",
+    title: "Flight Price Map — Find Cheap Destinations | Xalifly",
     description:
       "Explore cheap flights from your city on an interactive map. Compare cash prices and miles redemptions.",
     url: `${SITE_URL}/en/carte`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flight Price Map — Find Cheap Destinations | KEZA",
+    title: "Flight Price Map — Find Cheap Destinations | Xalifly",
     description:
       "Explore cheap flights from your city on an interactive map. Compare cash prices and miles redemptions.",
   },

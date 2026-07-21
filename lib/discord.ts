@@ -1,5 +1,5 @@
 /**
- * KEZA Discord webhook notifications
+ * Xalifly Discord webhook notifications
  * Used for ops visibility: alert triggered, cron errors, etc.
  * Set DISCORD_WEBHOOK_URL in env to enable. Silently no-ops if unset.
  */
@@ -69,7 +69,7 @@ export function notifyAlertTriggered(params: {
         { name: "Cible", value: `$${targetPrice}`, inline: true },
         { name: "Économie", value: `$${savings}`, inline: true },
       ],
-      footer: { text: "KEZA cron/alerts" },
+      footer: { text: "Xalifly cron/alerts" },
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -110,7 +110,7 @@ export function notifyCronSummary(params: {
       title,
       color,
       fields,
-      footer: { text: "KEZA cron/alerts" },
+      footer: { text: "Xalifly cron/alerts" },
       timestamp: new Date().toISOString(),
     },
   ]);

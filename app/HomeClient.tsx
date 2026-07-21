@@ -186,18 +186,18 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
                 </span>
                 <br />
                 <span className="text-fg">
-                  {lang === "fr" ? "KEZA décide." : "KEZA decides."}
+                  {lang === "fr" ? "Xalifly décide." : "Xalifly decides."}
                 </span>
               </h1>
               <p className="text-base text-muted max-w-lg mx-auto leading-relaxed">
                 {lang === "fr"
-                  ? "KEZA calcule en secondes si payer en cash ou utiliser tes miles est moins cher — en tenant compte des taxes, de la valeur réelle du mile et de 33 programmes de fidélité."
-                  : "KEZA instantly calculates whether paying cash or redeeming miles is cheaper — factoring in taxes, real mile value, and 33 loyalty programs."}
+                  ? "Xalifly calcule en secondes si payer en cash ou utiliser tes miles est moins cher — en tenant compte des taxes, de la valeur réelle du mile et de 33 programmes de fidélité."
+                  : "Xalifly instantly calculates whether paying cash or redeeming miles is cheaper — factoring in taxes, real mile value, and 33 loyalty programs."}
               </p>
               <p className="text-sm text-muted/70 max-w-md mx-auto">
                 {lang === "fr"
-                  ? "Saisis ton vol ci-dessous et KEZA te dit quelle option choisir."
-                  : "Enter your flight below and KEZA tells you which option to pick."}
+                  ? "Saisis ton vol ci-dessous et Xalifly te dit quelle option choisir."
+                  : "Enter your flight below and Xalifly tells you which option to pick."}
               </p>
             </div>
           </div>
@@ -208,8 +208,8 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
           <div className="pt-6 pb-4">
             <div className="flex items-center justify-between">
               <span className="font-black text-lg">
-                <span className="text-primary">KE</span>
-                <span className="text-fg">ZA</span>
+                <span className="text-primary">Xali</span>
+                <span className="text-fg">fly</span>
               </span>
               <span className="text-xs text-muted">
                 {lang === "fr" ? "Cash ou Miles ?" : "Cash or Miles?"}

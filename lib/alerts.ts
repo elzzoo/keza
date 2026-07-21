@@ -249,9 +249,9 @@ export async function updateAlertAfterCheck(id: string, lastPrice: number, notif
 
 // Configurable via RESEND_FROM_EMAIL env var.
 // Default: Resend shared domain (dev/test).
-// Production: set RESEND_FROM_EMAIL="KEZA Alerts <alerts@keza.app>" in Vercel env vars.
+// Production: set RESEND_FROM_EMAIL="Xalifly Alerts <alerts@keza.app>" in Vercel env vars.
 const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL ?? "KEZA Alerts <onboarding@resend.dev>";
+  process.env.RESEND_FROM_EMAIL ?? "Xalifly Alerts <onboarding@resend.dev>";
 
 // Base URL for links in emails. Vercel sets NEXT_PUBLIC_APP_URL automatically on preview deployments.
 const BASE_URL =
@@ -370,8 +370,8 @@ export async function sendDigestEmail(
 
   /* ── Subject + preheader ─────────────────────────────────────────────────── */
   const subject = isWeekly
-    ? `🔥 Top deals miles de la semaine + tes alertes — KEZA`
-    : `✈ Récap KEZA — ${items.length} route${items.length > 1 ? "s" : ""} surveillée${items.length > 1 ? "s" : ""}`;
+    ? `🔥 Top deals miles de la semaine + tes alertes — Xalifly`
+    : `✈ Récap Xalifly — ${items.length} route${items.length > 1 ? "s" : ""} surveillée${items.length > 1 ? "s" : ""}`;
 
   const preheader = isWeekly && topDeals[0]
     ? `${topDeals[0].program} à ${topDeals[0].ratio.toFixed(1)}¢/mile · ${topDeals[0].from}→${topDeals[0].to}`
@@ -379,7 +379,7 @@ export async function sendDigestEmail(
 
   /* ── Plain-text fallback ─────────────────────────────────────────────────── */
   const plainText = [
-    isWeekly ? `🔥 TOP DEALS MILES — semaine du ${weekStr}` : `✈ KEZA — Récap alertes`,
+    isWeekly ? `🔥 TOP DEALS MILES — semaine du ${weekStr}` : `✈ Xalifly — Récap alertes`,
     "",
     ...(isWeekly && topDeals.length > 0 ? [
       "MEILLEURS DEALS CETTE SEMAINE :",
@@ -419,7 +419,7 @@ export async function sendDigestEmail(
     <table width="100%" cellpadding="0" cellspacing="0"><tr>
       <td>
         <p style="margin:0;font-size:26px;font-weight:900;letter-spacing:-1px;">
-          <span style="color:#3b82f6;">KE</span><span style="color:#f1f5f9;">ZA</span>
+          <span style="color:#3b82f6;">Xali</span><span style="color:#f1f5f9;">fly</span>
         </p>
         <p style="margin:2px 0 0;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
           ${isWeekly ? `digest · semaine du ${weekStr}` : `récap alertes · ${weekStr}`}
@@ -511,7 +511,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
       to: alert.email,
       subject: `✈ ${alert.from}→${alert.to} : -${drop}% ($${newPrice})`,
       text: [
-        `✈ KEZA — Prix atteint !`,
+        `✈ Xalifly — Prix atteint !`,
         ``,
         `${alert.from} → ${alert.to} (${alert.cabin})`,
         `Prix actuel : $${newPrice}  (votre cible : $${alert.targetPrice})`,
@@ -526,7 +526,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
             <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Price Alert</p>
           </div>
 
@@ -588,7 +588,7 @@ export async function sendMilesAlertEmail(
       to: alert.email,
       subject: `✈ ${alert.from}→${alert.to} : ${program} vaut ${cppDisplay}¢/pt maintenant !`,
       text: [
-        `✈ KEZA — Alerte Miles déclenchée !`,
+        `✈ Xalifly — Alerte Miles déclenchée !`,
         ``,
         `${alert.from} → ${alert.to} (${alert.cabin})`,
         `Programme : ${program}`,
@@ -605,7 +605,7 @@ export async function sendMilesAlertEmail(
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
             <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Miles Alert</p>
           </div>
           <div style="padding:24px;">
@@ -652,7 +652,7 @@ export async function sendAlertPreDeactivationEmail(alert: PriceAlert): Promise<
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;">
-            <h1 style="margin:0;font-size:20px;"><span style="color:#3b82f6;">KE</span><span>ZA</span></h1>
+            <h1 style="margin:0;font-size:20px;"><span style="color:#3b82f6;">Xali</span><span>fly</span></h1>
             <p style="margin:4px 0 0;font-size:13px;color:#f59e0b;">Alerte prix — Dernière notification</p>
           </div>
           <div style="padding:24px;">
@@ -672,7 +672,7 @@ export async function sendAlertPreDeactivationEmail(alert: PriceAlert): Promise<
               🔄 Renouveler l'alerte
             </a>
             <p style="margin:16px 0 0;font-size:11px;color:#64748b;text-align:center;">
-              Vous pouvez aussi créer une nouvelle alerte directement depuis les résultats KEZA.
+              Vous pouvez aussi créer une nouvelle alerte directement depuis les résultats Xalifly.
             </p>
           </div>
         </div>
@@ -701,9 +701,9 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
     await resend.emails.send({
       from: FROM_EMAIL,
       to: alert.email,
-      subject: `✈ Alerte active : ${alert.from} → ${alert.to} | KEZA`,
+      subject: `✈ Alerte active : ${alert.from} → ${alert.to} | Xalifly`,
       text: [
-        `✈ KEZA — Alerte créée !`,
+        `✈ Xalifly — Alerte créée !`,
         ``,
         `Route : ${alert.from} → ${alert.to} (${CABIN_LABELS[alert.cabin]})`,
         `Prix de référence : $${alert.basePrice}`,
@@ -718,7 +718,7 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
             <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Alerte prix</p>
           </div>
 
@@ -799,9 +799,9 @@ export async function sendOnboardingJ3Email(
     await resend.emails.send({
       from: FROM_EMAIL,
       to: alert.email,
-      subject: `✈ Mise à jour KEZA — ta route ${alert.from} → ${alert.to}`,
+      subject: `✈ Mise à jour Xalifly — ta route ${alert.from} → ${alert.to}`,
       text: [
-        `✈ KEZA — 3 jours de surveillance`,
+        `✈ Xalifly — 3 jours de surveillance`,
         ``,
         `Route : ${fromCity} → ${toCity} (${alert.from} → ${alert.to}, ${CABIN_LABELS[alert.cabin]})`,
         currentPrice !== null
@@ -817,7 +817,7 @@ export async function sendOnboardingJ3Email(
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
             <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Suivi de route</p>
           </div>
 
@@ -838,7 +838,7 @@ export async function sendOnboardingJ3Email(
             ${priceBlock}
 
             <p style="margin:0 0 16px;font-size:13px;color:#94a3b8;line-height:1.6;">
-              KEZA surveille les prix en continu — on t'alertera dès qu'une baisse se présente.
+              Xalifly surveille les prix en continu — on t'alertera dès qu'une baisse se présente.
             </p>
 
             <a href="${ctaUrl}"
@@ -854,7 +854,7 @@ export async function sendOnboardingJ3Email(
 
           <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
             <p style="margin:0;font-size:10px;color:#334155;">
-              Tu reçois cet email car tu as une alerte active sur KEZA.
+              Tu reçois cet email car tu as une alerte active sur Xalifly.
             </p>
           </div>
           <img src="${emailOpenPixelUrl("onboarding-j3", alert.email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
@@ -883,17 +883,17 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
     await resend.emails.send({
       from: FROM_EMAIL,
       to: alert.email,
-      subject: `🎯 KEZA — invite un ami et débloquez des avantages`,
+      subject: `🎯 Xalifly — invite un ami et débloquez des avantages`,
       text: [
-        `KEZA — Ta route est surveillée depuis 7 jours`,
+        `Xalifly — Ta route est surveillée depuis 7 jours`,
         ``,
-        `Partage KEZA avec un ami qui voyage et accède en avant-première à KEZA Pro`,
+        `Partage Xalifly avec un ami qui voyage et accède en avant-première à Xalifly Pro`,
         `(alertes illimitées, digest personnalisé).`,
         ``,
-        `Partager KEZA :`,
+        `Partager Xalifly :`,
         shareUrl,
         ``,
-        `Découvrir KEZA Pro :`,
+        `Découvrir Xalifly Pro :`,
         proUrl,
         ``,
         `Gérer mes alertes :`,
@@ -902,7 +902,7 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
             <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">1 semaine ensemble</p>
           </div>
 
@@ -912,19 +912,19 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
             </p>
 
             <p style="margin:0 0 20px;font-size:14px;color:#94a3b8;line-height:1.7;">
-              Partage KEZA avec un ami qui voyage aussi — et accède en avant-première à
-              <strong style="color:#e2e8f0;">KEZA Pro</strong>
+              Partage Xalifly avec un ami qui voyage aussi — et accède en avant-première à
+              <strong style="color:#e2e8f0;">Xalifly Pro</strong>
               (alertes illimitées, digest personnalisé).
             </p>
 
             <a href="${shareUrl}"
                style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;margin-bottom:8px;">
-              Partager KEZA →
+              Partager Xalifly →
             </a>
 
             <a href="${proUrl}"
                style="display:block;text-align:center;background:#1e3a5f;color:#94a3b8;text-decoration:none;padding:12px;border-radius:12px;font-size:13px;border:1px solid #2d4a6f;margin-bottom:8px;">
-              Découvrir KEZA Pro →
+              Découvrir Xalifly Pro →
             </a>
 
             <a href="${manageUrl}"
@@ -935,7 +935,7 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
 
           <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
             <p style="margin:0;font-size:10px;color:#334155;">
-              Tu reçois cet email car tu as une alerte active sur KEZA.
+              Tu reçois cet email car tu as une alerte active sur Xalifly.
             </p>
           </div>
           <img src="${emailOpenPixelUrl("onboarding-j7", alert.email)}" width="1" height="1" style="display:block;width:1px;height:1px;opacity:0;" alt="" />
@@ -965,9 +965,9 @@ export async function sendManageAlertsEmail(email: string, alerts: PriceAlert[])
     await resend.emails.send({
       from: FROM_EMAIL,
       to: normalizedEmail,
-      subject: `Gérer tes alertes prix | KEZA`,
+      subject: `Gérer tes alertes prix | Xalifly`,
       text: [
-        `KEZA — Accéder à tes alertes`,
+        `Xalifly — Accéder à tes alertes`,
         ``,
         `Tu as ${alerts.length} alerte${alerts.length > 1 ? "s" : ""} active${alerts.length > 1 ? "s" : ""}.`,
         ``,
@@ -977,7 +977,7 @@ export async function sendManageAlertsEmail(email: string, alerts: PriceAlert[])
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
             <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Gestion des alertes</p>
           </div>
           <div style="padding:24px;">

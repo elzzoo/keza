@@ -51,8 +51,8 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
           <span className="font-black text-xl tracking-tight leading-none">
-            <span className="text-primary">KE</span>
-            <span className="text-fg">ZA</span>
+            <span className="text-primary">Xali</span>
+            <span className="text-fg">fly</span>
           </span>
           <span className="hidden sm:block text-[11px] text-muted font-medium border-l border-border pl-2 ml-0.5 min-w-0 overflow-hidden">
             {lang === "fr" ? "Cash ou Miles ?" : "Cash or Miles?"}

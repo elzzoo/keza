@@ -18,18 +18,18 @@ const ProgramsTable = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: "Loyalty Programs — Miles & Points | KEZA",
+  title: "Loyalty Programs — Miles & Points | Xalifly",
   description:
     "Compare all airline loyalty programs: Air France-KLM Flying Blue, Emirates Skywards, British Airways Avios and more.",
   openGraph: {
-    title: "Loyalty Programs — Miles & Points | KEZA",
+    title: "Loyalty Programs — Miles & Points | Xalifly",
     description:
       "Compare all airline loyalty programs: Air France-KLM Flying Blue, Emirates Skywards, British Airways Avios and more.",
     url: `${SITE_URL}/en/programmes`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Loyalty Programs — Miles & Points | KEZA",
+    title: "Loyalty Programs — Miles & Points | Xalifly",
     description:
       "Compare all airline loyalty programs: Air France-KLM Flying Blue, Emirates Skywards, British Airways Avios and more.",
   },
@@ -63,7 +63,7 @@ export default function EnProgrammesPage() {
             <span className="text-fg">Which program is actually worth it?</span>
           </h1>
           <p className="text-sm text-muted mt-3 max-w-xl">
-            33 programs analyzed — airlines, hotels, transfer cards. KEZA Score based on mile value, available partners and redemption flexibility.
+            33 programs analyzed — airlines, hotels, transfer cards. Xalifly Score based on mile value, available partners and redemption flexibility.
           </p>
           <p className="text-xs text-muted/60 mt-1">
             Updated: April 2026 · Sources: ThePointsGuy, NerdWallet, AwardWallet
@@ -79,9 +79,9 @@ export default function EnProgrammesPage() {
 
         {/* Editorial note */}
         <div className="mt-10 bg-surface border border-border rounded-2xl p-5">
-          <h2 className="text-sm font-bold text-fg mb-2">How KEZA calculates the Score</h2>
+          <h2 className="text-sm font-bold text-fg mb-2">How Xalifly calculates the Score</h2>
           <p className="text-xs text-muted leading-relaxed">
-            The KEZA Score (0–100) combines three criteria: the <strong className="text-fg">estimated mile value</strong> (50%) based on market valuations from ThePointsGuy and NerdWallet, the <strong className="text-fg">number of transfer partners</strong> (30%) which determines program feeding flexibility, and <strong className="text-fg">redemption flexibility</strong> (20%) evaluating how easy it is to secure premium seats. Values are updated manually 2 to 4 times per year.
+            The Xalifly Score (0–100) combines three criteria: the <strong className="text-fg">estimated mile value</strong> (50%) based on market valuations from ThePointsGuy and NerdWallet, the <strong className="text-fg">number of transfer partners</strong> (30%) which determines program feeding flexibility, and <strong className="text-fg">redemption flexibility</strong> (20%) evaluating how easy it is to secure premium seats. Values are updated manually 2 to 4 times per year.
           </p>
         </div>
 

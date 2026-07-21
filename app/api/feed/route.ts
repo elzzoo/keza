@@ -60,7 +60,7 @@ export async function GET() {
     return {
       title: `${fromLabel} → ${toLabel} — Analyse cash vs miles`,
       link: `${SITE_URL}/flights/${route}`,
-      description: `Comparez le prix cash et le coût en miles sur ${fromLabel}-${toLabel}. KEZA calcule en temps réel quelle option vous fait économiser le plus.`,
+      description: `Comparez le prix cash et le coût en miles sur ${fromLabel}-${toLabel}. Xalifly calcule en temps réel quelle option vous fait économiser le plus.`,
       pubDate: now,
       guid: `${SITE_URL}/flights/${route}`,
     };
@@ -69,7 +69,7 @@ export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>KEZA — Deals vols cash vs miles</title>
+    <title>Xalifly — Deals vols cash vs miles</title>
     <link>${SITE_URL}</link>
     <description>Les meilleurs deals vols : comparez cash et miles en temps réel.</description>
     <language>fr</language>

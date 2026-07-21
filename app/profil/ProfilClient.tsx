@@ -249,7 +249,7 @@ export function ProfilClient() {
       {/* Nav */}
       <nav className="sticky top-0 z-40 bg-bg/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <Link href="/" className="text-muted hover:text-fg transition-colors text-sm">
-          ← KEZA
+          ← Xalifly
         </Link>
         <span className="text-border">·</span>
         <span className="text-sm font-bold text-fg">Mon profil</span>

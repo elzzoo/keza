@@ -93,7 +93,7 @@ export default async function Image({ params }: Props) {
               </div>
             )}
             <span style={{ color: "#94a3b8", fontSize: 18, lineHeight: 1.4 }}>
-              Cash or miles?{"\n"}KEZA finds the cheapest option.
+              Cash or miles?{"\n"}Xalifly finds the cheapest option.
             </span>
           </div>
         </div>

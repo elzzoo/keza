@@ -183,7 +183,7 @@ export function RoutePageClient({
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
         {/* Breadcrumb */}
         <nav className="pt-4 pb-2 text-xs text-muted">
-          <Link href="/" className="hover:text-fg transition-colors">KEZA</Link>
+          <Link href="/" className="hover:text-fg transition-colors">Xalifly</Link>
           <span className="mx-1.5">/</span>
           <span className="text-fg">{from} → {to}</span>
         </nav>
@@ -201,8 +201,8 @@ export function RoutePageClient({
               </h1>
               <p className="text-sm text-muted mt-1">
                 {fr
-                  ? "KEZA calcule si vos miles valent plus que le prix cash — en temps réel."
-                  : "KEZA calculates whether your miles are worth more than cash — in real time."
+                  ? "Xalifly calcule si vos miles valent plus que le prix cash — en temps réel."
+                  : "Xalifly calculates whether your miles are worth more than cash — in real time."
                 }
               </p>
               {routeMeta && (
@@ -461,8 +461,8 @@ export function RoutePageClient({
               <div className="space-y-3 text-sm text-muted leading-relaxed">
                 <p>
                   {fr
-                    ? `KEZA compare automatiquement le prix cash et le coût en miles pour ${displayFromCity} → ${displayToCity}. Nous analysons 33 programmes de fidélité et vérifions si un transfert de points bancaires (Amex MR, Chase UR, Citi ThankYou) serait moins cher.`
-                    : `KEZA automatically compares the cash price and miles cost for ${displayFromCity} → ${displayToCity}. We analyze 33 loyalty programs and check if transferring bank points (Amex MR, Chase UR, Citi ThankYou) would be cheaper.`
+                    ? `Xalifly compare automatiquement le prix cash et le coût en miles pour ${displayFromCity} → ${displayToCity}. Nous analysons 33 programmes de fidélité et vérifions si un transfert de points bancaires (Amex MR, Chase UR, Citi ThankYou) serait moins cher.`
+                    : `Xalifly automatically compares the cash price and miles cost for ${displayFromCity} → ${displayToCity}. We analyze 33 loyalty programs and check if transferring bank points (Amex MR, Chase UR, Citi ThankYou) would be cheaper.`
                   }
                 </p>
                 <p>

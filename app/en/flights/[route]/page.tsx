@@ -32,14 +32,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { route } = await params;
   const parsed = parseRoute(route);
-  if (!parsed) return { title: "Route not found — KEZA" };
+  if (!parsed) return { title: "Route not found — Xalifly" };
 
   const fromAirport = airportsMap[parsed.from];
   const toAirport = airportsMap[parsed.to];
   const fromCity = fromAirport?.cityEn ?? parsed.from;
   const toCity = toAirport?.cityEn ?? parsed.to;
 
-  const title = `Flights ${fromCity} to ${toCity} — Cash or Miles? | KEZA`;
+  const title = `Flights ${fromCity} to ${toCity} — Cash or Miles? | Xalifly`;
   const description = `Compare cash price vs miles cost for ${fromCity} (${parsed.from}) to ${toCity} (${parsed.to}). Find the cheapest way to book. Updated daily.`;
 
   return {
@@ -115,7 +115,7 @@ export default async function EnRoutePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "KEZA", item: SITE_URL },
+      { "@type": "ListItem", position: 1, name: "Xalifly", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Flights", item: `${SITE_URL}/en/flights` },
       {
         "@type": "ListItem",
@@ -132,7 +132,7 @@ export default async function EnRoutePage({ params }: Props) {
       name: `Should I use miles or cash for ${fromCity} to ${toCity}?`,
       acceptedAnswer: {
         "@type": "Answer",
-        text: `It depends on the program and dates. KEZA compares all options — cash price, miles redemption${routeMeta ? ` (top programs: ${routeMeta.bestPrograms.join(", ")})` : ""}, and bank point transfers — to find the cheapest way to book ${fromCity} to ${toCity}.`,
+        text: `It depends on the program and dates. Xalifly compares all options — cash price, miles redemption${routeMeta ? ` (top programs: ${routeMeta.bestPrograms.join(", ")})` : ""}, and bank point transfers — to find the cheapest way to book ${fromCity} to ${toCity}.`,
       },
     },
     {
@@ -143,8 +143,8 @@ export default async function EnRoutePage({ params }: Props) {
         text: routeMeta
           ? routeMeta.seasonTip.en
           : cheapest
-          ? `Based on current data, prices start from $${cheapest.price} around ${cheapest.date}. Use KEZA's price calendar to find the best dates.`
-          : `Prices vary by season. Use KEZA's price calendar to compare daily prices and find the cheapest dates.`,
+          ? `Based on current data, prices start from $${cheapest.price} around ${cheapest.date}. Use Xalifly's price calendar to find the best dates.`
+          : `Prices vary by season. Use Xalifly's price calendar to compare daily prices and find the cheapest dates.`,
       },
     },
     {
@@ -154,7 +154,7 @@ export default async function EnRoutePage({ params }: Props) {
         "@type": "Answer",
         text: routeMeta
           ? `Economy class typically requires around ${routeMeta.milesToEconomy.toLocaleString("en-US")} miles, and business class around ${routeMeta.milesToBusiness.toLocaleString("en-US")} miles. The best programs for this route are ${routeMeta.bestPrograms.join(", ")}.`
-          : `Miles requirements vary by program and availability. KEZA checks all 33 loyalty programs in real time to find the best redemption for your dates.`,
+          : `Miles requirements vary by program and availability. Xalifly checks all 33 loyalty programs in real time to find the best redemption for your dates.`,
       },
     },
     {
@@ -166,7 +166,7 @@ export default async function EnRoutePage({ params }: Props) {
           ? routeMeta.isNonstop
             ? `Yes, nonstop flights are available between ${fromCity} and ${toCity} with ${routeMeta.airlines.join(", ")}.`
             : `There are no direct nonstop flights on this route. Most connections go through ${routeMeta.hub ?? "a major hub"}. Airlines operating this route include ${routeMeta.airlines.join(", ")}.`
-          : `Check KEZA's search for current flight options and availability between ${fromCity} and ${toCity}.`,
+          : `Check Xalifly's search for current flight options and availability between ${fromCity} and ${toCity}.`,
       },
     },
   ];

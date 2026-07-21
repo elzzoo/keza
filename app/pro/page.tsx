@@ -6,16 +6,16 @@ import { ProClient } from "./ProClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "KEZA Pro — Alertes illimitées",
-  description: "Passez à KEZA Pro : alertes de prix illimitées, notifications push multi-devices, historique 6 mois. Démarrez votre essai gratuit de 7 jours.",
+  title: "Xalifly Pro — Alertes illimitées",
+  description: "Passez à Xalifly Pro : alertes de prix illimitées, notifications push multi-devices, historique 6 mois. Démarrez votre essai gratuit de 7 jours.",
   openGraph: {
-    title: "KEZA Pro — Alertes illimitées",
+    title: "Xalifly Pro — Alertes illimitées",
     description: "Alertes illimitées · push multi-devices · historique 6 mois",
     url: `${SITE_URL}/pro`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "KEZA Pro — Alertes illimitées",
+    title: "Xalifly Pro — Alertes illimitées",
     description: "Alertes illimitées · push multi-devices · historique 6 mois",
   },
   robots: "index, follow",

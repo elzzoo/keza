@@ -307,14 +307,14 @@ export function AlertesClient() {
               </p>
               <p className="text-xs text-amber-700 mb-3">
                 {fr
-                  ? "Configurez des alertes pour 2, 3 ou 4 passagers avec KEZA Pro."
-                  : "Configure alerts for 2, 3, or 4 passengers with KEZA Pro."}
+                  ? "Configurez des alertes pour 2, 3 ou 4 passagers avec Xalifly Pro."
+                  : "Configure alerts for 2, 3, or 4 passengers with Xalifly Pro."}
               </p>
               <Link
                 href="/pro"
                 className="inline-block text-sm text-amber-700 font-bold underline"
               >
-                {fr ? "Passer à KEZA Pro →" : "Upgrade to KEZA Pro →"}
+                {fr ? "Passer à Xalifly Pro →" : "Upgrade to Xalifly Pro →"}
               </Link>
             </div>
           )}

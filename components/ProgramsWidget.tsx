@@ -12,8 +12,8 @@ interface Props {
 }
 
 const L = {
-  fr: { title: "Top programmes", seeAll: "Voir tout →", score: "Score KEZA", updated: "Mis à jour · avr. 2026", balances: "💳 Mes soldes", miles: "miles", pts: "pts" },
-  en: { title: "Top programs",   seeAll: "See all →",   score: "KEZA Score", updated: "Updated · Apr 2026", balances: "💳 My balances", miles: "miles", pts: "pts" },
+  fr: { title: "Top programmes", seeAll: "Voir tout →", score: "Score Xalifly", updated: "Mis à jour · avr. 2026", balances: "💳 Mes soldes", miles: "miles", pts: "pts" },
+  en: { title: "Top programs",   seeAll: "See all →",   score: "Xalifly Score", updated: "Updated · Apr 2026", balances: "💳 My balances", miles: "miles", pts: "pts" },
 };
 
 const TOP5 = PROGRAMS.slice(0, 5);

@@ -23,7 +23,7 @@ const TOP_PROGRAMS = [
 const L = {
   fr: {
     step1Title: "Vos programmes miles",
-    step1Desc: "Sélectionnez les programmes que vous avez. Keza personnalisera vos résultats en priorité.",
+    step1Desc: "Sélectionnez les programmes que vous avez. Xalifly personnalisera vos résultats en priorité.",
     step2Title: "Vos soldes (optionnel)",
     step2Desc: "Entrez vos soldes pour voir si vous avez assez pour chaque vol.",
     skip: "Passer",
@@ -38,7 +38,7 @@ const L = {
   },
   en: {
     step1Title: "Your miles programs",
-    step1Desc: "Select the programs you have. Keza will prioritize them in your results.",
+    step1Desc: "Select the programs you have. Xalifly will prioritize them in your results.",
     step2Title: "Your balances (optional)",
     step2Desc: "Enter your balances to see if you have enough miles for each flight.",
     skip: "Skip",

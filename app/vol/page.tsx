@@ -6,16 +6,16 @@ import { iataToSlug } from "@/lib/routeSlug";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Toutes nos routes — Vols Cash vs Miles | KEZA",
+  title: "Toutes nos routes — Vols Cash vs Miles | Xalifly",
   description:
     "Comparez le prix cash vs miles sur plus de 50 routes internationales. " +
-    "Afrique, Europe, USA, Asie — KEZA calcule quelle option est la moins chère.",
+    "Afrique, Europe, USA, Asie — Xalifly calcule quelle option est la moins chère.",
   alternates: { canonical: `${SITE_URL}/vol` },
   openGraph: {
-    title: "Vols Cash vs Miles — Toutes les routes | KEZA",
+    title: "Vols Cash vs Miles — Toutes les routes | Xalifly",
     description: "50+ routes internationales comparées cash vs miles en temps réel.",
     url: `${SITE_URL}/vol`,
-    siteName: "KEZA",
+    siteName: "Xalifly",
     images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630 }],
   },
 };
@@ -68,7 +68,7 @@ export default function VolIndexPage() {
       <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-black text-lg">
-            <span className="text-primary">KE</span><span className="text-fg">ZA</span>
+            <span className="text-primary">Xali</span><span className="text-fg">fly</span>
           </Link>
           <Link href="/" className="text-xs font-semibold px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
             Chercher un vol →
@@ -122,7 +122,7 @@ export default function VolIndexPage() {
       </main>
 
       <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted">
-        <Link href="/" className="hover:text-fg transition-colors">KEZA</Link>
+        <Link href="/" className="hover:text-fg transition-colors">Xalifly</Link>
         {" · "}Comparer cash vs miles sur chaque vol
       </footer>
     </div>

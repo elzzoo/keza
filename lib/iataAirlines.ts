@@ -56,7 +56,7 @@ export const IATA_TO_AIRLINE: Record<string, string> = {
   I2: "Iberia Express",        // Oneworld affiliate
   LA: "LATAM Airlines",        // Oneworld
 
-  // ─── Independent (Keza-relevant) ───────────────────────────────────────────
+  // ─── Independent (Xalifly-relevant) ───────────────────────────────────────────
   EK: "Emirates",
   EY: "Etihad",
   FZ: "flydubai",              // Emirates group, key MENA/Africa carrier

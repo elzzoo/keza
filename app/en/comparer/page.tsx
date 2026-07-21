@@ -5,7 +5,7 @@ import { ComparateurClient } from "@/app/comparer/ComparateurClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Compare Destinations — 3 Routes Side by Side | KEZA",
+  title: "Compare Destinations — 3 Routes Side by Side | Xalifly",
   description:
     "Compare up to 3 flight routes side by side. Cash price vs miles for each destination.",
   alternates: {

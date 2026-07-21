@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Mentions légales — KEZA",
-  description: "Mentions légales et informations juridiques de KEZA.",
+  title: "Mentions légales — Xalifly",
+  description: "Mentions légales et informations juridiques de Xalifly.",
 };
 
 export default function MentionsLegales() {
@@ -26,9 +26,13 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Éditeur du site</h2>
             <p>
-              KEZA est un service en ligne de comparaison de prix de vols (cash vs miles).
+              Xalifly est un service en ligne de comparaison de prix de vols (cash vs miles).
             </p>
             <p className="mt-2">
+              {/* TODO(rebrand): confirm the real registered entity name before shipping —
+                  "KEZA Inc." below is the entity name as it existed before this rebrand.
+                  Do not change to "Xalifly Inc." without confirming that's the actual
+                  legal entity that will operate under the new name. */}
               Éditeur : KEZA Inc. (en cours d&apos;immatriculation, Delaware, États-Unis)
             </p>
             <p className="mt-2">
@@ -56,7 +60,7 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Propriété intellectuelle</h2>
             <p>
-              L&apos;ensemble des contenus présents sur le site KEZA (textes, graphismes, logos, icônes, logiciels)
+              L&apos;ensemble des contenus présents sur le site Xalifly (textes, graphismes, logos, icônes, logiciels)
               est protégé par les lois relatives à la propriété intellectuelle. Toute reproduction,
               représentation ou diffusion, en tout ou partie, du contenu de ce site est interdite sans
               autorisation préalable.
@@ -66,8 +70,8 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Données de prix</h2>
             <p>
-              Les prix affichés sur KEZA sont fournis à titre indicatif et proviennent de sources tierces.
-              KEZA ne garantit pas l&apos;exactitude, l&apos;exhaustivité ou l&apos;actualité des prix affichés.
+              Les prix affichés sur Xalifly sont fournis à titre indicatif et proviennent de sources tierces.
+              Xalifly ne garantit pas l&apos;exactitude, l&apos;exhaustivité ou l&apos;actualité des prix affichés.
               Les prix peuvent varier au moment de la réservation auprès de la compagnie aérienne ou de
               l&apos;agence de voyage.
             </p>
@@ -76,7 +80,7 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Responsabilité</h2>
             <p>
-              KEZA est un comparateur et ne vend pas de billets d&apos;avion. KEZA ne saurait être tenu
+              Xalifly est un comparateur et ne vend pas de billets d&apos;avion. Xalifly ne saurait être tenu
               responsable des décisions prises par les utilisateurs sur la base des informations fournies.
               L&apos;utilisateur est seul responsable de ses choix de réservation.
             </p>
@@ -85,7 +89,7 @@ export default function MentionsLegales() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Liens hypertextes</h2>
             <p>
-              Le site KEZA peut contenir des liens vers des sites tiers. KEZA n&apos;exerce aucun contrôle
+              Le site Xalifly peut contenir des liens vers des sites tiers. Xalifly n&apos;exerce aucun contrôle
               sur ces sites et décline toute responsabilité quant à leur contenu.
             </p>
           </section>

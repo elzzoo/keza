@@ -16,7 +16,7 @@ export function ProUpgradeCard({ daysLeft }: { daysLeft: number | null }) {
             {daysLeft > 0 ? `Essai gratuit: ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant` : "Essai expiré"}
           </h3>
           <p className="text-sm text-amber-800 mb-4">
-            Passe à KEZA Pro pour débloquer l&apos;historique des prix sur 6 mois et les alertes multi-passagers.
+            Passe à Xalifly Pro pour débloquer l&apos;historique des prix sur 6 mois et les alertes multi-passagers.
           </p>
         </div>
       </div>
@@ -24,7 +24,7 @@ export function ProUpgradeCard({ daysLeft }: { daysLeft: number | null }) {
         href="/pro"
         className="inline-block rounded-lg bg-amber-600 text-white text-sm font-bold px-6 py-2 hover:bg-amber-700 transition-colors"
       >
-        Passer à KEZA Pro
+        Passer à Xalifly Pro
       </Link>
     </div>
   );

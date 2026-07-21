@@ -46,7 +46,7 @@ const DUFFEL_TIMEOUT = DUFFEL_TIMEOUT_MS;  // Configurable via env var (default 
 const MAX_RETRIES = 1;     // 1 retry max (total worst-case: 4s + 200ms + 4s = 8.2s)
 const RETRY_BACKOFF_MS = [200, 500] as const; // fast retry on timeout (fail-fast improves p95)
 
-/** Map KEZA cabin names to Duffel cabin class values */
+/** Map Xalifly cabin names to Duffel cabin class values */
 const CABIN_MAP: Record<Cabin, string> = {
   economy:  "economy",
   premium:  "premium_economy",

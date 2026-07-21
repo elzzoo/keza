@@ -1,5 +1,5 @@
 // ─── Route Metadata ─────────────────────────────────────────────────────────
-// Rich metadata layer for all KEZA routes: duration, airlines, best programs,
+// Rich metadata layer for all Xalifly routes: duration, airlines, best programs,
 // season tips, and approximate miles needed for economy/business.
 
 export interface RouteMeta {

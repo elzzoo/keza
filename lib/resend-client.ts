@@ -272,7 +272,7 @@ function generateMilesAlertEmailHTML({
       </div>
 
       <p style="font-size: 14px; color: #999999; text-align: center; margin-top: 20px;">
-        This deal matches your saved alert criteria. Sign in to <span class="keza-logo">KEZA</span> to book your award flight.
+        This deal matches your saved alert criteria. Sign in to <span class="keza-logo">Xalifly</span> to book your award flight.
       </p>
     </div>
 
@@ -285,7 +285,7 @@ function generateMilesAlertEmailHTML({
         <a href="https://keza.app/miles-alerts?email=${encodeURIComponent(email)}&unsubscribe=true">Unsubscribe</a>
       </div>
       <p style="margin: 15px 0 0 0; color: #bbb;">
-        © 2026 <span class="keza-logo">KEZA</span> • Your miles, optimized.
+        © 2026 <span class="keza-logo">Xalifly</span> • Your miles, optimized.
       </p>
     </div>
   </div>

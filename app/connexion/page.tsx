@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ConnexionClient } from "./ConnexionClient";
 
 export const metadata: Metadata = {
-  title: "Connexion — KEZA",
+  title: "Connexion — Xalifly",
   robots: { index: false },
 };
 

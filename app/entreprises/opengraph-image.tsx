@@ -9,7 +9,7 @@ export default function Image() {
   return new ImageResponse(
     ogWrapper(
       <>
-        {ogTopBar("KEZA pour les entreprises")}
+        {ogTopBar("Xalifly pour les entreprises")}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ color: "#ffffff", fontSize: 64, fontWeight: 900, lineHeight: 1.1, letterSpacing: "-2px", marginBottom: 16 }}>
             Optimise les{" "}

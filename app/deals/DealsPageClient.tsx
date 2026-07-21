@@ -65,15 +65,15 @@ function ShareDealButton({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | 
   const handleShare = async () => {
     const url = `${SITE_URL}/?from=${deal.from}&to=${deal.to}&utm_source=share&utm_medium=deal`;
     const text = lang === "en"
-      ? `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired.toLocaleString("en-US")} miles (${deal.program}) via KEZA`
-      : `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via KEZA`;
+      ? `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired.toLocaleString("en-US")} miles (${deal.program}) via Xalifly`
+      : `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via Xalifly`;
 
     trackDealShare({ from: deal.from, to: deal.to, program: deal.program });
 
     // Web Share API on mobile
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({ title: `KEZA — ${deal.from} → ${deal.to}`, text, url });
+        await navigator.share({ title: `Xalifly — ${deal.from} → ${deal.to}`, text, url });
         setState("shared");
         setTimeout(() => setState("idle"), 2000);
         return;
@@ -335,8 +335,8 @@ export function DealsPageClient({ initialDeals, lang = "fr" }: { initialDeals: L
         <p className="text-fg font-semibold mb-1">{lang === "en" ? "Interested in a flight?" : "Un vol vous intéresse ?"}</p>
         <p className="text-sm text-subtle mb-4">
           {lang === "en"
-            ? "Create a price alert — KEZA notifies you as soon as it drops 10%."
-            : "Créez une alerte prix — KEZA vous prévient dès qu'il baisse de 10 %."}
+            ? "Create a price alert — Xalifly notifies you as soon as it drops 10%."
+            : "Créez une alerte prix — Xalifly vous prévient dès qu'il baisse de 10 %."}
         </p>
         <Link
           href="/"

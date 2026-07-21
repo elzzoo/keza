@@ -4,7 +4,7 @@ import { searchEngine } from "@/lib/engine";
 
 export const inngest = new Inngest({
   id: "keza",
-  name: "KEZA",
+  name: "Xalifly",
 });
 
 /**

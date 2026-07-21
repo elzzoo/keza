@@ -1,5 +1,5 @@
 /**
- * KEZA Pro access control
+ * Xalifly Pro access control
  * Determines if a user has Pro access (paid or trial)
  */
 

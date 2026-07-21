@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ProfilClient } from "@/app/profil/ProfilClient";
 
 export const metadata: Metadata = {
-  title: "My Profile – KEZA",
+  title: "My Profile – Xalifly",
   description: "Manage your miles, loyalty programs and favourite routes.",
   robots: { index: false },
 };

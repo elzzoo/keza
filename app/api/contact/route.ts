@@ -9,7 +9,7 @@ import { sendDiscordAlert } from "@/lib/discord";
 import { SITE_URL } from "@/lib/siteConfig";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.RESEND_FROM_EMAIL ?? "KEZA Alerts <onboarding@resend.dev>";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "Xalifly Alerts <onboarding@resend.dev>";
 
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -64,24 +64,24 @@ export async function POST(request: Request) {
     resend.emails.send({
       from: FROM,
       to: [body.email],
-      subject: "✅ KEZA — on a bien reçu votre demande",
+      subject: "✅ Xalifly — on a bien reçu votre demande",
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
           <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
-            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">KEZA Entreprises</p>
+            <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
+            <p style="margin:4px 0 0;color:#94a3b8;font-size:12px;">Xalifly Entreprises</p>
           </div>
           <div style="padding:24px;">
             <p style="margin:0 0 16px;font-size:15px;color:#e2e8f0;line-height:1.7;">
-              Bonjour ${esc(body.name)}, merci pour votre intérêt pour KEZA Entreprises. Notre équipe vous répondra sous 24h. En attendant, n'hésitez pas à explorer keza.app.
+              Bonjour ${esc(body.name)}, merci pour votre intérêt pour Xalifly Entreprises. Notre équipe vous répondra sous 24h. En attendant, n'hésitez pas à explorer keza.app.
             </p>
             <a href="${SITE_URL}"
                style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;">
-              Explorer KEZA →
+              Explorer Xalifly →
             </a>
           </div>
           <div style="padding:16px 24px;border-top:1px solid #1e293b;text-align:center;">
-            <p style="margin:0;font-size:10px;color:#334155;">KEZA · Cash ou Miles ?</p>
+            <p style="margin:0;font-size:10px;color:#334155;">Xalifly · Cash ou Miles ?</p>
           </div>
         </div>
       `,

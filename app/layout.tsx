@@ -24,30 +24,30 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "KEZA — Cash ou Miles ?",
+  title: "Xalifly — Cash ou Miles ?",
   description: "Compare the real cost of every option — cash, miles or transfer — on any flight, anywhere in the world. | Comparez cash vs miles sur chaque vol, partout dans le monde.",
   manifest: "/manifest.json",
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: "/" },
   openGraph: {
-    title: "KEZA — Cash ou Miles ?",
+    title: "Xalifly — Cash ou Miles ?",
     description: "Comparez le vrai coût de chaque vol : cash, miles ou transfert. Trouvez la meilleure option en 1 clic.",
     url: SITE_URL,
-    siteName: "KEZA",
+    siteName: "Xalifly",
     locale: "fr_FR",
     type: "website",
-    images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630, alt: "KEZA — Cash ou Miles ?" }],
+    images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630, alt: "Xalifly — Cash ou Miles ?" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "KEZA — Cash ou Miles ?",
-    description: "Cash, miles ou transfert ? KEZA compare en temps réel et vous dit quoi choisir.",
+    title: "Xalifly — Cash ou Miles ?",
+    description: "Cash, miles ou transfert ? Xalifly compare en temps réel et vous dit quoi choisir.",
     images: [`${SITE_URL}/api/og`],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "KEZA",
+    title: "Xalifly",
   },
 };
 
@@ -78,7 +78,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://plausible.io" />
         <link rel="preconnect" href="https://api.keza.app" />
-        <link rel="alternate" type="application/rss+xml" title="KEZA Deals" href="/api/feed" />
+        <link rel="alternate" type="application/rss+xml" title="Xalifly Deals" href="/api/feed" />
 <script
           nonce={nonce}
           dangerouslySetInnerHTML={{
@@ -95,7 +95,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "KEZA",
+              name: "Xalifly",
               url: SITE_URL,
               description: "Comparez cash vs miles sur chaque vol — trouvez la meilleure option en 1 clic.",
               potentialAction: {
@@ -118,10 +118,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "KEZA",
+              name: "Xalifly",
               url: SITE_URL,
               logo: `${SITE_URL}/icon-192.png`,
-              description: "Comparateur cash vs miles pour les vols internationaux. KEZA calcule en temps réel si payer en cash ou utiliser ses miles est moins cher.",
+              description: "Comparateur cash vs miles pour les vols internationaux. Xalifly calcule en temps réel si payer en cash ou utiliser ses miles est moins cher.",
               sameAs: [],
               contactPoint: {
                 "@type": "ContactPoint",

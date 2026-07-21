@@ -87,7 +87,7 @@ export async function sendSeatAlertEmail(
     });
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL ?? "KEZA Alerts <alerts@keza.app>",
+      from: process.env.RESEND_FROM_EMAIL ?? "Xalifly Alerts <alerts@keza.app>",
       to: subscriberEmail,
       subject: `Deal Alert: ${cabin} Class on ${route} - Save ${discount.toFixed(1)}%`,
       html,

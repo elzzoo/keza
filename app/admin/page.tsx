@@ -17,7 +17,7 @@ interface B2BLead {
   receivedAt: string;
 }
 
-export const metadata: Metadata = { title: "Admin — KEZA", robots: "noindex" };
+export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
 
 // ─── B2B leads fetching ──────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ function LoginForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold text-gray-900">Admin KEZA</h1>
+        <h1 className="text-xl font-bold text-gray-900">Admin Xalifly</h1>
         <p className="mt-1 text-sm text-gray-500">
           Accès restreint. Entrez le secret admin.
         </p>
@@ -256,7 +256,7 @@ export default async function AdminPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-              KEZA
+              Xalifly
             </span>
             <form method="POST" action="/api/admin/session?_method=DELETE">
               <button

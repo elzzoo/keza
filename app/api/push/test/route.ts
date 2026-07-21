@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   const sent = await sendPushToAll({
-    title: "🔔 KEZA — Test notification",
+    title: "🔔 Xalifly — Test notification",
     body: "Le push fonctionne ! / Push notifications are working!",
     url: "/alertes",
   });

@@ -12,7 +12,7 @@ interface RouteSequenceSelectorProps {
 /**
  * Component for selecting and displaying multi-leg flight routes
  * Shows route sequence, airlines, prices, and connection times
- * Matches KEZA design system (Tailwind CSS + theme variables)
+ * Matches Xalifly design system (Tailwind CSS + theme variables)
  */
 export function RouteSequenceSelector({ routes, onSelect, lang = 'en' }: RouteSequenceSelectorProps) {
   const fr = lang === 'fr';

@@ -1,5 +1,5 @@
 /**
- * KEZA Pro feature gating
+ * Xalifly Pro feature gating
  * Determines which features are available based on Pro subscription status
  */
 
@@ -64,9 +64,9 @@ export function getFeatureName(feature: ProFeature): string {
  */
 export function getFeatureUpgradeText(feature: ProFeature): string {
   const texts: Record<ProFeature, string> = {
-    "history-6mo": "Upgrade to KEZA Pro to see 6-month price history",
-    "multi-passenger-alerts": "Upgrade to KEZA Pro to set multi-passenger alerts",
-    "unlimited-alerts": "Upgrade to KEZA Pro for unlimited alerts",
+    "history-6mo": "Upgrade to Xalifly Pro to see 6-month price history",
+    "multi-passenger-alerts": "Upgrade to Xalifly Pro to set multi-passenger alerts",
+    "unlimited-alerts": "Upgrade to Xalifly Pro for unlimited alerts",
   };
-  return texts[feature] ?? "Upgrade to KEZA Pro";
+  return texts[feature] ?? "Upgrade to Xalifly Pro";
 }

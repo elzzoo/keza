@@ -8,7 +8,7 @@ export function ConnexionClient() {
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-          <Link href="/" className="text-2xl font-black text-primary">KEZA</Link>
+          <Link href="/" className="text-2xl font-black text-primary">Xalifly</Link>
           <p className="text-sm text-muted mt-2">Connecte-toi pour synchroniser ton wallet miles sur tous tes appareils.</p>
         </div>
 
@@ -24,7 +24,7 @@ export function ConnexionClient() {
           </button>
 
           <p className="text-center text-[11px] text-muted">
-            Tu peux aussi utiliser KEZA sans compte.{" "}
+            Tu peux aussi utiliser Xalifly sans compte.{" "}
             <Link href="/" className="text-primary hover:underline">Retour à la recherche →</Link>
           </p>
         </div>

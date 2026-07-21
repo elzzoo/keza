@@ -46,7 +46,7 @@ export function OnboardingFlow({ onComplete }: Props) {
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">Welcome to KEZA</h1>
+            <h1 className="text-3xl font-bold">Welcome to Xalifly</h1>
             <span className="text-sm font-semibold text-gray-600">
               Step {step} of 3
             </span>

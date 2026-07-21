@@ -84,7 +84,7 @@ export function UpgradeModal({ lang, onClose, prefillEmail = "" }: Props) {
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-[11px] font-bold text-amber-400 mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            {fr ? "KEZA Pro — 9$ / mois" : "KEZA Pro — $9 / month"}
+            {fr ? "Xalifly Pro — 9$ / mois" : "Xalifly Pro — $9 / month"}
           </div>
 
           <h2 className="text-xl font-black text-fg">

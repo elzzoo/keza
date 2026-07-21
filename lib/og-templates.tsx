@@ -56,7 +56,7 @@ export function ogWrapper(children: React.ReactNode): React.ReactElement {
   );
 }
 
-/** Top bar: Keza logo (left) + pill label (right) */
+/** Top bar: Xalifly logo (left) + pill label (right) */
 export function ogTopBar(tag: string): React.ReactElement {
   return (
     <div
@@ -84,7 +84,7 @@ export function ogTopBar(tag: string): React.ReactElement {
           ✈
         </div>
         <span style={{ color: "#ffffff", fontWeight: 700, fontSize: 17 }}>
-          Keza
+          Xalifly
         </span>
       </div>
       {/* Pill */}

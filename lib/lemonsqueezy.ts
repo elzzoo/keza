@@ -1,5 +1,5 @@
 /**
- * KEZA × Lemon Squeezy — subscription management
+ * Xalifly × Lemon Squeezy — subscription management
  * Docs: https://docs.lemonsqueezy.com/api
  */
 
@@ -151,7 +151,7 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
 
 /**
- * Create a hosted checkout URL for KEZA Pro.
+ * Create a hosted checkout URL for Xalifly Pro.
  * Docs: https://docs.lemonsqueezy.com/api/checkouts/create-checkout
  */
 export async function createCheckoutUrl(email: string): Promise<string> {
@@ -174,7 +174,7 @@ export async function createCheckoutUrl(email: string): Promise<string> {
         product_options: {
           redirect_url: `${BASE_URL}/pro?upgraded=1`,
           receipt_link_url: `${BASE_URL}/alertes`,
-          receipt_thank_you_note: "Bienvenue dans KEZA Pro ! Vos alertes illimitées sont maintenant actives.",
+          receipt_thank_you_note: "Bienvenue dans Xalifly Pro ! Vos alertes illimitées sont maintenant actives.",
         },
       },
       relationships: {

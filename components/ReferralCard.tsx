@@ -40,8 +40,8 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
   function shareWhatsApp() {
     if (!data) return;
     const text = lang === "fr"
-      ? `Utilise KEZA pour comparer les prix de vols cash vs miles ✈️ ${data.url}`
-      : `Use KEZA to compare flight prices cash vs miles ✈️ ${data.url}`;
+      ? `Utilise Xalifly pour comparer les prix de vols cash vs miles ✈️ ${data.url}`
+      : `Use Xalifly to compare flight prices cash vs miles ✈️ ${data.url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   }
 

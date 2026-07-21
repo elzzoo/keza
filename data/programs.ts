@@ -15,7 +15,7 @@ export interface LoyaltyProgram {
   bestUse: string;
   bestUseFr: string;
   flag: string;
-  score: number;           // 0–100, KEZA score
+  score: number;           // 0–100, Xalifly score
 }
 
 // Sorted by score descending. Ties are ordered editorially (insertion order).

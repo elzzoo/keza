@@ -28,10 +28,10 @@ export async function generateMetadata(
   }
 
   return {
-    title: `${program.name} - KEZA`,
+    title: `${program.name} - Xalifly`,
     description: `${program.name} loyalty programme details. ${program.bestUse}`,
     openGraph: {
-      title: `${program.name} - KEZA`,
+      title: `${program.name} - Xalifly`,
       description: `${program.name} loyalty programme. ${program.bestUse}`,
       type: 'website',
       url: `https://keza.co/programmes/${program.id}`,
@@ -101,7 +101,7 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">KEZA Score</p>
+            <p className="text-sm text-gray-600">Xalifly Score</p>
             <p className="text-lg font-semibold">{program.score}/100</p>
           </div>
         </div>

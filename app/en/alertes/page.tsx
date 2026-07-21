@@ -5,18 +5,18 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Price Alerts — Track Flights | KEZA",
+  title: "Price Alerts — Track Flights | Xalifly",
   description:
     "Set price alerts for your flights. Get notified when prices drop or miles redemptions improve.",
   openGraph: {
-    title: "Price Alerts — Track Flights | KEZA",
+    title: "Price Alerts — Track Flights | Xalifly",
     description:
       "Set price alerts for your flights. Get notified when prices drop or miles redemptions improve.",
     url: `${SITE_URL}/en/alertes`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Price Alerts — Track Flights | KEZA",
+    title: "Price Alerts — Track Flights | Xalifly",
     description:
       "Set price alerts for your flights. Get notified when prices drop or miles redemptions improve.",
   },

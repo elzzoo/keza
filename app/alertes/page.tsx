@@ -4,9 +4,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Mes alertes prix | KEZA",
+  title: "Mes alertes prix | Xalifly",
   description:
-    "Gérez vos alertes prix KEZA — recevez un email quand un tarif baisse de 10%+.",
+    "Gérez vos alertes prix Xalifly — recevez un email quand un tarif baisse de 10%+.",
   alternates: {
     canonical: `${SITE_URL}/alertes`,
     languages: {

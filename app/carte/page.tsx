@@ -9,18 +9,18 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { WorldMapClient } from "./WorldMapClient";
 
 export const metadata: Metadata = {
-  title: "Carte des destinations miles | KEZA",
+  title: "Carte des destinations miles | Xalifly",
   description:
     "Explorez 24 destinations en avion — carte interactive cash vs miles. Trouvez où vos points valent le plus.",
   openGraph: {
-    title: "Carte des destinations miles | KEZA",
-    description: "24 destinations sur une carte interactive. Points colorés par recommandation KEZA : miles gagnent, cash gagne.",
+    title: "Carte des destinations miles | Xalifly",
+    description: "24 destinations sur une carte interactive. Points colorés par recommandation Xalifly : miles gagnent, cash gagne.",
     url: `${SITE_URL}/carte`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Carte des destinations miles | KEZA",
-    description: "24 destinations sur une carte interactive. Points colorés par recommandation KEZA.",
+    title: "Carte des destinations miles | Xalifly",
+    description: "24 destinations sur une carte interactive. Points colorés par recommandation Xalifly.",
   },
   alternates: {
     canonical: `${SITE_URL}/carte`,

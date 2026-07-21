@@ -1,9 +1,9 @@
 /**
- * KEZA Referral Program
+ * Xalifly Referral Program
  *
  * Flow:
  * 1. User visits /alertes → gets a unique referral link (?ref=CODE)
- * 2. Friend visits KEZA with ?ref=CODE → cookie is set
+ * 2. Friend visits Xalifly with ?ref=CODE → cookie is set
  * 3. Friend creates first alert → referrer earns +1 alert credit
  * 4. Referrer receives email notification
  * 5. Credit is applied: effective free limit = 3 + credits
@@ -123,21 +123,21 @@ async function sendReferralNotificationEmail(
 
   const resend = new Resend(apiKey);
   const fromDomain = process.env.RESEND_FROM_DOMAIN ?? "keza-taupe.vercel.app";
-  const fromAddress = `KEZA <noreply@${fromDomain}>`;
+  const fromAddress = `Xalifly <noreply@${fromDomain}>`;
 
   const maskedEmail = referredEmail.replace(/(.{2}).*(@.*)/, "$1***$2");
 
   await resend.emails.send({
     from: fromAddress,
     to: referrerEmail,
-    subject: "🎉 Ton ami a rejoint KEZA — +1 alerte débloquée !",
+    subject: "🎉 Ton ami a rejoint Xalifly — +1 alerte débloquée !",
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#f1f5f9;background:#0f172a;padding:32px;border-radius:12px">
         <h1 style="font-size:24px;font-weight:900;margin:0 0 8px">
-          <span style="color:#3b82f6">KE</span>ZA
+          <span style="color:#3b82f6">Xali</span>fly
         </h1>
         <h2 style="font-size:18px;font-weight:700;margin:24px 0 8px">
-          🎉 Ton ami a rejoint KEZA !
+          🎉 Ton ami a rejoint Xalifly !
         </h2>
         <p style="color:#94a3b8;font-size:14px;line-height:1.6">
           <strong style="color:#f1f5f9">${maskedEmail}</strong> vient de créer sa première alerte prix grâce à ton lien de parrainage.

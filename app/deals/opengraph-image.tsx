@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Deals cash vs miles | KEZA";
+export const alt = "Deals cash vs miles | Xalifly";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -21,8 +21,8 @@ export default function OGImage() {
         }}
       >
         <div style={{ display: "flex", fontSize: 52, fontWeight: 900, marginBottom: 24 }}>
-          <span style={{ color: "#3b82f6" }}>KE</span>
-          <span style={{ color: "#e2e8f0" }}>ZA</span>
+          <span style={{ color: "#3b82f6" }}>Xali</span>
+          <span style={{ color: "#e2e8f0" }}>fly</span>
         </div>
         <div
           style={{

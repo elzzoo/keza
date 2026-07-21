@@ -41,14 +41,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { route } = await params;
   const parsed = parseRoute(route);
-  if (!parsed) return { title: "Route not found — KEZA" };
+  if (!parsed) return { title: "Route not found — Xalifly" };
 
   const fromAirport = airportsMap[parsed.from];
   const toAirport = airportsMap[parsed.to];
   const fromCityFrMeta = fromAirport?.city ?? fromAirport?.cityEn ?? parsed.from;
   const toCityFrMeta = toAirport?.city ?? toAirport?.cityEn ?? parsed.to;
 
-  const title = `Vols ${fromCityFrMeta} → ${toCityFrMeta} — Cash ou Miles ? | KEZA`;
+  const title = `Vols ${fromCityFrMeta} → ${toCityFrMeta} — Cash ou Miles ? | Xalifly`;
   const description = `Comparez le prix cash et le coût en miles pour ${fromCityFrMeta} (${parsed.from}) → ${toCityFrMeta} (${parsed.to}). Trouvez la façon la moins chère de réserver. Mis à jour chaque jour.`;
   return {
     title,
@@ -142,7 +142,7 @@ export default async function RoutePage({ params }: Props) {
       {
         "@type": "ListItem",
         position: 1,
-        name: "KEZA",
+        name: "Xalifly",
         item: SITE_URL,
       },
       {
@@ -170,7 +170,7 @@ export default async function RoutePage({ params }: Props) {
         name: `Vaut-il mieux payer en cash ou en miles pour ${fromCityFr} → ${toCityFr} ?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `Cela dépend du programme et des dates. KEZA compare toutes les options — prix cash, rachat de miles${routeMeta ? ` (meilleurs programmes : ${routeMeta.bestPrograms.join(", ")})` : ""}, et transferts de points bancaires — pour trouver la solution la moins chère.`,
+          text: `Cela dépend du programme et des dates. Xalifly compare toutes les options — prix cash, rachat de miles${routeMeta ? ` (meilleurs programmes : ${routeMeta.bestPrograms.join(", ")})` : ""}, et transferts de points bancaires — pour trouver la solution la moins chère.`,
         },
       },
       {
@@ -181,8 +181,8 @@ export default async function RoutePage({ params }: Props) {
           text: routeMeta
             ? routeMeta.seasonTip.fr
             : cheapest
-            ? `D'après les données actuelles, les prix commencent à $${cheapest.price} autour du ${cheapest.date}. Utilisez le calendrier de prix KEZA pour trouver les meilleures dates.`
-            : `Les prix varient selon la saison. Utilisez le calendrier KEZA pour comparer les prix journaliers.`,
+            ? `D'après les données actuelles, les prix commencent à $${cheapest.price} autour du ${cheapest.date}. Utilisez le calendrier de prix Xalifly pour trouver les meilleures dates.`
+            : `Les prix varient selon la saison. Utilisez le calendrier Xalifly pour comparer les prix journaliers.`,
         },
       },
       {
@@ -192,7 +192,7 @@ export default async function RoutePage({ params }: Props) {
           "@type": "Answer",
           text: routeMeta
             ? `En classe économique, comptez environ ${routeMeta.milesToEconomy.toLocaleString("fr-FR")} miles, et ${routeMeta.milesToBusiness.toLocaleString("fr-FR")} miles en business. Les meilleurs programmes sur cette route sont ${routeMeta.bestPrograms.join(", ")}.`
-            : `Les besoins en miles varient selon le programme et les disponibilités. KEZA vérifie les 33 programmes de fidélité en temps réel pour trouver le meilleur rachat.`,
+            : `Les besoins en miles varient selon le programme et les disponibilités. Xalifly vérifie les 33 programmes de fidélité en temps réel pour trouver le meilleur rachat.`,
         },
       },
       {
@@ -204,7 +204,7 @@ export default async function RoutePage({ params }: Props) {
             ? routeMeta.isNonstop
               ? `Oui, des vols sans escale sont disponibles entre ${fromCityFr} et ${toCityFr} avec ${routeMeta.airlines.join(", ")}.`
               : `Il n'y a pas de vol direct sur cette route. La plupart des correspondances passent par ${routeMeta.hub ?? "un hub majeur"}. Les compagnies opérant cette route incluent ${routeMeta.airlines.join(", ")}.`
-            : `Consultez la recherche KEZA pour les options de vol actuelles entre ${fromCityFr} et ${toCityFr}.`,
+            : `Consultez la recherche Xalifly pour les options de vol actuelles entre ${fromCityFr} et ${toCityFr}.`,
         },
       },
     ],

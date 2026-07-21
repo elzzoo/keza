@@ -8,18 +8,18 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Miles Calculator — Is It Worth Redeeming? | KEZA",
+  title: "Miles Calculator — Is It Worth Redeeming? | Xalifly",
   description:
     "Calculate the value of your miles and points. Find out if redeeming miles beats the cash price.",
   openGraph: {
-    title: "Miles Calculator — Is It Worth Redeeming? | KEZA",
+    title: "Miles Calculator — Is It Worth Redeeming? | Xalifly",
     description:
       "Calculate the value of your miles and points. Find out if redeeming miles beats the cash price.",
     url: `${SITE_URL}/en/calculateur`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Miles Calculator — Is It Worth Redeeming? | KEZA",
+    title: "Miles Calculator — Is It Worth Redeeming? | Xalifly",
     description:
       "Calculate the value of your miles and points. Find out if redeeming miles beats the cash price.",
   },

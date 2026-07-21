@@ -45,7 +45,7 @@ export async function generateMetadata(
 
   const fromCity = fromApt.cityEn ?? fromApt.city;
   const toCity   = toApt.cityEn   ?? toApt.city;
-  const title    = `${fromCity} to ${toCity} Flights — Cash or Miles? | KEZA`;
+  const title    = `${fromCity} to ${toCity} Flights — Cash or Miles? | Xalifly`;
   const description =
     `Compare cash price vs miles on ${from}→${to} (${fromCity}–${toCity}). ` +
     `${meta.airlines.slice(0, 2).join(", ")} · Best programs: ${meta.bestPrograms.slice(0, 2).join(", ")}. ` +
@@ -66,7 +66,7 @@ export async function generateMetadata(
       title,
       description,
       url: canonical,
-      siteName: "KEZA",
+      siteName: "Xalifly",
       locale: "en_US",
       type: "website",
       images: [{ url: ogUrl, width: 1200, height: 630, alt: `${fromCity} to ${toCity} flights` }],
@@ -117,7 +117,7 @@ export default async function EnRoutePage(
         "@type": "Product",
         name: `${fromCity} to ${toCity} Flights`,
         description: `Cash vs miles comparison for ${from}→${to}. Best programs: ${meta.bestPrograms.join(", ")}.`,
-        brand: { "@type": "Brand", name: "KEZA" },
+        brand: { "@type": "Brand", name: "Xalifly" },
         offers: {
           "@type": "AggregateOffer",
           priceCurrency: "USD",
@@ -132,7 +132,7 @@ export default async function EnRoutePage(
             name: `Should I pay cash or use miles for ${fromCity} to ${toCity}?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: `It depends on the program and dates. KEZA compares all options — cash prices, miles redemptions (best programs: ${meta.bestPrograms.slice(0, 3).join(", ")}), and credit card point transfers — to find the cheapest option.`,
+              text: `It depends on the program and dates. Xalifly compares all options — cash prices, miles redemptions (best programs: ${meta.bestPrograms.slice(0, 3).join(", ")}), and credit card point transfers — to find the cheapest option.`,
             },
           },
           {
@@ -174,8 +174,8 @@ export default async function EnRoutePage(
       <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/en" className="font-black text-lg">
-            <span className="text-primary">KE</span>
-            <span className="text-fg">ZA</span>
+            <span className="text-primary">Xali</span>
+            <span className="text-fg">fly</span>
           </Link>
           <Link
             href={searchUrl}
@@ -296,7 +296,7 @@ export default async function EnRoutePage(
                 Expect around{" "}
                 <strong className="text-fg">{meta.milesToEconomy.toLocaleString("en-US")} miles</strong>{" "}
                 one-way with the best programs.
-                KEZA automatically compares all taxes and fees.
+                Xalifly automatically compares all taxes and fees.
               </p>
             </div>
             <div>
@@ -372,7 +372,7 @@ export default async function EnRoutePage(
             Ready to compare {fromCity} → {toCity}?
           </p>
           <p className="text-sm text-muted">
-            KEZA pulls live prices and tells you whether your miles are worth more than the cash price.
+            Xalifly pulls live prices and tells you whether your miles are worth more than the cash price.
           </p>
           <Link
             href={searchUrl}
@@ -391,7 +391,7 @@ export default async function EnRoutePage(
       </main>
 
       <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted">
-        <Link href="/en" className="hover:text-fg transition-colors">KEZA</Link>
+        <Link href="/en" className="hover:text-fg transition-colors">Xalifly</Link>
         {" · "}Cash or Miles?{" · "}
         <Link href={searchUrl} className="hover:text-fg transition-colors">
           Search {from}→{to}

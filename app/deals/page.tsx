@@ -13,17 +13,17 @@ import { logWarn } from "@/lib/logger";
 export const revalidate = 3600; // Re-fetch every hour
 
 export const metadata: Metadata = {
-  title: "Deals cash vs miles du moment | KEZA",
+  title: "Deals cash vs miles du moment | Xalifly",
   description:
-    "Comparez les meilleurs deals vols en cash et en miles. KEZA calcule en temps réel quand payer cash ou utiliser vos miles.",
+    "Comparez les meilleurs deals vols en cash et en miles. Xalifly calcule en temps réel quand payer cash ou utiliser vos miles.",
   openGraph: {
-    title: "Deals cash vs miles | KEZA",
+    title: "Deals cash vs miles | Xalifly",
     description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
     images: [{ url: "/deals/opengraph-image" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deals cash vs miles | KEZA",
+    title: "Deals cash vs miles | Xalifly",
     description: "Les meilleurs deals vols — cash ou miles — mis à jour en continu.",
   },
   alternates: {
@@ -95,7 +95,7 @@ export default async function DealsPage() {
             Deals cash vs miles du moment
           </h1>
           <p className="text-sm text-subtle max-w-xl">
-            KEZA calcule en temps réel la valeur de vos miles sur chaque route.
+            Xalifly calcule en temps réel la valeur de vos miles sur chaque route.
             Payez au meilleur prix — cash ou miles.
           </p>
         </div>

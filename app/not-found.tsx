@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Page introuvable | KEZA",
-  description: "Cette page n'existe pas. Retournez à KEZA pour comparer vos vols cash vs miles.",
+  title: "Page introuvable | Xalifly",
+  description: "Cette page n'existe pas. Retournez à Xalifly pour comparer vos vols cash vs miles.",
   robots: "noindex",
 };
 
@@ -13,8 +13,8 @@ export default function NotFound() {
       {/* Logo */}
       <div className="mb-8 flex flex-col items-center gap-1">
         <span className="text-4xl font-black leading-none">
-          <span className="text-primary">KE</span>
-          <span className="text-fg">ZA</span>
+          <span className="text-primary">Xali</span>
+          <span className="text-fg">fly</span>
         </span>
         <span className="text-[10px] font-semibold tracking-widest uppercase text-muted">
           Cash ou Miles ?

@@ -7,7 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Calculateur de valeur miles — KEZA",
+  title: "Calculateur de valeur miles — Xalifly",
   description: "Combien valent vos miles Flying Blue, Aeroplan, LifeMiles en euros ? Calculateur instantané par programme de fidélité.",
   alternates: {
     canonical: `${SITE_URL}/calculateur`,

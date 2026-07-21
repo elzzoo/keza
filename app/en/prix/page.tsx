@@ -8,18 +8,18 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { logError } from "@/lib/logger";
 
 export const metadata: Metadata = {
-  title: "Flight Prices — Compare Cash & Miles | KEZA",
+  title: "Flight Prices — Compare Cash & Miles | Xalifly",
   description:
     "Compare flight prices in cash and miles for all routes. Find the cheapest way to book your next flight.",
   openGraph: {
-    title: "Flight Prices — Compare Cash & Miles | KEZA",
+    title: "Flight Prices — Compare Cash & Miles | Xalifly",
     description:
       "Compare flight prices in cash and miles for all routes. Find the cheapest way to book your next flight.",
     url: `${SITE_URL}/en/prix`,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flight Prices — Compare Cash & Miles | KEZA",
+    title: "Flight Prices — Compare Cash & Miles | Xalifly",
     description:
       "Compare flight prices in cash and miles for all routes. Find the cheapest way to book your next flight.",
   },

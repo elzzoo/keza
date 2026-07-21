@@ -102,7 +102,7 @@ async function fetchFromSeatGuru(
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "User-Agent": "KEZA-SeatMapClient/1.0",
+        "User-Agent": "Xalifly-SeatMapClient/1.0",
       },
       next: { revalidate: CACHE_TTL },
     });
@@ -159,7 +159,7 @@ async function fetchFromSeatMaps(
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "User-Agent": "KEZA-SeatMapClient/1.0",
+        "User-Agent": "Xalifly-SeatMapClient/1.0",
       },
       next: { revalidate: CACHE_TTL },
     });

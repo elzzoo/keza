@@ -103,7 +103,7 @@ export default async function Image({ params }: Props) {
               </div>
             )}
             <span style={{ color: "#94a3b8", fontSize: 18, lineHeight: 1.4 }}>
-              Cash ou miles ?{"\n"}KEZA calcule la meilleure option.
+              Cash ou miles ?{"\n"}Xalifly calcule la meilleure option.
             </span>
           </div>
         </div>

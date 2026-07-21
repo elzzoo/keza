@@ -145,7 +145,7 @@ export function ProClient({
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <p className="text-5xl mb-4">🎉</p>
-            <h1 className="text-2xl font-black text-fg mb-2">Bienvenue dans KEZA Pro !</h1>
+            <h1 className="text-2xl font-black text-fg mb-2">Bienvenue dans Xalifly Pro !</h1>
             <p className="text-sm text-muted mb-6">
               Tes alertes illimitées sont maintenant actives. Crée ta première alerte dès maintenant.
             </p>
@@ -173,7 +173,7 @@ export function ProClient({
             9$ / mois
           </div>
           <h1 className="text-4xl font-black text-fg mb-3">
-            <span className="text-primary">KEZA</span> Pro
+            <span className="text-primary">Xalifly</span> Pro
           </h1>
           <p className="text-base text-muted max-w-md mx-auto">
             Alertes illimitées, notifications multi-devices et historique des prix — pour les voyageurs sérieux.
@@ -199,7 +199,7 @@ export function ProClient({
             <p className="text-xs text-muted">
               {waitlistPosition
                 ? `Tu es n°${waitlistPosition} sur la liste. On te contactera dès l'ouverture des paiements.`
-                : "On te contactera dès l'ouverture des paiements KEZA Pro."}
+                : "On te contactera dès l'ouverture des paiements Xalifly Pro."}
             </p>
             <p className="mt-3 text-xs text-muted/60">
               En attendant, profite des 3 alertes gratuites + parrainage pour en débloquer plus.
@@ -301,7 +301,7 @@ export function ProClient({
             {proStatus.isPro ? (
               <>
                 <p className="text-3xl mb-2">🎉</p>
-                <p className="font-semibold text-fg mb-1">Tu as KEZA Pro</p>
+                <p className="font-semibold text-fg mb-1">Tu as Xalifly Pro</p>
                 <p className="text-sm text-muted">
                   Profite de tes alertes illimitées et de toutes les fonctionnalités Pro.
                 </p>
@@ -338,11 +338,11 @@ export function ProClient({
           <div className="space-y-3">
             <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
               <summary className="font-semibold text-fg flex items-center justify-between">
-                <span>Combien coûte KEZA Pro ?</span>
+                <span>Combien coûte Xalifly Pro ?</span>
                 <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <p className="text-sm text-muted mt-3">
-                KEZA Pro coûte 9$ par mois. Tu peux commencer par un essai gratuit de 7 jours, sans carte de crédit.
+                Xalifly Pro coûte 9$ par mois. Tu peux commencer par un essai gratuit de 7 jours, sans carte de crédit.
               </p>
             </details>
             <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
@@ -378,7 +378,7 @@ export function ProClient({
                 <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <p className="text-sm text-muted mt-3">
-                Oui. KEZA utilise HTTPS, du chiffrement de bout en bout, et les meilleures pratiques de s&eacute;curit&eacute; pour prot&eacute;ger tes informations personnelles.
+                Oui. Xalifly utilise HTTPS, du chiffrement de bout en bout, et les meilleures pratiques de s&eacute;curit&eacute; pour prot&eacute;ger tes informations personnelles.
               </p>
             </details>
           </div>

@@ -72,7 +72,7 @@ export function PwaInstallBanner({ lang, searchCount }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-fg leading-tight">
-            {fr ? "Installer KEZA" : "Install KEZA"}
+            {fr ? "Installer Xalifly" : "Install Xalifly"}
           </p>
           <p className="text-[11px] text-muted mt-0.5">
             {fr ? "Accès rapide · comparaisons hors-ligne" : "Quick access · offline comparisons"}

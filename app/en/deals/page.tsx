@@ -14,18 +14,18 @@ import { logWarn } from "@/lib/logger";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Flight Deals — Best Cash & Miles Offers | KEZA",
+  title: "Flight Deals — Best Cash & Miles Offers | Xalifly",
   description:
     "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
   openGraph: {
-    title: "Flight Deals — Best Cash & Miles Offers | KEZA",
+    title: "Flight Deals — Best Cash & Miles Offers | Xalifly",
     description:
       "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
     images: [{ url: "/deals/opengraph-image" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flight Deals — Best Cash & Miles Offers | KEZA",
+    title: "Flight Deals — Best Cash & Miles Offers | Xalifly",
     description:
       "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
   },
@@ -96,7 +96,7 @@ export default async function EnDealsPage() {
             Best flight deals — cash &amp; miles
           </h1>
           <p className="text-sm text-subtle max-w-xl">
-            KEZA calculates in real time the value of your miles on each route.
+            Xalifly calculates in real time the value of your miles on each route.
             Pay the best price — cash or miles.
           </p>
         </div>

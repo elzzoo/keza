@@ -12,8 +12,8 @@ import { ContactForm } from "./ContactForm";
 // promoted to a layout.tsx if needed.
 //
 // export const metadata: Metadata = {
-//   title: "KEZA for Business — Optimize Your Corporate Travel Budget",
-//   description: "KEZA helps travel managers and finance teams maximize savings on every flight — automatically comparing cash vs miles for your entire team.",
+//   title: "Xalifly for Business — Optimize Your Corporate Travel Budget",
+//   description: "Xalifly helps travel managers and finance teams maximize savings on every flight — automatically comparing cash vs miles for your entire team.",
 // };
 
 const T = {
@@ -22,11 +22,11 @@ const T = {
     forBusiness: "Pour les entreprises",
 
     /* Hero */
-    heroEyebrow: "KEZA for Business",
+    heroEyebrow: "Xalifly for Business",
     heroTitle: "Votre équipe voyage.",
-    heroTitleAccent: "KEZA maximise chaque euro.",
+    heroTitleAccent: "Xalifly maximise chaque euro.",
     heroSub:
-      "Vos collaborateurs dépensent en cash quand ils auraient dû utiliser leurs miles — et inversement. KEZA le détecte, automatiquement.",
+      "Vos collaborateurs dépensent en cash quand ils auraient dû utiliser leurs miles — et inversement. Xalifly le détecte, automatiquement.",
     heroCTA: "Demander une démo",
     heroSecondary: "Voir nos tarifs",
 
@@ -103,7 +103,7 @@ const T = {
     /* Social proof */
     spTitle: "Partenariat fondateur — places limitées",
     spSub: "Accès prioritaire, tarif préférentiel et co-construction du produit.",
-    spLogos: "Contactez-nous pour faire partie des premières entreprises à bénéficier de KEZA.",
+    spLogos: "Contactez-nous pour faire partie des premières entreprises à bénéficier de Xalifly.",
 
     /* Contact */
     contactTitle: "Discutons de votre projet",
@@ -116,11 +116,11 @@ const T = {
     forBusiness: "For Business",
 
     /* Hero */
-    heroEyebrow: "KEZA for Business",
+    heroEyebrow: "Xalifly for Business",
     heroTitle: "Your team travels.",
-    heroTitleAccent: "KEZA maximizes every euro.",
+    heroTitleAccent: "Xalifly maximizes every euro.",
     heroSub:
-      "Your employees spend cash when they should have used miles — and vice versa. KEZA detects it, automatically.",
+      "Your employees spend cash when they should have used miles — and vice versa. Xalifly detects it, automatically.",
     heroCTA: "Request a demo",
     heroSecondary: "See pricing",
 
@@ -197,7 +197,7 @@ const T = {
     /* Social proof */
     spTitle: "Founding partner — limited spots",
     spSub: "Priority access, preferential pricing, and co-built features.",
-    spLogos: "Contact us to be among the first companies to use KEZA.",
+    spLogos: "Contact us to be among the first companies to use Xalifly.",
 
     /* Contact */
     contactTitle: "Let's talk about your needs",

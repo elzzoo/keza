@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 export const metadata = {
-  title: "Dashboard — KEZA",
+  title: "Dashboard — Xalifly",
   description: "Dashboard analytics and insights",
 };
 

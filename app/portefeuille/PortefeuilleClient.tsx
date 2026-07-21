@@ -297,8 +297,8 @@ export function PortefeuilleClient() {
           </h1>
           <p className="text-sm text-muted mt-1.5">
             {lang === "fr"
-              ? "Renseignez vos soldes miles et points — KEZA calcule la valeur totale de votre portefeuille."
-              : "Enter your miles and points balances — KEZA computes the total value of your portfolio."}
+              ? "Renseignez vos soldes miles et points — Xalifly calcule la valeur totale de votre portefeuille."
+              : "Enter your miles and points balances — Xalifly computes the total value of your portfolio."}
           </p>
         </div>
 
@@ -310,7 +310,7 @@ export function PortefeuilleClient() {
             <p className="text-sm text-blue-800">
               {daysLeft !== null && daysLeft > 0
                 ? `Essai gratuit actif: ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant`
-                : "KEZA Pro actif"}
+                : "Xalifly Pro actif"}
             </p>
           </div>
         )}
@@ -466,8 +466,8 @@ export function PortefeuilleClient() {
           </p>
           <p className="text-sm text-fg/80">
             {lang === "fr"
-              ? "Vos soldes sont sauvegardés localement sur votre appareil. Renseignez-les une fois, KEZA vérifie automatiquement si vous pouvez vous payer un vol en miles lors de vos prochaines recherches."
-              : "Your balances are saved locally on your device. Enter them once and KEZA will automatically check if you can afford a flight in miles on your next searches."}
+              ? "Vos soldes sont sauvegardés localement sur votre appareil. Renseignez-les une fois, Xalifly vérifie automatiquement si vous pouvez vous payer un vol en miles lors de vos prochaines recherches."
+              : "Your balances are saved locally on your device. Enter them once and Xalifly will automatically check if you can afford a flight in miles on your next searches."}
           </p>
         </div>
 

@@ -3,7 +3,7 @@ import { HomeClient } from "@/app/HomeClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "KEZA — Compare Flight Prices: Cash vs Miles",
+  title: "Xalifly — Compare Flight Prices: Cash vs Miles",
   description:
     "Compare cash prices and miles redemptions for flights. Find the best value — pay with cash or points.",
   alternates: {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     languages: { fr: `${SITE_URL}` },
   },
   openGraph: {
-    title: "KEZA — Compare Flight Prices: Cash vs Miles",
+    title: "Xalifly — Compare Flight Prices: Cash vs Miles",
     description:
       "Compare cash prices and miles redemptions for flights. Find the best value — pay with cash or points.",
     url: `${SITE_URL}/en`,

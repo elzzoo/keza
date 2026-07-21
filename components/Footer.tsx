@@ -24,8 +24,8 @@ export function Footer({ lang }: Props) {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="font-black text-xl mb-2">
-              <span className="text-primary">KE</span>
-              <span className="text-fg">ZA</span>
+              <span className="text-primary">Xali</span>
+              <span className="text-fg">fly</span>
             </div>
             <p className="text-sm text-muted leading-relaxed">
               {lang === "fr"
@@ -56,7 +56,7 @@ export function Footer({ lang }: Props) {
 
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-subtle">
-          <span>© {year} KEZA. {lang === "fr" ? "Tous droits réservés." : "All rights reserved."}</span>
+          <span>© {year} Xalifly. {lang === "fr" ? "Tous droits réservés." : "All rights reserved."}</span>
           <div className="flex items-center gap-4">
             <a href="/mentions-legales" className="hover:text-muted transition-colors">{lang === "fr" ? "Mentions légales" : "Legal"}</a>
             <a href="/confidentialite" className="hover:text-muted transition-colors">{lang === "fr" ? "Confidentialité" : "Privacy"}</a>

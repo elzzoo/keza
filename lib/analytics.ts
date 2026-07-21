@@ -1,5 +1,5 @@
 /**
- * KEZA Analytics — Plausible custom events
+ * Xalifly Analytics — Plausible custom events
  * Docs: https://plausible.io/docs/custom-event-goals
  */
 
@@ -166,7 +166,7 @@ export async function trackServerEvent(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "KEZA-Server/1.0",
+        "User-Agent": "Xalifly-Server/1.0",
         "X-Forwarded-For": "127.0.0.1",
       },
       body: JSON.stringify({

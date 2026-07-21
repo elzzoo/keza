@@ -415,7 +415,7 @@ export async function sendSeatAlertEmail(
     </center>
 
     <div class="footer">
-      <p>This is an automated alert from KEZA. You received this because you set a price alert for ${from}→${to}.</p>
+      <p>This is an automated alert from Xalifly. You received this because you set a price alert for ${from}→${to}.</p>
       <p><a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://keza.app"}/alertes" style="color: #667eea;">Manage alerts</a></p>
     </div>
   </div>

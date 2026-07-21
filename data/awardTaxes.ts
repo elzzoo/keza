@@ -101,7 +101,7 @@ function getCorridorCap(
   const isME     = oz === "MIDDLE_EAST"     || dz === "MIDDLE_EAST";
   const isSA     = oz === "SOUTH_AMERICA"   || dz === "SOUTH_AMERICA";
 
-  // Europe ↔ Africa — primary KEZA corridor.
+  // Europe ↔ Africa — primary Xalifly corridor.
   if (isEurope && isAfrica) return { minEconomy: 25, maxEconomy: 75,  maxBusiness: 160, maxFirst: 240 };
 
   // Europe ↔ North America (transatlantic).

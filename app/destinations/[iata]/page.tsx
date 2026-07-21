@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   if (!dest) notFound();
 
-  const title = `Vols Dakar → ${dest.city} — Cash ou Miles ? | KEZA`;
-  const description = `Vols depuis Dakar (DSS) vers ${dest.city} (${dest.iata}). KEZA calcule si tes miles valent plus que le prix cash — estimation instantanée + recherche live.`;
+  const title = `Vols Dakar → ${dest.city} — Cash ou Miles ? | Xalifly`;
+  const description = `Vols depuis Dakar (DSS) vers ${dest.city} (${dest.iata}). Xalifly calcule si tes miles valent plus que le prix cash — estimation instantanée + recherche live.`;
   const url = `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`;
 
   return {

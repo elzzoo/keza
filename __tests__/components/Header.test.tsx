@@ -34,8 +34,8 @@ describe("Header", () => {
 
   it("renders logo with tagline", () => {
     render(<Header {...defaultProps} />);
-    expect(screen.getByText("KE")).toBeInTheDocument();
-    expect(screen.getByText("ZA")).toBeInTheDocument();
+    expect(screen.getByText("Xali")).toBeInTheDocument();
+    expect(screen.getByText("fly")).toBeInTheDocument();
     expect(screen.getByText("Cash or Miles?")).toBeInTheDocument();
   });
 

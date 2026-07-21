@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: wide ? 22 : 16, fontWeight: 900, color: "#e2e8f0", lineHeight: 1 }}>
-              <span style={{ color: "#3b82f6" }}>KE</span>ZA
+              <span style={{ color: "#3b82f6" }}>Xali</span>fly
             </span>
             <span style={{ fontSize: wide ? 11 : 9, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Cash ou Miles ?
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
             {wide ? "Vols cash ou miles ?" : "Cash ou\nMiles ?"}
           </span>
           <span style={{ fontSize: wide ? 18 : 14, color: "#94a3b8", lineHeight: 1.5 }}>
-            KEZA calcule l&apos;option la moins chère{wide ? " en temps réel" : ""}
+            Xalifly calcule l&apos;option la moins chère{wide ? " en temps réel" : ""}
           </span>
         </div>
 

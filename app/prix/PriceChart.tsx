@@ -294,7 +294,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
           </div>
         </div>
 
-        {/* KEZA note */}
+        {/* Xalifly note */}
         <div
           className="mt-3 rounded-xl px-4 py-3 text-xs"
           style={{

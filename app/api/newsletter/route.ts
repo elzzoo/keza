@@ -8,7 +8,7 @@ import { logError, logWarn } from "@/lib/logger";
 
 const NEWSLETTER_KEY = "keza:newsletter:subscribers";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "KEZA <onboarding@resend.dev>";
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "Xalifly <onboarding@resend.dev>";
 
 export async function POST(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
@@ -83,11 +83,11 @@ function buildFrEmail(): string {
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-        <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+        <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
         <p style="margin:8px 0 0;font-size:13px;color:#64748b;">Deals miles · Chaque semaine</p>
       </div>
       <div style="padding:24px;">
-        <p style="margin:0 0 16px;font-size:15px;font-weight:600;">Bienvenue dans la newsletter KEZA ✅</p>
+        <p style="margin:0 0 16px;font-size:15px;font-weight:600;">Bienvenue dans la newsletter Xalifly ✅</p>
         <p style="margin:0 0 16px;font-size:14px;color:#94a3b8;">
           Chaque semaine, tu recevras les meilleures opportunités miles pour tes routes préférées —
           quand miles valent vraiment plus que cash.
@@ -116,11 +116,11 @@ function buildEnEmail(): string {
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;background:#0a0a0f;color:#e2e8f0;border-radius:16px;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#1e3a5f,#0a0a1a);padding:24px;text-align:center;">
-        <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">KE</span><span style="color:#e2e8f0;">ZA</span></h1>
+        <h1 style="margin:0;font-size:24px;"><span style="color:#3b82f6;">Xali</span><span style="color:#e2e8f0;">fly</span></h1>
         <p style="margin:8px 0 0;font-size:13px;color:#64748b;">Miles deals · Every week</p>
       </div>
       <div style="padding:24px;">
-        <p style="margin:0 0 16px;font-size:15px;font-weight:600;">Welcome to the KEZA newsletter ✅</p>
+        <p style="margin:0 0 16px;font-size:15px;font-weight:600;">Welcome to the Xalifly newsletter ✅</p>
         <p style="margin:0 0 16px;font-size:14px;color:#94a3b8;">
           Every week, you'll receive the best miles opportunities for your favourite routes —
           when miles genuinely beat cash prices.
