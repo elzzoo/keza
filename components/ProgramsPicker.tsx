@@ -174,6 +174,7 @@ export function ProgramsPicker({ value, onChange, lang }: Props) {
           onFocus={() => setOpen(true)}
           placeholder={selectedPrograms.length === 0 ? (fr ? "Chercher des programmes (ex: Flying Blue)" : "Search programs (e.g., Flying Blue)") : ""}
           className="flex-1 min-w-[120px] bg-transparent outline-none text-fg placeholder:text-muted/40 text-sm"
+          role="combobox"
           aria-autocomplete="list"
           aria-controls={open ? listboxId : undefined}
           aria-expanded={open}
