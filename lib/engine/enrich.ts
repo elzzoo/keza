@@ -64,8 +64,7 @@ export function enrich(
 
   // Debug logging for zero prices
   if (totalPrice <= 0) {
-    const { logWarn } = await import("../logger");
-    logWarn(`[enrich] Zero totalPrice calculated: ${f.from}→${f.to} | outboundPrice=${outboundPrice} returnPrice=${returnPrice} passengers=${passengers} | raw price=${f.price} multiplier=${outboundMultiplier}`);
+    console.warn(`[enrich] Zero totalPrice calculated: ${f.from}→${f.to} | outboundPrice=${outboundPrice} returnPrice=${returnPrice} passengers=${passengers} | raw price=${f.price} multiplier=${outboundMultiplier}`);
   }
 
   // Estimated cabin prices should remain within 10x base price (sanity check)
