@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from "react";
 import { DESTINATIONS, type Destination, type Region } from "@/data/destinations";
 import { trackDestinationClick } from "@/lib/analytics";
 import { useCurrency } from "@/hooks/useCurrency";
-import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
 
 interface Props {
   lang: "fr" | "en";
