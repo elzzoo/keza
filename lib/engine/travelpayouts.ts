@@ -61,6 +61,18 @@ function buildFallbackAttempts(from: string, to: string): Array<[string, string]
  * @param cabin - Cabin class: "economy", "premium", "business", "first" (defaults to "economy")
  * @returns Full Aviasales booking URL
  */
+// Aviasales' search-path parser expects DDMM (4 digits: day + month, no year)
+// per date segment, NOT the full ISO date. A YYYYMMDD (8-digit) segment fails
+// to match their regex and silently drops BOTH the destination and the dates
+// from the parsed query, landing on "Oops, the search failed to launch" even
+// though the origin airport (matched by the leading 3-letter code alone) still
+// shows up. Confirmed live: /search/DSS20260820CDG20260827 → broken;
+// /search/DSS2008CDG2708 → correctly launches DSS→CDG, Aug 20–27.
+function toDDMM(isoDate: string): string {
+  const [, month, day] = isoDate.split("-");
+  return `${day}${month}`;
+}
+
 export function buildAviasalesUrl(
   from: string,
   to: string,
@@ -69,12 +81,12 @@ export function buildAviasalesUrl(
   passengers: number = 1,
   cabin: string = "economy"
 ): string {
-  const departureDateCompact = searchDate.replace(/-/g, "");
+  const departureDateCompact = toDDMM(searchDate);
   const url = new URL(`${AVIASALES_BASE_URL}/search/${from}${departureDateCompact}${to}`);
 
   if (returnDate) {
     // Roundtrip: append return date to path
-    const returnDateCompact = returnDate.replace(/-/g, "");
+    const returnDateCompact = toDDMM(returnDate);
     url.pathname = `${url.pathname}${returnDateCompact}`;
   }
 
