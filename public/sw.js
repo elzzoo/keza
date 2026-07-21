@@ -1,6 +1,13 @@
-/// KEZA Service Worker — offline-first for static assets, network-first for API
-const CACHE_NAME = "keza-v3";
-const STATIC_ASSETS = ["/", "/manifest.json"];
+/// KEZA Service Worker — offline-first for static assets, network-first for API and pages
+// v4: navigation requests (HTML pages) are now network-first. Under the old
+// stale-while-revalidate strategy every page — not just "/" — served the
+// PREVIOUS deploy's HTML on every load and only refreshed the cache for next
+// time, one version behind forever, since CACHE_NAME never changed. Users
+// (and this audit) were seeing already-fixed bugs because the SW masked
+// every deploy. Bumping CACHE_NAME here forces a one-time cache purge for
+// all existing clients on next activate.
+const CACHE_NAME = "keza-v4";
+const STATIC_ASSETS = ["/manifest.json"];
 
 // Install: pre-cache shell
 self.addEventListener("install", (event) => {
@@ -82,7 +89,26 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets & pages: stale-while-revalidate
+  // Navigation requests (HTML pages, incl. Next.js RSC payloads): network-first.
+  // Every deploy must be visible on the very next load — offline is the only
+  // acceptable reason to fall back to a cached page.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+    );
+    return;
+  }
+
+  // Static assets (Next.js content-hashed JS/CSS, images): stale-while-revalidate
+  // is safe here since a new deploy produces new hashed filenames automatically.
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request)
