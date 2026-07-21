@@ -21,8 +21,9 @@ interface Props {
   lang: "fr" | "en";
 }
 
-const GEO_URL =
-  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// Served from /public — the CSP (connect-src 'self') blocks cdn.jsdelivr.net,
+// which silently broke the map in production.
+const GEO_URL = "/geo/countries-110m.json";
 
 type RegionFilter = "all" | Region;
 
