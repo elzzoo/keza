@@ -18,7 +18,8 @@
     "lighthouse:baseline": "ts-node scripts/run-lighthouse.ts baseline",
     "lighthouse:compare": "ts-node scripts/run-lighthouse.ts compare",
     "lighthouse:audit": "ts-node scripts/run-lighthouse.ts audit",
-    "lighthouse:clean": "ts-node scripts/run-lighthouse.ts clean"
+    "lighthouse:clean": "ts-node scripts/run-lighthouse.ts clean",
+    "test:live": "jest __tests__/integration __tests__/api/cron __tests__/lib/alertsEngine.test.ts __tests__/lib/p1-4-cache-race-condition.test.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
