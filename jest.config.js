@@ -2,6 +2,8 @@
 const config = {
   preset: "ts-jest",
   testEnvironment: "node",
+  // Integration tests hit live Upstash/Duffel — allow slow network roundtrips
+  testTimeout: 30000,
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
     "^server-only$": "<rootDir>/__mocks__/server-only.ts",
@@ -33,6 +35,7 @@ const config = {
     {
       displayName: "node",
       preset: "ts-jest",
+      testTimeout: 30000,
       testEnvironment: "node",
       testMatch: ["**/__tests__/**/*.test.ts"],
       testPathIgnorePatterns: ["/node_modules/", "/.worktrees/", "__tests__/components/"],
@@ -49,6 +52,7 @@ const config = {
     {
       displayName: "jsdom",
       preset: "ts-jest",
+      testTimeout: 30000,
       testEnvironment: "jsdom",
       testMatch: ["**/__tests__/components/**/*.test.tsx", "**/__tests__/lib/contexts/**/*.test.tsx", "**/__tests__/app/**/*.test.tsx"],
       testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
