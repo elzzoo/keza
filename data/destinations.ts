@@ -27,9 +27,12 @@ export const DESTINATIONS: Destination[] = [
   { iata: "JFK", city: "New York",    country: "USA",            flag: "🇺🇸", region: "americas",    unsplashQuery: "new york city skyline",           cashEstimateUsd: 820,  milesEstimate: 55000, lat: 40.6413,  lon: -73.7781 },
   { iata: "MIA", city: "Miami",       country: "USA",            flag: "🇺🇸", region: "americas",    unsplashQuery: "miami beach sunset",              cashEstimateUsd: 780,  milesEstimate: 50000, lat: 25.7959,  lon: -80.2870 },
   { iata: "YUL", city: "Montréal",    country: "Canada",         flag: "🇨🇦", region: "americas",    unsplashQuery: "montreal canada old city",        cashEstimateUsd: 760,  milesEstimate: 48000, lat: 45.4706,  lon: -73.7408 },
+  { iata: "LAX", city: "Los Angeles", country: "USA",            flag: "🇺🇸", region: "americas",    unsplashQuery: "los angeles hollywood sign",      cashEstimateUsd: 800,  milesEstimate: 50000, lat: 33.9425,  lon: -118.4081 },
+  { iata: "ORD", city: "Chicago",     country: "USA",            flag: "🇺🇸", region: "americas",    unsplashQuery: "chicago skyline illinois",        cashEstimateUsd: 750,  milesEstimate: 48000, lat: 41.9742,  lon: -87.9073 },
   { iata: "GRU", city: "São Paulo",   country: "Brésil",         flag: "🇧🇷", region: "americas",    unsplashQuery: "sao paulo brazil aerial",         cashEstimateUsd: 950,  milesEstimate: 60000, lat: -23.4356, lon: -46.4731 },
   // ── Asie ──
   { iata: "NRT", city: "Tokyo",       country: "Japon",          flag: "🇯🇵", region: "asia",        unsplashQuery: "tokyo japan shibuya",             cashEstimateUsd: 1100, milesEstimate: 65000, lat: 35.7720,  lon: 140.3929 },
+  { iata: "ICN", city: "Séoul",       country: "Corée du Sud",   flag: "🇰🇷", region: "asia",        unsplashQuery: "seoul south korea skyline",       cashEstimateUsd: 950,  milesEstimate: 55000, lat: 37.4602,  lon: 126.4407 },
   { iata: "BKK", city: "Bangkok",     country: "Thaïlande",      flag: "🇹🇭", region: "asia",        unsplashQuery: "bangkok thailand temple",         cashEstimateUsd: 850,  milesEstimate: 50000, lat: 13.6900,  lon: 100.7501 },
   { iata: "SIN", city: "Singapour",   country: "Singapour",      flag: "🇸🇬", region: "asia",        unsplashQuery: "singapore marina bay sands",      cashEstimateUsd: 900,  milesEstimate: 55000, lat: 1.3644,   lon: 103.9915 },
   // ── Moyen-Orient ──
@@ -40,6 +43,7 @@ export const DESTINATIONS: Destination[] = [
   { iata: "CAI", city: "Le Caire",    country: "Égypte",         flag: "🇪🇬", region: "africa",      unsplashQuery: "cairo egypt pyramids",            cashEstimateUsd: 380,  milesEstimate: 20000, lat: 30.1219,  lon: 31.4056  },
   { iata: "LOS", city: "Lagos",       country: "Nigeria",        flag: "🇳🇬", region: "africa",      unsplashQuery: "lagos nigeria city",              cashEstimateUsd: 450,  milesEstimate: 25000, lat: 6.5774,   lon: 3.3212   },
   { iata: "NBO", city: "Nairobi",     country: "Kenya",          flag: "🇰🇪", region: "africa",      unsplashQuery: "nairobi kenya savanna",           cashEstimateUsd: 520,  milesEstimate: 28000, lat: -1.3192,  lon: 36.9275  },
+  { iata: "JNB", city: "Johannesburg", country: "Afrique du Sud", flag: "🇿🇦", region: "africa",     unsplashQuery: "johannesburg south africa city",  cashEstimateUsd: 1100, milesEstimate: 65000, lat: -25.7461, lon: 28.2342  },
   { iata: "ABJ", city: "Abidjan",     country: "Côte d'Ivoire",  flag: "🇨🇮", region: "africa",      unsplashQuery: "abidjan ivory coast city",        cashEstimateUsd: 480,  milesEstimate: 26000, lat: 5.2613,   lon: -3.9267  },
   // ── Océanie ──
   { iata: "SYD", city: "Sydney",      country: "Australie",      flag: "🇦🇺", region: "oceania",     unsplashQuery: "sydney opera house harbour",      cashEstimateUsd: 1400, milesEstimate: 85000, lat: -33.9461, lon: 151.1772 },

@@ -315,6 +315,8 @@ export const POPULAR_ROUTES: string[] = [
   "ICN-JFK", "JFK-ICN",
   "ICN-LHR", "LHR-ICN",
   "ICN-CDG", "CDG-ICN",
+  "ICN-ORD", "ORD-ICN",
+  "BKK-LHR", "LHR-BKK",
   "HKG-SYD", "SYD-HKG",
   "DOH-LAX", "LAX-DOH",
   "IST-LAX", "LAX-IST",

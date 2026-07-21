@@ -88,6 +88,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "LAX-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
   "ICN-JFK": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
   "JFK-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "ICN-ORD": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
+  "ORD-ICN": [{ airline: "Korean Air", programs: ["Korean Air SKYPASS"] }],
 
   // Cathay Pacific Asia Miles — HKG hub
   "HKG-LHR": [{ airline: "Cathay Pacific", programs: ["Cathay Pacific Asia Miles"] }],
@@ -194,6 +196,8 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "CDG-BKK": [{ airline: "Air France", programs: ["Flying Blue"] }, { airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "BKK-NRT": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
   "NRT-BKK": [{ airline: "Japan Airlines", programs: ["Japan Airlines Mileage Bank"] }],
+  "BKK-LHR": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
+  "LHR-BKK": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
 
   // ─── Europe Hubs (P5 Scaling Task 1.1) ───────────────────────────────────────
   // Lufthansa Miles & More — FRA hub (Frankfurt)
@@ -529,6 +533,8 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "LAX-ICN": ["Korean Air"],
   "ICN-JFK": ["Korean Air"],
   "JFK-ICN": ["Korean Air"],
+  "ICN-ORD": ["Korean Air", "United"],
+  "ORD-ICN": ["Korean Air", "United"],
 
   // ── Cathay Pacific (HKG hub) ─────────────────────────────────────────────
   "HKG-LHR": ["Cathay Pacific"],
@@ -575,6 +581,8 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "SYD-NRT": ["All Nippon Airways", "Japan Airlines", "Qantas"],
   "NRT-BKK": ["Japan Airlines", "Thai Airways"],
   "BKK-NRT": ["Japan Airlines", "Thai Airways"],
+  "BKK-LHR": ["Thai Airways", "British Airways"],
+  "LHR-BKK": ["British Airways", "Thai Airways"],
 
   // ── Americas – South America (M3 fix: LATAM absent on MIA→GRU) ──────────
   // LATAM Airlines and Copa operate these routes. getCorridorGuarantees()
