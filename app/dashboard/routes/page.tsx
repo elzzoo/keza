@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { BarChartComponent } from "@/components/dashboard/Charts";
+
+const BarChartComponent = dynamic(
+  () => import("@/components/dashboard/Charts").then((m) => m.BarChartComponent),
+  { ssr: false }
+);
 
 interface Route {
   route: string;

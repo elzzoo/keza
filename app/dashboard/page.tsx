@@ -1,9 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { KPICard } from "@/components/dashboard/KPICard";
-import { LineChartComponent, BarChartComponent } from "@/components/dashboard/Charts";
+
+// recharts was previously imported statically here, making this route (and
+// /dashboard/users, /dashboard/routes) the 3 largest bundles in the app
+// (347-349kB First Load JS) despite being admin-only pages.
+const LineChartComponent = dynamic(
+  () => import("@/components/dashboard/Charts").then((m) => m.LineChartComponent),
+  { ssr: false }
+);
+const BarChartComponent = dynamic(
+  () => import("@/components/dashboard/Charts").then((m) => m.BarChartComponent),
+  { ssr: false }
+);
 
 interface KPIMetrics {
   totalSearches: number;

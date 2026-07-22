@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { LineChartComponent } from "@/components/dashboard/Charts";
+import dynamic from "next/dynamic";
+
+const LineChartComponent = dynamic(
+  () => import("@/components/dashboard/Charts").then((m) => m.LineChartComponent),
+  { ssr: false }
+);
 
 interface UserMetricsPoint {
   date: string;
