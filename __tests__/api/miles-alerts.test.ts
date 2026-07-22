@@ -11,12 +11,38 @@ jest.mock("@/lib/miles-alerts", () => ({
   deactivateMilesAlert: (...args: unknown[]) => mockDeactivateMilesAlert(...args),
 }));
 
+// This route used to have no auth/rate-limit at all (see the due-diligence
+// audit finding S-3: anyone could enumerate or delete alerts by guessing an
+// email). GET/DELETE now require a "manage token" proving ownership — see
+// app/api/miles-alerts/route.ts. Tests use a fixed VALID_TOKEN scoped to
+// TOKEN_OWNER_EMAIL, and mock verification to require BOTH match — matching
+// real behavior where the token is bound to a specific email — so tests for
+// a mismatched email genuinely exercise the authorization branch instead of
+// trivially passing.
+const VALID_TOKEN = "test-manage-token";
+const TOKEN_OWNER_EMAIL = "test@example.com";
+jest.mock("@/lib/alertTokens", () => ({
+  createManageAlertsToken: jest.fn(() => VALID_TOKEN),
+  verifyManageAlertsToken: jest.fn(
+    (email: string, token: string | null | undefined) =>
+      token === VALID_TOKEN && email.toLowerCase().trim() === TOKEN_OWNER_EMAIL
+  ),
+}));
+jest.mock("@/lib/ratelimit", () => ({
+  rateLimitResponse: jest.fn(async () => null),
+}));
+
 // Mock server-only so it doesn't blow up in Jest
 jest.mock("server-only", () => ({}));
 
 import { POST, GET, DELETE } from "@/app/api/miles-alerts/route";
 
-function makeReq(method: string, body?: unknown, queryParams?: Record<string, string>) {
+function makeReq(
+  method: string,
+  body?: unknown,
+  queryParams?: Record<string, string>,
+  headers?: Record<string, string>
+) {
   let url = "http://localhost/api/miles-alerts";
   if (queryParams) {
     const params = new URLSearchParams(queryParams);
@@ -25,9 +51,11 @@ function makeReq(method: string, body?: unknown, queryParams?: Record<string, st
   return new NextRequest(url, {
     method,
     body: body ? JSON.stringify(body) : undefined,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
   });
 }
+
+const AUTH_HEADER = { Authorization: `Bearer ${VALID_TOKEN}` };
 
 describe("POST /api/miles-alerts", () => {
   beforeEach(() => {
@@ -35,7 +63,7 @@ describe("POST /api/miles-alerts", () => {
   });
 
   // Success case
-  it("creates alert with valid request and returns 201", async () => {
+  it("creates alert with valid request and returns 201 with a manage token", async () => {
     const body = {
       email: "test@example.com",
       route: "SIN-LAX",
@@ -46,7 +74,7 @@ describe("POST /api/miles-alerts", () => {
     const res = await POST(makeReq("POST", body));
     expect(res.status).toBe(201);
     const data = await res.json();
-    expect(data).toEqual(body);
+    expect(data).toEqual({ ...body, manageToken: VALID_TOKEN });
     expect(mockCreateMilesAlert).toHaveBeenCalledWith({
       email: "test@example.com",
       route: "SIN-LAX",
@@ -153,7 +181,7 @@ describe("GET /api/miles-alerts", () => {
   });
 
   // Success case
-  it("returns alerts with valid email and returns 200", async () => {
+  it("returns alerts with valid email + manage token and returns 200", async () => {
     const alerts = [
       {
         email: "test@example.com",
@@ -171,7 +199,7 @@ describe("GET /api/miles-alerts", () => {
       },
     ];
     mockGetMilesAlertsByEmail.mockResolvedValueOnce(alerts);
-    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }));
+    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }, AUTH_HEADER));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.alerts).toEqual(alerts);
@@ -181,7 +209,7 @@ describe("GET /api/miles-alerts", () => {
   // Empty alerts
   it("returns empty alerts array when none exist", async () => {
     mockGetMilesAlertsByEmail.mockResolvedValueOnce([]);
-    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }));
+    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }, AUTH_HEADER));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.alerts).toEqual([]);
@@ -189,16 +217,31 @@ describe("GET /api/miles-alerts", () => {
 
   // Validation error - missing email
   it("returns 400 when email is missing", async () => {
-    const res = await GET(makeReq("GET", undefined, {}));
+    const res = await GET(makeReq("GET", undefined, {}, AUTH_HEADER));
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toBeDefined();
   });
 
+  // Auth errors — the actual point of this route's fix
+  it("returns 401 when no Authorization header is present", async () => {
+    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }));
+    expect(res.status).toBe(401);
+    expect(mockGetMilesAlertsByEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 when the token doesn't match the email (can't enumerate another user's alerts)", async () => {
+    const res = await GET(
+      makeReq("GET", undefined, { email: "someone-else@example.com" }, AUTH_HEADER)
+    );
+    expect(res.status).toBe(401);
+    expect(mockGetMilesAlertsByEmail).not.toHaveBeenCalled();
+  });
+
   // Internal error
   it("returns 500 when getMilesAlertsByEmail throws", async () => {
     mockGetMilesAlertsByEmail.mockRejectedValueOnce(new Error("DB error"));
-    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }));
+    const res = await GET(makeReq("GET", undefined, { email: "test@example.com" }, AUTH_HEADER));
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe("Internal error");
@@ -215,7 +258,7 @@ describe("DELETE /api/miles-alerts", () => {
     const alertKey = "keza:miles-alert:test@example.com:SIN-LAX:Singapore KrisFlyer";
     const body = { alertId: alertKey };
     mockDeactivateMilesAlert.mockResolvedValueOnce(undefined);
-    const res = await DELETE(makeReq("DELETE", body));
+    const res = await DELETE(makeReq("DELETE", body, undefined, AUTH_HEADER));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.success).toBe(true);
@@ -225,10 +268,25 @@ describe("DELETE /api/miles-alerts", () => {
   // Validation error - missing alertId
   it("returns 400 when alertId is missing", async () => {
     const body = {};
-    const res = await DELETE(makeReq("DELETE", body));
+    const res = await DELETE(makeReq("DELETE", body, undefined, AUTH_HEADER));
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toBeDefined();
+  });
+
+  // Auth errors
+  it("returns 401 when no Authorization header is present", async () => {
+    const alertKey = "keza:miles-alert:test@example.com:SIN-LAX:Singapore KrisFlyer";
+    const res = await DELETE(makeReq("DELETE", { alertId: alertKey }));
+    expect(res.status).toBe(401);
+    expect(mockDeactivateMilesAlert).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 when the token doesn't match the alert's email (can't delete another user's alert)", async () => {
+    const alertKey = "keza:miles-alert:someone-else@example.com:SIN-LAX:Singapore KrisFlyer";
+    const res = await DELETE(makeReq("DELETE", { alertId: alertKey }, undefined, AUTH_HEADER));
+    expect(res.status).toBe(401);
+    expect(mockDeactivateMilesAlert).not.toHaveBeenCalled();
   });
 
   // Internal error
@@ -236,7 +294,7 @@ describe("DELETE /api/miles-alerts", () => {
     const alertKey = "keza:miles-alert:test@example.com:SIN-LAX:Singapore KrisFlyer";
     const body = { alertId: alertKey };
     mockDeactivateMilesAlert.mockRejectedValueOnce(new Error("DB error"));
-    const res = await DELETE(makeReq("DELETE", body));
+    const res = await DELETE(makeReq("DELETE", body, undefined, AUTH_HEADER));
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe("Internal error");

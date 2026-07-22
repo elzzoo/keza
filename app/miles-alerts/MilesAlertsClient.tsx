@@ -9,6 +9,15 @@ export function MilesAlertsClient() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
+  // The manage token is only ever stored on the device/browser that created
+  // the alert (see components/MilesAlertModal.tsx) — there's no email-based
+  // recovery yet. Searching by email alone is no longer enough to view
+  // someone else's alerts; see app/api/miles-alerts/route.ts.
+  const getStoredToken = (forEmail: string) =>
+    typeof window !== "undefined"
+      ? localStorage.getItem(`keza:miles-alerts:token:${forEmail.toLowerCase().trim()}`)
+      : null;
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -16,9 +25,19 @@ export function MilesAlertsClient() {
       return;
     }
 
+    const token = getStoredToken(email);
+    if (!token) {
+      toast.error("No alerts found on this device for that email. Alerts can only be managed from the device where they were created.");
+      setAlerts([]);
+      setSearched(true);
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch(`/api/miles-alerts?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/miles-alerts?email=${encodeURIComponent(email)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setAlerts(data.alerts || []);
@@ -33,12 +52,21 @@ export function MilesAlertsClient() {
   const handleDelete = async (email: string, route: string, program: string) => {
     if (!confirm("Delete this alert?")) return;
 
+    const token = getStoredToken(email);
+    if (!token) {
+      toast.error("Missing manage token for this alert");
+      return;
+    }
+
     try {
       // Construct the Redis key format: keza:miles-alert:email:route:program
       const alertKey = `keza:miles-alert:${email}:${route}:${program}`;
       const res = await fetch("/api/miles-alerts", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ alertId: alertKey }),
       });
 

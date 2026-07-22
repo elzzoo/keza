@@ -87,6 +87,13 @@ describe("MilesAlertModal", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 201,
+      json: async () => ({
+        email: "test@example.com",
+        route: "SIN-LAX",
+        program: "Singapore KrisFlyer",
+        thresholdCpp: 1.8,
+        manageToken: "test-manage-token",
+      }),
     });
 
     render(<MilesAlertModal {...defaultProps} onClose={onClose} />);
@@ -117,6 +124,13 @@ describe("MilesAlertModal", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 201,
+      json: async () => ({
+        email: "test@example.com",
+        route: "SIN-LAX",
+        program: "Singapore KrisFlyer",
+        thresholdCpp: 1.8,
+        manageToken: "test-manage-token",
+      }),
     });
 
     render(<MilesAlertModal {...defaultProps} />);
@@ -137,6 +151,13 @@ describe("MilesAlertModal", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 201,
+      json: async () => ({
+        email: "test@example.com",
+        route: "SIN-LAX",
+        program: "Singapore KrisFlyer",
+        thresholdCpp: 1.8,
+        manageToken: "test-manage-token",
+      }),
     });
 
     render(<MilesAlertModal {...defaultProps} onClose={onClose} />);
@@ -177,6 +198,13 @@ describe("MilesAlertModal", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       status: 201,
+      json: async () => ({
+        email: "test@example.com",
+        route: "SIN-LAX",
+        program: "Singapore KrisFlyer",
+        thresholdCpp: 1.8,
+        manageToken: "test-manage-token",
+      }),
     });
 
     render(<MilesAlertModal {...defaultProps} />);

@@ -15,12 +15,22 @@ jest.mock("sonner", () => ({
 // Mock fetch globally
 global.fetch = jest.fn();
 
+const TEST_EMAIL = "test@example.com";
+const TEST_TOKEN = "test-manage-token";
+
 describe("MilesAlertsClient", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockClear();
     (toast.error as jest.Mock).mockClear();
     (toast.success as jest.Mock).mockClear();
+    localStorage.clear();
+    // The client now requires a manage token (proof of ownership) stored
+    // locally before it will fetch/delete alerts for an email — see
+    // app/api/miles-alerts/route.ts and components/MilesAlertModal.tsx.
+    // Seeded here so existing tests keep exercising search/delete behavior
+    // rather than the "no token" empty-state path.
+    localStorage.setItem(`keza:miles-alerts:token:${TEST_EMAIL}`, TEST_TOKEN);
   });
 
   describe("Search form", () => {
@@ -66,7 +76,8 @@ describe("MilesAlertsClient", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "/api/miles-alerts?email=test%40example.com"
+          "/api/miles-alerts?email=test%40example.com",
+          { headers: { Authorization: `Bearer ${TEST_TOKEN}` } }
         );
       });
     });
@@ -247,7 +258,10 @@ describe("MilesAlertsClient", () => {
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith("/api/miles-alerts", {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${TEST_TOKEN}`,
+          },
           body: JSON.stringify({
             alertId: "keza:miles-alert:test@example.com:SIN-LAX:Singapore KrisFlyer",
           }),
