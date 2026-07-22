@@ -27,11 +27,6 @@ async function makeLoginRequest(secret?: string, method?: string): Promise<NextR
   const form = new FormData();
   if (secret) form.append("secret", secret);
 
-  // Add CSRF token (required by P0-2)
-  const { generateCsrfToken } = await import("@/lib/csrf");
-  const csrfToken = generateCsrfToken();
-  form.append("csrf", csrfToken);
-
   return new NextRequest(url, { method: "POST", body: form });
 }
 

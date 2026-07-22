@@ -5,7 +5,6 @@ import {
   createAdminSessionToken,
   safeCompare,
 } from "@/lib/auth";
-import { verifyCsrfToken } from "@/lib/csrf";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
 function redirectToAdmin(req: NextRequest): NextResponse {
@@ -41,19 +40,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const form = await req.formData();
   const submittedSecret = String(form.get("secret") ?? "");
-  const submittedCsrf = String(form.get("csrf") ?? "");
-  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
 
-  // Verify CSRF token from form or header
-  if (!submittedCsrf && !headerCsrf) {
-    return NextResponse.json({ error: "CSRF token required" }, { status: 401 });
-  }
-
-  const csrfToVerify = submittedCsrf || headerCsrf;
-  const csrfFromRequest = headerCsrf || submittedCsrf;
-  if (!verifyCsrfToken(csrfToVerify, csrfFromRequest)) {
-    return NextResponse.json({ error: "CSRF token mismatch" }, { status: 401 });
-  }
+  // This used to also require a "csrf" form field / X-CSRF-Token header,
+  // verified by comparing it to itself (lib/csrf.ts's verifyCsrfToken(x, x))
+  // — always true for a non-empty value, so it was never real protection.
+  // The login form (app/admin/page.tsx) never actually submitted a "csrf"
+  // field either, so in production every login attempt hit the
+  // "CSRF token required" branch before the secret was even checked —
+  // nobody could log in. Removed; the real gate below (timing-safe secret
+  // compare) plus the 5-attempts/15min rate limit above are what actually
+  // protect this endpoint.
 
   // Never fall back to CRON_SECRET — compromise of cron token must not grant admin access.
   const expectedSecret = process.env.ADMIN_SECRET;

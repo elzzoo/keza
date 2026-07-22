@@ -7,7 +7,6 @@ import {
   updateAlertFrequency,
 } from "@/lib/alerts";
 import { verifyManageAlertsToken } from "@/lib/alertTokens";
-import { verifyCsrfToken } from "@/lib/csrf";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail, isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
 import { isProUser } from "@/lib/lemonsqueezy";
@@ -15,6 +14,15 @@ import { getReferralCredits, processReferralConversion } from "@/lib/referral";
 import { logError } from "@/lib/logger";
 
 // POST /api/alerts — create a new price alert
+//
+// This used to also check an "X-CSRF-Token" header against lib/csrf.ts's
+// verifyCsrfToken(headerCsrf, headerCsrf) — comparing the header to itself,
+// so it always passed for any non-empty value, and no client anywhere ever
+// actually sent that header. Net effect in production: creating an alert
+// always 401'd for real users (confirmed live). Removed rather than "fixed"
+// because it wasn't providing real CSRF protection to begin with (no token
+// was ever minted/tied to a session) — this route is same-origin-only in
+// practice (no permissive CORS anywhere in the app) and already rate-limited.
 export async function POST(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
     namespace: "api:alerts:post",
@@ -22,12 +30,6 @@ export async function POST(req: NextRequest) {
     windowSeconds: 60 * 60,
   });
   if (limited) return limited;
-
-  // CSRF protection
-  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
-  if (!headerCsrf || !verifyCsrfToken(headerCsrf, headerCsrf)) {
-    return NextResponse.json({ error: "CSRF token required or invalid" }, { status: 401 });
-  }
 
   try {
     const body = await req.json();

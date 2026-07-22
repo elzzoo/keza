@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { verifyCsrfToken } from "@/lib/csrf";
 import { isValidEmail } from "@/lib/validate";
 import { Resend } from "resend";
 import { logError, logWarn } from "@/lib/logger";
@@ -18,11 +17,10 @@ export async function POST(req: NextRequest) {
   });
   if (limited) return limited;
 
-  // CSRF protection
-  const headerCsrf = req.headers.get("X-CSRF-Token") ?? "";
-  if (!headerCsrf || !verifyCsrfToken(headerCsrf, headerCsrf)) {
-    return NextResponse.json({ error: "CSRF token required or invalid" }, { status: 401 });
-  }
+  // Removed a broken "CSRF" check that compared the X-CSRF-Token header to
+  // itself (always true for any non-empty value) — no client ever sent that
+  // header, so this endpoint 401'd every real newsletter signup in
+  // production. See app/api/alerts/route.ts for the full explanation.
 
   try {
     const body = await req.json();

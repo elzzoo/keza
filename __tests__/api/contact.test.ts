@@ -44,14 +44,10 @@ const VALID_BODY = {
 };
 
 async function makeRequest(body: object): Promise<Request> {
-  const { generateCsrfToken } = await import("@/lib/csrf");
-  const csrfToken = generateCsrfToken();
-
   return new Request("http://localhost/api/contact", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken,
     },
     body: JSON.stringify(body),
   });
