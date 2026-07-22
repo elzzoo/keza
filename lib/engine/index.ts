@@ -38,7 +38,23 @@ export const CACHE_VERSION_FALLBACKS = ["v28", "v27", "v26"] as const;
  * @param requestId - Optional request ID for logging/tracing
  * @returns Ranked FlightResult[] with miles options attached. Empty array if no flights found.
  */
-export async function searchEngine(params: SearchParams, requestId?: string): Promise<FlightResult[]> {
+/**
+ * Optional out-parameter the caller can pass to learn whether the result
+ * came from searchEngine's own internal Redis cache (line ~72 below) rather
+ * than a fresh Duffel/Travelpayouts computation. searchEngine's return type
+ * stays FlightResult[] (5 call sites depend on that shape) — this mutates a
+ * caller-owned object instead of changing the signature, so existing callers
+ * that don't pass one are unaffected.
+ */
+export interface SearchEngineStats {
+  fromCache: boolean;
+}
+
+export async function searchEngine(
+  params: SearchParams,
+  requestId?: string,
+  stats?: SearchEngineStats
+): Promise<FlightResult[]> {
   try {
   // Initialize bonus transfers from Redis on first call (cached afterward)
   const { initializeBonusTransfers } = await import("../costEngine");
@@ -70,6 +86,7 @@ export async function searchEngine(params: SearchParams, requestId?: string): Pr
   // Type guard: ensure cached value is actually an array of FlightResult
   const cached = Array.isArray(cachedRaw) ? cachedRaw : null;
   if (cached) {
+    if (stats) stats.fromCache = true;
     const freshId = crypto.randomUUID();
     const results = cached.map((r) => ({ ...r, searchId: freshId }));
 

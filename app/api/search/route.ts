@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { searchEngine, CACHE_VERSION, CACHE_VERSION_FALLBACKS, type SearchParams, type FlightResult } from "@/lib/engine";
+import { searchEngine, CACHE_VERSION, CACHE_VERSION_FALLBACKS, type SearchParams, type FlightResult, type SearchEngineStats } from "@/lib/engine";
 import * as Sentry from "@sentry/nextjs";
 import { trackSearchPerformance } from "@/lib/performance";
 
@@ -77,7 +77,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const passengers = Math.min(Math.max(Number(body.passengers) || 1, 1), 9);
+    // A same-origin/destination search is never valid, but "CDG" is a
+    // well-formed IATA code, so it passed the check above and fell through
+    // to a full ~8s engine search that always returned 0 results anyway.
+    // Reject it immediately instead of paying that latency for nothing.
+    if (from === to) {
+      return NextResponse.json(
+        { error: "Origin and destination must be different" },
+        { status: 400 }
+      );
+    }
+
+    // Previously silently clamped any value (0, -5, 99, non-numeric) into
+    // [1, 9] with no error — e.g. passengers=99 became 9 with no signal to
+    // the caller that their input was ignored. Reject out-of-range/invalid
+    // values instead, consistent with how from/to/date are already validated.
+    const passengersNum = Number(body.passengers);
+    if (body.passengers !== undefined && (!Number.isInteger(passengersNum) || passengersNum < 1 || passengersNum > 9)) {
+      return NextResponse.json(
+        { error: "Invalid input: passengers must be an integer between 1 and 9" },
+        { status: 400 }
+      );
+    }
+    const passengers = Number.isInteger(passengersNum) ? passengersNum : 1;
 
     const tripType = body.tripType === "roundtrip" ? "roundtrip" : "oneway";
     const returnDate = isValidFutureDate(body.returnDate) ? body.returnDate : undefined;
@@ -109,8 +131,13 @@ export async function POST(request: Request) {
       setTimeout(() => { timedOut = true; resolve(null); }, SEARCH_TIMEOUT_MS)
     );
 
+    // Populated in place by searchEngine if it resolves from ITS OWN internal
+    // Redis cache (not the timeout-fallback cache lookup below, which sets
+    // fromCache separately) — was previously never checked, so x-from-cache
+    // silently reported false on every fast/cached response.
+    const engineStats: SearchEngineStats = { fromCache: false };
     const engineResult = await Promise.race([
-      searchEngine(searchParams, requestId).then(r => r),
+      searchEngine(searchParams, requestId, engineStats).then(r => r),
       timeoutSignal,
     ]) as FlightResult[] | null;
 
@@ -160,8 +187,13 @@ export async function POST(request: Request) {
       );
     } else {
       results = engineResult;
-      // Log cache miss when results computed in normal path (not from cache)
-      Sentry.captureMessage(`Cache miss: ${from}→${to} computed ${results.length} results`, "debug");
+      fromCache = engineStats.fromCache;
+      Sentry.captureMessage(
+        fromCache
+          ? `Cache hit: ${from}→${to} from engine's own cache (${results.length} results)`
+          : `Cache miss: ${from}→${to} computed ${results.length} results`,
+        "debug"
+      );
     }
 
     // Fire-and-forget engine observability stats
