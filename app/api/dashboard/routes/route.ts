@@ -1,13 +1,16 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { getRouteMetrics } from "@/lib/dashboard/metricsService";
+import { hasAdminSession } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 /**
  * GET /api/dashboard/routes
- * Returns top routes by search volume for the specified period
+ * Returns top routes by search volume for the specified period. Admin-only —
+ * was previously reachable by anyone with no auth and no rate limit.
  *
  * Query parameters:
  * - days: Number of days to look back (default: 30, range: 1-365)
@@ -16,6 +19,17 @@ export const maxDuration = 30;
  * Response: Array of RouteMetric objects
  */
 export async function GET(request: NextRequest) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "dashboard:routes",
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
+  if (!hasAdminSession(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const daysStr = searchParams.get("days") ?? "30";

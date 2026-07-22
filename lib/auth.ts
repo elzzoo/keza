@@ -146,3 +146,20 @@ export function verifyAdminSessionToken(token: string | undefined, now = Date.no
 export function adminSessionMaxAgeSeconds(): number {
   return ADMIN_SESSION_TTL_SECONDS;
 }
+
+/**
+ * Same check as verifyAdminSessionToken, but reads the cookie straight off a
+ * Request — for API routes (dashboard, etc.) protected by the browser-set
+ * admin session cookie rather than a manually-attached Bearer header. The
+ * cookie is sent automatically by same-origin fetch(), so this doesn't
+ * require any change on the calling client code.
+ */
+export function hasAdminSession(request: Request): boolean {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const match = cookieHeader
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${ADMIN_SESSION_COOKIE}=`));
+  const token = match?.slice(ADMIN_SESSION_COOKIE.length + 1);
+  return verifyAdminSessionToken(token ? decodeURIComponent(token) : undefined);
+}

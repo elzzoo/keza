@@ -5,6 +5,16 @@ jest.mock("@/lib/dashboard/metricsService", () => ({
   getRouteMetrics: (...args: unknown[]) => mockGetRouteMetrics(...args),
 }));
 
+// These routes were previously wide open — no auth, no rate limit (see the
+// due-diligence audit finding S-1). Mock both as "pass" so existing tests
+// keep exercising the actual route logic instead of 401ing/429ing.
+jest.mock("@/lib/auth", () => ({
+  hasAdminSession: jest.fn(() => true),
+}));
+jest.mock("@/lib/ratelimit", () => ({
+  rateLimitResponse: jest.fn(async () => null),
+}));
+
 // Mock server-only so it doesn't blow up in Jest
 jest.mock("server-only", () => ({}));
 

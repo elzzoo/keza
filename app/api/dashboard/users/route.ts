@@ -1,15 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserMetrics, getKPIMetrics } from "@/lib/dashboard/metricsService";
+import { hasAdminSession } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 /**
- * GET /api/dashboard/users — Returns user analytics metrics
+ * GET /api/dashboard/users — Returns user analytics metrics. Admin-only —
+ * was previously reachable by anyone with no auth and no rate limit.
  * Query parameters:
  *   - days: Number of days to aggregate (1-365, default: 30)
  */
 export async function GET(request: NextRequest) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "dashboard:users",
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
+  if (!hasAdminSession(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     // Parse days query parameter
     const searchParams = request.nextUrl.searchParams;

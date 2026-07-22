@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAlertMetrics } from "@/lib/dashboard/metricsService";
+import { hasAdminSession } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 /**
  * GET /api/dashboard/alerts — Returns alert metrics for a specified time period.
+ * Admin-only — was previously reachable by anyone with no auth and no rate limit.
  *
  * Query parameters:
  * - days: number of days to look back (1-365, default: 30)
@@ -13,9 +16,21 @@ export const maxDuration = 30;
  * Returns:
  * - 200: AlertMetrics object
  * - 400: Invalid days parameter
+ * - 401: Unauthorized
  * - 500: Server error
  */
 export async function GET(request: NextRequest) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "dashboard:alerts",
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
+  if (!hasAdminSession(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const daysParam = searchParams.get("days");
