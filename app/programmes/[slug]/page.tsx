@@ -2,6 +2,7 @@ import { PROGRAMS } from '@/data/programs';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SITE_URL } from '@/lib/siteConfig';
 
 interface ProgrammePageProps {
   params: Promise<{
@@ -30,11 +31,14 @@ export async function generateMetadata(
   return {
     title: `${program.name} - Xalifly`,
     description: `${program.name} loyalty programme details. ${program.bestUse}`,
+    alternates: {
+      canonical: `${SITE_URL}/programmes/${program.id}`,
+    },
     openGraph: {
       title: `${program.name} - Xalifly`,
       description: `${program.name} loyalty programme. ${program.bestUse}`,
       type: 'website',
-      url: `https://keza.co/programmes/${program.id}`,
+      url: `${SITE_URL}/programmes/${program.id}`,
     },
   };
 }
