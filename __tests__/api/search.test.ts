@@ -118,18 +118,35 @@ describe("POST /api/search", () => {
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
         expect.objectContaining({ from: "CDG", to: "DSS" }),
-        expect.any(String)
+        expect.any(String),
+        expect.anything()
       );
     });
 
-    it("clamps passengers to 1–9", async () => {
+    it("accepts passengers within 1–9", async () => {
       mockSearchEngine.mockResolvedValue([FLIGHT_RESULT]);
-      const res = await POST(makeRequest({ ...VALID_BODY, passengers: 99 }));
+      const res = await POST(makeRequest({ ...VALID_BODY, passengers: 9 }));
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
         expect.objectContaining({ passengers: 9 }),
-        expect.any(String)
+        expect.any(String),
+        expect.anything()
       );
+    });
+
+    it("rejects passengers outside 1–9 instead of silently clamping", async () => {
+      // Previously silently clamped to 9 with no error — see app/api/search/route.ts
+      const res = await POST(makeRequest({ ...VALID_BODY, passengers: 99 }));
+      expect(res.status).toBe(400);
+      expect(mockSearchEngine).not.toHaveBeenCalled();
+    });
+
+    it("rejects same origin and destination immediately (no engine call)", async () => {
+      // Previously a well-formed but nonsensical CDG-CDG search fell through
+      // to a full ~8s engine search that always returned 0 results.
+      const res = await POST(makeRequest({ ...VALID_BODY, from: "CDG", to: "CDG" }));
+      expect(res.status).toBe(400);
+      expect(mockSearchEngine).not.toHaveBeenCalled();
     });
 
     it("defaults cabin to economy when unknown value provided", async () => {
@@ -138,7 +155,8 @@ describe("POST /api/search", () => {
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
         expect.objectContaining({ cabin: "economy" }),
-        expect.any(String)
+        expect.any(String),
+        expect.anything()
       );
     });
 
@@ -181,7 +199,8 @@ describe("POST /api/search", () => {
       expect(res.status).toBe(200);
       expect(mockSearchEngine).toHaveBeenCalledWith(
         expect.objectContaining({ tripType: "roundtrip", returnDate }),
-        expect.any(String)
+        expect.any(String),
+        expect.anything()
       );
     });
   });
