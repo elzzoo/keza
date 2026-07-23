@@ -3,14 +3,16 @@ import { test, expect } from "@playwright/test";
 test.describe("Homepage", () => {
   test("loads with correct title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/KEZA/i);
+    await expect(page).toHaveTitle(/Xalifly/i);
   });
 
   test("search form is visible", async ({ page }) => {
     await page.goto("/");
-    // Search form inputs are buttons with airport placeholder text
+    // AirportPicker's trigger button gets its accessible name from a visually-
+    // hidden aria-labelledby label ("Départ"/"From"), not the visible
+    // placeholder text — so the name must match the label, not the placeholder.
     await expect(
-      page.getByRole("button", { name: /Ex: Paris, CDG|departure|from/i }).first()
+      page.getByRole("button", { name: /départ|from/i }).first()
     ).toBeVisible();
   });
 

@@ -1,7 +1,7 @@
 /**
  * e2e/search.spec.ts
  *
- * End-to-end tests for the core KEZA value proposition:
+ * End-to-end tests for the core Xalifly value proposition:
  *   search → flight results → recommendation (USE_MILES / USE_CASH)
  *
  * Three layers:
@@ -278,15 +278,37 @@ const MOCK_SEARCH_RESULTS = {
   partial: false,
 };
 
-/** Intercept /api/search and return mock data instantly */
+/**
+ * Intercept the search request and return mock data instantly.
+ * SearchForm calls the SSE endpoint /api/search/stream (not /api/search — that
+ * plain-JSON route only exists for the API-layer tests further up this file),
+ * consuming a stream of `data: {...}\n\n` events. A single "final" event with
+ * the mock results is enough to drive the UI the same way a real search would.
+ */
 async function mockSearch(page: import("@playwright/test").Page) {
-  await page.route("**/api/search", (route) => {
+  await page.route("**/api/search/stream", (route) => {
+    const event = `data: ${JSON.stringify({ type: "final", ...MOCK_SEARCH_RESULTS, forexRate: 1 })}\n\n`;
     route.fulfill({
       status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(MOCK_SEARCH_RESULTS),
+      contentType: "text/event-stream",
+      body: event,
     });
   });
+}
+
+/**
+ * Click the submit button. Playwright's default scrollIntoViewIfNeeded lands
+ * the button flush with the viewport top, directly under the app's `sticky
+ * top-0 z-50` header, which then intercepts the click — so scroll with extra
+ * clearance for the header height instead of relying on the default scroll.
+ */
+async function clickSubmit(page: import("@playwright/test").Page) {
+  const submitBtn = page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i });
+  await submitBtn.evaluate((el) => {
+    const top = el.getBoundingClientRect().top + window.scrollY - 100;
+    window.scrollTo({ top });
+  });
+  await submitBtn.click();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -298,6 +320,18 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
    * Mock the API so UI tests run fast and deterministically in any environment.
    * Structural tests (does the form work? does a card render?) don't need live data.
    */
+  test.beforeEach(async ({ page }) => {
+    // Skip the first-visit onboarding modal — it appears 1.2s after mount for
+    // new profiles and intercepts clicks on the search button underneath it.
+    await page.addInitScript(() => {
+      localStorage.setItem("keza:visited", "true");
+      // Two separate onboarding systems ship in this codebase — OnboardingFlow
+      // (gated by keza:visited) and OnboardingWizard (gated by
+      // keza_profile.hasOnboarded) — both must be silenced for form tests.
+      localStorage.setItem("keza_profile", JSON.stringify({ hasOnboarded: true }));
+    });
+  });
+
   test("pre-filled form shows DSS and CDG in the form", async ({ page }) => {
     await mockSearch(page);
     await page.goto(`/?from=DSS&to=CDG&date=${SEARCH_DATE}&tripType=oneway`);
@@ -313,10 +347,12 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
 
     const submitBtn = page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i });
     await expect(submitBtn).toBeEnabled();
-    await submitBtn.click();
-    // With mock API, search resolves in <50ms — spinner may flash briefly or
-    // not appear at all. We just assert the button becomes re-enabled.
-    await expect(submitBtn).not.toBeDisabled({ timeout: 5_000 });
+    await clickSubmit(page);
+    // Once a search completes, HomeClient swaps the form out for the results
+    // view entirely — the "Optimiser mon vol" button doesn't just re-enable,
+    // it's unmounted. So completion is signaled by a result price appearing,
+    // not by the (now-gone) button's disabled state.
+    await expect(page.getByText(/\$\d+|\€\d+|FCFA|\d+\s*\$|\d+\s*€/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("search returns at least one price after completion", async ({ page }) => {
@@ -324,7 +360,7 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
     await page.goto(`/?from=DSS&to=CDG&date=${SEARCH_DATE}&tripType=oneway`);
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i }).click();
+    await clickSubmit(page);
 
     // Wait for results to appear — mock returns instantly, so 5 s is plenty
     await expect(page.getByText(/\$\d+|\€\d+|FCFA|\d+\s*\$|\d+\s*€/i).first()).toBeVisible({ timeout: 10_000 });
@@ -335,7 +371,7 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
     await page.goto(`/?from=DSS&to=CDG&date=${SEARCH_DATE}&tripType=oneway`);
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i }).click();
+    await clickSubmit(page);
 
     // The USE_MILES result should render the "🔥 Tu économises" badge
     await expect(
@@ -348,7 +384,7 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
     await page.goto(`/?from=DSS&to=CDG&date=${SEARCH_DATE}&tripType=oneway`);
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i }).click();
+    await clickSubmit(page);
 
     await expect(page.getByText("Flying Blue").first()).toBeVisible({ timeout: 10_000 });
   });
@@ -358,7 +394,7 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
     await page.goto(`/?from=DSS&to=CDG&date=${SEARCH_DATE}&tripType=oneway`);
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i }).click();
+    await clickSubmit(page);
 
     // The USE_CASH mock result should show "💵 Cash" badge
     await expect(
@@ -372,6 +408,16 @@ test.describe("Search form → results (UI flow, mocked API)", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test.describe("Search from /flights/[route] page", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("keza:visited", "true");
+      // Two separate onboarding systems ship in this codebase — OnboardingFlow
+      // (gated by keza:visited) and OnboardingWizard (gated by
+      // keza_profile.hasOnboarded) — both must be silenced for form tests.
+      localStorage.setItem("keza_profile", JSON.stringify({ hasOnboarded: true }));
+    });
+  });
+
   test("route page has a search form pre-filled with DSS and CDG", async ({ page }) => {
     await page.goto("/flights/DSS-CDG", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("DSS").first()).toBeVisible();
@@ -385,7 +431,7 @@ test.describe("Search from /flights/[route] page", () => {
     await mockSearch(page);
     await page.goto("/flights/DSS-CDG", { waitUntil: "domcontentloaded" });
 
-    await page.getByRole("button", { name: /optimiser mon vol|optimize my flight/i }).click();
+    await clickSubmit(page);
 
     await expect(page.getByText("Flying Blue").first()).toBeVisible({ timeout: 10_000 });
   });

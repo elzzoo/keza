@@ -4,7 +4,7 @@ test.describe("/flights/[route] page", () => {
   test("loads with route heading", async ({ page }) => {
     await page.goto("/flights/DSS-CDG", { waitUntil: "domcontentloaded" });
     // /flights/[route] is the French route — title uses French wording
-    await expect(page).toHaveTitle("Vols Dakar → Paris CDG — Cash ou Miles ? | KEZA");
+    await expect(page).toHaveTitle("Vols Dakar → Paris CDG — Cash ou Miles ? | Xalifly");
   });
 
   test("shows search form pre-filled with route", async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe("/flights/[route] page", () => {
   test("page title contains origin and destination city names", async ({ page }) => {
     await page.goto("/flights/DSS-CDG", { waitUntil: "domcontentloaded" });
     // /flights/[route] = FR route; EN route is /en/flights/[route]
-    await expect(page).toHaveTitle("Vols Dakar → Paris CDG — Cash ou Miles ? | KEZA");
+    await expect(page).toHaveTitle("Vols Dakar → Paris CDG — Cash ou Miles ? | Xalifly");
   });
 
   test("page contains FAQPage JSON-LD structured data", async ({ page }) => {

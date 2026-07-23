@@ -8,9 +8,9 @@ test.describe("/entreprises page", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
-  test("shows 'KEZA for Business' branding", async ({ page }) => {
+  test("shows 'Xalifly for Business' branding", async ({ page }) => {
     await page.goto("/entreprises");
-    await expect(page.getByText(/keza.*business|business.*keza/i).first()).toBeVisible();
+    await expect(page.getByText(/xalifly.*business|business.*xalifly/i).first()).toBeVisible();
   });
 
   test("shows contact form with email input", async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe("/entreprises page", () => {
 test.describe("/mentions-legales page", () => {
   test("loads with correct title", async ({ page }) => {
     await page.goto("/mentions-legales");
-    await expect(page).toHaveTitle(/mentions.*légales|légales.*keza/i);
+    await expect(page).toHaveTitle(/mentions.*légales|légales.*xalifly/i);
   });
 
   test("has back-to-home link", async ({ page }) => {

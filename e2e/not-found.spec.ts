@@ -6,10 +6,10 @@ test.describe("404 not-found page", () => {
     await expect(page.getByRole("heading", { name: /introuvable/i })).toBeVisible();
   });
 
-  test("shows KEZA branding on 404", async ({ page }) => {
+  test("shows Xalifly branding on 404", async ({ page }) => {
     await page.goto("/another-unknown-route-abc");
     // Logo text should be visible
-    await expect(page.getByText("KE").first()).toBeVisible();
+    await expect(page.getByText("Xali").first()).toBeVisible();
   });
 
   test("404 page has back-to-home link", async ({ page }) => {
