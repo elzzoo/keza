@@ -45,7 +45,7 @@ const KNOWN_PROGRAMS = new Set([
   "Asiana Airlines Club",         // P5 Task 2.2: Asian programs (ICN hub)
   "Kenya Airways Mileage Club",   // P5 Task 2.4: African programs (NBO hub)
   "Aeromexico Club Premier",      // P5 Task 3.1: Latin America market (MEX hub)
-  "Air New Zealand Airpoints",    // P5 Task 3.2: South Pacific expansion (NZL hub)
+  "Air New Zealand Airpoints",    // P5 Task 3.2: South Pacific expansion (AKL hub)
   "TAAG Frequent Flyer",          // P5 Task 3.3: Route expansion to 110+ corridors (LAD hub)
 ]);
 
@@ -428,7 +428,7 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     expect(keys.some(k => k.startsWith("BOG-"))).toBe(true);
   });
 
-  // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
+  // ─── P5 Task 3.2: South Pacific Expansion (SYD, AKL) ──────────────────────────
   it("Qantas Frequent Flyer guaranteed on SYD→LAX and reverse", () => {
     for (const route of ["SYD-LAX", "LAX-SYD"]) {
       const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
@@ -487,30 +487,30 @@ describe("HOME_CARRIER_PROGRAMS", () => {
     expect(nrtSydPrograms).toContain("Qantas Frequent Flyer");
   });
 
-  it("Air New Zealand Airpoints guaranteed on NZL→LAX and reverse", () => {
-    for (const route of ["NZL-LAX", "LAX-NZL"]) {
+  it("Air New Zealand Airpoints guaranteed on AKL→LAX and reverse", () => {
+    for (const route of ["AKL-LAX", "LAX-AKL"]) {
       const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
       const allPrograms = carriers.flatMap(c => c.programs);
       expect(allPrograms).toContain("Air New Zealand Airpoints");
     }
   });
 
-  it("Air New Zealand Airpoints guaranteed on NZL→SFO and reverse", () => {
-    for (const route of ["NZL-SFO", "SFO-NZL"]) {
+  it("Air New Zealand Airpoints guaranteed on AKL→SFO and reverse", () => {
+    for (const route of ["AKL-SFO", "SFO-AKL"]) {
       const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
       const allPrograms = carriers.flatMap(c => c.programs);
       expect(allPrograms).toContain("Air New Zealand Airpoints");
     }
   });
 
-  it("Air New Zealand Airpoints on NZL→LHR outbound, British Airways on reverse", () => {
-    const nzlLhr = HOME_CARRIER_PROGRAMS["NZL-LHR"] ?? [];
-    const nzlLhrPrograms = nzlLhr.flatMap(c => c.programs);
-    expect(nzlLhrPrograms).toContain("Air New Zealand Airpoints");
+  it("Air New Zealand Airpoints on AKL→LHR outbound, British Airways on reverse", () => {
+    const aklLhr = HOME_CARRIER_PROGRAMS["AKL-LHR"] ?? [];
+    const aklLhrPrograms = aklLhr.flatMap(c => c.programs);
+    expect(aklLhrPrograms).toContain("Air New Zealand Airpoints");
 
-    const lhrNzl = HOME_CARRIER_PROGRAMS["LHR-NZL"] ?? [];
-    const lhrNzlPrograms = lhrNzl.flatMap(c => c.programs);
-    expect(lhrNzlPrograms).toContain("British Airways Avios");
+    const lhrAkl = HOME_CARRIER_PROGRAMS["LHR-AKL"] ?? [];
+    const lhrAklPrograms = lhrAkl.flatMap(c => c.programs);
+    expect(lhrAklPrograms).toContain("British Airways Avios");
   });
 
   it("all South Pacific corridors (Task 3.2) have both directions", () => {
@@ -522,19 +522,19 @@ describe("HOME_CARRIER_PROGRAMS", () => {
       "SYD-CDG", "CDG-SYD",
       "SYD-NRT", "NRT-SYD",
       "SYD-BKK", "BKK-SYD",
-      // NZL routes
-      "NZL-LAX", "LAX-NZL",
-      "NZL-SFO", "SFO-NZL",
-      "NZL-LHR", "LHR-NZL",
+      // AKL routes
+      "AKL-LAX", "LAX-AKL",
+      "AKL-SFO", "SFO-AKL",
+      "AKL-LHR", "LHR-AKL",
     ];
     for (const route of southPacificRoutes) {
       expect(HOME_CARRIER_PROGRAMS).toHaveProperty(route);
     }
   });
 
-  it("South Pacific hub coverage includes SYD and NZL hubs", () => {
+  it("South Pacific hub coverage includes SYD and AKL hubs", () => {
     const keys = Object.keys(HOME_CARRIER_PROGRAMS);
     expect(keys.some(k => k.startsWith("SYD-"))).toBe(true);
-    expect(keys.some(k => k.startsWith("NZL-"))).toBe(true);
+    expect(keys.some(k => k.startsWith("AKL-"))).toBe(true);
   });
 });

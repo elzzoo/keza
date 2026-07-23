@@ -2,9 +2,11 @@
 import { DESTINATIONS } from "@/data/destinations";
 
 describe("DESTINATIONS GPS data integrity", () => {
-  it("contains exactly 24 destinations", () => {
-    // 20 + LAX, ORD, ICN, JNB added for the P3 corridor expansion
-    expect(DESTINATIONS).toHaveLength(24);
+  it("contains exactly 42 destinations", () => {
+    // 24 + 18 orphaned airports (ACC, ADD, AMS, AUH, BOG, BRU, CPT, EZE, FRA,
+    // HKG, HND, KGL, KUL, LAD, MEX, AKL, SFO, SJO) referenced in
+    // lib/engine/supplements.ts but previously missing from DESTINATIONS
+    expect(DESTINATIONS).toHaveLength(42);
   });
 
   it("every destination has lat and lon", () => {

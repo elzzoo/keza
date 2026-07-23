@@ -1407,9 +1407,9 @@ const AWARD_CHARTS: Record<string, ProgramChart> = {
     },
   },
 
-  // Air New Zealand Airpoints (Oneworld, NZL hub) — P5 Task 3.2
+  // Air New Zealand Airpoints (Oneworld, AKL hub) — P5 Task 3.2
   // South Pacific regional flights to North America, Europe, and Asia
-  // Note: SYD/AKL/NZL are ASIA zone (will be added to zones.ts in future tasks)
+  // Note: SYD/AKL are ASIA zone (will be added to zones.ts in future tasks)
   "Air New Zealand Airpoints": {
     ASIA: {
       NORTH_AMERICA: { economy: 50_000, premium: 70_000, business: 120_000 },

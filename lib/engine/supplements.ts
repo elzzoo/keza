@@ -298,7 +298,7 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "EZE-CDG": [{ airline: "LATAM Airlines", programs: ["LATAM Pass"] }],
   "CDG-EZE": [{ airline: "Air France", programs: ["Flying Blue"] }],
 
-  // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
+  // ─── P5 Task 3.2: South Pacific Expansion (SYD, AKL) ──────────────────────────
   // Qantas Frequent Flyer — Sydney (SYD) hub
   "SYD-LAX": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "United", programs: ["United MileagePlus"] }],
   "LAX-SYD": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }, { airline: "United", programs: ["United MileagePlus"] }],
@@ -313,13 +313,13 @@ export const HOME_CARRIER_PROGRAMS: Record<string, { airline: string; programs: 
   "SYD-BKK": [{ airline: "Qantas", programs: ["Qantas Frequent Flyer"] }],
   "BKK-SYD": [{ airline: "Thai Airways", programs: ["Thai Royal Orchid Plus"] }],
 
-  // Air New Zealand Airpoints — Auckland/Wellington (NZL) hub
-  "NZL-LAX": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
-  "LAX-NZL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
-  "NZL-SFO": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
-  "SFO-NZL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
-  "NZL-LHR": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
-  "LHR-NZL": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
+  // Air New Zealand Airpoints — Auckland/Wellington (AKL) hub
+  "AKL-LAX": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "LAX-AKL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "AKL-SFO": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "SFO-AKL": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "AKL-LHR": [{ airline: "Air New Zealand", programs: ["Air New Zealand Airpoints"] }],
+  "LHR-AKL": [{ airline: "British Airways", programs: ["British Airways Avios"] }],
 
   // ─── P5 Task 3.3: Route Expansion to 110+ Corridors ─────────────────────────
   // Tier 3: African Routes — Angola gateway (LAD hub)
@@ -676,7 +676,7 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "BOG-JFK": ["Avianca", "United"],
   "JFK-BOG": ["Avianca", "United"],
 
-  // ─── P5 Task 3.2: South Pacific Expansion (SYD, NZL) ──────────────────────────
+  // ─── P5 Task 3.2: South Pacific Expansion (SYD, AKL) ──────────────────────────
   // Qantas (SYD hub)
   "SYD-LAX": ["Qantas", "United"],
   "LAX-SYD": ["Qantas", "United"],
@@ -689,13 +689,13 @@ export const ROUTE_AIRLINE_SUPPLEMENTS: Record<string, string[]> = {
   "SYD-BKK": ["Qantas", "Thai Airways"],
   "BKK-SYD": ["Thai Airways", "Qantas"],
 
-  // Air New Zealand (NZL hub)
-  "NZL-LAX": ["Air New Zealand", "United"],
-  "LAX-NZL": ["Air New Zealand", "United"],
-  "NZL-SFO": ["Air New Zealand", "United"],
-  "SFO-NZL": ["Air New Zealand", "United"],
-  "NZL-LHR": ["Air New Zealand", "British Airways"],
-  "LHR-NZL": ["British Airways", "Air New Zealand"],
+  // Air New Zealand (AKL hub)
+  "AKL-LAX": ["Air New Zealand", "United"],
+  "LAX-AKL": ["Air New Zealand", "United"],
+  "AKL-SFO": ["Air New Zealand", "United"],
+  "SFO-AKL": ["Air New Zealand", "United"],
+  "AKL-LHR": ["Air New Zealand", "British Airways"],
+  "LHR-AKL": ["British Airways", "Air New Zealand"],
 
   // ─── P5 Task 3.3: Route Expansion to 110+ Corridors ────────────────────
   // Tier 3: African Routes — Angola gateway (LAD hub)

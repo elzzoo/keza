@@ -28,7 +28,7 @@ describe("P5 Final Validation - All Corridors + Programs (Task 4.1)", () => {
     "MIA-GRU", "MIA-MEX", "MIA-LIM",
 
     // Phase 3 Pacific routes (new in P5)
-    "SYD-LAX", "NZL-LAX", "AKL-LAX",
+    "SYD-LAX", "AKL-LAX",
 
     // Phase 3 Africa routes (new in P5)
     "JNB-LAX", "CAI-LAX", "CMS-LAX",
@@ -224,7 +224,7 @@ describe("P5 Final Validation - All Corridors + Programs (Task 4.1)", () => {
         regions.add("MIDDLE_EAST");
       } else if (["MIA", "MEX", "LIM"].includes(from)) {
         regions.add("LATIN_AMERICA");
-      } else if (["SYD", "AKL", "NZL"].includes(from)) {
+      } else if (["SYD", "AKL"].includes(from)) {
         regions.add("PACIFIC");
       } else if (["JNB", "CAI", "CMS"].includes(from)) {
         regions.add("AFRICA");

@@ -1,12 +1,12 @@
 // __tests__/lib/pacific.test.ts
-// Comprehensive tests for P5 Task 3.2: South Pacific Expansion (SYD, NZL hubs)
+// Comprehensive tests for P5 Task 3.2: South Pacific Expansion (SYD, AKL hubs)
 // Verifies Qantas Frequent Flyer and Air New Zealand Airpoints configuration
 
 import { HOME_CARRIER_PROGRAMS, ROUTE_AIRLINE_SUPPLEMENTS } from "@/lib/engine/supplements";
 import { PROGRAM_TO_AIRLINE } from "@/lib/costEngine";
 import { getMilesRequired } from "@/data/awardCharts";
 
-describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
+describe("P5 Task 3.2: South Pacific Expansion (SYD, AKL)", () => {
   // ─── Program Registration ───────────────────────────────────────────────────
   it("Qantas Frequent Flyer is registered in PROGRAM_TO_AIRLINE", () => {
     expect(PROGRAM_TO_AIRLINE["Qantas Frequent Flyer"]).toBe("Qantas");
@@ -75,44 +75,44 @@ describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
     });
   });
 
-  // ─── Home Carrier Guarantees — NZL Routes ──────────────────────────────────
-  describe("NZL hub corridors", () => {
-    const nzlRoutes = [
-      { route: "NZL-LAX", expectedProgram: "Air New Zealand Airpoints" },
-      { route: "LAX-NZL", expectedProgram: "Air New Zealand Airpoints" },
-      { route: "NZL-SFO", expectedProgram: "Air New Zealand Airpoints" },
-      { route: "SFO-NZL", expectedProgram: "Air New Zealand Airpoints" },
-      { route: "NZL-LHR", expectedProgram: "Air New Zealand Airpoints" },
+  // ─── Home Carrier Guarantees — AKL Routes ──────────────────────────────────
+  describe("AKL hub corridors", () => {
+    const aklRoutes = [
+      { route: "AKL-LAX", expectedProgram: "Air New Zealand Airpoints" },
+      { route: "LAX-AKL", expectedProgram: "Air New Zealand Airpoints" },
+      { route: "AKL-SFO", expectedProgram: "Air New Zealand Airpoints" },
+      { route: "SFO-AKL", expectedProgram: "Air New Zealand Airpoints" },
+      { route: "AKL-LHR", expectedProgram: "Air New Zealand Airpoints" },
     ];
 
-    it.each(nzlRoutes)("$route has $expectedProgram", ({ route, expectedProgram }) => {
+    it.each(aklRoutes)("$route has $expectedProgram", ({ route, expectedProgram }) => {
       const carriers = HOME_CARRIER_PROGRAMS[route] ?? [];
       const allPrograms = carriers.flatMap(c => c.programs);
       expect(allPrograms).toContain(expectedProgram);
     });
 
-    it("all NZL routes have ROUTE_AIRLINE_SUPPLEMENTS entries", () => {
-      const nzlSupplementRoutes = [
-        "NZL-LAX", "LAX-NZL", "NZL-SFO", "SFO-NZL", "NZL-LHR", "LHR-NZL",
+    it("all AKL routes have ROUTE_AIRLINE_SUPPLEMENTS entries", () => {
+      const aklSupplementRoutes = [
+        "AKL-LAX", "LAX-AKL", "AKL-SFO", "SFO-AKL", "AKL-LHR", "LHR-AKL",
       ];
-      for (const route of nzlSupplementRoutes) {
+      for (const route of aklSupplementRoutes) {
         expect(ROUTE_AIRLINE_SUPPLEMENTS[route]).toBeDefined();
         expect(Array.isArray(ROUTE_AIRLINE_SUPPLEMENTS[route])).toBe(true);
         expect(ROUTE_AIRLINE_SUPPLEMENTS[route]!.length).toBeGreaterThan(0);
       }
     });
 
-    it("NZL routes include Air New Zealand or partner carriers", () => {
-      const nzlSupplementRoutes = ["NZL-LAX", "LAX-NZL", "NZL-SFO", "SFO-NZL"];
-      for (const route of nzlSupplementRoutes) {
+    it("AKL routes include Air New Zealand or partner carriers", () => {
+      const aklSupplementRoutes = ["AKL-LAX", "LAX-AKL", "AKL-SFO", "SFO-AKL"];
+      for (const route of aklSupplementRoutes) {
         const airlines = ROUTE_AIRLINE_SUPPLEMENTS[route] ?? [];
         expect(airlines).toContain("Air New Zealand");
       }
     });
 
-    it("reverse NZL-LHR route has British Airways", () => {
-      const lhrNzl = ROUTE_AIRLINE_SUPPLEMENTS["LHR-NZL"] ?? [];
-      expect(lhrNzl).toContain("British Airways");
+    it("reverse AKL-LHR route has British Airways", () => {
+      const lhrAkl = ROUTE_AIRLINE_SUPPLEMENTS["LHR-AKL"] ?? [];
+      expect(lhrAkl).toContain("British Airways");
     });
   });
 
@@ -214,9 +214,9 @@ describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
       }
     });
 
-    it("all NZL routes have reverse counterparts in HOME_CARRIER_PROGRAMS", () => {
-      const nzlRoutes = ["NZL-LAX", "NZL-SFO", "NZL-LHR"];
-      for (const route of nzlRoutes) {
+    it("all AKL routes have reverse counterparts in HOME_CARRIER_PROGRAMS", () => {
+      const aklRoutes = ["AKL-LAX", "AKL-SFO", "AKL-LHR"];
+      for (const route of aklRoutes) {
         const [from, to] = route.split("-");
         const reverse = `${to}-${from}`;
         expect(HOME_CARRIER_PROGRAMS).toHaveProperty(reverse);
@@ -243,12 +243,12 @@ describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
       expect(badNames).toEqual([]);
     });
 
-    it("all NZL route programs are correctly spelled", () => {
-      const nzlRoutes = Object.entries(HOME_CARRIER_PROGRAMS)
-        .filter(([k]) => k.startsWith("NZL-") || k.endsWith("-NZL"));
+    it("all AKL route programs are correctly spelled", () => {
+      const aklRoutes = Object.entries(HOME_CARRIER_PROGRAMS)
+        .filter(([k]) => k.startsWith("AKL-") || k.endsWith("-AKL"));
 
       const badNames: string[] = [];
-      for (const [route, carriers] of nzlRoutes) {
+      for (const [route, carriers] of aklRoutes) {
         for (const { programs } of carriers) {
           for (const p of programs) {
             if (p === "Air New Zealand" || p === "ANZ Airpoints" || p === "Airpoints") {
@@ -269,10 +269,10 @@ describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
       expect(keys.some(k => k.endsWith("-SYD"))).toBe(true);
     });
 
-    it("has entries for NZL hub (Auckland/Wellington)", () => {
+    it("has entries for AKL hub (Auckland/Wellington)", () => {
       const keys = Object.keys(HOME_CARRIER_PROGRAMS);
-      expect(keys.some(k => k.startsWith("NZL-"))).toBe(true);
-      expect(keys.some(k => k.endsWith("-NZL"))).toBe(true);
+      expect(keys.some(k => k.startsWith("AKL-"))).toBe(true);
+      expect(keys.some(k => k.endsWith("-AKL"))).toBe(true);
     });
 
     it("SYD hub has at least 6 outbound corridors", () => {
@@ -280,9 +280,9 @@ describe("P5 Task 3.2: South Pacific Expansion (SYD, NZL)", () => {
       expect(sydOutbound.length).toBeGreaterThanOrEqual(6);
     });
 
-    it("NZL hub has at least 3 outbound corridors", () => {
-      const nzlOutbound = Object.keys(HOME_CARRIER_PROGRAMS).filter(k => k.startsWith("NZL-"));
-      expect(nzlOutbound.length).toBeGreaterThanOrEqual(3);
+    it("AKL hub has at least 3 outbound corridors", () => {
+      const aklOutbound = Object.keys(HOME_CARRIER_PROGRAMS).filter(k => k.startsWith("AKL-"));
+      expect(aklOutbound.length).toBeGreaterThanOrEqual(3);
     });
   });
 
