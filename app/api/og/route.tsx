@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         {/* Top row: Xalifly logo + cabin badge */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ fontSize: "28px", fontWeight: 900, color: "#3B82F6", letterSpacing: "-1px" }}>
+            <div style={{ display: "flex", fontSize: "28px", fontWeight: 900, color: "#3B82F6", letterSpacing: "-1px" }}>
               Xali<span style={{ color: "#F1F5F9" }}>fly</span>
             </div>
             <div style={{
@@ -125,6 +125,7 @@ export async function GET(request: NextRequest) {
 
               {/* City names */}
               <div style={{
+                display: "flex",
                 fontSize: "52px",
                 fontWeight: 900,
                 color: "#F1F5F9",
@@ -132,7 +133,11 @@ export async function GET(request: NextRequest) {
                 lineHeight: 1.1,
               }}>
                 {fromCity}
-                <span style={{ color: "#3B82F6", margin: "0 16px" }}>→</span>
+                {/* Plain ASCII, not "→" — Satori needs a dynamic remote font
+                    fetch to find a glyph for real arrow characters, and that
+                    fetch can fail (confirmed locally; unconfirmed but a real
+                    risk on Vercel edge too), rendering as a tofu box. */}
+                <span style={{ color: "#3B82F6", margin: "0 16px" }}>{"->"}</span>
                 {toCity}
               </div>
 
@@ -148,7 +153,7 @@ export async function GET(request: NextRequest) {
                     border: "1px solid rgba(16,185,129,0.3)",
                     borderRadius: "12px",
                   }}>
-                    <div style={{ color: "#10B981", fontSize: "28px", fontWeight: 900 }}>
+                    <div style={{ display: "flex", color: "#10B981", fontSize: "28px", fontWeight: 900 }}>
                       +{savings}
                     </div>
                     <div style={{ color: "#6EE7B7", fontSize: "18px", fontWeight: 600 }}>
@@ -175,7 +180,7 @@ export async function GET(request: NextRequest) {
                   </div>
                 )}
                 {program && (
-                  <div style={{ color: "#64748B", fontSize: "18px", fontWeight: 500 }}>
+                  <div style={{ display: "flex", color: "#64748B", fontSize: "18px", fontWeight: 500 }}>
                     {lang === "fr" ? "avec" : "with"} {program}
                   </div>
                 )}
@@ -184,14 +189,16 @@ export async function GET(request: NextRequest) {
           ) : (
             /* Generic / homepage OG */
             <div style={{
+              display: "flex",
+              flexDirection: "column",
               fontSize: "72px",
               fontWeight: 900,
               color: "#F1F5F9",
               letterSpacing: "-3px",
               lineHeight: 1.1,
             }}>
-              Cash ou Miles ?<br />
-              <span style={{ color: "#3B82F6" }}>Xalifly décide.</span>
+              <div>Cash ou Miles ?</div>
+              <div style={{ color: "#3B82F6" }}>Xalifly décide.</div>
             </div>
           )}
         </div>
@@ -204,7 +211,9 @@ export async function GET(request: NextRequest) {
           borderTop: "1px solid rgba(255,255,255,0.06)",
           paddingTop: "20px",
         }}>
-          <div style={{ color: "#334155", fontSize: "16px", fontWeight: 600 }}>keza.app</div>
+          {/* Brand name, not a domain — the real domain is mid-transition
+              (Keza → Xalifly) and shouldn't be hardcoded here again. */}
+          <div style={{ color: "#334155", fontSize: "16px", fontWeight: 600 }}>Xalifly</div>
           <div style={{
             padding: "10px 22px",
             background: "rgba(59,130,246,0.12)",
@@ -215,8 +224,8 @@ export async function GET(request: NextRequest) {
             fontWeight: 600,
           }}>
             {lang === "fr"
-              ? "Comparer maintenant →"
-              : "Compare now →"}
+              ? "Comparer maintenant ->"
+              : "Compare now ->"}
           </div>
         </div>
       </div>
