@@ -28,13 +28,21 @@ const TOP_CITIES: Record<string, string> = {
 };
 
 function buildCsp(nonce: string): string {
+  // Next.js dev-mode Fast Refresh needs a relaxed script-src to run its
+  // runtime — a strict policy breaks client-side hydration for every lazy
+  // (next/dynamic) component under `next dev`. Production builds don't need
+  // this, so the relaxation is dev-only and doesn't weaken the deployed CSP.
+  const devScriptExtra = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' https://plausible.io`,
+    `script-src 'self' 'nonce-${nonce}'${devScriptExtra} https://plausible.io`,
     "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline for styles
     "img-src 'self' data: blob: https:",
     // Restrict to known domains — prevents XSS data exfiltration to arbitrary HTTPS hosts.
-    "connect-src 'self' https://plausible.io https://*.sentry.io https://o*.ingest.sentry.io https://*.upstash.io",
+    // "https://*.ingest.sentry.io" (not "https://o*...") — CSP wildcards only
+    // replace a whole subdomain label, so "o*.ingest..." is invalid and silently
+    // dropped by browsers, leaving Sentry's real ingest host (oXXXXXX.ingest.sentry.io) unmatched.
+    "connect-src 'self' https://plausible.io https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io",
     "font-src 'self' data:",
     "frame-ancestors 'none'",
     "object-src 'none'",
