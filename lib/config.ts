@@ -34,6 +34,12 @@ export const TRAVELPAYOUTS_TIMEOUT_MS = parseInt(
   10
 );
 
+/** Amadeus Self-Service API timeout in milliseconds (default: 2500ms) */
+export const AMADEUS_TIMEOUT_MS = parseInt(
+  process.env.AMADEUS_TIMEOUT_MS ?? "2500",
+  10
+);
+
 /** Forex rate fetch timeout (default: 2000ms) */
 export const FOREX_RATE_TIMEOUT_MS = parseInt(
   process.env.FOREX_RATE_TIMEOUT_MS ?? "2000",

@@ -5,6 +5,7 @@ import type { NormalizedFlight } from "../promotions/engine";
 import { getEffectivePrices } from "../costEngine";
 import { recordObservation } from "../autoCalibrate";
 import { fetchFromDuffel } from "../duffelProvider";
+import { fetchFromAmadeus } from "../amadeusProvider";
 import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
 import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements";
@@ -73,8 +74,9 @@ async function buildResults(
  * Streaming variant of searchEngine.
  *
  * Strategy:
- * - All 4 provider calls start simultaneously.
- * - When Duffel completes (typically ~2-3s), we call onPartial with Duffel-only results.
+ * - All 6 provider calls start simultaneously.
+ * - When Duffel + Amadeus complete (typically ~2-3s), we call onPartial with
+ *   their (real-time, HIGH confidence) merged results.
  * - When TP completes (~4-8s), we build the full merged results and return them.
  *
  * This lets the UI show real flight cards after ~2-3s instead of waiting the full 5-8s.
@@ -120,29 +122,48 @@ export async function searchEngineStream(
 
     const searchId = crypto.randomUUID();
 
-    // ─── Fire all 4 provider calls simultaneously ───────────────────────────
+    // ─── Fire all 6 provider calls simultaneously ───────────────────────────
+    // Duffel and Amadeus are both real-time (HIGH confidence) sources — fired
+    // together in Phase 1. Duffel's key is currently sandboxed pending KYB
+    // verification, so Amadeus (self-service, no KYB needed) is what actually
+    // returns live prices today.
     const duffelOutboundP = fetchFromDuffel(from, to, date!, cabin, passengers)
+      .catch((): NormalizedFlight[] => []);
+    const amadeusOutboundP = fetchFromAmadeus(from, to, date!, cabin, passengers)
       .catch((): NormalizedFlight[] => []);
     const tpOutboundP     = fetchFromTravelpayouts(from, to, date!, directOnly);
     const duffelReturnP   = isRoundtrip
       ? fetchFromDuffel(to, from, returnDate!, cabin, passengers).catch((): NormalizedFlight[] => [])
       : Promise.resolve([] as NormalizedFlight[]);
+    const amadeusReturnP  = isRoundtrip
+      ? fetchFromAmadeus(to, from, returnDate!, cabin, passengers).catch((): NormalizedFlight[] => [])
+      : Promise.resolve([] as NormalizedFlight[]);
     const tpReturnP       = isRoundtrip
       ? fetchFromTravelpayouts(to, from, returnDate!, directOnly)
       : Promise.resolve([] as NormalizedFlight[]);
 
-    // ─── Phase 1: Duffel resolves (~2-3s) ───────────────────────────────────
-    const [duffelOutboundRaw, duffelReturnRaw] = await Promise.all([duffelOutboundP, duffelReturnP]);
+    // ─── Phase 1: Duffel + Amadeus resolve (~2-3s) ──────────────────────────
+    const [duffelOutboundRaw, amadeusOutboundRaw, duffelReturnRaw, amadeusReturnRaw] = await Promise.all([
+      duffelOutboundP, amadeusOutboundP, duffelReturnP, amadeusReturnP,
+    ]);
 
     const duffelOutbound = duffelOutboundRaw.map(f => ({
       ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
     }));
+    const amadeusOutbound = amadeusOutboundRaw.map(f => ({
+      ...f, source: "AMADEUS" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
+    }));
     const duffelReturn = duffelReturnRaw.map(f => ({
       ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
     }));
+    const amadeusReturn = amadeusReturnRaw.map(f => ({
+      ...f, source: "AMADEUS" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
+    }));
 
-    const partialOutbound = filterByStops(duffelOutbound, stops);
-    const partialReturn   = filterByStops(duffelReturn, stops);
+    const highConfidenceOutbound = mergeFlights(duffelOutbound, amadeusOutbound);
+    const highConfidenceReturn   = mergeFlights(duffelReturn, amadeusReturn);
+    const partialOutbound = filterByStops(highConfidenceOutbound, stops);
+    const partialReturn   = filterByStops(highConfidenceReturn, stops);
     const partialResults  = await buildResults(partialOutbound, partialReturn, params, effectivePrices, promotions, searchId);
     // Only emit partial if we actually have something to show
     if (partialResults.length > 0) {
@@ -156,7 +177,7 @@ export async function searchEngineStream(
     const tpReturn   = tpReturnRaw.map(f =>  ({ ...f, source: "TP" as const, priceConfidence: "LOW"  as const }));
 
     // Merge: Duffel wins on duplicate routes (higher confidence)
-    const rawOutbound = mergeFlights(tpOutbound, duffelOutbound);
+    const rawOutbound = mergeFlights(tpOutbound, highConfidenceOutbound);
 
     // ROUTE_AIRLINE_SUPPLEMENTS: synthetic entries for carriers not in any provider
     const syntheticFlights: NormalizedFlight[] = [];
@@ -200,7 +221,7 @@ export async function searchEngineStream(
     // Return leg (roundtrip)
     let returnFlights: NormalizedFlight[] = [];
     if (isRoundtrip) {
-      const rawReturn = mergeFlights(tpReturn, duffelReturn);
+      const rawReturn = mergeFlights(tpReturn, highConfidenceReturn);
       if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
         const directReturn = await fetchFromTravelpayouts(to, from, returnDate!, true);
         if (directReturn.length > 0) {

@@ -62,7 +62,7 @@ export interface FlightResult {
    */
   isSupplemental?: boolean;
   /** Data origin: Duffel (real-time booking API), Travelpayouts (cache-based), or synthetic */
-  source?: "DUFFEL" | "TP" | "SYNTHETIC";
+  source?: "DUFFEL" | "AMADEUS" | "TP" | "SYNTHETIC";
   /** How reliable the price is — HIGH = Duffel live price, LOW = TP cached, ESTIMATED = synthetic floor */
   priceConfidence?: "HIGH" | "LOW" | "ESTIMATED";
 

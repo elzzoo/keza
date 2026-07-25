@@ -179,13 +179,15 @@ export function mergeFlights(primary: NormalizedFlight[], secondary: NormalizedF
     if (!existing) {
       best.set(key, f);
     } else {
-      const fIsDuffel = f.source === "DUFFEL";
-      const existingIsDuffel = existing.source === "DUFFEL";
-      if (fIsDuffel && !existingIsDuffel) {
-        // New entry is Duffel (HIGH confidence) — prefer it over TP; inherit TP booking link if Duffel has none
+      // HIGH confidence covers both real-time GDS sources (Duffel, Amadeus) —
+      // treat them as one tier so either can win over TP's cached LOW-confidence data.
+      const fIsHigh = f.priceConfidence === "HIGH";
+      const existingIsHigh = existing.priceConfidence === "HIGH";
+      if (fIsHigh && !existingIsHigh) {
+        // New entry is real-time (HIGH confidence) — prefer it over TP; inherit TP booking link if it has none
         best.set(key, { ...f, bookingLink: f.bookingLink ?? existing.bookingLink });
-      } else if (!fIsDuffel && existingIsDuffel) {
-        // Existing is Duffel — keep it; only carry over TP booking link if Duffel lacks one
+      } else if (!fIsHigh && existingIsHigh) {
+        // Existing is real-time — keep it; only carry over TP booking link if it lacks one
         if (!existing.bookingLink && f.bookingLink) {
           best.set(key, { ...existing, bookingLink: f.bookingLink });
         }
