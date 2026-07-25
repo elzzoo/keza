@@ -71,7 +71,7 @@ export function CheapestRouteBanner({ lang, onDealClick, formatPrice }: Props) {
             <span>→</span>
             <span>{deal.to}</span>
             <span className="text-base">{deal.toFlag}</span>
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-semibold border border-success/20">
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-semibold border border-success/20 whitespace-nowrap">
               {t.label}
             </span>
           </div>
