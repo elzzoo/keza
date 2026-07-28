@@ -120,7 +120,13 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
             {(["fr", "en"] as const).map((l) => (
               <button
                 key={l}
-                onClick={() => onLangChange(l)}
+                onClick={() => {
+                  // Keep <html lang> in sync — it's server-set on load and this
+                  // client-side toggle doesn't navigate, so without this it stays
+                  // stale (wrong language for screen readers / lang-aware tooling).
+                  document.documentElement.lang = l;
+                  onLangChange(l);
+                }}
                 className={clsx(
                   "px-2.5 py-1 rounded-md text-xs font-bold uppercase transition-all duration-150",
                   lang === l
