@@ -1,111 +1,41 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import {
   type CurrencyCode,
   CURRENCIES,
   formatPrice as fmtPrice,
 } from "@/lib/currency";
-
-interface ForexResponse {
-  rates: Record<string, number>;
-  detected: { country: string | null; currency: CurrencyCode };
-  usdToXof: number;
-}
-
-// ── Static fallback rates (used before live rates are fetched) ───────────────
-// These are approximate values that ensure the currency toggle works immediately
-// on first load, before the /api/forex response arrives.
-// Live rates from the API override these once fetched.
-const FALLBACK_RATES: Record<string, number> = {
-  EUR: 0.92,  GBP: 0.79,  XOF: 608,   MAD: 10.1,  NGN: 1600,
-  KES: 130,   CAD: 1.37,  AUD: 1.55,  JPY: 155,   CHF: 0.90,
-  SEK: 10.5,  NOK: 10.8,  DKK: 6.9,   BRL: 5.0,   INR: 84,
-  AED: 3.67,  SAR: 3.75,  ZAR: 18.5,  EGP: 49,    TRY: 33,
-};
-
-// Global cache — shared across all components
-let cachedRates: Record<string, number> | null = null;
-let cachedDetected: CurrencyCode | null = null;
-let fetching = false;
-let fetchPromise: Promise<void> | null = null;
-
-const STORAGE_KEY = "keza_currency";
-
-function loadSaved(): CurrencyCode | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && saved in CURRENCIES) return saved as CurrencyCode;
-  } catch {}
-  return null;
-}
-
-function saveCurrency(code: CurrencyCode) {
-  if (typeof window === "undefined") return;
-  try { localStorage.setItem(STORAGE_KEY, code); } catch {}
-}
+import { useProfile } from "@/hooks/useProfile";
 
 /**
  * Multi-currency hook.
- * - Auto-detects currency from geo IP on first load
- * - Persists user's choice in localStorage
- * - Provides formatPrice() helper that converts from USD
+ *
+ * Thin wrapper around ProfileContext — that's the single source of truth for
+ * the user's currency (set via the header CurrencyPicker) and exchange rates.
+ * This used to maintain its own separate `keza_currency` localStorage state
+ * and its own /api/forex fetch, entirely disconnected from ProfileContext:
+ * switching currency in the header updated profile.currency, but every
+ * formatPrice() built from this hook kept using its own stale, unrelated
+ * state — so search results, CheapestRouteBanner, etc. silently stayed in
+ * USD after the user picked a different currency. Delegating to
+ * ProfileContext fixes that by construction — one state, everywhere.
  */
 export function useCurrency() {
-  const [currency, setCurrencyState] = useState<CurrencyCode>(loadSaved() ?? "USD");
-  const [rates, setRates] = useState<Record<string, number>>(cachedRates ?? FALLBACK_RATES);
-  const [ready, setReady] = useState(cachedRates !== null);
+  const { currency: rawCurrency, setCurrency: setProfileCurrency, exchangeRates, isLoaded } = useProfile();
 
-  useEffect(() => {
-    // If already fetched, use cache
-    if (cachedRates) {
-      setRates(cachedRates);
-      if (!loadSaved() && cachedDetected) {
-        setCurrencyState(cachedDetected);
-      }
-      setReady(true);
-      return;
-    }
-
-    // Fetch rates (deduplicated)
-    if (!fetching) {
-      fetching = true;
-      fetchPromise = fetch("/api/forex")
-        .then((r) => r.json())
-        .then((data: ForexResponse) => {
-          if (data.rates && Object.keys(data.rates).length > 5) {
-            cachedRates = data.rates;
-          }
-          if (data.detected?.currency) {
-            cachedDetected = data.detected.currency;
-          }
-        })
-        .catch(() => {})
-        .finally(() => { fetching = false; }) as Promise<void>;
-    }
-
-    fetchPromise?.then(() => {
-      if (cachedRates) setRates(cachedRates);
-      // Only auto-detect if user hasn't saved a preference
-      if (!loadSaved() && cachedDetected) {
-        setCurrencyState(cachedDetected);
-      }
-      setReady(true);
-    });
-  }, []);
+  const currency: CurrencyCode = (rawCurrency in CURRENCIES ? rawCurrency : "USD") as CurrencyCode;
 
   const setCurrency = useCallback((code: CurrencyCode) => {
-    setCurrencyState(code);
-    saveCurrency(code);
-  }, []);
+    setProfileCurrency(code);
+  }, [setProfileCurrency]);
 
   /** Format a USD amount into the active currency */
   const formatPrice = useCallback(
     (usdAmount: number): string => {
-      return fmtPrice(usdAmount, currency, rates);
+      return fmtPrice(usdAmount, currency, exchangeRates);
     },
-    [currency, rates]
+    [currency, exchangeRates]
   );
 
   /** Get the currency config */
@@ -115,8 +45,8 @@ export function useCurrency() {
     currency,
     setCurrency,
     formatPrice,
-    rates,
-    ready,
+    rates: exchangeRates,
+    ready: isLoaded,
     config,
   };
 }

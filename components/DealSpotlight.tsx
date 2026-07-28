@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { LiveDeal } from "@/lib/dealsEngine";
+import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { useProfile } from "@/hooks/useProfile";
 
 interface Props {
   lang: "fr" | "en";
@@ -27,6 +29,7 @@ const L = {
 
 export function DealSpotlight({ lang, onDealClick }: Props) {
   const t = L[lang];
+  const { currency, exchangeRates } = useProfile();
   const [deal, setDeal] = useState<LiveDeal | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -92,7 +95,9 @@ export function DealSpotlight({ lang, onDealClick }: Props) {
 
         {/* Price comparison */}
         <div className="flex-shrink-0 text-right">
-          <div className="text-xs text-muted line-through">${deal.cashPrice}</div>
+          <div className="text-xs text-muted line-through">
+            {formatCurrency(convertPrice(deal.cashPrice, "USD", currency, exchangeRates), currency)}
+          </div>
           <div className="font-black text-amber-700 dark:text-amber-400 text-lg leading-tight">
             {deal.milesRequired.toLocaleString()}
             <span className="text-xs font-normal text-muted ml-0.5">pts</span>
