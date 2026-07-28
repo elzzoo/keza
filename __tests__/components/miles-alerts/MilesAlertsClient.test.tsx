@@ -12,6 +12,17 @@ jest.mock("sonner", () => ({
   },
 }));
 
+// MilesAlertsClient now renders the site Header/Footer (it previously had
+// none at all — a real bug: the page had no site navigation). Header pulls
+// in CurrencyPicker, which needs ProfileProvider; mock both out since this
+// suite is about the alert search/delete logic, not site chrome.
+jest.mock("@/components/Header", () => ({
+  Header: () => <header>Header</header>,
+}));
+jest.mock("@/components/Footer", () => ({
+  Footer: () => <footer>Footer</footer>,
+}));
+
 // Mock fetch globally
 global.fetch = jest.fn();
 
@@ -37,17 +48,17 @@ describe("MilesAlertsClient", () => {
     it("renders search form with email input and search button", () => {
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
       expect(emailInput).toBeInTheDocument();
       expect(searchButton).toBeInTheDocument();
     });
 
     it("shows error toast when email is empty and submit is clicked", async () => {
       render(<MilesAlertsClient />);
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
       fireEvent.click(searchButton);
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Enter your email");
+        expect(toast.error).toHaveBeenCalledWith("Entrez votre email");
       });
     });
 
@@ -69,7 +80,7 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
@@ -98,13 +109,13 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Loading...")).toBeInTheDocument();
+        expect(screen.getByText("Chargement…")).toBeInTheDocument();
       });
 
       resolvePromise!();
@@ -117,13 +128,13 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Error loading alerts");
+        expect(toast.error).toHaveBeenCalledWith("Erreur lors du chargement des alertes");
       });
     });
   });
@@ -137,13 +148,13 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
 
       await waitFor(() => {
-        expect(screen.getByText("No alerts found for this email.")).toBeInTheDocument();
+        expect(screen.getByText("Aucune alerte trouvée pour cet email.")).toBeInTheDocument();
       });
     });
 
@@ -172,13 +183,13 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Your Alerts (2)")).toBeInTheDocument();
+        expect(screen.getByText("Vos alertes (2)")).toBeInTheDocument();
         expect(screen.getByText("SIN-LAX")).toBeInTheDocument();
         expect(screen.getByText("SIN-JFK")).toBeInTheDocument();
         expect(screen.getByText("Singapore KrisFlyer")).toBeInTheDocument();
@@ -204,14 +215,14 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Alert when CPP ≤ 1.50¢/)).toBeInTheDocument();
-        expect(screen.getByText(/Created 1\/1\/2024/)).toBeInTheDocument();
+        expect(screen.getByText(/Alerte si CPP ≤ 1.50¢/)).toBeInTheDocument();
+        expect(screen.getByText(/Créée le 01\/01\/2024/)).toBeInTheDocument();
       });
     });
   });
@@ -243,7 +254,7 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
@@ -252,7 +263,7 @@ describe("MilesAlertsClient", () => {
         expect(screen.getByText("SIN-LAX")).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByText("Delete");
+      const deleteButton = screen.getByText("Supprimer");
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
@@ -294,21 +305,21 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
 
       await waitFor(() => {
-        expect(screen.getByText("Your Alerts (1)")).toBeInTheDocument();
+        expect(screen.getByText("Vos alertes (1)")).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByText("Delete");
+      const deleteButton = screen.getByText("Supprimer");
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith("Alert deleted");
-        expect(screen.queryByText("Your Alerts")).not.toBeInTheDocument();
+        expect(toast.success).toHaveBeenCalledWith("Alerte supprimée");
+        expect(screen.queryByText("Vos alertes")).not.toBeInTheDocument();
       });
     });
 
@@ -336,7 +347,7 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
@@ -345,11 +356,11 @@ describe("MilesAlertsClient", () => {
         expect(screen.getByText("SIN-LAX")).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByText("Delete");
+      const deleteButton = screen.getByText("Supprimer");
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Error deleting alert");
+        expect(toast.error).toHaveBeenCalledWith("Erreur lors de la suppression");
       });
     });
 
@@ -373,7 +384,7 @@ describe("MilesAlertsClient", () => {
 
       render(<MilesAlertsClient />);
       const emailInput = screen.getByPlaceholderText("your@email.com");
-      const searchButton = screen.getByText("Search");
+      const searchButton = screen.getByText("Rechercher");
 
       await userEvent.type(emailInput, "test@example.com");
       fireEvent.click(searchButton);
@@ -382,7 +393,7 @@ describe("MilesAlertsClient", () => {
         expect(screen.getByText("SIN-LAX")).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByText("Delete");
+      const deleteButton = screen.getByText("Supprimer");
       fireEvent.click(deleteButton);
 
       // Ensure no second fetch call (delete API) was made
