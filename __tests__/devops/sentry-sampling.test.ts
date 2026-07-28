@@ -18,10 +18,10 @@ describe("Sentry Trace Sampling", () => {
   });
 
   it("client-side trace sampling is configured at 0.5 (50%)", async () => {
-    // Check sentry.client.config.ts has sufficient trace sampling
+    // Check instrumentation-client.ts has sufficient trace sampling
     const fs = await import("fs");
     const path = await import("path");
-    const configPath = path.join(process.cwd(), "sentry.client.config.ts");
+    const configPath = path.join(process.cwd(), "instrumentation-client.ts");
     const configStr = fs.readFileSync(configPath, "utf-8");
 
     // Should contain tracesSampleRate: 0.5
@@ -32,7 +32,7 @@ describe("Sentry Trace Sampling", () => {
   it("client-side has session replay configured", async () => {
     const fs = await import("fs");
     const path = await import("path");
-    const configPath = path.join(process.cwd(), "sentry.client.config.ts");
+    const configPath = path.join(process.cwd(), "instrumentation-client.ts");
     const configStr = fs.readFileSync(configPath, "utf-8");
 
     // Should have session replay settings
@@ -69,7 +69,7 @@ describe("Sentry Trace Sampling", () => {
     expect(configStr).toMatch(/increased|better/i);
 
     // Check client config has comment explaining increase
-    configPath = path.join(process.cwd(), "sentry.client.config.ts");
+    configPath = path.join(process.cwd(), "instrumentation-client.ts");
     configStr = fs.readFileSync(configPath, "utf-8");
     expect(configStr).toMatch(/increased|better|observability/i);
   });

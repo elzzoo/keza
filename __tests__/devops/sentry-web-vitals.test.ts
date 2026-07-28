@@ -52,11 +52,11 @@ describe("Sentry Web Vitals Monitoring", () => {
     expect(thresholds.CLS).toBe(0.1);
   });
 
-  it("sentry.client.config.ts enables Web Vitals monitoring", async () => {
+  it("instrumentation-client.ts enables Web Vitals monitoring", async () => {
     // This test verifies that the file monitors LCP and CLS via PerformanceObserver
     const fs = await import("fs");
     const path = await import("path");
-    const configPath = path.join(process.cwd(), "sentry.client.config.ts");
+    const configPath = path.join(process.cwd(), "instrumentation-client.ts");
     const configContent = fs.readFileSync(configPath, "utf-8");
 
     expect(configContent).toContain("PerformanceObserver");
