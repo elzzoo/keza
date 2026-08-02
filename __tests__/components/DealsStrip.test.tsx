@@ -5,6 +5,7 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { DealsStrip } from "@/components/DealsStrip";
+import { __resetDealsCacheForTests } from "@/hooks/useDeals";
 
 // Mock useProfile
 jest.mock("@/hooks/useProfile", () => ({
@@ -27,6 +28,11 @@ jest.mock("@/lib/analytics", () => ({
 describe("DealsStrip", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // useDeals() shares one fetch across DealSpotlight/CheapestRouteBanner/
+    // DealsStrip via a module-level cache (see hooks/useDeals.ts) — reset it
+    // between tests so each "it" gets its own mocked fetch response instead
+    // of the previous test's cached result.
+    __resetDealsCacheForTests();
   });
 
   it("renders the deals title", async () => {

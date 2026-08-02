@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { LiveDeal } from "@/lib/dealsEngine";
+import { useMemo } from "react";
+import { useDeals } from "@/hooks/useDeals";
 
 interface Props {
   lang: "fr" | "en";
@@ -27,22 +27,12 @@ const L = {
 export function CheapestRouteBanner({ lang, onDealClick, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
-  const [deal, setDeal] = useState<LiveDeal | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { deals, loading } = useDeals();
 
-  useEffect(() => {
-    fetch("/api/deals")
-      .then(r => r.json())
-      .then((data: { deals: LiveDeal[] }) => {
-        // Pick the cheapest cash price across all deals
-        const cheapest = (data.deals ?? [])
-          .filter(d => d.cashPrice > 0)
-          .sort((a, b) => a.cashPrice - b.cashPrice)[0] ?? null;
-        setDeal(cheapest);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const deal = useMemo(
+    () => deals.filter(d => d.cashPrice > 0).sort((a, b) => a.cashPrice - b.cashPrice)[0] ?? null,
+    [deals]
+  );
 
   if (!loading && !deal) return null;
 

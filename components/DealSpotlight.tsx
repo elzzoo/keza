@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { LiveDeal } from "@/lib/dealsEngine";
+import { useMemo } from "react";
 import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
+import { useDeals } from "@/hooks/useDeals";
 
 interface Props {
   lang: "fr" | "en";
@@ -30,21 +30,12 @@ const L = {
 export function DealSpotlight({ lang, onDealClick }: Props) {
   const t = L[lang];
   const { currency, exchangeRates } = useProfile();
-  const [deal, setDeal] = useState<LiveDeal | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { deals, loading } = useDeals();
 
-  useEffect(() => {
-    fetch("/api/deals")
-      .then(r => r.json())
-      .then((data: { deals: LiveDeal[] }) => {
-        const best = (data.deals ?? [])
-          .filter(d => d.recommendation === "USE_MILES")
-          .sort((a, b) => b.ratio - a.ratio)[0] ?? null;
-        setDeal(best);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const deal = useMemo(
+    () => deals.filter(d => d.recommendation === "USE_MILES").sort((a, b) => b.ratio - a.ratio)[0] ?? null,
+    [deals]
+  );
 
   if (!loading && !deal) return null;
 

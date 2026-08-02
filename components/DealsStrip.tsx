@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 import { trackDealClick } from "@/lib/analytics";
 import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
-import type { LiveDeal } from "@/lib/dealsEngine";
+import { useDeals } from "@/hooks/useDeals";
 
 interface Props {
   lang: "fr" | "en";
@@ -21,25 +21,16 @@ const L = {
 export function DealsStrip({ lang, onDealClick }: Props) {
   const t = L[lang];
   const { currency, exchangeRates } = useProfile();
-  const [deals, setDeals] = useState<LiveDeal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { deals, loading, error } = useDeals();
 
   useEffect(() => {
-    fetch("/api/deals")
-      .then((r) => r.json())
-      .then((data: { deals: LiveDeal[] }) => {
-        setDeals(data.deals ?? []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("[DealsStrip] fetch /api/deals:", err);
-        Sentry.captureException(err, {
-          tags: { component: "DealsStrip" },
-          extra: { action: "fetch deals" }
-        });
-        setLoading(false);
-      });
-  }, []);
+    if (!error) return;
+    console.error("[DealsStrip] fetch /api/deals:", error);
+    Sentry.captureException(error, {
+      tags: { component: "DealsStrip" },
+      extra: { action: "fetch deals" }
+    });
+  }, [error]);
 
   if (!loading && deals.length === 0) return null;
 

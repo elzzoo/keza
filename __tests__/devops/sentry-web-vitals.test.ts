@@ -2,12 +2,12 @@
  * Sentry Web Vitals Monitoring Tests
  * Verifies that Core Web Vitals (LCP, FID, CLS) are captured for monitoring
  */
+import * as Sentry from "@sentry/nextjs";
 
 describe("Sentry Web Vitals Monitoring", () => {
   it("Sentry SDK is available for Web Vitals", () => {
     // This test verifies that the Sentry SDK is available
-    // The actual implementation is in sentry.client.config.ts
-    const Sentry = require("@sentry/nextjs");
+    // The actual implementation is in instrumentation-client.ts
     expect(Sentry).toBeDefined();
     expect(Sentry.captureMessage).toBeDefined();
   });
