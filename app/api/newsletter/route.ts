@@ -22,8 +22,16 @@ export async function POST(req: NextRequest) {
   // header, so this endpoint 401'd every real newsletter signup in
   // production. See app/api/alerts/route.ts for the full explanation.
 
+  let body: Record<string, unknown>;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    // Malformed JSON is a client error, not a server failure — don't let it
+    // fall into the catch-all below, which used to report it as a 500.
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  try {
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     const lang  = body?.lang === "en" ? "en" : "fr";
 

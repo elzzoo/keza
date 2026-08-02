@@ -62,9 +62,19 @@ export async function POST(request: Request) {
   });
   if (limited) return limited;
 
+  let body: Partial<SearchParams>;
   try {
-    const body = await request.json() as Partial<SearchParams>;
+    body = await request.json() as Partial<SearchParams>;
+  } catch {
+    // Malformed JSON is a client error, not a server failure — don't let it
+    // fall into the catch-all below, which used to report it as a 500.
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 }
+    );
+  }
 
+  try {
     /* validate & sanitize inputs */
     const from = sanitizeCode(body.from);
     const to   = sanitizeCode(body.to);

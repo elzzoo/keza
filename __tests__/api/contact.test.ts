@@ -139,4 +139,21 @@ describe("POST /api/contact", () => {
       expect(res.status).toBe(201);
     });
   });
+
+  describe("malformed request body", () => {
+    it("returns 400 (not 500) for malformed JSON", async () => {
+      // request.json() throws a SyntaxError on unparseable bodies — a client
+      // error, but it used to fall into the catch-all and come back as a 500
+      // "Internal server error" like a real backend failure.
+      const req = new Request("http://localhost/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{ not valid json",
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Invalid JSON body");
+    });
+  });
 });

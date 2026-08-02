@@ -36,8 +36,16 @@ export async function POST(request: Request) {
   // header, so this endpoint 401'd every real submission in production. See
   // app/api/alerts/route.ts for the full explanation; same fix applied here.
 
+  let raw: unknown;
   try {
-    const raw = await request.json();
+    raw = await request.json();
+  } catch {
+    // Malformed JSON is a client error, not a server failure — don't let it
+    // fall into the catch-all below, which used to report it as a 500.
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  try {
     const result = ContactSchema.safeParse(raw);
 
     if (!result.success) {

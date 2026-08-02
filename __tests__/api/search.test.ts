@@ -256,5 +256,20 @@ describe("POST /api/search", () => {
       expect(body.error).toBe("Search failed");
       expect(body.results).toEqual([]);
     });
+
+    it("returns 400 (not 500) for malformed JSON", async () => {
+      // request.json() throws a SyntaxError on unparseable bodies — that's a
+      // client error, but it used to fall into the catch-all below and come
+      // back as a 500 "Search failed" like a real server-side engine failure.
+      const req = new Request("http://localhost/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{ invalid json }",
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Invalid JSON body");
+    });
   });
 });

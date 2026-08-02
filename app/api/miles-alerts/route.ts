@@ -48,9 +48,16 @@ export async function POST(request: NextRequest) {
   });
   if (limited) return limited;
 
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    // Malformed JSON is a client error, not a server failure — don't let it
+    // fall into the catch-all below, which used to report it as a 500.
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
+  try {
     // Validate all required fields
     if (!body.email || typeof body.email !== "string") {
       return NextResponse.json({ error: "email is required" }, { status: 400 });
@@ -160,9 +167,14 @@ export async function DELETE(request: NextRequest) {
   });
   if (limited) return limited;
 
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
+  try {
     // Validate alertId is provided
     if (!body.alertId || typeof body.alertId !== "string") {
       return NextResponse.json({ error: "alertId is required" }, { status: 400 });

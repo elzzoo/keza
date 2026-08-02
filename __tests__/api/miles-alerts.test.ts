@@ -173,6 +173,21 @@ describe("POST /api/miles-alerts", () => {
     const data = await res.json();
     expect(data.error).toBe("Internal error");
   });
+
+  it("returns 400 (not 500) for malformed JSON", async () => {
+    // request.json() throws a SyntaxError on unparseable bodies — a client
+    // error, but it used to fall into the catch-all and come back as a 500
+    // "Internal error" like a real backend failure.
+    const req = new NextRequest("http://localhost/api/miles-alerts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{ not valid json",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid JSON body");
+  });
 });
 
 describe("GET /api/miles-alerts", () => {
@@ -298,5 +313,17 @@ describe("DELETE /api/miles-alerts", () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe("Internal error");
+  });
+
+  it("returns 400 (not 500) for malformed JSON", async () => {
+    const req = new NextRequest("http://localhost/api/miles-alerts", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", ...AUTH_HEADER },
+      body: "{ not valid json",
+    });
+    const res = await DELETE(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid JSON body");
   });
 });

@@ -237,4 +237,20 @@ describe("POST /api/alerts with milesAlert", () => {
     // Should create alert but without milesAlert
     expect(data.alert.milesAlert).toBeUndefined();
   });
+
+  it("returns 400 (not 500) for malformed JSON", async () => {
+    // request.json() throws a SyntaxError on unparseable bodies — a client
+    // error, but it used to fall into the catch-all and come back as a 500
+    // "Internal server error" like a real backend failure.
+    const mockRequest = new Request("http://localhost:3000/api/alerts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{ not valid json",
+    }) as unknown as NextRequest;
+
+    const response = await POST(mockRequest);
+    expect(response.status).toBe(400);
+    const data = await response.json();
+    expect(data.error).toBe("Invalid JSON body");
+  });
 });
