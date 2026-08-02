@@ -54,6 +54,12 @@ describe("POST /api/admin/session", () => {
       expect(cookie?.value).toBe("");
     });
 
+    it("does not add the wrong-secret ?error=1 flag on a plain logout", async () => {
+      const req = await makeLoginRequest(undefined, "DELETE");
+      const res = await POST(req);
+      expect(res.headers.get("location")).not.toMatch(/error=1/);
+    });
+
     it("does NOT hit the rate limiter on logout", async () => {
       const req = await makeLoginRequest(undefined, "DELETE");
       await POST(req);
@@ -82,6 +88,15 @@ describe("POST /api/admin/session", () => {
       const cookie = res.cookies.get("keza_admin_session");
       // Cookie cleared (maxAge=0) on failed login
       expect(cookie?.maxAge ?? 0).toBe(0);
+    });
+
+    it("adds ?error=1 so the login form can show a message", async () => {
+      // Previously the redirect on a wrong secret was silent — the user got
+      // no feedback that their attempt failed, just the same blank form.
+      mockSafeCompare.mockReturnValue(false);
+      const req = await makeLoginRequest("wrong-secret");
+      const res = await POST(req);
+      expect(res.headers.get("location")).toMatch(/[?&]error=1/);
     });
   });
 

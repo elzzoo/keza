@@ -7,8 +7,10 @@ import {
 } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
-function redirectToAdmin(req: NextRequest): NextResponse {
-  return NextResponse.redirect(new URL("/admin", req.url), { status: 303 });
+function redirectToAdmin(req: NextRequest, opts?: { error?: boolean }): NextResponse {
+  const url = new URL("/admin", req.url);
+  if (opts?.error) url.searchParams.set("error", "1");
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 function clearAdminSession(res: NextResponse): void {
@@ -55,7 +57,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const expectedSecret = process.env.ADMIN_SECRET;
 
   if (!expectedSecret || !safeCompare(submittedSecret, expectedSecret)) {
-    const res = redirectToAdmin(req);
+    const res = redirectToAdmin(req, { error: true });
     clearAdminSession(res);
     return res;
   }

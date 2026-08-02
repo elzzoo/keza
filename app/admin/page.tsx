@@ -177,7 +177,7 @@ function StatCard({
   );
 }
 
-function LoginForm() {
+function LoginForm({ hasError }: { hasError: boolean }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
@@ -185,6 +185,11 @@ function LoginForm() {
         <p className="mt-1 text-sm text-gray-500">
           Accès restreint. Entrez le secret admin.
         </p>
+        {hasError && (
+          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            Secret incorrect. Réessayez.
+          </p>
+        )}
         <form method="POST" action="/api/admin/session" className="mt-6 space-y-4">
           <label className="block">
             <span className="text-sm font-medium text-gray-700">Secret</span>
@@ -210,12 +215,17 @@ function LoginForm() {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
 
   if (!verifyAdminSessionToken(sessionToken)) {
-    return <LoginForm />;
+    const { error } = await searchParams;
+    return <LoginForm hasError={error === "1"} />;
   }
 
   let stats: Awaited<ReturnType<typeof fetchStats>> | null = null;
