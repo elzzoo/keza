@@ -76,6 +76,22 @@ export function OnboardingWizard({ lang = "fr" }: Props) {
     return () => clearTimeout(timer);
   }, [isLoaded, profile]);
 
+  // Standard dialog behavior — Escape dismisses, same as the explicit "Plus
+  // tard"/"Later" button (inlined rather than calling handleSkip directly so
+  // this effect doesn't need that function, which is redefined every render,
+  // in its dependency array).
+  useEffect(() => {
+    if (!visible) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        update({ hasOnboarded: true });
+        setVisible(false);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [visible, update]);
+
   if (!visible) return null;
 
   function toggleProgram(name: string) {
@@ -118,7 +134,12 @@ export function OnboardingWizard({ lang = "fr" }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-wizard-title"
+        className="w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden"
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-900/60 to-surface px-6 py-5 border-b border-border">
           <div className="flex items-center justify-between mb-1">
@@ -134,7 +155,7 @@ export function OnboardingWizard({ lang = "fr" }: Props) {
               style={{ width: `${step === 1 ? 50 : 100}%` }}
             />
           </div>
-          <h2 className="text-lg font-bold text-fg mt-3">
+          <h2 id="onboarding-wizard-title" className="text-lg font-bold text-fg mt-3">
             {step === 1 ? t.step1Title : t.step2Title}
           </h2>
           <p className="text-sm text-muted mt-0.5">
