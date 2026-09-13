@@ -20,12 +20,18 @@ beforeEach(() => {
   mockRedisTtl.mockResolvedValue(300);
 });
 
+function futureDate(daysAhead = 45): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d.toISOString().split("T")[0]!;
+}
+
 describe("Performance Integration", () => {
   it("streaming endpoint returns fast", async () => {
     const payload = JSON.stringify({
       from: "SIN",
       to: "LAX",
-      date: "2026-08-15",
+      date: futureDate(),
       passengers: 1,
       cabin: "economy",
     });

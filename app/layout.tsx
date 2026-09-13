@@ -7,6 +7,7 @@ import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { SITE_URL } from "@/lib/siteConfig";
+import { EMAIL_DOMAIN } from "@/lib/brand";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { AuthSessionProvider } from "@/contexts/SessionContext";
 import { OnboardingProvider } from "@/lib/contexts/onboardingContext";
@@ -125,7 +126,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               sameAs: [],
               contactPoint: {
                 "@type": "ContactPoint",
-                email: "hello@keza.app",
+                email: `hello@${EMAIL_DOMAIN}`,
                 contactType: "customer support",
                 availableLanguage: ["French", "English"],
               },

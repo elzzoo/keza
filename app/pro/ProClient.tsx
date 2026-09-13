@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import Link from "next/link";
 import type { ProAccessStatus } from "@/lib/proAccess";
+import { EMAIL_DOMAIN } from "@/lib/brand";
 
 const FEATURES = [
   { icon: "🔔", title: "Alertes illimitées", desc: "Surveillez autant de routes que vous voulez, sans limite." },
@@ -386,8 +387,8 @@ export function ProClient({
 
         <p className="mt-8 text-center text-xs text-muted/60">
           Question ?{" "}
-          <a href="mailto:hello@keza.app" className="underline hover:text-muted">
-            hello@keza.app
+          <a href={`mailto:hello@${EMAIL_DOMAIN}`} className="underline hover:text-muted">
+            hello@{EMAIL_DOMAIN}
           </a>
         </p>
       </main>

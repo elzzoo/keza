@@ -30,14 +30,6 @@ const T = {
     heroCTA: "Demander une démo",
     heroSecondary: "Voir nos tarifs",
 
-    /* Metrics */
-    m1Value: "180 $",
-    m1Label: "d'économies moyennes par vol",
-    m2Value: "46",
-    m2Label: "programmes comparés",
-    m3Value: "7 900+",
-    m3Label: "routes analysées",
-
     /* Value props */
     vpTitle: "Tout ce dont votre équipe a besoin",
     vp: [
@@ -123,14 +115,6 @@ const T = {
       "Your employees spend cash when they should have used miles — and vice versa. Xalifly detects it, automatically.",
     heroCTA: "Request a demo",
     heroSecondary: "See pricing",
-
-    /* Metrics */
-    m1Value: "$180",
-    m1Label: "average savings per flight",
-    m2Value: "46",
-    m2Label: "programs compared",
-    m3Value: "7,900+",
-    m3Label: "routes analyzed",
 
     /* Value props */
     vpTitle: "Everything your team needs",
@@ -262,24 +246,6 @@ export default function EntreprisesPage() {
               >
                 {t.heroSecondary}
               </a>
-            </div>
-          </div>
-        </section>
-
-        {/* ── METRICS BAR ─────────────────────────────────────────── */}
-        <section className="border-y border-border bg-surface">
-          <div className="max-w-5xl mx-auto px-4 py-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border text-center">
-              {[
-                { value: t.m1Value, label: t.m1Label },
-                { value: t.m2Value, label: t.m2Label },
-                { value: t.m3Value, label: t.m3Label },
-              ].map((m) => (
-                <div key={m.label} className="py-5 sm:py-4 px-6 space-y-1">
-                  <div className="text-3xl font-black text-primary">{m.value}</div>
-                  <div className="text-xs text-muted font-medium uppercase tracking-wider">{m.label}</div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
