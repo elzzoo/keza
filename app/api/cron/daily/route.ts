@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { redis } from "@/lib/redis";
 import { logError, logWarn } from "@/lib/logger";
+import { cronJobKey, cronLastRunKey, cronRunKey, recordCronState } from "@/lib/cronState";
 
 // ─── Daily cron orchestrator ──────────────────────────────────────────────────
 // Vercel Hobby allows max 2 crons. This handler consolidates all non-alerts jobs
@@ -25,23 +25,8 @@ const DAILY_JOBS = [
   "/api/cron/prewarm",        // 4am — pre-warm cache for top corridors
 ] as const;
 
-const RUN_TTL_SECONDS = 7 * 24 * 60 * 60;
-const LAST_RUN_KEY = "cron:daily:lastRun";
-
-function dailyRunKey(runId: string): string {
-  return `cron:daily:runs:${runId}`;
-}
-
-function dailyJobKey(runId: string, path: string): string {
-  const slug = path.split("/").filter(Boolean).join(":");
-  return `cron:daily:runs:${runId}:job:${slug}`;
-}
-
-async function recordCronState(key: string, value: Record<string, unknown>): Promise<void> {
-  await redis.set(key, value, { ex: RUN_TTL_SECONDS }).catch((err) => {
-    logWarn("[api/cron/daily] failed to record state", String(err), { key });
-  });
-}
+const CRON_NAME = "daily";
+const LAST_RUN_KEY = cronLastRunKey(CRON_NAME);
 
 async function dispatchJob(
   base: string,
@@ -50,7 +35,7 @@ async function dispatchJob(
   runId: string,
 ): Promise<void> {
   const startedAt = new Date().toISOString();
-  const key = dailyJobKey(runId, path);
+  const key = cronJobKey(CRON_NAME, runId, path);
 
   await recordCronState(key, {
     runId,
@@ -105,7 +90,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const runId = randomUUID();
     const startedAt = new Date().toISOString();
 
-    await recordCronState(dailyRunKey(runId), {
+    await recordCronState(cronRunKey(CRON_NAME, runId), {
       runId,
       status: "dispatched",
       startedAt,
