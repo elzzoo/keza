@@ -16,6 +16,7 @@ import { CONFIDENCE_PENALTY } from "./constants";
 import { applyP52Scoring } from "./scoring";
 import { applyHomeCarrierGuarantees } from "./homeCarrierGuarantees";
 import { recordHighConfidenceObservations } from "./observations";
+import { mergeHighConfidenceFlights, tagTravelpayoutsFlights } from "./providers";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
@@ -160,21 +161,8 @@ export async function searchEngineStream(
       duffelOutboundP, amadeusOutboundP, duffelReturnP, amadeusReturnP,
     ]);
 
-    const duffelOutbound = duffelOutboundRaw.map(f => ({
-      ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
-    }));
-    const amadeusOutbound = amadeusOutboundRaw.map(f => ({
-      ...f, source: "AMADEUS" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
-    }));
-    const duffelReturn = duffelReturnRaw.map(f => ({
-      ...f, source: "DUFFEL" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
-    }));
-    const amadeusReturn = amadeusReturnRaw.map(f => ({
-      ...f, source: "AMADEUS" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const,
-    }));
-
-    const highConfidenceOutbound = mergeFlights(duffelOutbound, amadeusOutbound);
-    const highConfidenceReturn   = mergeFlights(duffelReturn, amadeusReturn);
+    const highConfidenceOutbound = mergeHighConfidenceFlights(duffelOutboundRaw, amadeusOutboundRaw);
+    const highConfidenceReturn   = mergeHighConfidenceFlights(duffelReturnRaw, amadeusReturnRaw);
     const partialOutbound = filterByStops(highConfidenceOutbound, stops);
     const partialReturn   = filterByStops(highConfidenceReturn, stops);
     const partialResults  = await buildResults(partialOutbound, partialReturn, params, effectivePrices, promotions, searchId);
@@ -186,8 +174,8 @@ export async function searchEngineStream(
     // ─── Phase 2: TP resolves (~4-8s total from start) ──────────────────────
     const [tpOutboundRaw, tpReturnRaw] = await Promise.all([tpOutboundP, tpReturnP]);
 
-    const tpOutbound = tpOutboundRaw.map(f => ({ ...f, source: "TP" as const, priceConfidence: "LOW"  as const }));
-    const tpReturn   = tpReturnRaw.map(f =>  ({ ...f, source: "TP" as const, priceConfidence: "LOW"  as const }));
+    const tpOutbound = tagTravelpayoutsFlights(tpOutboundRaw);
+    const tpReturn   = tagTravelpayoutsFlights(tpReturnRaw);
 
     // Merge: Duffel wins on duplicate routes (higher confidence)
     const rawOutbound = mergeFlights(tpOutbound, highConfidenceOutbound);

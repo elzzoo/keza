@@ -1,6 +1,13 @@
 // __tests__/lib/engineMerge.test.ts
 // Tests for Duffel-first merge logic, synthetic isolation, confidence penalty sort
 import { mergeFlights } from "@/lib/engine";
+import {
+  mergeHighConfidenceFlights,
+  mergeProviderFlights,
+  tagAmadeusFlights,
+  tagDuffelFlights,
+  tagTravelpayoutsFlights,
+} from "@/lib/engine/providers";
 import type { NormalizedFlight } from "@/lib/promotions/engine";
 
 // ─── mergeFlights — Duffel preferred over TP ─────────────────────────────────
@@ -47,6 +54,56 @@ describe("mergeFlights — source preference", () => {
     const as: NormalizedFlight = { from: "DSS", to: "CDG", airlines: ["Air Senegal"],   stops: 0, price: 850, source: "TP", priceConfidence: "LOW" };
     const merged = mergeFlights([af], [as]);
     expect(merged).toHaveLength(2);
+  });
+});
+
+describe("provider tagging and merge helpers", () => {
+  const base = {
+    from: "DSS", to: "CDG", airlines: ["Air France"], stops: 0,
+  };
+
+  it("tags provider confidence consistently", () => {
+    expect(tagTravelpayoutsFlights([{ ...base, price: 800 }])[0]).toMatchObject({
+      source: "TP",
+      priceConfidence: "LOW",
+    });
+    expect(tagDuffelFlights([{ ...base, price: 900 }])[0]).toMatchObject({
+      source: "DUFFEL",
+      priceConfidence: "HIGH",
+      cabinResolved: true,
+    });
+    expect(tagAmadeusFlights([{ ...base, price: 950 }])[0]).toMatchObject({
+      source: "AMADEUS",
+      priceConfidence: "HIGH",
+      cabinResolved: true,
+    });
+  });
+
+  it("merges TP with high-confidence providers through one helper", () => {
+    const merged = mergeProviderFlights(
+      [{ ...base, price: 700 }],
+      [{ ...base, price: 900 }],
+      [],
+    );
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toMatchObject({
+      source: "DUFFEL",
+      priceConfidence: "HIGH",
+      cabinResolved: true,
+      price: 900,
+    });
+  });
+
+  it("merges high-confidence providers for stream partial results", () => {
+    const merged = mergeHighConfidenceFlights(
+      [{ ...base, price: 900 }],
+      [{ ...base, price: 850 }],
+    );
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].source).toBe("AMADEUS");
+    expect(merged[0].priceConfidence).toBe("HIGH");
   });
 });
 

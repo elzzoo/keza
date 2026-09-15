@@ -8,7 +8,7 @@ import { fetchFromAmadeus } from "../amadeusProvider";
 import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
 import { ROUTE_AIRLINE_SUPPLEMENTS } from "./supplements";
-import { enrich, mergeFlights, filterByStops } from "./enrich";
+import { enrich, filterByStops } from "./enrich";
 import { logError, logWarn } from "../logger";
 import { ENABLE_MULTI_LEG_ROUTING } from "../config";
 import { searchMultiLegRoutes } from "../multiLeg";
@@ -18,6 +18,7 @@ import { CONFIDENCE_PENALTY } from "./constants";
 import { applyP52Scoring } from "./scoring";
 import { applyHomeCarrierGuarantees } from "./homeCarrierGuarantees";
 import { recordHighConfidenceObservations } from "./observations";
+import { mergeProviderFlights } from "./providers";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -145,11 +146,7 @@ export async function searchEngine(
   const tpReturnRaw = tpReturnSettled.status === "fulfilled" ? tpReturnSettled.value : [];
   const duffelReturnRaw = duffelReturnSettled.status === "fulfilled" ? duffelReturnSettled.value : [];
   const amadeusReturnRaw = amadeusReturnSettled.status === "fulfilled" ? amadeusReturnSettled.value : [];
-  // Tag by source so mergeFlights can prefer real-time (HIGH confidence) over TP for same key
-  const tpOutbound      = tpOutboundRaw.map(f => ({ ...f, source: "TP"      as const, priceConfidence: "LOW"  as const }));
-  const duffelOutbound  = duffelOutboundRaw.map(f => ({ ...f, source: "DUFFEL"  as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
-  const amadeusOutbound = amadeusOutboundRaw.map(f => ({ ...f, source: "AMADEUS" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
-  const rawOutbound = mergeFlights(mergeFlights(tpOutbound, duffelOutbound), amadeusOutbound);
+  const rawOutbound = mergeProviderFlights(tpOutboundRaw, duffelOutboundRaw, amadeusOutboundRaw);
 
   // ── Collect synthetic entries for supplement airlines missing from providers ─
   // Airlines in ROUTE_AIRLINE_SUPPLEMENTS are known to fly this route but not
@@ -227,10 +224,7 @@ export async function searchEngine(
   // 3. Process return flights using the pre-fetched data (fetched in parallel with outbound in step 2)
   let returnFlights: NormalizedFlight[] = [];
   if (isRoundtrip) {
-    const tpReturn      = tpReturnRaw.map(f => ({ ...f, source: "TP"      as const, priceConfidence: "LOW"  as const }));
-    const duffelReturn  = duffelReturnRaw.map(f => ({ ...f, source: "DUFFEL"  as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
-    const amadeusReturn = amadeusReturnRaw.map(f => ({ ...f, source: "AMADEUS" as const, priceConfidence: "HIGH" as const, cabinResolved: true as const }));
-    const rawReturn = mergeFlights(mergeFlights(tpReturn, duffelReturn), amadeusReturn);
+    const rawReturn = mergeProviderFlights(tpReturnRaw, duffelReturnRaw, amadeusReturnRaw);
 
     // Same direct-flight recovery for return leg (TP only — Duffel already included all)
     if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
