@@ -15,6 +15,11 @@ jest.mock("@/lib/redis", () => ({
 jest.mock("@/lib/ratelimit", () => ({
   rateLimitResponse: jest.fn(async () => null),
 }));
+jest.mock("@/lib/auth", () => ({
+  hasAdminSecret: jest.fn(() => true),
+  hasAdminSession: jest.fn(() => false),
+  hasCronSecret: jest.fn(() => false),
+}));
 
 import { redis } from "@/lib/redis";
 

@@ -74,11 +74,35 @@ export async function POST(request: Request) {
     );
   }
 
-  const passengers = Math.min(Math.max(Number(body.passengers) || 1, 1), 9);
+  if (from === to) {
+    return new Response(
+      JSON.stringify({ error: "Origin and destination must be different" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  const passengersNum = Number(body.passengers);
+  if (body.passengers !== undefined && (!Number.isInteger(passengersNum) || passengersNum < 1 || passengersNum > 9)) {
+    return new Response(
+      JSON.stringify({ error: "Invalid input: passengers must be an integer between 1 and 9" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  const passengers = Number.isInteger(passengersNum) ? passengersNum : 1;
+  const tripType = body.tripType === "roundtrip" ? "roundtrip" : "oneway";
+  const returnDate = isValidFutureDate(body.returnDate) ? body.returnDate : undefined;
+
+  if (tripType === "roundtrip" && returnDate && returnDate <= date) {
+    return new Response(
+      JSON.stringify({ error: "Return date must be after departure date" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   const searchParams: SearchParams = {
     from, to, date,
-    returnDate:   isValidFutureDate(body.returnDate) ? body.returnDate : undefined,
-    tripType:     body.tripType === "roundtrip" ? "roundtrip" : "oneway",
+    returnDate,
+    tripType,
     stops:        body.stops === "direct" ? "direct" : "any",
     cabin:        (["economy", "premium", "business", "first"] as const).includes(body.cabin as never)
                     ? (body.cabin as "economy" | "premium" | "business" | "first")

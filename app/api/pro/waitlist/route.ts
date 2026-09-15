@@ -4,6 +4,7 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail } from "@/lib/validate";
 import { Resend } from "resend";
 import { logError, logWarn } from "@/lib/logger";
+import { hasAdminSecret, hasAdminSession } from "@/lib/auth";
 
 const WAITLIST_KEY = "keza:pro:waitlist";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
@@ -78,7 +79,11 @@ export async function POST(req: NextRequest) {
 }
 
 // GET — count waitlist size (for admin)
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!hasAdminSession(req) && !hasAdminSecret(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const count = await redis.zcard(WAITLIST_KEY);
     return NextResponse.json({ count });

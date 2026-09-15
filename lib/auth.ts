@@ -115,7 +115,6 @@ export function verifyAdminSessionToken(token: string | undefined, now = Date.no
     return false;
   }
   if (!token) {
-    Sentry.captureMessage("[auth] Admin session verification failed: missing token", "error");
     return false;
   }
 

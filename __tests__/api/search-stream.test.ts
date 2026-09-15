@@ -882,7 +882,7 @@ describe("POST /api/search/stream", () => {
       expect(await response.text()).toBe("Invalid JSON");
     });
 
-    it("should clamp passengers between 1 and 9", async () => {
+    it("should reject passengers outside 1–9 instead of silently clamping", async () => {
       mockSearchEngineStream.mockResolvedValue([]);
 
       const request = new Request("http://localhost:3000/api/search/stream", {
@@ -896,13 +896,52 @@ describe("POST /api/search/stream", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      await POST(request);
+      const response = await POST(request);
+      const data = await response.json();
 
-      expect(mockSearchEngineStream).toHaveBeenCalledWith(
-        expect.objectContaining({ passengers: 9 }),
-        expect.any(Function),
-        expect.any(String)
-      );
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("passengers");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should reject same origin and destination", async () => {
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "SIN",
+          date: FUTURE_DATE,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("different");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should reject roundtrip returnDate on or before departure date", async () => {
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+          returnDate: FUTURE_DATE,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("Return date");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
     });
 
     it("should default to oneway tripType when invalid", async () => {

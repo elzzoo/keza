@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { hasAdminSecret, hasAdminSession, hasCronSecret } from "@/lib/auth";
 
 /**
  * GET /api/health/amadeus
@@ -30,6 +31,10 @@ interface AmadeusErrorMetrics {
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  if (!hasAdminSession(req) && !hasAdminSecret(req) && !hasCronSecret(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const limited = await rateLimitResponse(req, {
     namespace: "api:health:amadeus",
     limit: 60,
