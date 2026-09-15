@@ -16,6 +16,7 @@ import {
   cronJobKey,
   cronLastRunKey,
   cronRunKey,
+  deriveCronHealth,
   recordCronState,
 } from "@/lib/cronState";
 
@@ -62,5 +63,26 @@ describe("cronState", () => {
       "Error: redis down",
       { key: "cron:daily:lastRun" },
     );
+  });
+
+  it("derives cron health from last run and job states", () => {
+    const now = new Date("2026-09-15T12:00:00.000Z");
+    const freshRun = {
+      runId: "run-1",
+      status: "dispatched" as const,
+      startedAt: "2026-09-15T11:00:00.000Z",
+    };
+
+    expect(deriveCronHealth(null, [], { now })).toBe("unknown");
+    expect(deriveCronHealth(freshRun, [{ runId: "run-1", path: "/x", status: "accepted", startedAt: freshRun.startedAt }], { now })).toBe("ok");
+    expect(deriveCronHealth(freshRun, [null], { now })).toBe("running");
+    expect(deriveCronHealth(freshRun, [{ runId: "run-1", path: "/x", status: "rejected", startedAt: freshRun.startedAt }], { now })).toBe("degraded");
+    expect(
+      deriveCronHealth(
+        { ...freshRun, startedAt: "2026-09-14T00:00:00.000Z" },
+        [],
+        { now },
+      ),
+    ).toBe("stale");
   });
 });

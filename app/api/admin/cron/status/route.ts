@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasAdminSecret, hasAdminSession, hasCronSecret } from "@/lib/auth";
-import { cronJobKey, cronLastRunKey, type CronJobState, type CronRunState } from "@/lib/cronState";
+import {
+  cronJobKey,
+  cronLastRunKey,
+  deriveCronHealth,
+  type CronJobState,
+  type CronRunState,
+} from "@/lib/cronState";
 import { DAILY_CRON_JOBS } from "@/lib/cronJobs";
 import { logError } from "@/lib/logger";
 import { rateLimitResponse } from "@/lib/ratelimit";
@@ -34,6 +40,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       ok: true,
       daily: {
+        health: deriveCronHealth(lastRun, jobs.map((job) => job.state)),
         lastRun: lastRun ?? null,
         jobs,
       },
