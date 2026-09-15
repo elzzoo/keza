@@ -264,27 +264,31 @@ export async function searchEngineStream(
     {
       const routeKey   = `${from.toUpperCase()}-${to.toUpperCase()}`;
       const guarantees = HOME_CARRIER_PROGRAMS[routeKey] ?? [];
-      if (guarantees.length > 0 && allResults.length > 0) {
+      if (guarantees.length > 0) {
         const presentPrograms = new Set(allResults.flatMap(r => r.milesOptions?.map(m => m.program) ?? []));
+        const CABIN_FALLBACK_PRICE: Record<string, number> = {
+          economy: 700, premium: 1400, business: 2800, first: 5500,
+        };
         const priceAnchor = outbound.length > 0
           ? outbound.reduce((best, f) => f.price < best.price ? f : best, outbound[0])
           : undefined;
-        if (priceAnchor) {
-          for (const { airline, programs } of guarantees) {
-            if (!programs.some(p => presentPrograms.has(p))) {
-              const gf: NormalizedFlight = {
-                from, to, price: priceAnchor.price, airlines: [airline], stops: 0,
-                isSupplemental: true, source: "SYNTHETIC" as const,
-                priceConfidence: "ESTIMATED" as const, cabinResolved: priceAnchor.cabinResolved ?? false,
-              };
-              const gr = enrich(
-                gf, cabin, passengers, userPrograms, tripType, effectivePrices,
-                tripType === "roundtrip" ? { ...gf, from: to, to: from } : undefined,
-                date!, returnDate,
-              );
-              gr.searchId = searchId;
-              allResults.push(gr);
-            }
+        const anchorPrice = priceAnchor?.price ?? CABIN_FALLBACK_PRICE[cabin] ?? 700;
+        const anchorCabinResolved = priceAnchor?.cabinResolved ?? false;
+
+        for (const { airline, programs } of guarantees) {
+          if (!programs.some(p => presentPrograms.has(p))) {
+            const gf: NormalizedFlight = {
+              from, to, price: anchorPrice, airlines: [airline], stops: 0,
+              isSupplemental: true, source: "SYNTHETIC" as const,
+              priceConfidence: "ESTIMATED" as const, cabinResolved: anchorCabinResolved,
+            };
+            const gr = enrich(
+              gf, cabin, passengers, userPrograms, tripType, effectivePrices,
+              tripType === "roundtrip" ? { ...gf, from: to, to: from } : undefined,
+              date!, returnDate,
+            );
+            gr.searchId = searchId;
+            allResults.push(gr);
           }
         }
       }
