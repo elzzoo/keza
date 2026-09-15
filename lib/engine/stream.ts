@@ -3,7 +3,6 @@ import { redis } from "../redis";
 import { loadPromotions, applyPromotions } from "../promotions/engine";
 import type { NormalizedFlight } from "../promotions/engine";
 import { getEffectivePrices } from "../costEngine";
-import { recordObservation } from "../autoCalibrate";
 import { fetchFromDuffel } from "../duffelProvider";
 import { fetchFromAmadeus } from "../amadeusProvider";
 import type { SearchParams, FlightResult } from "./types";
@@ -16,6 +15,7 @@ import { buildSearchCacheKey } from "../searchCacheKey";
 import { CONFIDENCE_PENALTY } from "./constants";
 import { applyP52Scoring } from "./scoring";
 import { applyHomeCarrierGuarantees } from "./homeCarrierGuarantees";
+import { recordHighConfidenceObservations } from "./observations";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
@@ -272,11 +272,7 @@ export async function searchEngineStream(
       searchId,
     });
 
-    // Auto-calibrate (fire-and-forget)
-    Promise.allSettled(results.map(r => {
-      if (!r.bestOption || r.cashCost <= 0 || r.priceConfidence !== "HIGH") return Promise.resolve();
-      return recordObservation(r.bestOption.program, r.cashCost, r.bestOption.taxes, r.bestOption.milesRequired, `${from}-${to}`, cabin);
-    })).catch(() => null);
+    recordHighConfidenceObservations(results, { from, to, cabin });
 
     allResults = await applyP52Scoring(allResults, { logPrefix: "[engine/stream]" });
 

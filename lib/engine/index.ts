@@ -3,7 +3,6 @@ import { redis } from "../redis";
 import { loadPromotions, applyPromotions } from "../promotions/engine";
 import type { NormalizedFlight } from "../promotions/engine";
 import { getEffectivePrices } from "../costEngine";
-import { recordObservation } from "../autoCalibrate";
 import { fetchFromDuffel } from "../duffelProvider";
 import { fetchFromAmadeus } from "../amadeusProvider";
 import type { SearchParams, FlightResult } from "./types";
@@ -18,6 +17,7 @@ import { buildSearchCacheKey } from "../searchCacheKey";
 import { CONFIDENCE_PENALTY } from "./constants";
 import { applyP52Scoring } from "./scoring";
 import { applyHomeCarrierGuarantees } from "./homeCarrierGuarantees";
+import { recordHighConfidenceObservations } from "./observations";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -418,24 +418,7 @@ export async function searchEngine(
     searchId,
   });
 
-  // 5b. Auto-calibrate: record observations for self-learning mile values
-  // Only record HIGH-confidence prices (Duffel real-time) — TP cached prices
-  // and multiplier-estimated fares would corrupt the auto-calibration signal.
-  // Fire-and-forget — never block the response
-  Promise.allSettled(
-    results.map((r) => {
-      if (!r.bestOption || r.cashCost <= 0) return Promise.resolve();
-      if (r.priceConfidence !== "HIGH") return Promise.resolve();
-      return recordObservation(
-        r.bestOption.program,
-        r.cashCost,
-        r.bestOption.taxes,
-        r.bestOption.milesRequired,
-        `${from}-${to}`,
-        cabin
-      );
-    })
-  ).catch(() => null);
+  recordHighConfidenceObservations(results, { from, to, cabin });
 
   allResults = await applyP52Scoring(allResults, { logPrefix: "[scoring]" });
 
