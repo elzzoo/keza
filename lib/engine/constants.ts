@@ -5,3 +5,11 @@ export const CONFIDENCE_PENALTY: Record<string, number> = {
   LOW: 1.05,       // Travelpayouts cache-based — +5% cost adjustment for ranking
   ESTIMATED: 1.10, // Synthetic flights — +10% cost adjustment for ranking
 };
+
+// Used by home-carrier guarantees when all providers return no anchor price.
+export const CABIN_FALLBACK_PRICE: Record<string, number> = {
+  economy: 700,
+  premium: 1400,
+  business: 2800,
+  first: 5500,
+};

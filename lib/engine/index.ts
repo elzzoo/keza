@@ -16,6 +16,7 @@ import { searchMultiLegRoutes } from "../multiLeg";
 import type { FlightLeg, Cabin } from "../multiLeg";
 import { scoreFlights } from "../scoring/scoringEngine";
 import { buildSearchCacheKey } from "../searchCacheKey";
+import { CABIN_FALLBACK_PRICE, CONFIDENCE_PENALTY } from "./constants";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -402,7 +403,6 @@ export async function searchEngine(
 
   // Sort: best effective cost first (as temporary ordering before final P5.2 scoring)
   // This will be re-sorted by P5.2 scoring at the end if enabled
-  const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };
   const effectiveCost = (r: FlightResult) => {
     const penalty = CONFIDENCE_PENALTY[r.priceConfidence ?? "LOW"] ?? 1.05;
     const base = r.milesCost > 0 ? Math.min(r.cashCost, r.milesCost) : r.cashCost;
@@ -448,9 +448,6 @@ export async function searchEngine(
       );
       // Price anchor: cheapest real outbound if available; otherwise use a
       // cabin-class-based fallback so the miles calculation is still meaningful.
-      const CABIN_FALLBACK_PRICE: Record<string, number> = {
-        economy: 700, premium: 1400, business: 2800, first: 5500,
-      };
       const priceAnchorFlight = outbound.length > 0
         ? outbound.reduce((best, f) => f.price < best.price ? f : best, outbound[0])
         : undefined;

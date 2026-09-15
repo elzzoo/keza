@@ -15,6 +15,7 @@ import { CACHE_VERSION } from "./index";
 import { buildSearchCacheKey } from "../searchCacheKey";
 import { ENABLE_P5_2_SOFT_LAUNCH, P5_2_BASELINE_ONLY } from "../config";
 import { scoreFlights } from "../scoring/scoringEngine";
+import { CABIN_FALLBACK_PRICE, CONFIDENCE_PENALTY } from "./constants";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
@@ -79,7 +80,6 @@ async function buildResults(
     r.searchId = searchId;
   });
 
-  const CONFIDENCE_PENALTY: Record<string, number> = { HIGH: 1.00, LOW: 1.05, ESTIMATED: 1.10 };
   const userProgramsSet = new Set(userPrograms);
   const effectiveCost = (r: FlightResult) => {
     const pen = CONFIDENCE_PENALTY[r.priceConfidence ?? "LOW"] ?? 1.05;
@@ -288,9 +288,6 @@ export async function searchEngineStream(
       const guarantees = HOME_CARRIER_PROGRAMS[routeKey] ?? [];
       if (guarantees.length > 0) {
         const presentPrograms = new Set(allResults.flatMap(r => r.milesOptions?.map(m => m.program) ?? []));
-        const CABIN_FALLBACK_PRICE: Record<string, number> = {
-          economy: 700, premium: 1400, business: 2800, first: 5500,
-        };
         const priceAnchor = outbound.length > 0
           ? outbound.reduce((best, f) => f.price < best.price ? f : best, outbound[0])
           : undefined;
