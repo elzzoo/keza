@@ -325,7 +325,7 @@ export async function searchEngineStream(
     allResults = await applyP52Scoring(allResults);
 
     // Cache final results
-    await redis.set(cacheKey, allResults, { ex: 3600 }).catch(err => {
+    await redis.set(cacheKey, allResults, { ex: 3600, nx: true }).catch(err => {
       logError("[engine/stream] cache write failed", err, { requestId });
     });
 

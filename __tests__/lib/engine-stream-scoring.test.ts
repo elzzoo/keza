@@ -111,5 +111,10 @@ describe("searchEngineStream P5.2 scoring", () => {
     expect(results[0].airlines).toEqual(["High Score Air"]);
     expect(results[0].scoringResult?.overallScore).toBe(95);
     expect(results[1].scoringResult?.overallScore).toBe(20);
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      expect.stringContaining("keza:"),
+      expect.any(Array),
+      expect.objectContaining({ ex: 3600, nx: true }),
+    );
   });
 });
