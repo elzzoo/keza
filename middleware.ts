@@ -35,14 +35,15 @@ function buildCsp(nonce: string): string {
   const devScriptExtra = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'${devScriptExtra} https://plausible.io`,
+    `script-src 'self' 'nonce-${nonce}'${devScriptExtra} https://plausible.io https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline'", // Tailwind CSS requires unsafe-inline for styles
     "img-src 'self' data: blob: https:",
+    "worker-src 'self' blob:",
     // Restrict to known domains — prevents XSS data exfiltration to arbitrary HTTPS hosts.
     // "https://*.ingest.sentry.io" (not "https://o*...") — CSP wildcards only
     // replace a whole subdomain label, so "o*.ingest..." is invalid and silently
     // dropped by browsers, leaving Sentry's real ingest host (oXXXXXX.ingest.sentry.io) unmatched.
-    "connect-src 'self' https://plausible.io https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io",
+    "connect-src 'self' https://plausible.io https://*.sentry.io https://*.ingest.sentry.io https://*.upstash.io https://vitals.vercel-insights.com",
     "font-src 'self' data:",
     "frame-ancestors 'none'",
     "object-src 'none'",

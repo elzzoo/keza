@@ -44,16 +44,11 @@ describe("Header", () => {
 
     const expectedItems = [
       "How it works",
+      "Deals",
       "Calculator",
-      "Map",
-      "Prices",
-      "Price Alerts",
-      "Miles Alerts",
-      "Compare",
+      "Alerts",
       "Programs",
-      "Portfolio",
-      "For Business",
-      "My account",
+      "Business",
     ];
 
     expectedItems.forEach((label) => {
@@ -88,7 +83,7 @@ describe("Header", () => {
 
     // Find a nav link in the mobile menu and click it
     const links = container.querySelectorAll("a");
-    const pricesLink = Array.from(links).find(link => link.textContent?.includes("Prices"));
+    const pricesLink = Array.from(links).find(link => link.textContent?.includes("Deals"));
 
     if (pricesLink) {
       fireEvent.click(pricesLink);
@@ -102,16 +97,11 @@ describe("Header", () => {
 
     const expectedItems = [
       "Comment ça marche",
+      "Deals",
       "Calculateur",
-      "Carte",
-      "Prix",
-      "Alertes prix",
-      "Alertes miles",
-      "Comparer",
+      "Alertes",
       "Programmes",
-      "Portefeuille",
-      "Pour les entreprises",
-      "Mon compte",
+      "Entreprises",
     ];
 
     expectedItems.forEach((label) => {

@@ -5,8 +5,6 @@ import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import { ProgramsPicker } from "./ProgramsPicker";
 import { PriceCalendar } from "./PriceCalendar";
-import { OnboardingFlow } from "./onboarding/OnboardingFlow";
-import { getVisitedFlag } from "@/lib/storage";
 import { useOnboarding } from "@/lib/contexts/onboardingContext";
 import { trackSearch } from "@/lib/analytics";
 import { toast } from "sonner";
@@ -51,7 +49,6 @@ const addDays = (base: string, n: number) => {
  * @param Props - SearchForm props including initial values, callbacks, and formatting function
  */
 export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax, onLiveRefreshing }: Props) {
-  const enableOnboarding = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === "true";
   const [from,       setFrom]       = useState(initialFrom ?? "");
   const [to,         setTo]         = useState(initialTo ?? "");
   const [tripType,   setTripType]   = useState<TripType>(initialTripType ?? "roundtrip");
@@ -63,7 +60,6 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
   const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
   const [showCalendar, setShowCalendar] = useState<"dep" | "ret" | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const { state: onboardingState } = useOnboarding();
 
   // React to external route selection (popular routes / URL params)
@@ -98,13 +94,6 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     // Profile cabin only applies if URL didn't supply one
     if (savedCabin && !initialCabin) { setCabin(savedCabin); setProfileLoaded(true); }
   }, [savedPrograms, savedCabin, initialCabin, profileLoaded]);
-
-  // Show onboarding modal to first-time visitors
-  useEffect(() => {
-    if (typeof window !== "undefined" && !getVisitedFlag()) {
-      setShowOnboarding(true);
-    }
-  }, []);
 
   // Pre-fill programs from onboarding state
   useEffect(() => {
@@ -286,9 +275,6 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
   return (
     <>
-      {enableOnboarding && showOnboarding && (
-        <OnboardingFlow onComplete={() => setShowOnboarding(false)} />
-      )}
       <form onSubmit={submit}>
         <div className="bg-surface rounded-3xl border border-border p-4 sm:p-5 space-y-3 sm:space-y-4 shadow-card">
 

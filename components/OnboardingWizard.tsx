@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useProfile } from "@/contexts/ProfileContext";
 
 // ─── Top programs shown in step 1 ────────────────────────────────────────────
@@ -63,16 +63,30 @@ export function OnboardingWizard({ lang = "fr" }: Props) {
   const [step, setStep] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
   const [balances, setLocalBalances] = useState<Record<string, string>>({});
+  const skippedFirstPromptThisLoad = useRef(false);
   const t = L[lang];
 
-  // Show wizard only to new users (no programs set, not onboarded)
+  // Show wizard only to new users (no programs set, not onboarded), but never
+  // interrupt the first landing-page impression. The first visit records intent;
+  // a later visit can ask for personalization once the product is understood.
   useEffect(() => {
     if (!isLoaded) return;
     if (!profile) return;
     if (profile.hasOnboarded) return;
     if (profile.programs.length > 0) return;
-    // Small delay — let the page settle before showing modal
-    const timer = setTimeout(() => setVisible(true), 1200);
+    if (typeof window === "undefined") return;
+
+    if (skippedFirstPromptThisLoad.current) return;
+
+    const seenFirstVisit = window.localStorage.getItem("keza_onboarding_seen_first_visit");
+    if (!seenFirstVisit) {
+      window.localStorage.setItem("keza_onboarding_seen_first_visit", "1");
+      skippedFirstPromptThisLoad.current = true;
+      return;
+    }
+
+    // Give returning users a moment to orient themselves before showing it.
+    const timer = setTimeout(() => setVisible(true), 6000);
     return () => clearTimeout(timer);
   }, [isLoaded, profile]);
 

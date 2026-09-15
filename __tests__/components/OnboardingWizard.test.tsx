@@ -25,19 +25,28 @@ function renderWizard() {
 }
 
 describe("OnboardingWizard", () => {
-  it("appears as a proper ARIA dialog for a new user", async () => {
+  it("does not interrupt the first landing-page impression", () => {
     renderWizard();
 
-    const dialog = await screen.findByRole("dialog", undefined, { timeout: 2000 });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(localStorage.getItem("keza_onboarding_seen_first_visit")).toBe("1");
+  });
+
+  it("appears as a proper ARIA dialog for a returning user", async () => {
+    localStorage.setItem("keza_onboarding_seen_first_visit", "1");
+    renderWizard();
+
+    const dialog = await screen.findByRole("dialog", undefined, { timeout: 7000 });
     expect(dialog).toHaveAttribute("aria-modal", "true");
     expect(dialog).toHaveAttribute("aria-labelledby", "onboarding-wizard-title");
   });
 
   it("dismisses on Escape, same as the explicit skip button", async () => {
     const user = userEvent.setup();
+    localStorage.setItem("keza_onboarding_seen_first_visit", "1");
     renderWizard();
 
-    await screen.findByRole("dialog", undefined, { timeout: 2000 });
+    await screen.findByRole("dialog", undefined, { timeout: 7000 });
 
     await user.keyboard("{Escape}");
 
