@@ -11,12 +11,12 @@ import { fetchFromTravelpayouts } from "./travelpayouts";
 import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
 import { logError, logWarn } from "../logger";
-import { ENABLE_MULTI_LEG_ROUTING, ENABLE_P5_2_SOFT_LAUNCH, P5_2_BASELINE_ONLY } from "../config";
+import { ENABLE_MULTI_LEG_ROUTING } from "../config";
 import { searchMultiLegRoutes } from "../multiLeg";
 import type { FlightLeg, Cabin } from "../multiLeg";
-import { scoreFlights } from "../scoring/scoringEngine";
 import { buildSearchCacheKey } from "../searchCacheKey";
 import { CABIN_FALLBACK_PRICE, CONFIDENCE_PENALTY } from "./constants";
+import { applyP52Scoring } from "./scoring";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -102,27 +102,7 @@ export async function searchEngine(
     const freshId = crypto.randomUUID();
     const results = cached.map((r) => ({ ...r, searchId: freshId }));
 
-    // P5.2: Apply scoring to cached results if not already scored
-    // Soft launch (Week 1-2): Calculate scores for analytics, but use baseline ranking
-    try {
-      let scoredResults = results;
-      if (ENABLE_P5_2_SOFT_LAUNCH && results.length > 0 && !results[0].scoringResult) {
-        scoredResults = await scoreFlights(results, "", new Date());
-
-        // Week 1-2 soft launch: 100% baseline (don't sort by score yet)
-        if (!P5_2_BASELINE_ONLY) {
-          scoredResults.sort((a, b) => {
-            const scoreA = a.scoringResult?.overallScore ?? 0;
-            const scoreB = b.scoringResult?.overallScore ?? 0;
-            return scoreB - scoreA;
-          });
-        }
-      }
-      return scoredResults;
-    } catch (err) {
-      logWarn(`[scoring] Failed to score cached results: ${String(err)}`);
-      return results;
-    }
+    return applyP52Scoring(results, { skipIfAlreadyScored: true, logPrefix: "[scoring]" });
   }
 
   // 2. Fetch outbound + return flights — ALL provider calls in parallel.
@@ -497,28 +477,7 @@ export async function searchEngine(
     })
   ).catch(() => null);
 
-  // 5c. P5.2: Apply scoring engine to all enriched results
-  // Soft launch (Week 1-2): Calculate scores for analytics, but use baseline ranking
-  try {
-    if (ENABLE_P5_2_SOFT_LAUNCH) {
-      const scoredResults = await scoreFlights(allResults, "", new Date());
-
-      // Week 1-2 soft launch: 100% baseline (don't sort by score yet)
-      if (!P5_2_BASELINE_ONLY) {
-        scoredResults.sort((a, b) => {
-          const scoreA = a.scoringResult?.overallScore ?? 0;
-          const scoreB = b.scoringResult?.overallScore ?? 0;
-          // Sort descending (highest score first)
-          return scoreB - scoreA;
-        });
-      }
-      // Update allResults with scored (or scored+sorted) results
-      allResults = scoredResults;
-    }
-  } catch (err) {
-    logWarn(`[scoring] P5.2 scoring failed, keeping cost-based ranking: ${String(err)}`);
-    // Keep existing cost-based ranking if scoring fails
-  }
+  allResults = await applyP52Scoring(allResults, { logPrefix: "[scoring]" });
 
   // 6. Cache (real + synthetic results together) with atomic NX flag
   // Prevents race condition where concurrent requests could write stale data over fresh results

@@ -10,33 +10,13 @@ import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
 import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
-import { logError, logWarn } from "../logger";
+import { logError } from "../logger";
 import { CACHE_VERSION } from "./index";
 import { buildSearchCacheKey } from "../searchCacheKey";
-import { ENABLE_P5_2_SOFT_LAUNCH, P5_2_BASELINE_ONLY } from "../config";
-import { scoreFlights } from "../scoring/scoringEngine";
 import { CABIN_FALLBACK_PRICE, CONFIDENCE_PENALTY } from "./constants";
+import { applyP52Scoring } from "./scoring";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
-
-async function applyP52Scoring(results: FlightResult[]): Promise<FlightResult[]> {
-  if (!ENABLE_P5_2_SOFT_LAUNCH || results.length === 0) return results;
-
-  try {
-    const scoredResults = await scoreFlights(results, "", new Date());
-    if (!P5_2_BASELINE_ONLY) {
-      scoredResults.sort((a, b) => {
-        const scoreA = a.scoringResult?.overallScore ?? 0;
-        const scoreB = b.scoringResult?.overallScore ?? 0;
-        return scoreB - scoreA;
-      });
-    }
-    return scoredResults;
-  } catch (err) {
-    logWarn(`[engine/stream] P5.2 scoring failed, keeping cost-based ranking: ${String(err)}`);
-    return results;
-  }
-}
 
 // ─── Asynchronous enrichment: parallelize enrich() across all flights ───
 async function buildResults(
@@ -148,7 +128,7 @@ export async function searchEngineStream(
         // Fall through to fetch fresh results
       } else {
         const cachedResults = cached.map(r => ({ ...r, searchId: freshId }));
-        return cachedResults[0]?.scoringResult ? cachedResults : applyP52Scoring(cachedResults);
+        return applyP52Scoring(cachedResults, { skipIfAlreadyScored: true, logPrefix: "[engine/stream]" });
       }
     }
 
@@ -319,7 +299,7 @@ export async function searchEngineStream(
       return recordObservation(r.bestOption.program, r.cashCost, r.bestOption.taxes, r.bestOption.milesRequired, `${from}-${to}`, cabin);
     })).catch(() => null);
 
-    allResults = await applyP52Scoring(allResults);
+    allResults = await applyP52Scoring(allResults, { logPrefix: "[engine/stream]" });
 
     // Cache final results
     await redis.set(cacheKey, allResults, { ex: 3600, nx: true }).catch(err => {
