@@ -5,6 +5,15 @@ import type { PriceAlert } from "@/lib/alerts";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
+import { DAILY_CRON_JOBS } from "@/lib/cronJobs";
+import {
+  cronJobKey,
+  cronLastRunKey,
+  deriveCronHealth,
+  type CronHealthStatus,
+  type CronJobState,
+  type CronRunState,
+} from "@/lib/cronState";
 
 // ─── B2B Lead type ───────────────────────────────────────────────────────────
 
@@ -149,6 +158,24 @@ async function fetchStats() {
   };
 }
 
+async function fetchCronStatus() {
+  const lastRun = await redis.get<CronRunState>(cronLastRunKey("daily"));
+  const jobs = lastRun?.runId
+    ? await Promise.all(
+        DAILY_CRON_JOBS.map(async (path) => ({
+          path,
+          state: await redis.get<CronJobState>(cronJobKey("daily", lastRun.runId, path)),
+        })),
+      )
+    : DAILY_CRON_JOBS.map((path) => ({ path, state: null }));
+
+  return {
+    health: deriveCronHealth(lastRun, jobs.map((job) => job.state)),
+    lastRun,
+    jobs,
+  };
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCard({
@@ -175,6 +202,24 @@ function StatCard({
       {sub && <p className="mt-1 text-xs opacity-60">{sub}</p>}
     </div>
   );
+}
+
+function cronHealthLabel(health: CronHealthStatus): string {
+  const labels: Record<CronHealthStatus, string> = {
+    ok: "OK",
+    running: "En cours",
+    stale: "En retard",
+    degraded: "Dégradé",
+    unknown: "Inconnu",
+  };
+  return labels[health];
+}
+
+function cronHealthColor(health: CronHealthStatus): "blue" | "green" | "amber" | "purple" {
+  if (health === "ok") return "green";
+  if (health === "running") return "blue";
+  if (health === "unknown") return "purple";
+  return "amber";
 }
 
 function LoginForm({ hasError }: { hasError: boolean }) {
@@ -229,11 +274,12 @@ export default async function AdminPage({
   }
 
   let stats: Awaited<ReturnType<typeof fetchStats>> | null = null;
+  let cronStatus: Awaited<ReturnType<typeof fetchCronStatus>> | null = null;
   let leads: B2BLead[] = [];
   let error: string | null = null;
 
   try {
-    [stats, leads] = await Promise.all([fetchStats(), fetchB2BLeads()]);
+    [stats, leads, cronStatus] = await Promise.all([fetchStats(), fetchB2BLeads(), fetchCronStatus()]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Erreur Redis inconnue";
   }
@@ -315,6 +361,52 @@ export default async function AdminPage({
                 color={stats.lastCronAt ? "green" : "amber"}
               />
             </div>
+
+            {/* Cron observability */}
+            {cronStatus && (
+              <div className="mt-8">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-700">
+                  Crons Daily
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <StatCard
+                    label="Santé"
+                    value={cronHealthLabel(cronStatus.health)}
+                    sub={cronStatus.lastRun?.runId ? `run ${cronStatus.lastRun.runId.slice(0, 8)}` : "aucun run enregistré"}
+                    color={cronHealthColor(cronStatus.health)}
+                  />
+                  <StatCard
+                    label="Dernier dispatch"
+                    value={cronStatus.lastRun ? "✅" : "—"}
+                    sub={formatDate(cronStatus.lastRun?.startedAt ?? null)}
+                    color={cronStatus.lastRun ? "green" : "amber"}
+                  />
+                  <StatCard
+                    label="Jobs suivis"
+                    value={cronStatus.jobs.length}
+                    sub={`${cronStatus.jobs.filter((job) => job.state?.status === "accepted").length} accepté(s)`}
+                    color="blue"
+                  />
+                </div>
+                <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                  <div className="grid grid-cols-[1fr_auto_auto] gap-3 border-b border-gray-100 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <span>Job</span>
+                    <span>Status</span>
+                    <span>Code</span>
+                  </div>
+                  {cronStatus.jobs.map((job) => (
+                    <div
+                      key={job.path}
+                      className="grid grid-cols-[1fr_auto_auto] gap-3 border-b border-gray-100 px-4 py-2 text-sm last:border-b-0"
+                    >
+                      <span className="truncate text-gray-700">{job.path}</span>
+                      <span className="font-medium text-gray-900">{job.state?.status ?? "pending"}</span>
+                      <span className="text-gray-500">{job.state?.statusCode ?? "—"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Email engagement */}
             <div className="mt-8">
