@@ -4,15 +4,7 @@ import { logWarn, logError } from "@/lib/logger";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { needsTrialReminder } from "@/lib/lemonsqueezy";
 import { sendTrialReminderEmail } from "@/lib/resend";
-
-// Vercel cron header validation
-function validateCronSecret(req: Request): boolean {
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || !authHeader) return false;
-  return authHeader === `Bearer ${cronSecret}`;
-}
+import { hasCronSecret } from "@/lib/auth";
 
 // Unified handler for both GET (Vercel Cron) and POST (Inngest, backup dispatcher)
 async function handleTrialReminder() {
@@ -52,7 +44,7 @@ export async function GET(request: Request) {
     });
     if (limited) return limited;
 
-    if (!validateCronSecret(request)) {
+    if (!hasCronSecret(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const result = await handleTrialReminder();
@@ -72,7 +64,7 @@ export async function POST(request: Request) {
     });
     if (limited) return limited;
 
-    if (!validateCronSecret(request)) {
+    if (!hasCronSecret(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const result = await handleTrialReminder();
