@@ -8,13 +8,14 @@ import { fetchFromDuffel } from "../duffelProvider";
 import { fetchFromAmadeus } from "../amadeusProvider";
 import type { SearchParams, FlightResult } from "./types";
 import { fetchFromTravelpayouts } from "./travelpayouts";
-import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements";
+import { ROUTE_AIRLINE_SUPPLEMENTS } from "./supplements";
 import { enrich, mergeFlights, filterByStops } from "./enrich";
 import { logError } from "../logger";
 import { CACHE_VERSION } from "./index";
 import { buildSearchCacheKey } from "../searchCacheKey";
-import { CABIN_FALLBACK_PRICE, CONFIDENCE_PENALTY } from "./constants";
+import { CONFIDENCE_PENALTY } from "./constants";
 import { applyP52Scoring } from "./scoring";
+import { applyHomeCarrierGuarantees } from "./homeCarrierGuarantees";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
@@ -263,35 +264,13 @@ export async function searchEngineStream(
     });
     let allResults = [...results, ...syntheticResults];
 
-    {
-      const routeKey   = `${from.toUpperCase()}-${to.toUpperCase()}`;
-      const guarantees = HOME_CARRIER_PROGRAMS[routeKey] ?? [];
-      if (guarantees.length > 0) {
-        const presentPrograms = new Set(allResults.flatMap(r => r.milesOptions?.map(m => m.program) ?? []));
-        const priceAnchor = outbound.length > 0
-          ? outbound.reduce((best, f) => f.price < best.price ? f : best, outbound[0])
-          : undefined;
-        const anchorPrice = priceAnchor?.price ?? CABIN_FALLBACK_PRICE[cabin] ?? 700;
-        const anchorCabinResolved = priceAnchor?.cabinResolved ?? false;
-
-        for (const { airline, programs } of guarantees) {
-          if (!programs.some(p => presentPrograms.has(p))) {
-            const gf: NormalizedFlight = {
-              from, to, price: anchorPrice, airlines: [airline], stops: 0,
-              isSupplemental: true, source: "SYNTHETIC" as const,
-              priceConfidence: "ESTIMATED" as const, cabinResolved: anchorCabinResolved,
-            };
-            const gr = enrich(
-              gf, cabin, passengers, userPrograms, tripType, effectivePrices,
-              tripType === "roundtrip" ? { ...gf, from: to, to: from } : undefined,
-              date!, returnDate,
-            );
-            gr.searchId = searchId;
-            allResults.push(gr);
-          }
-        }
-      }
-    }
+    allResults = applyHomeCarrierGuarantees({
+      results: allResults,
+      outbound,
+      params: { from, to, date: date!, returnDate, cabin, passengers, tripType, userPrograms },
+      effectivePrices,
+      searchId,
+    });
 
     // Auto-calibrate (fire-and-forget)
     Promise.allSettled(results.map(r => {
