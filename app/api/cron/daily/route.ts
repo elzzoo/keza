@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { hasCronSecret } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { logError } from "@/lib/logger";
+import { redis } from "@/lib/redis";
+import { logError, logWarn } from "@/lib/logger";
 
 // ─── Daily cron orchestrator ──────────────────────────────────────────────────
 // Vercel Hobby allows max 2 crons. This handler consolidates all non-alerts jobs
@@ -23,6 +25,67 @@ const DAILY_JOBS = [
   "/api/cron/prewarm",        // 4am — pre-warm cache for top corridors
 ] as const;
 
+const RUN_TTL_SECONDS = 7 * 24 * 60 * 60;
+const LAST_RUN_KEY = "cron:daily:lastRun";
+
+function dailyRunKey(runId: string): string {
+  return `cron:daily:runs:${runId}`;
+}
+
+function dailyJobKey(runId: string, path: string): string {
+  const slug = path.split("/").filter(Boolean).join(":");
+  return `cron:daily:runs:${runId}:job:${slug}`;
+}
+
+async function recordCronState(key: string, value: Record<string, unknown>): Promise<void> {
+  await redis.set(key, value, { ex: RUN_TTL_SECONDS }).catch((err) => {
+    logWarn("[api/cron/daily] failed to record state", String(err), { key });
+  });
+}
+
+async function dispatchJob(
+  base: string,
+  path: (typeof DAILY_JOBS)[number],
+  headers: HeadersInit,
+  runId: string,
+): Promise<void> {
+  const startedAt = new Date().toISOString();
+  const key = dailyJobKey(runId, path);
+
+  await recordCronState(key, {
+    runId,
+    path,
+    status: "dispatching",
+    startedAt,
+  });
+
+  try {
+    const res = await fetch(`${base}${path}`, {
+      method: "GET",
+      headers,
+      cache: "no-store",
+    });
+    await recordCronState(key, {
+      runId,
+      path,
+      status: res.ok ? "accepted" : "rejected",
+      statusCode: res.status,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    await recordCronState(key, {
+      runId,
+      path,
+      status: "dispatch_error",
+      error: err instanceof Error ? err.message : String(err),
+      startedAt,
+      finishedAt: new Date().toISOString(),
+    });
+    logWarn("[api/cron/daily] dispatch failed", err instanceof Error ? err.message : String(err), { path, runId });
+  }
+}
+
 export async function GET(request: Request): Promise<NextResponse> {
   try {
     const limited = await rateLimitResponse(request, {
@@ -39,22 +102,37 @@ export async function GET(request: Request): Promise<NextResponse> {
     const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
     const secret = process.env.CRON_SECRET ?? "";
     const headers = { Authorization: `Bearer ${secret}` };
+    const runId = randomUUID();
+    const startedAt = new Date().toISOString();
 
-    // Fire all jobs in parallel as independent serverless invocations.
-    // We do NOT await — each sub-job runs in its own function context.
+    await recordCronState(dailyRunKey(runId), {
+      runId,
+      status: "dispatched",
+      startedAt,
+      jobs: DAILY_JOBS,
+    });
+    await recordCronState(LAST_RUN_KEY, {
+      runId,
+      status: "dispatched",
+      startedAt,
+      jobs: DAILY_JOBS,
+    });
+
+    // Fire all jobs in parallel as independent serverless invocations. The
+    // dispatcher records acceptance/errors when observable, while every sub-job
+    // still owns its full function window and detailed logs.
     const triggered: string[] = [];
     for (const path of DAILY_JOBS) {
-      fetch(`${base}${path}`, { method: "GET", headers }).catch(() => {
-        // Ignore errors — each job handles its own error logging
-      });
+      void dispatchJob(base, path, headers, runId);
       triggered.push(path);
     }
 
     return NextResponse.json({
       ok: true,
+      runId,
       triggered,
       count: triggered.length,
-      note: "Jobs fired as independent invocations — check individual cron logs for results",
+      note: "Jobs dispatched as independent invocations; check cron:daily:lastRun and cron:daily:runs:{runId}:job:* for dispatch state",
     });
   } catch (err) {
     logError("[api/cron/daily]", err);
