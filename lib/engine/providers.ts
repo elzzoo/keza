@@ -44,3 +44,35 @@ export function mergeProviderFlights(
     mergeHighConfidenceFlights(duffelFlights, amadeusFlights),
   );
 }
+
+interface PrependDirectTravelpayoutsFallbackOptions {
+  enabled: boolean;
+  fetchDirectFlights: () => Promise<NormalizedFlight[]>;
+}
+
+export async function prependDirectTravelpayoutsFallback(
+  flights: NormalizedFlight[],
+  { enabled, fetchDirectFlights }: PrependDirectTravelpayoutsFallbackOptions,
+): Promise<NormalizedFlight[]> {
+  if (!enabled || !flights.every((flight) => (flight.stops ?? 0) > 0)) return flights;
+
+  const directFlights = await fetchDirectFlights();
+  if (directFlights.length === 0) return flights;
+
+  const nextFlights = [...flights];
+  const existingKeys = new Set(nextFlights.map((flight) => `${flight.airlines.join(",")}:${flight.stops}`));
+
+  for (const directFlight of directFlights) {
+    const key = `${directFlight.airlines.join(",")}:${directFlight.stops}`;
+    if (existingKeys.has(key)) continue;
+
+    nextFlights.unshift({
+      ...directFlight,
+      source: "TP" as const,
+      priceConfidence: "LOW" as const,
+    });
+    existingKeys.add(key);
+  }
+
+  return nextFlights;
+}

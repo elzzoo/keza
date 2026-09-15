@@ -4,6 +4,7 @@ import { mergeFlights } from "@/lib/engine";
 import {
   mergeHighConfidenceFlights,
   mergeProviderFlights,
+  prependDirectTravelpayoutsFallback,
   tagAmadeusFlights,
   tagDuffelFlights,
   tagTravelpayoutsFlights,
@@ -104,6 +105,42 @@ describe("provider tagging and merge helpers", () => {
     expect(merged).toHaveLength(1);
     expect(merged[0].source).toBe("AMADEUS");
     expect(merged[0].priceConfidence).toBe("HIGH");
+  });
+
+  it("prepends direct TP fallback when every current option has stops", async () => {
+    const fetchDirectFlights = jest.fn(async () => [
+      { ...base, price: 780, stops: 0 },
+    ]);
+
+    const flights = await prependDirectTravelpayoutsFallback(
+      [{ ...base, price: 650, stops: 1, source: "TP", priceConfidence: "LOW" }],
+      { enabled: true, fetchDirectFlights },
+    );
+
+    expect(fetchDirectFlights).toHaveBeenCalledTimes(1);
+    expect(flights).toHaveLength(2);
+    expect(flights[0]).toMatchObject({
+      stops: 0,
+      source: "TP",
+      priceConfidence: "LOW",
+    });
+  });
+
+  it("keeps direct fallback disabled when a direct option already exists", async () => {
+    const fetchDirectFlights = jest.fn(async () => [
+      { ...base, price: 780, stops: 0 },
+    ]);
+    const existing = [
+      { ...base, price: 650, stops: 0, source: "TP", priceConfidence: "LOW" },
+    ] as NormalizedFlight[];
+
+    const flights = await prependDirectTravelpayoutsFallback(existing, {
+      enabled: true,
+      fetchDirectFlights,
+    });
+
+    expect(flights).toBe(existing);
+    expect(fetchDirectFlights).not.toHaveBeenCalled();
   });
 });
 

@@ -16,7 +16,11 @@ import { CONFIDENCE_PENALTY } from "./constants";
 import { applyP52Scoring } from "./scoring";
 import { applyHomeCarrierGuarantees } from "./homeCarrierGuarantees";
 import { recordHighConfidenceObservations } from "./observations";
-import { mergeHighConfidenceFlights, tagTravelpayoutsFlights } from "./providers";
+import {
+  mergeHighConfidenceFlights,
+  prependDirectTravelpayoutsFallback,
+  tagTravelpayoutsFlights,
+} from "./providers";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
@@ -178,7 +182,7 @@ export async function searchEngineStream(
     const tpReturn   = tagTravelpayoutsFlights(tpReturnRaw);
 
     // Merge: Duffel wins on duplicate routes (higher confidence)
-    const rawOutbound = mergeFlights(tpOutbound, highConfidenceOutbound);
+    let rawOutbound = mergeFlights(tpOutbound, highConfidenceOutbound);
 
     // ROUTE_AIRLINE_SUPPLEMENTS: synthetic entries for carriers not in any provider
     const syntheticFlights: NormalizedFlight[] = [];
@@ -203,39 +207,21 @@ export async function searchEngineStream(
     }
 
     // Direct flight recovery: if all flights have stops, try an explicit TP direct search
-    if (!directOnly && rawOutbound.every(f => (f.stops ?? 0) > 0)) {
-      const directFlights = await fetchFromTravelpayouts(from, to, date!, true);
-      if (directFlights.length > 0) {
-        const existingKeys = new Set(rawOutbound.map(f => `${f.airlines.join(",")}:${f.stops}`));
-        for (const df of directFlights) {
-          const key = `${df.airlines.join(",")}:${df.stops}`;
-          if (!existingKeys.has(key)) {
-            rawOutbound.unshift({ ...df, source: "TP" as const, priceConfidence: "LOW" as const });
-            existingKeys.add(key);
-          }
-        }
-      }
-    }
+    rawOutbound = await prependDirectTravelpayoutsFallback(rawOutbound, {
+      enabled: !directOnly,
+      fetchDirectFlights: () => fetchFromTravelpayouts(from, to, date!, true),
+    });
 
     const outbound = filterByStops(rawOutbound, stops);
 
     // Return leg (roundtrip)
     let returnFlights: NormalizedFlight[] = [];
     if (isRoundtrip) {
-      const rawReturn = mergeFlights(tpReturn, highConfidenceReturn);
-      if (!directOnly && rawReturn.every(f => (f.stops ?? 0) > 0)) {
-        const directReturn = await fetchFromTravelpayouts(to, from, returnDate!, true);
-        if (directReturn.length > 0) {
-          const existingKeys = new Set(rawReturn.map(f => `${f.airlines.join(",")}:${f.stops}`));
-          for (const df of directReturn) {
-            const key = `${df.airlines.join(",")}:${df.stops}`;
-            if (!existingKeys.has(key)) {
-              rawReturn.unshift({ ...df, source: "TP" as const, priceConfidence: "LOW" as const });
-              existingKeys.add(key);
-            }
-          }
-        }
-      }
+      let rawReturn = mergeFlights(tpReturn, highConfidenceReturn);
+      rawReturn = await prependDirectTravelpayoutsFallback(rawReturn, {
+        enabled: !directOnly,
+        fetchDirectFlights: () => fetchFromTravelpayouts(to, from, returnDate!, true),
+      });
       returnFlights = filterByStops(rawReturn, stops);
     }
 
