@@ -12,6 +12,7 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
+import { parseSearchParams } from "@/lib/searchInput";
 
 // Max time to wait for a full search before returning with partial flag.
 // Must be < maxDuration (10s) to ensure graceful partial response fires before
@@ -27,28 +28,6 @@ function buildCacheKey(
   }
 ): string {
   return `keza:${version}:${p.from}:${p.to}:${p.date}:${p.tripType}:${p.returnDate ?? ""}:${p.stops}:${p.cabin}:${p.passengers}`;
-}
-
-/* ── input validation ── */
-const IATA_RE = /^[A-Z]{3}$/;
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function sanitizeCode(raw: unknown): string | null {
-  if (typeof raw !== "string") return null;
-  const upper = raw.trim().toUpperCase();
-  return IATA_RE.test(upper) ? upper : null;
-}
-
-/** Validates YYYY-MM-DD format AND date range (today ≤ date ≤ today + 365 days) */
-function isValidFutureDate(raw: unknown): raw is string {
-  if (typeof raw !== "string" || !DATE_RE.test(raw)) return false;
-  const d = new Date(raw + "T00:00:00Z");
-  if (isNaN(d.getTime())) return false;
-  const now = new Date();
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const maxDate = new Date(today);
-  maxDate.setUTCFullYear(maxDate.getUTCFullYear() + 1);
-  return d >= today && d <= maxDate;
 }
 
 export async function POST(request: Request) {
@@ -75,64 +54,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    /* validate & sanitize inputs */
-    const from = sanitizeCode(body.from);
-    const to   = sanitizeCode(body.to);
-    const date = isValidFutureDate(body.date) ? body.date : null;
-
-    if (!from || !to || !date) {
-      return NextResponse.json(
-        { error: "Invalid input: from/to must be 3-letter IATA codes, date must be YYYY-MM-DD" },
-        { status: 400 }
-      );
+    const parsed = parseSearchParams(body);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-
-    // A same-origin/destination search is never valid, but "CDG" is a
-    // well-formed IATA code, so it passed the check above and fell through
-    // to a full ~8s engine search that always returned 0 results anyway.
-    // Reject it immediately instead of paying that latency for nothing.
-    if (from === to) {
-      return NextResponse.json(
-        { error: "Origin and destination must be different" },
-        { status: 400 }
-      );
-    }
-
-    // Previously silently clamped any value (0, -5, 99, non-numeric) into
-    // [1, 9] with no error — e.g. passengers=99 became 9 with no signal to
-    // the caller that their input was ignored. Reject out-of-range/invalid
-    // values instead, consistent with how from/to/date are already validated.
-    const passengersNum = Number(body.passengers);
-    if (body.passengers !== undefined && (!Number.isInteger(passengersNum) || passengersNum < 1 || passengersNum > 9)) {
-      return NextResponse.json(
-        { error: "Invalid input: passengers must be an integer between 1 and 9" },
-        { status: 400 }
-      );
-    }
-    const passengers = Number.isInteger(passengersNum) ? passengersNum : 1;
-
-    const tripType = body.tripType === "roundtrip" ? "roundtrip" : "oneway";
-    const returnDate = isValidFutureDate(body.returnDate) ? body.returnDate : undefined;
-
-    // Validate return date is after departure date for roundtrips
-    if (tripType === "roundtrip" && returnDate && returnDate <= date) {
-      return NextResponse.json(
-        { error: "Return date must be after departure date" },
-        { status: 400 }
-      );
-    }
-
-    const searchParams: SearchParams = {
-      from,
-      to,
-      date,
-      returnDate,
-      tripType,
-      stops:        body.stops === "direct" ? "direct" : "any",
-      cabin:        ["economy", "premium", "business", "first"].includes(body.cabin ?? "") ? body.cabin! as "economy" | "premium" | "business" | "first" : "economy",
-      passengers,
-      userPrograms: Array.isArray(body.userPrograms) ? body.userPrograms.filter((p): p is string => typeof p === "string").slice(0, 20) : [],
-    };
+    const searchParams = parsed.params;
+    const { from, to, date, passengers } = searchParams;
 
     // Race the search against a hard timeout.
     // On timeout, fall back to cached results — NEVER return empty to the user.
