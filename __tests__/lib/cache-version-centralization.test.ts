@@ -44,6 +44,14 @@ describe("Cache Version Centralization", () => {
     }
   });
 
+  it("starts fallbacks from the immediately previous cache version", async () => {
+    const engineModule = await import("@/lib/engine");
+    const currentNumber = parseInt(engineModule.CACHE_VERSION.slice(1), 10);
+    const firstFallbackNumber = parseInt(engineModule.CACHE_VERSION_FALLBACKS[0].slice(1), 10);
+
+    expect(firstFallbackNumber).toBe(currentNumber - 1);
+  });
+
   it("search route imports fallbacks from engine", async () => {
     // This test verifies the import pattern is centralized
     const searchRouteContent = await import("@/app/api/search/route");

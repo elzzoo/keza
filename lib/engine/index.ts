@@ -29,7 +29,7 @@ export const CACHE_VERSION = "v30"; // bumped: P5.2 scoring engine integration
 // Fallback cache versions — checked in order on timeout/cache miss
 // Allows graceful degradation when current version is bumped (cold cache)
 // by falling back to previous versions' cached results
-export const CACHE_VERSION_FALLBACKS = ["v28", "v27", "v26"] as const;
+export const CACHE_VERSION_FALLBACKS = ["v29", "v28", "v27", "v26"] as const;
 
 /**
  * Main flight search orchestrator. Fetches flights from Duffel (real-time) + Travelpayouts (fallback),
