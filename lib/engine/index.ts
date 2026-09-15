@@ -15,6 +15,7 @@ import { ENABLE_MULTI_LEG_ROUTING, ENABLE_P5_2_SOFT_LAUNCH, P5_2_BASELINE_ONLY }
 import { searchMultiLegRoutes } from "../multiLeg";
 import type { FlightLeg, Cabin } from "../multiLeg";
 import { scoreFlights } from "../scoring/scoringEngine";
+import { buildSearchCacheKey } from "../searchCacheKey";
 
 // ─── Cache version ───────────────────────────────────────────────────────────
 // Single source of truth — imported by app/api/search/route.ts so both sides
@@ -75,7 +76,16 @@ export async function searchEngine(
   const isRoundtrip = tripType === "roundtrip" && !!returnDate;
   // v2 prefix: bumped when we moved to aviasales/v3 endpoint (airline data + booking links).
   // Bump this again whenever the FlightResult shape changes to avoid serving stale cached results.
-  const cacheKey   = `keza:${CACHE_VERSION}:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+  const cacheKey = buildSearchCacheKey(CACHE_VERSION, {
+    from,
+    to,
+    date,
+    tripType,
+    returnDate,
+    stops,
+    cabin,
+    passengers,
+  });
 
   // 1. Cache check + effectivePrices in parallel
   // Each caller gets a fresh searchId — the cached results share flight/price

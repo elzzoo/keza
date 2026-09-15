@@ -8,6 +8,7 @@ import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { trackSearchPerformance, isPerformanceAcceptable } from "@/lib/performance";
 import { parseSearchParams } from "@/lib/searchInput";
+import { buildSearchCacheKey } from "@/lib/searchCacheKey";
 
 // Vercel Hobby hard-kills at 10s. SSE partial arrives in ~2-3s, final in ~5-8s — fits.
 export const maxDuration = 10;
@@ -57,17 +58,6 @@ export async function POST(request: Request) {
 
   const encoder = new TextEncoder();
   let partialSent = false;
-
-  function buildCacheKey(
-    version: string,
-    p: {
-      from: string; to: string; date: string;
-      tripType: string; returnDate?: string;
-      stops: string; cabin: string; passengers: number;
-    },
-  ): string {
-    return `keza:${version}:${p.from}:${p.to}:${p.date}:${p.tripType}:${p.returnDate ?? ""}:${p.stops}:${p.cabin}:${p.passengers}`;
-  }
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -154,7 +144,7 @@ export async function POST(request: Request) {
           let fallbackResults: FlightResult[] = [];
           for (const ver of versions) {
             const cached = await redis
-              .get<FlightResult[]>(buildCacheKey(ver, keyParams))
+              .get<FlightResult[]>(buildSearchCacheKey(ver, keyParams))
               .catch(() => null);
             if (cached && cached.length > 0) {
               fallbackResults = cached;

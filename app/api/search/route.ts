@@ -13,22 +13,12 @@ import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
 import { parseSearchParams } from "@/lib/searchInput";
+import { buildSearchCacheKey } from "@/lib/searchCacheKey";
 
 // Max time to wait for a full search before returning with partial flag.
 // Must be < maxDuration (10s) to ensure graceful partial response fires before
 // Vercel kills the function. 8s leaves 2s for response serialization + Redis write.
 const SEARCH_TIMEOUT_MS = 8_000;
-
-function buildCacheKey(
-  version: string,
-  p: {
-    from: string; to: string; date: string;
-    tripType: string; returnDate?: string;
-    stops: string; cabin: string; passengers: number;
-  }
-): string {
-  return `keza:${version}:${p.from}:${p.to}:${p.date}:${p.tripType}:${p.returnDate ?? ""}:${p.stops}:${p.cabin}:${p.passengers}`;
-}
 
 export async function POST(request: Request) {
   const requestId = randomUUID();
@@ -96,7 +86,7 @@ export async function POST(request: Request) {
       const versions = [CACHE_VERSION, ...CACHE_VERSION_FALLBACKS];
       results = [];
       for (const ver of versions) {
-        const cached = await redis.get<FlightResult[]>(buildCacheKey(ver, keyParams)).catch(() => null);
+        const cached = await redis.get<FlightResult[]>(buildSearchCacheKey(ver, keyParams)).catch(() => null);
         if (cached && cached.length > 0) {
           results = cached;
           fromCache = true;

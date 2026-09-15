@@ -12,6 +12,7 @@ import { ROUTE_AIRLINE_SUPPLEMENTS, HOME_CARRIER_PROGRAMS } from "./supplements"
 import { enrich, mergeFlights, filterByStops } from "./enrich";
 import { logError } from "../logger";
 import { CACHE_VERSION } from "./index";
+import { buildSearchCacheKey } from "../searchCacheKey";
 
 type Promotions = Awaited<ReturnType<typeof loadPromotions>>;
 
@@ -98,7 +99,16 @@ export async function searchEngineStream(
 
     const directOnly  = stops === "direct";
     const isRoundtrip = tripType === "roundtrip" && !!returnDate;
-    const cacheKey    = `keza:${CACHE_VERSION}:${from}:${to}:${date}:${tripType}:${returnDate ?? ""}:${stops}:${cabin}:${passengers}`;
+    const cacheKey = buildSearchCacheKey(CACHE_VERSION, {
+      from,
+      to,
+      date: date!,
+      tripType,
+      returnDate,
+      stops,
+      cabin,
+      passengers,
+    });
 
     // Load cache + prices + promotions all in parallel (before any provider call)
     const [cached, effectivePrices, promotions] = await Promise.all([
