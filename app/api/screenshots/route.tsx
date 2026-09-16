@@ -54,10 +54,10 @@ export async function GET(req: NextRequest) {
         {/* Hero */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: wide ? 36 : 24 }}>
           <span style={{ fontSize: wide ? 42 : 28, fontWeight: 900, color: "#e2e8f0", lineHeight: 1.1 }}>
-            {wide ? "Vols cash ou miles ?" : "Cash ou\nMiles ?"}
+            {wide ? "Vols cash ou miles ?" : "Cash ou Miles ?"}
           </span>
           <span style={{ fontSize: wide ? 18 : 14, color: "#94a3b8", lineHeight: 1.5 }}>
-            Xalifly calcule l&apos;option la moins chère{wide ? " en temps réel" : ""}
+            Xalifly calcule le meilleur choix{wide ? " en temps reel" : ""}
           </span>
         </div>
 
@@ -74,7 +74,10 @@ export async function GET(req: NextRequest) {
             marginBottom: wide ? 32 : 20,
           }}
         >
-          {["🇸🇳 Dakar — DSS", "🇫🇷 Paris — CDG"].map((label, i) => (
+          {[
+            { city: "Dakar", code: "DSS" },
+            { city: "Paris", code: "CDG" },
+          ].map((airport, i) => (
             <div
               key={i}
               style={{
@@ -87,13 +90,13 @@ export async function GET(req: NextRequest) {
                 flex: wide ? 1 : undefined,
               }}
             >
-              <span style={{ fontSize: wide ? 28 : 22 }}>{label.slice(0, 2)}</span>
+              <span style={{ fontSize: wide ? 18 : 14, fontWeight: 900, color: "#60a5fa" }}>{airport.code}</span>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: wide ? 20 : 16, fontWeight: 700, color: "#e2e8f0" }}>
-                  {label.split(" — ")[1]}
+                  {airport.code}
                 </span>
                 <span style={{ fontSize: wide ? 12 : 10, color: "#64748b" }}>
-                  {label.split(" — ")[0].slice(3)}
+                  {airport.city}
                 </span>
               </div>
             </div>
@@ -111,15 +114,15 @@ export async function GET(req: NextRequest) {
               color: "white",
             }}
           >
-            {wide ? "Rechercher →" : "→"}
+            {wide ? "Rechercher ->" : "->"}
           </div>
         </div>
 
         {/* Result chips */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {[
-            { emoji: "💰", label: "Cash", value: "620€", tag: "Le moins cher" },
-            { emoji: "✈️", label: "Miles", value: "30 000 pts", tag: "2× plus de valeur" },
+            { label: "Cash", value: "620 EUR", tag: "Le moins cher" },
+            { label: "Miles", value: "30 000 pts", tag: "2x plus de valeur" },
           ].map((r, i) => (
             <div
               key={i}
@@ -134,7 +137,7 @@ export async function GET(req: NextRequest) {
                 flex: 1,
               }}
             >
-              <span style={{ fontSize: wide ? 28 : 20 }}>{r.emoji}</span>
+              <span style={{ fontSize: wide ? 14 : 11, fontWeight: 900, color: i === 1 ? "#60a5fa" : "#94a3b8" }}>{r.label}</span>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ fontSize: wide ? 20 : 15, fontWeight: 700, color: "#e2e8f0" }}>
                   {r.value}
