@@ -29,7 +29,6 @@ Sentry.init({
   integrations: [
     Sentry.captureConsoleIntegration({ levels: ["error", "warn"] }),
     Sentry.httpClientIntegration(),
-    Sentry.replayIntegration(),
     Sentry.breadcrumbsIntegration({ console: true, dom: true, fetch: true, xhr: true }),
     Sentry.browserProfilingIntegration(),
   ],
@@ -37,6 +36,24 @@ Sentry.init({
 
 // Instrument router transitions for client-side navigation tracking
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+
+// Session Replay adds ~120KB to the client bundle on its own. Calling
+// replayIntegration() inside the `integrations` array above (like the other
+// integrations) makes that cost part of every page's initial download, even
+// though replaysSessionSampleRate (5%) means most visits never record a
+// replay. Adding it after the page has settled instead lets it load in its
+// own chunk, off the critical path — replaysSessionSampleRate/
+// replaysOnErrorSampleRate above still apply once it's registered.
+if (typeof window !== "undefined") {
+  const loadReplay = () => {
+    Sentry.addIntegration(Sentry.replayIntegration());
+  };
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(loadReplay, { timeout: 4000 });
+  } else {
+    setTimeout(loadReplay, 4000);
+  }
+}
 
 // Auto-capture Web Vitals (LCP, FID, CLS, etc.) via native Web Vitals API
 // Listen to performance observer entries for Core Web Vitals
