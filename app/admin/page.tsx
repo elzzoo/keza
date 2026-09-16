@@ -7,6 +7,12 @@ import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
 import { getDailyCronStatus } from "@/lib/cronStatus";
 import type { CronHealthStatus } from "@/lib/cronState";
+import {
+  REDIS_BACKUP_COUNTS_KEY,
+  REDIS_BACKUP_LAST_KEY,
+  REDIS_BACKUP_META_KEY,
+  type RedisBackupMeta,
+} from "@/lib/redisBackup";
 
 // ─── B2B Lead type ───────────────────────────────────────────────────────────
 
@@ -151,6 +157,20 @@ async function fetchStats() {
   };
 }
 
+async function fetchBackupStatus() {
+  const [lastAt, counts, meta] = await Promise.all([
+    redis.get<string>(REDIS_BACKUP_LAST_KEY),
+    redis.get<Record<string, number>>(REDIS_BACKUP_COUNTS_KEY),
+    redis.get<RedisBackupMeta>(REDIS_BACKUP_META_KEY),
+  ]);
+
+  return {
+    lastAt: lastAt ?? null,
+    counts: counts ?? null,
+    meta: meta ?? null,
+  };
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCard({
@@ -250,11 +270,17 @@ export default async function AdminPage({
 
   let stats: Awaited<ReturnType<typeof fetchStats>> | null = null;
   let cronStatus: Awaited<ReturnType<typeof getDailyCronStatus>> | null = null;
+  let backupStatus: Awaited<ReturnType<typeof fetchBackupStatus>> | null = null;
   let leads: B2BLead[] = [];
   let error: string | null = null;
 
   try {
-    [stats, leads, cronStatus] = await Promise.all([fetchStats(), fetchB2BLeads(), getDailyCronStatus()]);
+    [stats, leads, cronStatus, backupStatus] = await Promise.all([
+      fetchStats(),
+      fetchB2BLeads(),
+      getDailyCronStatus(),
+      fetchBackupStatus(),
+    ]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Erreur Redis inconnue";
   }
@@ -336,6 +362,21 @@ export default async function AdminPage({
                 color={stats.lastCronAt ? "green" : "amber"}
               />
             </div>
+
+            {backupStatus && (
+              <div className="mt-4">
+                <StatCard
+                  label="Backup Redis"
+                  value={backupStatus.lastAt ? (backupStatus.meta?.emailed ? "Envoyé" : "Snapshot") : "—"}
+                  sub={
+                    backupStatus.lastAt
+                      ? `${formatDate(backupStatus.lastAt)}${backupStatus.meta?.warning ? " · email non configuré" : ""}`
+                      : "aucun backup enregistré"
+                  }
+                  color={backupStatus.lastAt ? (backupStatus.meta?.emailed ? "green" : "amber") : "purple"}
+                />
+              </div>
+            )}
 
             {/* Cron observability */}
             {cronStatus && (
@@ -529,6 +570,12 @@ export default async function AdminPage({
                     { label: "Alertes actives", value: stats.activeAlerts },
                     { label: "Routes surveillées", value: stats.activeRoutes },
                     { label: "Abonnements push", value: stats.pushSubscriptions },
+                    {
+                      label: "Dernier backup Redis",
+                      value: backupStatus?.lastAt
+                        ? `${formatDate(backupStatus.lastAt)} (${backupStatus.meta?.emailed ? "email envoyé" : backupStatus.meta?.warning ?? "snapshot créé"})`
+                        : "Jamais exécuté",
+                    },
                     { label: "Cache deals", value: stats.dealsCached ? `Actif (TTL ${stats.dealsTtlSeconds}s)` : "Vide" },
                     { label: "Dernier cron deals", value: stats.lastCronAt ?? "Jamais exécuté" },
                     { label: "Données récupérées le", value: formatDate(stats.fetchedAt) },

@@ -4,12 +4,15 @@ import { Resend } from "resend";
 import { hasCronSecret } from "@/lib/auth";
 import { logError, logWarn } from "@/lib/logger";
 import { rateLimitResponse } from "@/lib/ratelimit";
-import { buildCriticalRedisBackup } from "@/lib/redisBackup";
+import {
+  REDIS_BACKUP_COUNTS_KEY,
+  REDIS_BACKUP_LAST_KEY,
+  REDIS_BACKUP_META_KEY,
+  REDIS_BACKUP_STATE_TTL_SECONDS,
+  buildCriticalRedisBackup,
+} from "@/lib/redisBackup";
 import { redis } from "@/lib/redis";
 
-const LAST_BACKUP_KEY = "keza:backup:redis:last";
-const LAST_BACKUP_COUNTS_KEY = "keza:backup:redis:last_counts";
-const BACKUP_STATE_TTL_SECONDS = 30 * 24 * 60 * 60;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "Xalifly Ops <onboarding@resend.dev>";
 
 export const maxDuration = 10;
@@ -30,12 +33,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     try {
       const backup = await buildCriticalRedisBackup();
       await Promise.all([
-        redis.set(LAST_BACKUP_KEY, backup.exportedAt, { ex: BACKUP_STATE_TTL_SECONDS }),
-        redis.set(LAST_BACKUP_COUNTS_KEY, backup.counts, { ex: BACKUP_STATE_TTL_SECONDS }),
+        redis.set(REDIS_BACKUP_LAST_KEY, backup.exportedAt, { ex: REDIS_BACKUP_STATE_TTL_SECONDS }),
+        redis.set(REDIS_BACKUP_COUNTS_KEY, backup.counts, { ex: REDIS_BACKUP_STATE_TTL_SECONDS }),
       ]);
 
       const to = process.env.ADMIN_BACKUP_EMAIL;
       if (!to) {
+        await redis.set(
+          REDIS_BACKUP_META_KEY,
+          { exportedAt: backup.exportedAt, emailed: false, warning: "ADMIN_BACKUP_EMAIL not configured" },
+          { ex: REDIS_BACKUP_STATE_TTL_SECONDS },
+        );
         logWarn("[api/cron/redis-backup] ADMIN_BACKUP_EMAIL is not configured", undefined, {
           counts: backup.counts,
         });
@@ -72,6 +80,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           },
         ],
       });
+
+      await redis.set(
+        REDIS_BACKUP_META_KEY,
+        { exportedAt: backup.exportedAt, emailed: true, emailTo: to },
+        { ex: REDIS_BACKUP_STATE_TTL_SECONDS },
+      );
 
       Sentry.captureMessage("[cron] Redis backup emailed", {
         level: "info",

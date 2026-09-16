@@ -2,6 +2,11 @@ import "server-only";
 
 import { redis } from "@/lib/redis";
 
+export const REDIS_BACKUP_LAST_KEY = "keza:backup:redis:last";
+export const REDIS_BACKUP_COUNTS_KEY = "keza:backup:redis:last_counts";
+export const REDIS_BACKUP_META_KEY = "keza:backup:redis:last_meta";
+export const REDIS_BACKUP_STATE_TTL_SECONDS = 30 * 24 * 60 * 60;
+
 const ALERTS_ROUTES_KEY = "keza:alerts:routes";
 const B2B_LEADS_KEY = "keza:b2b:leads";
 const PUSH_SUBS_KEY = "keza:push:subscriptions";
@@ -28,6 +33,13 @@ export interface CriticalRedisBackup {
     newsletterSubscribers: number;
     milesAlerts: number;
   };
+}
+
+export interface RedisBackupMeta {
+  exportedAt: string;
+  emailed: boolean;
+  warning?: string;
+  emailTo?: string;
 }
 
 function routeAlertIndexKey(route: string): string {

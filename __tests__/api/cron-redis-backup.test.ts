@@ -19,6 +19,10 @@ jest.mock("@/lib/ratelimit", () => ({
 }));
 
 jest.mock("@/lib/redisBackup", () => ({
+  REDIS_BACKUP_LAST_KEY: "keza:backup:redis:last",
+  REDIS_BACKUP_COUNTS_KEY: "keza:backup:redis:last_counts",
+  REDIS_BACKUP_META_KEY: "keza:backup:redis:last_meta",
+  REDIS_BACKUP_STATE_TTL_SECONDS: 30 * 24 * 60 * 60,
   buildCriticalRedisBackup: (...args: unknown[]) => mockBuildCriticalRedisBackup(...args),
 }));
 
@@ -125,6 +129,15 @@ describe("GET /api/cron/redis-backup", () => {
       backup.counts,
       expect.objectContaining({ ex: expect.any(Number) }),
     );
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      "keza:backup:redis:last_meta",
+      {
+        exportedAt: backup.exportedAt,
+        emailed: false,
+        warning: "ADMIN_BACKUP_EMAIL not configured",
+      },
+      expect.objectContaining({ ex: expect.any(Number) }),
+    );
     expect(mockLogWarn).toHaveBeenCalledWith(
       "[api/cron/redis-backup] ADMIN_BACKUP_EMAIL is not configured",
       undefined,
@@ -153,6 +166,15 @@ describe("GET /api/cron/redis-backup", () => {
           }),
         ],
       }),
+    );
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      "keza:backup:redis:last_meta",
+      {
+        exportedAt: backup.exportedAt,
+        emailed: true,
+        emailTo: "ops@example.com",
+      },
+      expect.objectContaining({ ex: expect.any(Number) }),
     );
     expect(mockCaptureMessage).toHaveBeenCalledWith(
       "[cron] Redis backup emailed",
