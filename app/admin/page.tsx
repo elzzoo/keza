@@ -598,6 +598,14 @@ export default async function AdminPage({
               >
                 Backup JSON Redis
               </a>
+              <form method="POST" action="/api/admin/backfill/price-alerts">
+                <button
+                  type="submit"
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  Dry-run backfill alertes
+                </button>
+              </form>
               <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700">
                 Actions cron désactivées depuis le navigateur: utiliser Authorization: Bearer CRON_SECRET.
               </span>
