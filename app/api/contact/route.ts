@@ -14,11 +14,11 @@ const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const ContactSchema = z.object({
-  name:     z.string().min(1).max(100),
-  company:  z.string().min(1).max(100),
-  email:    z.string().email(),
-  teamSize: z.string().min(1),
-  message:  z.string().max(2000).optional(),
+  name:     z.string().trim().min(1).max(100),
+  company:  z.string().trim().min(1).max(100),
+  email:    z.string().trim().toLowerCase().email().max(254),
+  teamSize: z.enum(["1-10", "11-50", "51-200", "201+"]),
+  message:  z.string().trim().max(2000).optional(),
 });
 
 type ContactPayload = z.infer<typeof ContactSchema>;

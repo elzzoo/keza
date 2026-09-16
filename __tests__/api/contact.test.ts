@@ -39,7 +39,7 @@ const VALID_BODY = {
   name: "Mamadou Diallo",
   company: "Acme Corp",
   email: "mamadou@acme.com",
-  teamSize: "10-50",
+  teamSize: "11-50",
   message: "Interested in your product",
 };
 
@@ -97,6 +97,11 @@ describe("POST /api/contact", () => {
       expect(res.status).toBe(400);
     });
 
+    it("returns 400 when teamSize is outside the allowed options", async () => {
+      const res = await POST(await makeRequest({ ...VALID_BODY, teamSize: "100000 employees" }));
+      expect(res.status).toBe(400);
+    });
+
     it("returns 400 when email is invalid", async () => {
       const res = await POST(await makeRequest({ ...VALID_BODY, email: "not-an-email" }));
       expect(res.status).toBe(400);
@@ -124,7 +129,7 @@ describe("POST /api/contact", () => {
     });
 
     it("stores lead in Redis", async () => {
-      await POST(await makeRequest(VALID_BODY));
+      await POST(await makeRequest({ ...VALID_BODY, email: "  Mamadou@Acme.COM  " }));
       expect(mockRedisLpush).toHaveBeenCalledWith(
         "keza:b2b:leads",
         expect.stringContaining("mamadou@acme.com")
