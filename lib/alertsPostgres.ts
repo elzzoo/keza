@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { logWarn } from "@/lib/logger";
+import { buildCriticalRedisBackup } from "@/lib/redisBackup";
 import type { PriceAlert } from "@/lib/alerts";
 
 export function isPriceAlertPostgresSyncEnabled(): boolean {
@@ -31,9 +32,25 @@ export function priceAlertToRecordData(alert: PriceAlert): Prisma.PriceAlertReco
   };
 }
 
-export async function syncPriceAlertToPostgres(alert: PriceAlert): Promise<boolean> {
-  if (!isPriceAlertPostgresSyncEnabled()) return false;
+export function isPriceAlertRecord(value: unknown): value is PriceAlert {
+  if (!value || typeof value !== "object") return false;
+  const alert = value as Partial<PriceAlert>;
+  return (
+    typeof alert.id === "string" &&
+    typeof alert.email === "string" &&
+    typeof alert.from === "string" &&
+    typeof alert.to === "string" &&
+    typeof alert.cabin === "string" &&
+    typeof alert.basePrice === "number" &&
+    typeof alert.targetPrice === "number" &&
+    typeof alert.createdAt === "string" &&
+    typeof alert.notifCount === "number" &&
+    typeof alert.active === "boolean" &&
+    typeof alert.notifFrequency === "string"
+  );
+}
 
+export async function upsertPriceAlertRecord(alert: PriceAlert): Promise<boolean> {
   try {
     const data = priceAlertToRecordData(alert);
     await prisma.priceAlertRecord.upsert({
@@ -48,4 +65,50 @@ export async function syncPriceAlertToPostgres(alert: PriceAlert): Promise<boole
     });
     return false;
   }
+}
+
+export async function syncPriceAlertToPostgres(alert: PriceAlert): Promise<boolean> {
+  if (!isPriceAlertPostgresSyncEnabled()) return false;
+  return upsertPriceAlertRecord(alert);
+}
+
+export interface PriceAlertsBackfillResult {
+  dryRun: boolean;
+  scanned: number;
+  valid: number;
+  upserted: number;
+  failed: number;
+}
+
+export async function backfillPriceAlertsToPostgres({ dryRun = true } = {}): Promise<PriceAlertsBackfillResult> {
+  const backup = await buildCriticalRedisBackup();
+  const alerts = backup.sources.priceAlerts.alerts
+    .map((entry) => entry.value)
+    .filter(isPriceAlertRecord);
+
+  if (dryRun) {
+    return {
+      dryRun,
+      scanned: backup.sources.priceAlerts.alerts.length,
+      valid: alerts.length,
+      upserted: 0,
+      failed: 0,
+    };
+  }
+
+  let upserted = 0;
+  let failed = 0;
+  for (const alert of alerts) {
+    const ok = await upsertPriceAlertRecord(alert);
+    if (ok) upserted++;
+    else failed++;
+  }
+
+  return {
+    dryRun,
+    scanned: backup.sources.priceAlerts.alerts.length,
+    valid: alerts.length,
+    upserted,
+    failed,
+  };
 }

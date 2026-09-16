@@ -1,5 +1,6 @@
 const mockUpsert = jest.fn();
 const mockLogWarn = jest.fn();
+const mockBuildCriticalRedisBackup = jest.fn();
 
 jest.mock("@/lib/db", () => ({
   prisma: {
@@ -13,8 +14,14 @@ jest.mock("@/lib/logger", () => ({
   logWarn: (...args: unknown[]) => mockLogWarn(...args),
 }));
 
+jest.mock("@/lib/redisBackup", () => ({
+  buildCriticalRedisBackup: (...args: unknown[]) => mockBuildCriticalRedisBackup(...args),
+}));
+
 import {
+  backfillPriceAlertsToPostgres,
   isPriceAlertPostgresSyncEnabled,
+  isPriceAlertRecord,
   priceAlertToRecordData,
   syncPriceAlertToPostgres,
 } from "@/lib/alertsPostgres";
@@ -49,6 +56,16 @@ describe("alertsPostgres", () => {
     process.env = { ...OLD_ENV };
     delete process.env.PRICE_ALERTS_POSTGRES_SYNC;
     mockUpsert.mockResolvedValue({});
+    mockBuildCriticalRedisBackup.mockResolvedValue({
+      sources: {
+        priceAlerts: {
+          alerts: [
+            { id: "alt_123", value: alert },
+            { id: "bad", value: { nope: true } },
+          ],
+        },
+      },
+    });
   });
 
   afterAll(() => {
@@ -85,6 +102,12 @@ describe("alertsPostgres", () => {
     expect(data.rawJson).toEqual(alert);
   });
 
+  it("identifies valid Redis price alert payloads", () => {
+    expect(isPriceAlertRecord(alert)).toBe(true);
+    expect(isPriceAlertRecord({ ...alert, targetPrice: "720" })).toBe(false);
+    expect(isPriceAlertRecord(null)).toBe(false);
+  });
+
   it("does nothing while sync flag is disabled", async () => {
     await expect(syncPriceAlertToPostgres(alert)).resolves.toBe(false);
     expect(mockUpsert).not.toHaveBeenCalled();
@@ -111,5 +134,27 @@ describe("alertsPostgres", () => {
     expect(mockLogWarn).toHaveBeenCalledWith("[alertsPostgres] sync failed", "missing table", {
       alertId: "alt_123",
     });
+  });
+
+  it("dry-runs a Redis to Postgres backfill without writing", async () => {
+    await expect(backfillPriceAlertsToPostgres()).resolves.toEqual({
+      dryRun: true,
+      scanned: 2,
+      valid: 1,
+      upserted: 0,
+      failed: 0,
+    });
+    expect(mockUpsert).not.toHaveBeenCalled();
+  });
+
+  it("backfills valid Redis alerts when dryRun is false", async () => {
+    await expect(backfillPriceAlertsToPostgres({ dryRun: false })).resolves.toEqual({
+      dryRun: false,
+      scanned: 2,
+      valid: 1,
+      upserted: 1,
+      failed: 0,
+    });
+    expect(mockUpsert).toHaveBeenCalledTimes(1);
   });
 });
