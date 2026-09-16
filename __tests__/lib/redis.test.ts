@@ -61,16 +61,63 @@ jest.mock("@upstash/redis", () => ({
 }));
 
 // Must import after mocks are set up
-import { redis } from "@/lib/redis";
+import { prefixRedisKey, redis, redisKeyPrefix } from "@/lib/redis";
 
 beforeEach(() => {
   jest.clearAllMocks();
   // Set environment variables for redis initialization
   process.env.UPSTASH_REDIS_REST_URL = "https://example.upstash.io";
   process.env.UPSTASH_REDIS_REST_TOKEN = "test_token";
+  delete process.env.NEXT_REDIS_PREFIX;
+  delete process.env.REDIS_KEY_PREFIX;
 });
 
 describe("redis error logging with logRedisError", () => {
+  describe("key prefixing", () => {
+    it("leaves keys unchanged when no prefix is configured", async () => {
+      mockRedisGet.mockResolvedValueOnce("value");
+
+      const result = await redis.get("keza:test");
+
+      expect(result).toBe("value");
+      expect(redisKeyPrefix()).toBe("");
+      expect(mockRedisGet).toHaveBeenCalledWith("keza:test");
+    });
+
+    it("prefixes single-key operations when NEXT_REDIS_PREFIX is configured", async () => {
+      process.env.NEXT_REDIS_PREFIX = "preview";
+      mockRedisSet.mockResolvedValueOnce("OK");
+
+      const result = await redis.set("keza:test", "value");
+
+      expect(result).toBe("OK");
+      expect(prefixRedisKey("keza:test")).toBe("preview:keza:test");
+      expect(mockRedisSet).toHaveBeenCalledWith("preview:keza:test", "value", undefined);
+    });
+
+    it("does not double-prefix already-prefixed keys", async () => {
+      process.env.NEXT_REDIS_PREFIX = "preview";
+      mockRedisGet.mockResolvedValueOnce("value");
+
+      const result = await redis.get("preview:keza:test");
+
+      expect(result).toBe("value");
+      expect(mockRedisGet).toHaveBeenCalledWith("preview:keza:test");
+    });
+
+    it("prefixes multi-key operations consistently", async () => {
+      process.env.NEXT_REDIS_PREFIX = "preview";
+      mockRedisDel.mockResolvedValueOnce(2);
+      mockRedisMget.mockResolvedValueOnce(["a", "b"]);
+
+      await redis.del("key1", "key2");
+      await redis.mget("key1", "key2");
+
+      expect(mockRedisDel).toHaveBeenCalledWith("preview:key1", "preview:key2");
+      expect(mockRedisMget).toHaveBeenCalledWith("preview:key1", "preview:key2");
+    });
+  });
+
   describe("GET operations", () => {
     it("logs error when redis.get fails", async () => {
       const testError = new Error("Connection refused");

@@ -49,12 +49,13 @@ describe("GET /api/admin/cron/status", () => {
   });
 
   it("returns last daily run and per-job state", async () => {
+    const startedAt = new Date().toISOString();
     mockRedisGet.mockImplementation(async (key: string) => {
       if (key === "cron:daily:lastRun") {
         return {
           runId: "run-1",
           status: "dispatched",
-          startedAt: "2026-09-15T00:00:00.000Z",
+          startedAt,
           jobs: ["/api/cron/miles-prices"],
         };
       }
@@ -64,8 +65,8 @@ describe("GET /api/admin/cron/status", () => {
           path: "/api/cron/miles-prices",
           status: "accepted",
           statusCode: 200,
-          startedAt: "2026-09-15T00:00:00.000Z",
-          finishedAt: "2026-09-15T00:00:01.000Z",
+          startedAt,
+          finishedAt: startedAt,
         };
       }
       return null;
