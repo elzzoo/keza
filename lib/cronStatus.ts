@@ -12,7 +12,7 @@ import { DAILY_CRON_JOBS } from "@/lib/cronJobs";
 import { redis } from "@/lib/redis";
 
 export interface DailyCronJobStatus {
-  path: (typeof DAILY_CRON_JOBS)[number];
+  path: string;
   state: CronJobState | null;
 }
 
@@ -24,14 +24,15 @@ export interface DailyCronStatus {
 
 export async function getDailyCronStatus(): Promise<DailyCronStatus> {
   const lastRun = await redis.get<CronRunState>(cronLastRunKey("daily"));
+  const expectedJobs = lastRun?.jobs?.length ? [...lastRun.jobs] : [...DAILY_CRON_JOBS];
   const jobs = lastRun?.runId
     ? await Promise.all(
-        DAILY_CRON_JOBS.map(async (path) => ({
+        expectedJobs.map(async (path) => ({
           path,
           state: await redis.get<CronJobState>(cronJobKey("daily", lastRun.runId, path)),
         })),
       )
-    : DAILY_CRON_JOBS.map((path) => ({ path, state: null }));
+    : expectedJobs.map((path) => ({ path, state: null }));
 
   return {
     health: deriveCronHealth(

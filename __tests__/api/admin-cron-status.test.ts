@@ -77,8 +77,9 @@ describe("GET /api/admin/cron/status", () => {
 
     expect(res.status).toBe(200);
     expect(data.ok).toBe(true);
-    expect(data.daily.health).toBe("running");
+    expect(data.daily.health).toBe("ok");
     expect(data.daily.lastRun.runId).toBe("run-1");
+    expect(data.daily.jobs).toHaveLength(1);
     expect(data.daily.jobs).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
