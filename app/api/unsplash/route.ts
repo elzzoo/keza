@@ -1,6 +1,7 @@
 // app/api/unsplash/route.ts
 // Server-side proxy — keeps UNSPLASH_ACCESS_KEY out of the client bundle.
 import { NextResponse } from "next/server";
+import { DESTINATIONS } from "@/data/destinations";
 import { redis } from "@/lib/redis";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError } from "@/lib/logger";
@@ -8,19 +9,27 @@ import { logError } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 jours
+const ALLOWED_QUERIES = new Set(DESTINATIONS.map((dest) => dest.unsplashQuery.toLowerCase()));
+
+function normalizeQuery(query: string): string {
+  return query.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 export async function GET(request: Request) {
   const limited = await rateLimitResponse(request, { namespace: "api:unsplash", limit: 20, windowSeconds: 60 });
   if (limited) return limited;
 
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("query")?.trim();
+  const query = normalizeQuery(searchParams.get("query") ?? "");
 
   if (!query) {
     return NextResponse.json({ error: "query required" }, { status: 400 });
   }
+  if (query.length > 80 || !ALLOWED_QUERIES.has(query)) {
+    return NextResponse.json({ error: "query not allowed" }, { status: 400 });
+  }
 
-  const key = `keza:unsplash:${query.toLowerCase().replace(/\s+/g, "-")}`;
+  const key = `keza:unsplash:${query.replace(/\s+/g, "-")}`;
 
   // 1. Check Redis cache
   try {
