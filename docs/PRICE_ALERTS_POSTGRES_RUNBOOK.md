@@ -1,0 +1,65 @@
+# Price Alerts Postgres Runbook
+
+This runbook covers the safe activation path for durable price-alert storage.
+Redis remains the source of truth until the `PRICE_ALERTS_POSTGRES_SYNC=1` flag is enabled.
+
+## Current State
+
+- Redis is still the serving path for all price-alert reads and writes.
+- `PriceAlertRecord` exists in `prisma/schema.prisma` with migration `20260916104000_price_alert_records`.
+- `lib/alertsPostgres.ts` can upsert Redis `PriceAlert` objects into Postgres.
+- `lib/alerts.ts` dual-writes only when `PRICE_ALERTS_POSTGRES_SYNC=1`.
+- `/api/admin/export/redis` and `/api/cron/redis-backup` provide a recoverable Redis snapshot before migration work.
+
+## Activation Checklist
+
+1. Confirm production backup health in `/admin`.
+   - Latest Redis backup should be recent.
+   - If `ADMIN_BACKUP_EMAIL` is configured, status should show an emailed backup.
+
+2. Download a manual backup from `/admin` using `Backup JSON Redis`.
+
+3. Apply the Prisma migration to the production database.
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+4. Verify the new table exists.
+   ```sql
+   SELECT COUNT(*) FROM "PriceAlertRecord";
+   ```
+
+5. Enable dual-write only after the migration succeeds.
+   ```env
+   PRICE_ALERTS_POSTGRES_SYNC=1
+   ```
+
+6. Create one test alert in production.
+
+7. Verify it still appears in `/alertes` through the Redis-backed flow.
+
+8. Verify the Postgres mirror row exists.
+   ```sql
+   SELECT id, email, "routeFrom", "routeTo", active, "notifFrequency"
+   FROM "PriceAlertRecord"
+   ORDER BY "syncedAt" DESC
+   LIMIT 5;
+   ```
+
+## Rollback
+
+If anything looks wrong:
+
+1. Set `PRICE_ALERTS_POSTGRES_SYNC=0` or remove it.
+2. Redeploy.
+3. Redis continues serving reads and writes.
+4. Keep the Postgres table for inspection; do not drop it during an incident.
+
+## Next Migration Step
+
+Once dual-write has been stable for several days:
+
+1. Add a backfill job from the Redis backup/export into `PriceAlertRecord`.
+2. Compare Redis active alert counts vs Postgres active alert counts.
+3. Add read-through verification in admin, not in user-facing traffic.
+4. Only then consider moving reads from Redis to Postgres.
