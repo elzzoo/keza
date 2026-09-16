@@ -6,6 +6,10 @@ import { syncUserBalances } from "@/lib/balanceSync";
 import { logError } from "@/lib/logger";
 import { checkBalanceSyncLimit } from "@/lib/balanceSyncLimit";
 
+function isAutomaticBalanceSyncEnabled(): boolean {
+  return process.env.BALANCE_SYNC_ENABLED === "true";
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -24,6 +28,16 @@ export async function POST(req: NextRequest) {
           "Retry-After": (limitCheck.retryAfterSeconds || 3600).toString(),
         }
       }
+    );
+  }
+
+  if (!isAutomaticBalanceSyncEnabled()) {
+    return NextResponse.json(
+      {
+        error: "Automatic airline balance sync is not configured yet. Enter balances manually.",
+        code: "BALANCE_SYNC_NOT_CONFIGURED",
+      },
+      { status: 501 }
     );
   }
 

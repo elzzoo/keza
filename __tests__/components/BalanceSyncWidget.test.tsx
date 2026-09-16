@@ -72,6 +72,14 @@ describe("BalanceSyncWidget", () => {
     });
   });
 
+  it("shows manual entry mode when automatic sync is unavailable", () => {
+    render(<BalanceSyncWidget lastSync={null} isAvailable={false} lang="en" />);
+
+    expect(screen.getByText("Manual entry mode")).toBeInTheDocument();
+    expect(screen.getByText(/Automatic airline account sync is not live yet/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /refresh balance sync/i })).toBeDisabled();
+  });
+
   it("syncs isLoading prop with internal state", async () => {
     const { rerender } = render(
       <BalanceSyncWidget lastSync={new Date()} isLoading={false} />

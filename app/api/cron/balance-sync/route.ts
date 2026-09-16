@@ -6,6 +6,10 @@ import { syncUserBalances } from "@/lib/balanceSync";
 import { logError } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
 
+function isAutomaticBalanceSyncEnabled(): boolean {
+  return process.env.BALANCE_SYNC_ENABLED === "true";
+}
+
 export async function GET(req: NextRequest) {
   const limited = await rateLimitResponse(req, {
     namespace: "api:cron:balance-sync",
@@ -20,6 +24,17 @@ export async function GET(req: NextRequest) {
 
   return Sentry.withMonitor("cron-balance-sync", async () => {
     try {
+      if (!isAutomaticBalanceSyncEnabled()) {
+        return NextResponse.json({
+          success: true,
+          skipped: true,
+          reason: "Automatic airline balance sync is not configured",
+          synced: 0,
+          failed: 0,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       const users = await getAllUserPortfolios();
       let synced = 0;
       let failed = 0;

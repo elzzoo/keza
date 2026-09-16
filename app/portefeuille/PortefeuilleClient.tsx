@@ -38,6 +38,8 @@ const OTHER_PROGRAMS = GLOBAL_PROGRAMS.filter(
   (p) => !TOP_PROGRAM_NAMES.includes(p.name)
 );
 
+const AUTOMATIC_BALANCE_SYNC_ENABLED = false;
+
 // ─── Bank currency display value ───────────────────────────────────────────────
 // Default 1 cent per point as per spec
 const BANK_POINT_VALUE_CENTS = 1;
@@ -168,6 +170,8 @@ export function PortefeuilleClient() {
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
   useEffect(() => {
+    if (!AUTOMATIC_BALANCE_SYNC_ENABLED) return;
+
     const fetchLastSync = async () => {
       try {
         const res = await fetch("/api/balance/sync-time");
@@ -183,6 +187,14 @@ export function PortefeuilleClient() {
   }, [session?.user?.email]);
 
   const handleRefresh = async () => {
+    if (!AUTOMATIC_BALANCE_SYNC_ENABLED) {
+      throw new Error(
+        lang === "fr"
+          ? "La synchronisation automatique n'est pas encore active."
+          : "Automatic balance sync is not live yet."
+      );
+    }
+
     try {
       const syncRes = await fetch("/api/balance/sync", { method: "POST" });
       if (!syncRes.ok) {
@@ -316,7 +328,12 @@ export function PortefeuilleClient() {
         )}
 
         {/* ── Balance sync widget ──────────────────────────────────────────── */}
-        <BalanceSyncWidget lastSync={lastSync} onRefresh={handleRefresh} />
+        <BalanceSyncWidget
+          lastSync={lastSync}
+          onRefresh={handleRefresh}
+          isAvailable={AUTOMATIC_BALANCE_SYNC_ENABLED}
+          lang={lang}
+        />
 
         {/* ── Total value card ─────────────────────────────────────────────── */}
         <div className="bg-surface rounded-2xl border border-border p-5">
