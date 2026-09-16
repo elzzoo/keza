@@ -298,6 +298,18 @@ async function safeTtl(key: string): Promise<number> {
   }
 }
 
+async function safeKeys(pattern: string): Promise<string[]> {
+  const redisPattern = prefixRedisKey(pattern);
+  try {
+    const client = getRedis();
+    const result = await client.keys(redisPattern);
+    return (result ?? []) as string[];
+  } catch (err) {
+    logRedisError("KEYS", redisPattern, err);
+    return [];
+  }
+}
+
 /**
  * Get a value from Redis with exponential backoff retry logic.
  * Retries up to 2x with 100ms backoff on failure before returning null.
@@ -380,6 +392,8 @@ export const redis: Redis = new Proxy({} as Redis, {
         return safeMget;
       case "ttl":
         return safeTtl;
+      case "keys":
+        return safeKeys;
       default:
         // For any other methods not wrapped, use the original client
         const client = getRedis();

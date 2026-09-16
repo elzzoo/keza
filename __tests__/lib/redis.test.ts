@@ -32,6 +32,7 @@ const mockRedisHset = jest.fn();
 const mockRedisExists = jest.fn();
 const mockRedisMget = jest.fn();
 const mockRedisTtl = jest.fn();
+const mockRedisKeys = jest.fn();
 
 jest.mock("@upstash/redis", () => ({
   Redis: jest.fn().mockImplementation(() => ({
@@ -57,6 +58,7 @@ jest.mock("@upstash/redis", () => ({
     exists: mockRedisExists,
     mget: mockRedisMget,
     ttl: mockRedisTtl,
+    keys: mockRedisKeys,
   })),
 }));
 
@@ -115,6 +117,16 @@ describe("redis error logging with logRedisError", () => {
 
       expect(mockRedisDel).toHaveBeenCalledWith("preview:key1", "preview:key2");
       expect(mockRedisMget).toHaveBeenCalledWith("preview:key1", "preview:key2");
+    });
+
+    it("prefixes key patterns for KEYS operations", async () => {
+      process.env.NEXT_REDIS_PREFIX = "preview";
+      mockRedisKeys.mockResolvedValueOnce(["preview:keza:miles-alert:user@example.com:SIN-LAX:Program"]);
+
+      const result = await redis.keys("keza:miles-alert:*");
+
+      expect(result).toEqual(["preview:keza:miles-alert:user@example.com:SIN-LAX:Program"]);
+      expect(mockRedisKeys).toHaveBeenCalledWith("preview:keza:miles-alert:*");
     });
   });
 
