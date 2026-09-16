@@ -65,6 +65,7 @@ describe("GET /api/cron/daily", () => {
     expect(data.runId).toEqual(expect.any(String));
     expect(data.count).toBe(data.triggered.length);
     expect(data.triggered).toContain("/api/cron/miles-prices");
+    expect(data.triggered).toContain("/api/cron/redis-backup");
     expect(data.triggered).toContain("/api/cron/prewarm");
     expect(global.fetch).toHaveBeenCalledTimes(data.triggered.length);
     expect(mockRedisSet).toHaveBeenCalledWith(
