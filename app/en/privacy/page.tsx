@@ -27,16 +27,17 @@ export default function PrivacyPolicy() {
             <h2 className="text-lg font-bold text-fg mb-3">Introduction</h2>
             <p>
               Xalifly is committed to protecting user privacy. This policy explains which data we collect,
-              how we use it, and the rights available to users under applicable privacy rules.
+              how we use it, and the rights available under applicable privacy rules.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Data We Collect</h2>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
-              <li><strong className="text-fg">Flight searches</strong>: origin, destination, dates, and cabin. Search preferences may be stored locally on your device.</li>
+              <li><strong className="text-fg">Flight searches</strong>: origin, destination, dates, and cabin. Some preferences may be stored locally on your device.</li>
               <li><strong className="text-fg">Email address</strong>: only when you create a price alert, and only to send alert notifications.</li>
-              <li><strong className="text-fg">Usage data</strong>: anonymous page and performance analytics used to improve the service.</li>
+              <li><strong className="text-fg">Account data</strong>: if you sign in, Xalifly may process the information needed to authenticate you and sync your profile.</li>
+              <li><strong className="text-fg">Technical data</strong>: errors, performance, visited pages, device type, and diagnostics used to secure and improve the service.</li>
             </ul>
           </section>
 
@@ -44,7 +45,8 @@ export default function PrivacyPolicy() {
             <h2 className="text-lg font-bold text-fg mb-3">Cookies and Local Storage</h2>
             <p>
               Xalifly stores preferences such as language, currency, and theme locally in your browser.
-              These preferences can be cleared from your browser settings.
+              If you sign in, strictly necessary cookies may be used to maintain your session and protect
+              access to your account.
             </p>
           </section>
 
@@ -53,7 +55,7 @@ export default function PrivacyPolicy() {
             <ul className="list-disc list-inside space-y-1.5 ml-2">
               <li>Provide cash-vs-miles flight comparison results</li>
               <li>Send price alert notifications when requested</li>
-              <li>Improve the reliability, performance, and usability of the service</li>
+              <li>Protect the service, diagnose errors, and improve reliability and performance</li>
             </ul>
             <p className="mt-2">We do not sell or rent personal data.</p>
           </section>
@@ -62,7 +64,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-lg font-bold text-fg mb-3">Third-Party Services</h2>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
               <li><strong className="text-fg">Vercel</strong>: hosting and performance infrastructure</li>
-              <li><strong className="text-fg">Upstash</strong>: caching and alert storage</li>
+              <li><strong className="text-fg">Upstash</strong>: caching, operational storage, and alert storage</li>
               <li><strong className="text-fg">Resend</strong>: transactional email delivery</li>
               <li><strong className="text-fg">Sentry</strong>: error monitoring and diagnostics</li>
             </ul>
@@ -71,8 +73,9 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-lg font-bold text-fg mb-3">Retention</h2>
             <p>
-              Price alerts are retained until unsubscribe or inactivity cleanup. Anonymous analytics and
-              operational logs are retained only as long as needed to operate and improve the service.
+              Price alerts are retained until unsubscribe or inactivity cleanup. Account and profile data
+              are retained while the account remains active or until deletion is requested. Technical logs
+              are retained only as long as needed for diagnostics, security, and service improvement.
             </p>
           </section>
 

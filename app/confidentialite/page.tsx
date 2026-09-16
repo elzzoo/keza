@@ -29,7 +29,7 @@ export default function Confidentialite() {
               Xalifly s&apos;engage à protéger la vie privée de ses utilisateurs. Cette politique de
               confidentialité décrit les données que nous collectons, comment nous les utilisons et
               les droits dont vous disposez conformément au Règlement Général sur la Protection des
-              Données (RGPD).
+              Données (RGPD) lorsqu&apos;il s&apos;applique.
             </p>
           </section>
 
@@ -37,18 +37,19 @@ export default function Confidentialite() {
             <h2 className="text-lg font-bold text-fg mb-3">Données collectées</h2>
             <p className="mb-2">Xalifly collecte les données suivantes :</p>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
-              <li><strong className="text-fg">Recherches de vols</strong> : aéroports de départ et d&apos;arrivée, dates, classe de voyage. Ces données sont stockées localement sur votre appareil (localStorage) et ne sont pas transmises à nos serveurs.</li>
+              <li><strong className="text-fg">Recherches de vols</strong> : aéroports de départ et d&apos;arrivée, dates, classe de voyage. Certaines préférences sont stockées localement sur votre appareil.</li>
               <li><strong className="text-fg">Adresse email</strong> : uniquement si vous créez une alerte prix. Utilisée exclusivement pour vous envoyer des notifications de baisse de prix.</li>
-              <li><strong className="text-fg">Données de navigation</strong> : pages visitées, durée de visite, type d&apos;appareil. Collectées via Plausible Analytics, un outil respectueux de la vie privée qui ne dépose aucun cookie et n&apos;utilise pas de données personnelles identifiables.</li>
+              <li><strong className="text-fg">Compte utilisateur</strong> : si vous vous connectez, Xalifly peut traiter les informations nécessaires à l&apos;authentification et à la synchronisation de votre profil.</li>
+              <li><strong className="text-fg">Données techniques</strong> : erreurs, performances, pages visitées, type d&apos;appareil et informations de diagnostic utilisées pour sécuriser et améliorer le service.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-fg mb-3">Cookies</h2>
+            <h2 className="text-lg font-bold text-fg mb-3">Cookies et stockage local</h2>
             <p>
-              Xalifly <strong className="text-fg">ne dépose aucun cookie</strong> sur votre appareil.
-              Vos préférences (langue, devise, thème) sont stockées dans le localStorage de votre
-              navigateur et ne sont pas accessibles par des tiers.
+              Vos préférences (langue, devise, thème) peuvent être stockées dans le localStorage de votre
+              navigateur. Si vous vous connectez, des cookies strictement nécessaires peuvent être utilisés
+              pour maintenir votre session et protéger l&apos;accès à votre compte.
             </p>
           </section>
 
@@ -58,11 +59,10 @@ export default function Confidentialite() {
             <ul className="list-disc list-inside space-y-1.5 ml-2">
               <li>Fournir les résultats de comparaison de prix de vols</li>
               <li>Envoyer des alertes de baisse de prix (si vous en avez créé)</li>
-              <li>Améliorer le service via des statistiques anonymes de navigation</li>
+              <li>Protéger le service, diagnostiquer les erreurs et améliorer les performances</li>
             </ul>
             <p className="mt-2">
-              Vos données ne sont <strong className="text-fg">jamais vendues, louées ou partagées</strong> avec
-              des tiers à des fins commerciales.
+              Vos données ne sont <strong className="text-fg">jamais vendues ou louées</strong> à des tiers.
             </p>
           </section>
 
@@ -70,10 +70,10 @@ export default function Confidentialite() {
             <h2 className="text-lg font-bold text-fg mb-3">Services tiers</h2>
             <p className="mb-2">Xalifly utilise les services tiers suivants :</p>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
-              <li><strong className="text-fg">Plausible Analytics</strong> : statistiques anonymes de navigation (sans cookies, conforme RGPD)</li>
               <li><strong className="text-fg">Vercel</strong> : hébergement du site (données de performance)</li>
-              <li><strong className="text-fg">Upstash</strong> : stockage des alertes prix (données chiffrées)</li>
+              <li><strong className="text-fg">Upstash</strong> : cache, stockage opérationnel et alertes prix</li>
               <li><strong className="text-fg">Resend</strong> : envoi des emails d&apos;alerte prix</li>
+              <li><strong className="text-fg">Sentry</strong> : suivi des erreurs, performances et diagnostics techniques</li>
             </ul>
           </section>
 
@@ -81,7 +81,8 @@ export default function Confidentialite() {
             <h2 className="text-lg font-bold text-fg mb-3">Conservation des données</h2>
             <ul className="list-disc list-inside space-y-1.5 ml-2">
               <li><strong className="text-fg">Alertes prix</strong> : conservées jusqu&apos;à désabonnement ou 90 jours d&apos;inactivité</li>
-              <li><strong className="text-fg">Statistiques de navigation</strong> : anonymes, conservées 2 ans maximum</li>
+              <li><strong className="text-fg">Compte et profil</strong> : conservés tant que le compte reste actif ou jusqu&apos;à demande de suppression</li>
+              <li><strong className="text-fg">Journaux techniques</strong> : conservés uniquement le temps nécessaire au diagnostic, à la sécurité et à l&apos;amélioration du service</li>
               <li><strong className="text-fg">Préférences locales</strong> : stockées sur votre appareil, supprimables à tout moment</li>
             </ul>
           </section>
@@ -115,7 +116,7 @@ export default function Confidentialite() {
             <h2 className="text-lg font-bold text-fg mb-3">Modifications</h2>
             <p>
               Cette politique peut être mise à jour. En cas de modification significative,
-              un avis sera affiché sur le site. Dernière mise à jour : avril 2026.
+              un avis sera affiché sur le site. Dernière mise à jour : septembre 2026.
             </p>
           </section>
         </div>

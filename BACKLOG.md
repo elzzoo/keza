@@ -2,9 +2,9 @@
 
 > Document vivant. État au 2026-09-16. Items marqués **[Claude — analyse]** viennent de cette session (analyse/proposition uniquement, rien commité). Items marqués **[Codex]** viennent des sprints prod en cours ce soir sur `main`.
 
-## En cours ce soir (Codex — ne pas toucher aux mêmes fichiers)
-- Sprint actuel : i18n navigation/footer + pages EN légales/business légères
-- Fichiers à éviter en parallèle : `components/Header.tsx`, `components/Footer.tsx`, `app/en/**`, `app/entreprises/page.tsx`
+## Derniers sprints livrés
+- `7bb19ed` — i18n navigation/footer : ajout de `/en/legal`, `/en/privacy`, `/en/entreprises`, correction des liens EN et test Footer.
+- Sprint en cours — conformité privacy : aligner les politiques FR/EN avec auth, stockage local et Sentry.
 
 ## Backlog proposé par Codex (rappel)
 1. Redis namespace par environnement + stratégie backup/export
