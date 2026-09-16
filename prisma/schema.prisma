@@ -118,3 +118,31 @@ model AnalyticsDailyMetrics {
 
   @@index([date])
 }
+
+// ==================== Durable Product Data ====================
+
+model PriceAlertRecord {
+  id             String   @id
+  email          String
+  routeFrom      String
+  routeTo        String
+  cabin          String
+  basePrice      Float
+  targetPrice    Float
+  createdAt      DateTime
+  lastCheckedAt  DateTime?
+  lastPrice      Float?
+  notifCount     Int      @default(0)
+  active         Boolean  @default(true)
+  notifFrequency String   @default("instant")
+  milesProgram   String?
+  milesTargetCpp Float?
+  milesBaseCpp   Float?
+  rawJson        Json
+  syncedAt       DateTime @updatedAt
+
+  @@index([email])
+  @@index([routeFrom, routeTo])
+  @@index([active])
+  @@index([createdAt])
+}
