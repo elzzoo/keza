@@ -393,17 +393,6 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 2,
   },
   {
-    name: "Finnair Plus",
-    airlineCode: "AY",
-    airline: "Finnair",
-    alliance: "Oneworld",    // Note: Finnair is actually Oneworld, not Star Alliance
-    purchaseMileCostPer1000: null,
-    marketValueCents: 1.0,
-    taxProfile: "low",
-    transferPartnersFrom: [],
-    accessibilityScore: 2,
-  },
-  {
     name: "TAP Air Portugal Miles",
     airlineCode: "TP",
     airline: "TAP Air Portugal",

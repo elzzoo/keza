@@ -1,5 +1,6 @@
 import {
   GLOBAL_PROGRAMS,
+  PROGRAMS_BY_NAME,
   BANK_POINT_VALUES,
   type LoyaltyProgram,
   type Alliance,
@@ -294,6 +295,24 @@ describe("globalPrograms", () => {
         expect(program.airlineCode.length).toBeGreaterThanOrEqual(1);
         expect(program.airlineCode.length).toBeLessThanOrEqual(3);
       }
+    });
+
+    test("no program name is defined more than once (PROGRAMS_BY_NAME silently drops earlier duplicates)", () => {
+      const names = GLOBAL_PROGRAMS.map((p) => p.name);
+      const counts = new Map<string, number>();
+      for (const name of names) {
+        counts.set(name, (counts.get(name) ?? 0) + 1);
+      }
+      const duplicates = [...counts.entries()].filter(([, count]) => count > 1);
+      expect(duplicates).toEqual([]);
+    });
+
+    test("Finnair Plus is defined once, with its Marriott Bonvoy transfer partner", () => {
+      const finnairEntries = GLOBAL_PROGRAMS.filter((p) => p.name === "Finnair Plus");
+      expect(finnairEntries).toHaveLength(1);
+      expect(PROGRAMS_BY_NAME["Finnair Plus"]?.transferPartnersFrom).toContain(
+        "Marriott Bonvoy"
+      );
     });
   });
 
