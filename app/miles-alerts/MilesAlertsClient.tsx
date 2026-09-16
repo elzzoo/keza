@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -10,7 +10,9 @@ const L = {
     title: "Alertes Miles",
     subtitle: "Définissez des alertes pour les bonnes affaires miles. Nous vous enverrons un email quand votre prix cible est atteint.",
     emailRequired: "Entrez votre email",
-    noneOnDevice: "Aucune alerte trouvée sur cet appareil pour cet email. Les alertes ne peuvent être gérées que depuis l'appareil où elles ont été créées.",
+    noneOnDevice: "Nous t'avons envoyé un lien de gestion si des alertes existent pour cet email.",
+    linkSent: "Lien de gestion envoyé si des alertes existent pour cet email.",
+    errorSendingLink: "Impossible d'envoyer le lien de gestion",
     errorLoading: "Erreur lors du chargement des alertes",
     confirmDelete: "Supprimer cette alerte ?",
     missingToken: "Jeton de gestion manquant pour cette alerte",
@@ -28,7 +30,9 @@ const L = {
     title: "Miles Alerts",
     subtitle: "Set alerts for great miles deals. We'll email you when your target price is reached.",
     emailRequired: "Enter your email",
-    noneOnDevice: "No alerts found on this device for that email. Alerts can only be managed from the device where they were created.",
+    noneOnDevice: "We sent a manage link if alerts exist for that email.",
+    linkSent: "Manage link sent if alerts exist for that email.",
+    errorSendingLink: "Unable to send manage link",
     errorLoading: "Error loading alerts",
     confirmDelete: "Delete this alert?",
     missingToken: "Missing manage token for this alert",
@@ -52,14 +56,56 @@ export function MilesAlertsClient() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  // The manage token is only ever stored on the device/browser that created
-  // the alert (see components/MilesAlertModal.tsx) — there's no email-based
-  // recovery yet. Searching by email alone is no longer enough to view
-  // someone else's alerts; see app/api/miles-alerts/route.ts.
   const getStoredToken = (forEmail: string) =>
     typeof window !== "undefined"
       ? localStorage.getItem(`keza:miles-alerts:token:${forEmail.toLowerCase().trim()}`)
       : null;
+
+  const storeToken = (forEmail: string, token: string) => {
+    localStorage.setItem(`keza:miles-alerts:token:${forEmail.toLowerCase().trim()}`, token);
+  };
+
+  const loadAlerts = async (forEmail: string, token: string) => {
+    const normalizedEmail = forEmail.toLowerCase().trim();
+    const res = await fetch(`/api/miles-alerts?email=${encodeURIComponent(normalizedEmail)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to fetch");
+    const data = await res.json();
+    setAlerts(data.alerts || []);
+    setSearched(true);
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get("email");
+    const tokenParam = params.get("token");
+    if (!emailParam || !tokenParam) return;
+
+    const normalizedEmail = emailParam.toLowerCase().trim();
+    setEmail(normalizedEmail);
+    storeToken(normalizedEmail, tokenParam);
+    setLoading(true);
+    loadAlerts(normalizedEmail, tokenParam)
+      .catch(() => toast.error(t.errorLoading))
+      .finally(() => setLoading(false));
+
+    params.delete("token");
+    const nextQuery = params.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
+    window.history.replaceState(null, "", nextUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const requestManageLink = async (forEmail: string) => {
+    const normalizedEmail = forEmail.toLowerCase().trim();
+    const res = await fetch("/api/miles-alerts/manage-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: normalizedEmail }),
+    });
+    if (!res.ok) throw new Error("Failed to send manage link");
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,21 +116,23 @@ export function MilesAlertsClient() {
 
     const token = getStoredToken(email);
     if (!token) {
-      toast.error(t.noneOnDevice);
-      setAlerts([]);
-      setSearched(true);
+      setLoading(true);
+      try {
+        await requestManageLink(email);
+        toast.success(t.noneOnDevice);
+        setAlerts([]);
+        setSearched(true);
+      } catch {
+        toast.error(t.errorSendingLink);
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/miles-alerts?email=${encodeURIComponent(email)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      setAlerts(data.alerts || []);
-      setSearched(true);
+      await loadAlerts(email, token);
     } catch {
       toast.error(t.errorLoading);
     } finally {
