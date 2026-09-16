@@ -65,22 +65,39 @@ describe("POST /api/miles-alerts", () => {
   // Success case
   it("creates alert with valid request and returns 201 with a manage token", async () => {
     const body = {
-      email: "test@example.com",
-      route: "SIN-LAX",
-      program: "Singapore KrisFlyer",
+      email: " TEST@example.com ",
+      route: " sin-lax ",
+      program: " Singapore KrisFlyer ",
       thresholdCpp: 1.5,
     };
     mockCreateMilesAlert.mockResolvedValueOnce(undefined);
     const res = await POST(makeReq("POST", body));
     expect(res.status).toBe(201);
     const data = await res.json();
-    expect(data).toEqual({ ...body, manageToken: VALID_TOKEN });
+    expect(data).toEqual({
+      email: "test@example.com",
+      route: "SIN-LAX",
+      program: "Singapore KrisFlyer",
+      thresholdCpp: 1.5,
+      manageToken: VALID_TOKEN,
+    });
     expect(mockCreateMilesAlert).toHaveBeenCalledWith({
       email: "test@example.com",
       route: "SIN-LAX",
       program: "Singapore KrisFlyer",
       thresholdCpp: 1.5,
     });
+  });
+
+  it("returns 400 when email is invalid", async () => {
+    const res = await POST(makeReq("POST", {
+      email: "not-an-email",
+      route: "SIN-LAX",
+      program: "Singapore KrisFlyer",
+      thresholdCpp: 1.5,
+    }));
+    expect(res.status).toBe(400);
+    expect(mockCreateMilesAlert).not.toHaveBeenCalled();
   });
 
   // Validation errors - missing fields
@@ -108,6 +125,28 @@ describe("POST /api/miles-alerts", () => {
     expect(data.error).toBeDefined();
   });
 
+  it("returns 400 when route format is invalid", async () => {
+    const res = await POST(makeReq("POST", {
+      email: "test@example.com",
+      route: "SINLAX",
+      program: "Singapore KrisFlyer",
+      thresholdCpp: 1.5,
+    }));
+    expect(res.status).toBe(400);
+    expect(mockCreateMilesAlert).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when route uses the same airport twice", async () => {
+    const res = await POST(makeReq("POST", {
+      email: "test@example.com",
+      route: "SIN-SIN",
+      program: "Singapore KrisFlyer",
+      thresholdCpp: 1.5,
+    }));
+    expect(res.status).toBe(400);
+    expect(mockCreateMilesAlert).not.toHaveBeenCalled();
+  });
+
   it("returns 400 when program is missing", async () => {
     const body = {
       email: "test@example.com",
@@ -118,6 +157,17 @@ describe("POST /api/miles-alerts", () => {
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toBeDefined();
+  });
+
+  it("returns 400 when program is too long", async () => {
+    const res = await POST(makeReq("POST", {
+      email: "test@example.com",
+      route: "SIN-LAX",
+      program: "A".repeat(121),
+      thresholdCpp: 1.5,
+    }));
+    expect(res.status).toBe(400);
+    expect(mockCreateMilesAlert).not.toHaveBeenCalled();
   });
 
   it("returns 400 when thresholdCpp is missing", async () => {

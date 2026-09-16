@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createMilesAlert, getMilesAlertsByEmail, deactivateMilesAlert } from "@/lib/miles-alerts";
 import { createManageAlertsToken, verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
+import { isValidEmail, isValidIata } from "@/lib/validate";
 
 // This route used to have no auth at all: GET accepted ?email=... and DELETE
 // accepted an alertId (format "email:route:program", guessable) with no
@@ -13,13 +14,11 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 // returns the token; the client stores it and must present it as
 // "Authorization: Bearer <token>" on GET/DELETE.
 //
-// Known limitation: the token is only ever handed back at creation time (no
-// email-based recovery yet, unlike /alertes' magic-link flow), so a user who
-// created an alert on a different device/browser can't manage it from this
-// one. Worth a follow-up to email the manage link the same way lib/alerts.ts
-// already does for regular price alerts.
+// If the local token is lost, /api/miles-alerts/manage-link emails a fresh
+// signed link without exposing whether a given email has existing alerts.
 
 const ALERT_KEY_PREFIX = "keza:miles-alert:";
+const PROGRAM_MAX_LENGTH = 120;
 
 function extractEmailFromAlertId(alertId: string): string | null {
   // Real format (see lib/miles-alerts.ts buildAlertKey): the full Redis key
@@ -31,6 +30,14 @@ function extractEmailFromAlertId(alertId: string): string | null {
   const rest = alertId.slice(ALERT_KEY_PREFIX.length);
   const idx = rest.indexOf(":");
   return idx > 0 ? rest.slice(0, idx) : null;
+}
+
+function normalizeRoute(route: string): string | null {
+  const [from, to, ...extra] = route.trim().toUpperCase().split("-");
+  if (extra.length > 0 || !isValidIata(from) || !isValidIata(to) || from === to) {
+    return null;
+  }
+  return `${from}-${to}`;
 }
 
 /**
@@ -58,17 +65,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Validate all required fields
-    if (!body.email || typeof body.email !== "string") {
-      return NextResponse.json({ error: "email is required" }, { status: 400 });
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: "email is invalid" }, { status: 400 });
     }
 
-    if (!body.route || typeof body.route !== "string") {
-      return NextResponse.json({ error: "route is required" }, { status: 400 });
+    const route = typeof body.route === "string" ? normalizeRoute(body.route) : null;
+    if (!route) {
+      return NextResponse.json({ error: "route must use IATA-IATA format" }, { status: 400 });
     }
 
-    if (!body.program || typeof body.program !== "string") {
-      return NextResponse.json({ error: "program is required" }, { status: 400 });
+    const program = typeof body.program === "string" ? body.program.trim() : "";
+    if (!program || program.length > PROGRAM_MAX_LENGTH) {
+      return NextResponse.json({ error: "program is invalid" }, { status: 400 });
     }
 
     if (body.thresholdCpp === undefined || typeof body.thresholdCpp !== "number") {
@@ -85,20 +94,20 @@ export async function POST(request: NextRequest) {
 
     // Create the alert
     await createMilesAlert({
-      email: body.email,
-      route: body.route,
-      program: body.program,
+      email,
+      route,
+      program,
       thresholdCpp: body.thresholdCpp,
     });
 
-    const manageToken = createManageAlertsToken(body.email);
+    const manageToken = createManageAlertsToken(email);
 
     // Return the created alert
     return NextResponse.json(
       {
-        email: body.email,
-        route: body.route,
-        program: body.program,
+        email,
+        route,
+        program,
         thresholdCpp: body.thresholdCpp,
         manageToken,
       },
