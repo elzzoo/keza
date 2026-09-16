@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { saveSeatAlert, deleteSeatAlert, SeatAlertSubscription } from "@/lib/seatAlerts";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidIata, isValidCabin, isValidPrice } from "@/lib/validate";
 
 export async function POST(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:alerts:seat:post",
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,6 +72,13 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:alerts:seat:delete",
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
