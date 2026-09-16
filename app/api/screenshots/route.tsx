@@ -75,11 +75,11 @@ export async function GET(req: NextRequest) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 12, marginTop: 26 }}>
-            <div style={{ flex: 1, background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, padding: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", flex: 1, background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, padding: 16 }}>
               <span style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>CASH</span>
               <span style={{ display: "flex", color: "#e2e8f0", fontSize: 20, fontWeight: 900, marginTop: 8 }}>620 EUR</span>
             </div>
-            <div style={{ flex: 1, background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 16, padding: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", flex: 1, background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 16, padding: 16 }}>
               <span style={{ color: "#60a5fa", fontSize: 11, fontWeight: 700 }}>MILES</span>
               <span style={{ display: "flex", color: "#e2e8f0", fontSize: 20, fontWeight: 900, marginTop: 8 }}>30k pts</span>
             </div>
