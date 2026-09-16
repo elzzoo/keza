@@ -2,10 +2,18 @@ import { NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { airportsMap } from "@/data/airports";
 import { logError } from "@/lib/logger";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // GET /api/trending — top searched routes (last 3 days), max 6
 // Used by TrendingRoutesWidget on homepage
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:trending",
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const days: string[] = [];
     for (let i = 0; i < 3; i++) {

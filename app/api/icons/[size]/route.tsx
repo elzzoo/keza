@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ size: string }> }
 ) {
   const { size: sizeStr } = await params;
-  const size = parseInt(sizeStr) || 192;
+  const size = Number.parseInt(sizeStr, 10);
   const clamped = size >= 512 ? 512 : 192;
 
   // Maskable icons must NOT have rounded corners — the OS applies its own
@@ -64,6 +64,12 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: clamped, height: clamped }
+    {
+      width: clamped,
+      height: clamped,
+      headers: {
+        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000",
+      },
+    }
   );
 }

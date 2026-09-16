@@ -148,6 +148,12 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
     ),
-    { width: W, height: H }
+    {
+      width: W,
+      height: H,
+      headers: {
+        "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+      },
+    }
   );
 }

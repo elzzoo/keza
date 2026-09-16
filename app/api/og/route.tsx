@@ -11,16 +11,28 @@ function getAirport(code: string) {
   return AIRPORTS.find(a => a.code === code);
 }
 
+function sanitizeIata(value: string): string {
+  const normalized = value.toUpperCase();
+  return /^[A-Z]{3}$/.test(normalized) ? normalized : "";
+}
+
+function boundedText(value: string, maxLength: number): string {
+  return value.replace(/[\r\n<>]/g, "").trim().slice(0, maxLength);
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const from     = (searchParams.get("from") ?? "").toUpperCase();
-  const to       = (searchParams.get("to")   ?? "").toUpperCase();
-  const savings  = searchParams.get("savings")  ?? "";   // e.g. "$450"
-  const price    = searchParams.get("price")    ?? "";   // e.g. "$1 200"
-  const program  = searchParams.get("program")  ?? "";   // e.g. "Flying Blue"
-  const lang     = searchParams.get("lang")     ?? "fr";
-  const cabin    = searchParams.get("cabin")    ?? "economy";
+  const from     = sanitizeIata(searchParams.get("from") ?? "");
+  const to       = sanitizeIata(searchParams.get("to") ?? "");
+  const savings  = boundedText(searchParams.get("savings") ?? "", 24);   // e.g. "$450"
+  const price    = boundedText(searchParams.get("price") ?? "", 24);     // e.g. "$1 200"
+  const program  = boundedText(searchParams.get("program") ?? "", 40);   // e.g. "Flying Blue"
+  const lang     = searchParams.get("lang") === "en" ? "en" : "fr";
+  const cabinParam = searchParams.get("cabin") ?? "economy";
+  const cabin    = ["economy", "premium", "business", "first"].includes(cabinParam)
+    ? cabinParam
+    : "economy";
 
   const fromApt  = getAirport(from);
   const toApt    = getAirport(to);
@@ -230,6 +242,12 @@ export async function GET(request: NextRequest) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630 },
+    {
+      width: 1200,
+      height: 630,
+      headers: {
+        "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+      },
+    },
   );
 }

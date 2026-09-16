@@ -1,8 +1,19 @@
+const mockRateLimitResponse = jest.fn();
+
+jest.mock("@/lib/ratelimit", () => ({
+  rateLimitResponse: (...args: unknown[]) => mockRateLimitResponse(...args),
+}));
+
 import { GET } from "@/app/api/version/route";
 
 const OLD_ENV = process.env;
 
 describe("GET /api/version", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRateLimitResponse.mockResolvedValue(null);
+  });
+
   afterEach(() => {
     process.env = OLD_ENV;
   });
@@ -18,7 +29,7 @@ describe("GET /api/version", () => {
       CRON_SECRET: "secret-value",
     };
 
-    const res = GET();
+    const res = await GET(new Request("http://localhost/api/version"));
     const data = await res.json();
 
     expect(data).toMatchObject({
@@ -41,7 +52,7 @@ describe("GET /api/version", () => {
     delete process.env.VERCEL_URL;
     delete process.env.NEXT_PUBLIC_BUILD_TIME;
 
-    const res = GET();
+    const res = await GET(new Request("http://localhost/api/version"));
     const data = await res.json();
 
     expect(data.sha).toBe("local");
@@ -49,5 +60,15 @@ describe("GET /api/version", () => {
     expect(data.env).toBe("local");
     expect(data.deploymentUrl).toBeNull();
     expect(data.buildAt).toBeNull();
+  });
+
+  it("returns 429 when rate limited", async () => {
+    mockRateLimitResponse.mockResolvedValue(
+      Response.json({ error: "Too many requests" }, { status: 429 })
+    );
+
+    const res = await GET(new Request("http://localhost/api/version"));
+
+    expect(res.status).toBe(429);
   });
 });

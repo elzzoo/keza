@@ -154,7 +154,7 @@ describe("Header", () => {
 
   it("renders profile link", () => {
     const { container } = render(<Header {...defaultProps} />);
-    const profileLink = container.querySelector('a[href="/profil"]');
+    const profileLink = container.querySelector('a[href="/en/profile"]');
     expect(profileLink).toBeInTheDocument();
   });
 });

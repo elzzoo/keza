@@ -1,4 +1,5 @@
 import { getCachedRates } from "@/lib/exchange-rates";
+import { rateLimitResponse } from "@/lib/ratelimit";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +9,14 @@ export const revalidate = 0;
  * GET /api/exchange-rates
  * Returns cached exchange rates for client-side use
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:exchange-rates",
+    limit: 60,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   try {
     const rates = await getCachedRates();
     return NextResponse.json(

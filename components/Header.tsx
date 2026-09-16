@@ -39,7 +39,7 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-border">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link href={lang === "en" ? "/en" : "/"} className="flex items-center gap-2 flex-shrink-0">
           <span className="font-black text-xl tracking-tight leading-none">
             <span className="text-primary">Xali</span>
             <span className="text-fg">fly</span>
@@ -91,10 +91,10 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
 
           {/* Profile link */}
           <Link
-            href="/profil"
-            title="Mon profil"
+            href={lang === "en" ? "/en/profile" : "/profil"}
+            title={lang === "en" ? "My profile" : "Mon profil"}
             className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-surface-2 text-muted hover:text-fg hover:border-primary/40 transition-all"
-            aria-label="Mon profil"
+            aria-label={lang === "en" ? "My profile" : "Mon profil"}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4" />

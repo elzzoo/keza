@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { SITE_URL } from "@/lib/siteConfig";
 import { POPULAR_ROUTES } from "@/data/popularRoutes";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 export const revalidate = 3600; // 1h cache
 
@@ -47,7 +48,14 @@ function cityLabel(iata: string): string {
   return AIRPORT_CITY[iata] ?? iata;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = await rateLimitResponse(request, {
+    namespace: "api:feed",
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   const now = new Date().toUTCString();
 
   // Pick the first 10 routes from the popular-routes list for the feed
