@@ -12,6 +12,90 @@ export async function GET(req: NextRequest) {
   const W = wide ? 1280 : 390;
   const H = wide ? 800 : 844;
 
+  if (!wide) {
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: W,
+            height: H,
+            display: "flex",
+            flexDirection: "column",
+            background: "#0a0a0f",
+            fontFamily: "system-ui, sans-serif",
+            padding: 28,
+          }}
+        >
+          <div style={{ display: "flex", fontSize: 22, fontWeight: 900, color: "#3b82f6", marginBottom: 72 }}>
+            Xali<span style={{ color: "#e2e8f0" }}>fly</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <span style={{ fontSize: 42, fontWeight: 900, color: "#e2e8f0", lineHeight: 1.05 }}>
+              Cash ou Miles ?
+            </span>
+            <span style={{ fontSize: 17, color: "#94a3b8", lineHeight: 1.45 }}>
+              Comparez DSS vers CDG en quelques secondes.
+            </span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              marginTop: 56,
+              background: "#0f172a",
+              border: "1px solid #1e293b",
+              borderRadius: 22,
+              padding: 22,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#64748b", fontSize: 12, fontWeight: 700 }}>FROM</span>
+              <span style={{ color: "#e2e8f0", fontSize: 28, fontWeight: 900 }}>DSS</span>
+            </div>
+            <div style={{ height: 1, background: "#1e293b" }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#64748b", fontSize: 12, fontWeight: 700 }}>TO</span>
+              <span style={{ color: "#e2e8f0", fontSize: 28, fontWeight: 900 }}>CDG</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: 12,
+                background: "#3b82f6",
+                borderRadius: 14,
+                padding: "14px 20px",
+                color: "white",
+                fontSize: 16,
+                fontWeight: 800,
+              }}
+            >
+              Comparer
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12, marginTop: 26 }}>
+            <div style={{ flex: 1, background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, padding: 16 }}>
+              <span style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>CASH</span>
+              <span style={{ display: "flex", color: "#e2e8f0", fontSize: 20, fontWeight: 900, marginTop: 8 }}>620 EUR</span>
+            </div>
+            <div style={{ flex: 1, background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 16, padding: 16 }}>
+              <span style={{ color: "#60a5fa", fontSize: 11, fontWeight: 700 }}>MILES</span>
+              <span style={{ display: "flex", color: "#e2e8f0", fontSize: 20, fontWeight: 900, marginTop: 8 }}>30k pts</span>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        width: W,
+        height: H,
+        headers: {
+          "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+        },
+      }
+    );
+  }
+
   return new ImageResponse(
     (
       <div
