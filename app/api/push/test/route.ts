@@ -2,12 +2,20 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { getPushSubscriptions, sendPushToAll } from "@/lib/push";
 import { hasCronSecret } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/ratelimit";
 
 // ─── POST /api/push/test ─────────────────────────────────────────────────────
 // Send a test push notification to all stored subscribers.
 // Protected by CRON_SECRET — call from the admin dashboard.
 
 export async function POST(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:push:test:post",
+    limit: 5,
+    windowSeconds: 60 * 60,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -38,6 +46,13 @@ export async function POST(req: NextRequest) {
 // ─── GET /api/push/test — status check ──────────────────────────────────────
 
 export async function GET(req: NextRequest) {
+  const limited = await rateLimitResponse(req, {
+    namespace: "api:push:test:get",
+    limit: 20,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
   if (!hasCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
