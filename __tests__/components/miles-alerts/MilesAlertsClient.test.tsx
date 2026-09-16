@@ -225,6 +225,34 @@ describe("MilesAlertsClient", () => {
         expect(screen.getByText(/Créée le 01\/01\/2024/)).toBeInTheDocument();
       });
     });
+
+    it("displays millisecond createdAt values correctly", async () => {
+      const mockAlerts = [
+        {
+          email: "test@example.com",
+          route: "SIN-LAX",
+          program: "Singapore KrisFlyer",
+          thresholdCpp: 1.5,
+          createdAt: 1704067200000, // 2024-01-01
+        },
+      ];
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ alerts: mockAlerts }),
+      });
+
+      render(<MilesAlertsClient />);
+      const emailInput = screen.getByPlaceholderText("your@email.com");
+      const searchButton = screen.getByText("Rechercher");
+
+      await userEvent.type(emailInput, "test@example.com");
+      fireEvent.click(searchButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Créée le 01\/01\/2024/)).toBeInTheDocument();
+      });
+    });
   });
 
   describe("Delete functionality", () => {

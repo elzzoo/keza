@@ -11,7 +11,6 @@ const L = {
     subtitle: "Définissez des alertes pour les bonnes affaires miles. Nous vous enverrons un email quand votre prix cible est atteint.",
     emailRequired: "Entrez votre email",
     noneOnDevice: "Nous t'avons envoyé un lien de gestion si des alertes existent pour cet email.",
-    linkSent: "Lien de gestion envoyé si des alertes existent pour cet email.",
     errorSendingLink: "Impossible d'envoyer le lien de gestion",
     errorLoading: "Erreur lors du chargement des alertes",
     confirmDelete: "Supprimer cette alerte ?",
@@ -31,7 +30,6 @@ const L = {
     subtitle: "Set alerts for great miles deals. We'll email you when your target price is reached.",
     emailRequired: "Enter your email",
     noneOnDevice: "We sent a manage link if alerts exist for that email.",
-    linkSent: "Manage link sent if alerts exist for that email.",
     errorSendingLink: "Unable to send manage link",
     errorLoading: "Error loading alerts",
     confirmDelete: "Delete this alert?",
@@ -47,6 +45,12 @@ const L = {
     delete: "Delete",
   },
 };
+
+function createdAtToDate(value: number): Date {
+  // Older tests and possible legacy rows use unix seconds; live rows created
+  // by lib/miles-alerts.ts use Date.now() milliseconds.
+  return new Date(value < 1_000_000_000_000 ? value * 1000 : value);
+}
 
 export function MilesAlertsClient() {
   const [lang, setLang] = useState<"fr" | "en">("fr");
@@ -226,7 +230,7 @@ export function MilesAlertsClient() {
                       {t.alertWhen(alert.thresholdCpp.toFixed(2))}
                     </p>
                     <p className="text-xs text-muted/60 mt-1">
-                      {t.created(new Date(alert.createdAt * 1000).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US"))}
+                      {t.created(createdAtToDate(alert.createdAt).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US"))}
                     </p>
                   </div>
                   <button
