@@ -5,15 +5,8 @@ import type { PriceAlert } from "@/lib/alerts";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
-import { DAILY_CRON_JOBS } from "@/lib/cronJobs";
-import {
-  cronJobKey,
-  cronLastRunKey,
-  deriveCronHealth,
-  type CronHealthStatus,
-  type CronJobState,
-  type CronRunState,
-} from "@/lib/cronState";
+import { getDailyCronStatus } from "@/lib/cronStatus";
+import type { CronHealthStatus } from "@/lib/cronState";
 
 // ─── B2B Lead type ───────────────────────────────────────────────────────────
 
@@ -68,7 +61,7 @@ async function fetchStats() {
   // Count total active alerts across all routes
   let activeAlerts = 0;
   for (const route of routes) {
-    const ids = await redis.get<string[]>(ALERTS_BY_ROUTE(route)) ?? [];
+    const ids = (await redis.smembers(ALERTS_BY_ROUTE(route))) as string[];
     for (const id of ids) {
       const alert = await redis.get<PriceAlert>(ALERT_KEY(id));
       if (alert?.active) activeAlerts++;
@@ -155,24 +148,6 @@ async function fetchStats() {
     clicksToday: Number(clicksToday ?? 0),
     clicksTotal: Number(clicksTotal ?? 0),
     engineStats,
-  };
-}
-
-async function fetchCronStatus() {
-  const lastRun = await redis.get<CronRunState>(cronLastRunKey("daily"));
-  const jobs = lastRun?.runId
-    ? await Promise.all(
-        DAILY_CRON_JOBS.map(async (path) => ({
-          path,
-          state: await redis.get<CronJobState>(cronJobKey("daily", lastRun.runId, path)),
-        })),
-      )
-    : DAILY_CRON_JOBS.map((path) => ({ path, state: null }));
-
-  return {
-    health: deriveCronHealth(lastRun, jobs.map((job) => job.state)),
-    lastRun,
-    jobs,
   };
 }
 
@@ -274,12 +249,12 @@ export default async function AdminPage({
   }
 
   let stats: Awaited<ReturnType<typeof fetchStats>> | null = null;
-  let cronStatus: Awaited<ReturnType<typeof fetchCronStatus>> | null = null;
+  let cronStatus: Awaited<ReturnType<typeof getDailyCronStatus>> | null = null;
   let leads: B2BLead[] = [];
   let error: string | null = null;
 
   try {
-    [stats, leads, cronStatus] = await Promise.all([fetchStats(), fetchB2BLeads(), fetchCronStatus()]);
+    [stats, leads, cronStatus] = await Promise.all([fetchStats(), fetchB2BLeads(), getDailyCronStatus()]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Erreur Redis inconnue";
   }
@@ -569,6 +544,13 @@ export default async function AdminPage({
 
             {/* Quick links */}
             <div className="mt-6 flex flex-wrap gap-2 text-xs">
+              <a
+                href="/api/admin/export/redis"
+                download
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-semibold text-gray-600 hover:bg-gray-50"
+              >
+                Backup JSON Redis
+              </a>
               <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700">
                 Actions cron désactivées depuis le navigateur: utiliser Authorization: Bearer CRON_SECRET.
               </span>
