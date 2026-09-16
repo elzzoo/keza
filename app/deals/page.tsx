@@ -10,7 +10,8 @@ import type { LiveDeal, RawDeal } from "@/lib/dealsEngine";
 import { SITE_URL } from "@/lib/siteConfig";
 import { logWarn } from "@/lib/logger";
 
-export const revalidate = 3600; // Re-fetch every hour
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Deals cash vs miles du moment | Xalifly",

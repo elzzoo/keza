@@ -7,6 +7,8 @@ import { CalculateurClient } from "@/app/calculateur/CalculateurClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Miles Calculator — Is It Worth Redeeming? | Xalifly",
   description:

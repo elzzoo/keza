@@ -23,12 +23,6 @@ function parseRoute(route: string): { from: string; to: string } | null {
   return { from, to };
 }
 
-// Same popular routes as FR pages
-
-export async function generateStaticParams() {
-  return POPULAR_ROUTES.map(route => ({ route }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { route } = await params;
   const parsed = parseRoute(route);

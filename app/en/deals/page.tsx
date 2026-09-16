@@ -11,7 +11,8 @@ import type { LiveDeal, RawDeal } from "@/lib/dealsEngine";
 import { SITE_URL } from "@/lib/siteConfig";
 import { logWarn } from "@/lib/logger";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Flight Deals — Best Cash & Miles Offers | Xalifly",

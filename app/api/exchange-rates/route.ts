@@ -1,7 +1,8 @@
 import { getCachedRates } from "@/lib/exchange-rates";
 import { NextResponse } from "next/server";
 
-export const revalidate = 3600; // Revalidate ISR every hour
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /**
  * GET /api/exchange-rates

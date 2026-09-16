@@ -29,13 +29,6 @@ function parseRoute(route: string): { from: string; to: string } | null {
   return { from, to };
 }
 
-// ─── Static generation for popular routes ───────────────────────────────────
-
-
-export async function generateStaticParams() {
-  return POPULAR_ROUTES.map(route => ({ route }));
-}
-
 // ─── Metadata ───────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
