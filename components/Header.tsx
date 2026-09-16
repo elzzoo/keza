@@ -27,7 +27,7 @@ const NAV = {
     { label: "Calculator", href: "/en/calculateur" },
     { label: "Alerts", href: "/en/alertes" },
     { label: "Programs", href: "/en/programmes" },
-    { label: "Business", href: "/entreprises" },
+    { label: "Business", href: "/en/entreprises" },
   ],
 };
 

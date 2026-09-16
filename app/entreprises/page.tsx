@@ -190,8 +190,8 @@ const T = {
   },
 };
 
-export default function EntreprisesPage() {
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+export default function EntreprisesPage({ initialLang = "fr" }: { initialLang?: "fr" | "en" }) {
+  const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const t = T[lang];
 
   return (
