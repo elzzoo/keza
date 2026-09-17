@@ -67,6 +67,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           "Attached is the latest critical Redis backup snapshot.",
           "",
           `Exported at: ${backup.exportedAt}`,
+          `Redis key prefix: ${backup.redis.keyPrefix ?? "(none)"}`,
+          `Environment: ${backup.redis.vercelEnv ?? backup.redis.nodeEnv ?? "unknown"}`,
           `Price alerts: ${backup.counts.priceAlerts}`,
           `B2B leads: ${backup.counts.b2bLeads}`,
           `Miles alerts: ${backup.counts.milesAlerts}`,

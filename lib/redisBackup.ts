@@ -1,6 +1,6 @@
 import "server-only";
 
-import { redis } from "@/lib/redis";
+import { redis, redisKeyPrefix } from "@/lib/redis";
 
 export const REDIS_BACKUP_LAST_KEY = "keza:backup:redis:last";
 export const REDIS_BACKUP_COUNTS_KEY = "keza:backup:redis:last_counts";
@@ -15,7 +15,12 @@ const NEWSLETTER_KEY = "keza:newsletter:subscribers";
 
 export interface CriticalRedisBackup {
   exportedAt: string;
-  formatVersion: 1;
+  formatVersion: 2;
+  redis: {
+    keyPrefix: string | null;
+    nodeEnv: string | null;
+    vercelEnv: string | null;
+  };
   sources: {
     priceAlerts: Awaited<ReturnType<typeof exportPriceAlerts>>;
     b2bLeads: unknown[];
@@ -127,7 +132,12 @@ export async function buildCriticalRedisBackup(now = new Date()): Promise<Critic
 
   return {
     exportedAt: now.toISOString(),
-    formatVersion: 1,
+    formatVersion: 2,
+    redis: {
+      keyPrefix: redisKeyPrefix() || null,
+      nodeEnv: process.env.NODE_ENV ?? null,
+      vercelEnv: process.env.VERCEL_ENV ?? null,
+    },
     sources: {
       priceAlerts,
       b2bLeads: b2bLeadsRaw.map((item) => parseJsonMember(item)),

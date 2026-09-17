@@ -8,7 +8,7 @@
 - Sprint en cours — alerting automatique quand le health daily cron passe `stale` ou `degraded`.
 
 ## Backlog proposé par Codex (rappel)
-1. Redis namespace par environnement + stratégie backup/export
+1. Redis namespace par environnement + stratégie backup/export (backup metadata en cours de livraison)
 2. Alerting automatique quand cron health = stale/degraded (en cours de livraison)
 3. Nettoyage des `logWarn`/`logError` bruyants
 4. Migration progressive des alertes utilisateurs de Redis vers Postgres (démarré)

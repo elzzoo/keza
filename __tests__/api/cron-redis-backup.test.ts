@@ -52,7 +52,12 @@ const OLD_ENV = process.env;
 
 const backup = {
   exportedAt: "2026-09-16T09:00:00.000Z",
-  formatVersion: 1,
+  formatVersion: 2,
+  redis: {
+    keyPrefix: "prod",
+    nodeEnv: "production",
+    vercelEnv: "production",
+  },
   sources: {
     priceAlerts: { routes: [], routeIndexes: [], alerts: [] },
     b2bLeads: [],
@@ -159,6 +164,7 @@ describe("GET /api/cron/redis-backup", () => {
       expect.objectContaining({
         to: "ops@example.com",
         subject: "Xalifly Redis backup — 2026-09-16",
+        text: expect.stringContaining("Redis key prefix: prod"),
         attachments: [
           expect.objectContaining({
             filename: "xalifly-redis-backup-2026-09-16.json",

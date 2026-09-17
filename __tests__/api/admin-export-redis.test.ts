@@ -20,6 +20,7 @@ jest.mock("@/lib/auth", () => ({
 }));
 
 jest.mock("@/lib/redis", () => ({
+  redisKeyPrefix: () => process.env.NEXT_REDIS_PREFIX ?? "",
   redis: {
     smembers: (...args: unknown[]) => mockRedisSmembers(...args),
     get: (...args: unknown[]) => mockRedisGet(...args),
@@ -40,6 +41,7 @@ jest.mock("@sentry/nextjs", () => ({
 describe("GET /api/admin/export/redis", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.NEXT_REDIS_PREFIX;
     mockRateLimitResponse.mockResolvedValue(null);
     mockHasAdminSession.mockReturnValue(true);
     mockRedisSmembers.mockImplementation(async (key: string) => {
@@ -91,7 +93,12 @@ describe("GET /api/admin/export/redis", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toBe("no-store");
     expect(res.headers.get("content-disposition")).toContain("xalifly-redis-backup-");
-    expect(data.formatVersion).toBe(1);
+    expect(data.formatVersion).toBe(2);
+    expect(data.redis).toEqual({
+      keyPrefix: null,
+      nodeEnv: expect.any(String),
+      vercelEnv: null,
+    });
     expect(data.sources.priceAlerts.alerts).toEqual([
       { id: "alt_1", value: { id: "alt_1", email: "user@example.com", active: true } },
     ]);
@@ -115,6 +122,16 @@ describe("GET /api/admin/export/redis", () => {
       milesAlerts: 1,
     });
     expect(mockCaptureMessage).toHaveBeenCalledWith("[admin] JSON export: redis critical data", "info");
+  });
+
+  it("includes the active Redis namespace in the JSON backup", async () => {
+    process.env.NEXT_REDIS_PREFIX = "preview";
+
+    const res = await GET(new NextRequest("http://localhost/api/admin/export/redis"));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.redis.keyPrefix).toBe("preview");
   });
 
   it("returns rate limit responses before auth and Redis access", async () => {
