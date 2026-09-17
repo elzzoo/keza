@@ -13,6 +13,10 @@ import {
   REDIS_BACKUP_META_KEY,
   type RedisBackupMeta,
 } from "@/lib/redisBackup";
+import {
+  getPriceAlertsStoreParity,
+  type PriceAlertsStoreParity,
+} from "@/lib/alertsPostgres";
 
 // ─── B2B Lead type ───────────────────────────────────────────────────────────
 
@@ -24,6 +28,10 @@ interface B2BLead {
   message?: string;
   receivedAt: string;
 }
+
+type PriceAlertsParityStatus =
+  | { ok: true; data: PriceAlertsStoreParity }
+  | { ok: false; error: string };
 
 export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
@@ -171,6 +179,18 @@ async function fetchBackupStatus() {
   };
 }
 
+async function fetchPriceAlertsParityStatus(): Promise<PriceAlertsParityStatus> {
+  try {
+    const data = await getPriceAlertsStoreParity();
+    return { ok: true, data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Erreur de parité inconnue",
+    };
+  }
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCard({
@@ -215,6 +235,12 @@ function cronHealthColor(health: CronHealthStatus): "blue" | "green" | "amber" |
   if (health === "running") return "blue";
   if (health === "unknown") return "purple";
   return "amber";
+}
+
+function formatMismatchIds(ids: string[]): string {
+  if (ids.length === 0) return "aucun";
+  const visible = ids.slice(0, 5).join(", ");
+  return ids.length > 5 ? `${visible} +${ids.length - 5}` : visible;
 }
 
 function LoginForm({ hasError }: { hasError: boolean }) {
@@ -271,15 +297,17 @@ export default async function AdminPage({
   let stats: Awaited<ReturnType<typeof fetchStats>> | null = null;
   let cronStatus: Awaited<ReturnType<typeof getDailyCronStatus>> | null = null;
   let backupStatus: Awaited<ReturnType<typeof fetchBackupStatus>> | null = null;
+  let priceAlertsParity: PriceAlertsParityStatus | null = null;
   let leads: B2BLead[] = [];
   let error: string | null = null;
 
   try {
-    [stats, leads, cronStatus, backupStatus] = await Promise.all([
+    [stats, leads, cronStatus, backupStatus, priceAlertsParity] = await Promise.all([
       fetchStats(),
       fetchB2BLeads(),
       getDailyCronStatus(),
       fetchBackupStatus(),
+      fetchPriceAlertsParityStatus(),
     ]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Erreur Redis inconnue";
@@ -375,6 +403,79 @@ export default async function AdminPage({
                   }
                   color={backupStatus.lastAt ? (backupStatus.meta?.emailed ? "green" : "amber") : "purple"}
                 />
+              </div>
+            )}
+
+            {/* Price alerts Postgres migration */}
+            {priceAlertsParity && (
+              <div className="mt-8">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-700">
+                  Migration alertes Redis/Postgres
+                </h2>
+                {priceAlertsParity.ok ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                      <StatCard
+                        label="Parité"
+                        value={priceAlertsParity.data.inSync ? "OK" : "Écart"}
+                        sub={
+                          priceAlertsParity.data.inSync
+                            ? "Redis et Postgres alignés"
+                            : "vérifier les écarts ci-dessous"
+                        }
+                        color={priceAlertsParity.data.inSync ? "green" : "amber"}
+                      />
+                      <StatCard
+                        label="Redis actives"
+                        value={priceAlertsParity.data.redis.active}
+                        sub={`${priceAlertsParity.data.redis.valid}/${priceAlertsParity.data.redis.scanned} valides`}
+                        color="blue"
+                      />
+                      <StatCard
+                        label="Postgres actives"
+                        value={priceAlertsParity.data.postgres.active}
+                        sub={`${priceAlertsParity.data.postgres.total} miroir(s)`}
+                        color="purple"
+                      />
+                      <StatCard
+                        label="Écarts"
+                        value={
+                          priceAlertsParity.data.missingInPostgres.length +
+                          priceAlertsParity.data.extraInPostgres.length +
+                          priceAlertsParity.data.activeMismatch.length
+                        }
+                        sub="missing + extra + active"
+                        color={priceAlertsParity.data.inSync ? "green" : "amber"}
+                      />
+                    </div>
+                    {!priceAlertsParity.data.inSync && (
+                      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                        <p className="font-semibold">Écarts de migration à corriger avant bascule de lecture.</p>
+                        <dl className="mt-3 grid gap-2">
+                          <div>
+                            <dt className="font-medium">Manquantes dans Postgres</dt>
+                            <dd className="font-mono text-xs">{formatMismatchIds(priceAlertsParity.data.missingInPostgres)}</dd>
+                          </div>
+                          <div>
+                            <dt className="font-medium">En trop dans Postgres</dt>
+                            <dd className="font-mono text-xs">{formatMismatchIds(priceAlertsParity.data.extraInPostgres)}</dd>
+                          </div>
+                          <div>
+                            <dt className="font-medium">État actif différent</dt>
+                            <dd className="font-mono text-xs">{formatMismatchIds(priceAlertsParity.data.activeMismatch)}</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                    <p className="font-semibold">Statut indisponible.</p>
+                    <p className="mt-1">
+                      {priceAlertsParity.error}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
