@@ -109,7 +109,7 @@ describe("POST /api/admin/session", () => {
       const cookie = res.cookies.get("keza_admin_session");
       expect(cookie?.value).toBe("session-token-abc");
       expect(cookie?.httpOnly).toBe(true);
-      expect(cookie?.path).toBe("/admin");
+      expect(cookie?.path).toBe("/");
     });
 
     it("clears session when token creation fails", async () => {

@@ -7,6 +7,8 @@ import {
 } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
+const ADMIN_SESSION_COOKIE_PATH = "/";
+
 function redirectToAdmin(req: NextRequest, opts?: { error?: boolean }): NextResponse {
   const url = new URL("/admin", req.url);
   if (opts?.error) url.searchParams.set("error", "1");
@@ -20,7 +22,7 @@ function clearAdminSession(res: NextResponse): void {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    path: "/admin",
+    path: ADMIN_SESSION_COOKIE_PATH,
     maxAge: 0,
   });
 }
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    path: "/admin",
+    path: ADMIN_SESSION_COOKIE_PATH,
     maxAge: adminSessionMaxAgeSeconds(),
   });
 
