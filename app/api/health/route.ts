@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { maybeSendDailyCronHealthAlert } from "@/lib/cronAlerting";
 import { getDailyCronStatus } from "@/lib/cronStatus";
 import { logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
@@ -36,7 +37,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   let cronCheckFailed = false;
   if (redisStatus === "ok") {
     try {
-      cronStatus = (await getDailyCronStatus()).health;
+      const dailyCron = await getDailyCronStatus();
+      cronStatus = dailyCron.health;
+      await maybeSendDailyCronHealthAlert(dailyCron, "api:health");
     } catch (err) {
       cronCheckFailed = true;
       logWarn("[api/health] failed to read cron health", err instanceof Error ? err.message : String(err));

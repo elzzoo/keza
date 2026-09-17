@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 const mockRedisPing = jest.fn();
 const mockRedisGet = jest.fn();
+const mockRedisSet = jest.fn();
 const mockRateLimitResponse = jest.fn();
 const mockLogWarn = jest.fn();
 
@@ -10,6 +11,7 @@ jest.mock("@/lib/redis", () => ({
   redis: {
     ping: (...args: unknown[]) => mockRedisPing(...args),
     get: (...args: unknown[]) => mockRedisGet(...args),
+    set: (...args: unknown[]) => mockRedisSet(...args),
   },
 }));
 
@@ -26,6 +28,7 @@ describe("GET /api/health", () => {
     jest.clearAllMocks();
     mockRedisPing.mockResolvedValue("PONG");
     mockRedisGet.mockResolvedValue(null);
+    mockRedisSet.mockResolvedValue("OK");
     mockRateLimitResponse.mockResolvedValue(null);
   });
 
@@ -95,6 +98,11 @@ describe("GET /api/health", () => {
     expect(mockLogWarn).toHaveBeenCalledWith("[api/health] cron health degraded", undefined, {
       cronStatus: "stale",
     });
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      "cron:daily:alerts:stale:run-1",
+      expect.any(String),
+      { ex: 12 * 60 * 60, nx: true },
+    );
   });
 
   it("returns degraded when Redis is unreachable", async () => {
