@@ -80,6 +80,70 @@ export interface PriceAlertsBackfillResult {
   failed: number;
 }
 
+export interface PriceAlertsStoreParity {
+  redis: {
+    scanned: number;
+    valid: number;
+    active: number;
+  };
+  postgres: {
+    total: number;
+    active: number;
+  };
+  missingInPostgres: string[];
+  extraInPostgres: string[];
+  activeMismatch: string[];
+  inSync: boolean;
+}
+
+export async function getPriceAlertsStoreParity(): Promise<PriceAlertsStoreParity> {
+  const backup = await buildCriticalRedisBackup();
+  const redisAlerts = backup.sources.priceAlerts.alerts
+    .map((entry) => entry.value)
+    .filter(isPriceAlertRecord);
+  const redisById = new Map(redisAlerts.map((alert) => [alert.id, alert]));
+
+  const postgresAlerts = await prisma.priceAlertRecord.findMany({
+    select: {
+      id: true,
+      active: true,
+    },
+  });
+  const postgresById = new Map(postgresAlerts.map((alert) => [alert.id, alert]));
+
+  const missingInPostgres = redisAlerts
+    .filter((alert) => !postgresById.has(alert.id))
+    .map((alert) => alert.id);
+  const extraInPostgres = postgresAlerts
+    .filter((alert) => !redisById.has(alert.id))
+    .map((alert) => alert.id);
+  const activeMismatch = redisAlerts
+    .filter((alert) => {
+      const mirror = postgresById.get(alert.id);
+      return mirror && mirror.active !== alert.active;
+    })
+    .map((alert) => alert.id);
+
+  return {
+    redis: {
+      scanned: backup.sources.priceAlerts.alerts.length,
+      valid: redisAlerts.length,
+      active: redisAlerts.filter((alert) => alert.active).length,
+    },
+    postgres: {
+      total: postgresAlerts.length,
+      active: postgresAlerts.filter((alert) => alert.active).length,
+    },
+    missingInPostgres,
+    extraInPostgres,
+    activeMismatch,
+    inSync:
+      missingInPostgres.length === 0 &&
+      extraInPostgres.length === 0 &&
+      activeMismatch.length === 0,
+  };
+}
+
 export async function backfillPriceAlertsToPostgres({ dryRun = true } = {}): Promise<PriceAlertsBackfillResult> {
   const backup = await buildCriticalRedisBackup();
   const alerts = backup.sources.priceAlerts.alerts

@@ -3,15 +3,17 @@
 > Document vivant. État au 2026-09-16. Items marqués **[Claude — analyse]** viennent de cette session (analyse/proposition uniquement, rien commité). Items marqués **[Codex]** viennent des sprints prod en cours ce soir sur `main`.
 
 ## Derniers sprints livrés
+- `7fdfe4e` — backup Redis : ajout des métadonnées de namespace/env dans l'export critique et l'email de cron.
+- Sprint en cours — migration progressive alertes Redis -> Postgres : ajout d'un statut de parité admin avant bascule de lecture.
 - `7bb19ed` — i18n navigation/footer : ajout de `/en/legal`, `/en/privacy`, `/en/entreprises`, correction des liens EN et test Footer.
 - `8b6ac10` — conformité privacy : alignement des politiques FR/EN avec auth, stockage local et Sentry.
-- Sprint en cours — alerting automatique quand le health daily cron passe `stale` ou `degraded`.
+- `9f1b238` — alerting automatique quand le health daily cron passe `stale` ou `degraded`.
 
 ## Backlog proposé par Codex (rappel)
-1. Redis namespace par environnement + stratégie backup/export (backup metadata en cours de livraison)
-2. Alerting automatique quand cron health = stale/degraded (en cours de livraison)
+1. Redis namespace par environnement + stratégie backup/export (metadata backup livré, exports manuels/cron opérationnels)
+2. Alerting automatique quand cron health = stale/degraded (livré)
 3. Nettoyage des `logWarn`/`logError` bruyants
-4. Migration progressive des alertes utilisateurs de Redis vers Postgres (démarré)
+4. Migration progressive des alertes utilisateurs de Redis vers Postgres (dual-write + backfill + statut de parité en cours)
 5. i18n URL réelle `/en` `/fr` + hreflang
 6. Continuer à réduire les gros modules UI/data restants
 7. Dev-experience : le build local pouvait se suspendre sur `sentry-cli releases new` quand `SENTRY_AUTH_TOKEN` était présent dans `.env.local`; corrigé en limitant l'upload Sentry aux builds CI/Vercel.

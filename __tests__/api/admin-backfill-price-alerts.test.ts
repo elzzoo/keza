@@ -1,10 +1,11 @@
-import { POST } from "@/app/api/admin/backfill/price-alerts/route";
+import { GET, POST } from "@/app/api/admin/backfill/price-alerts/route";
 import { NextRequest, NextResponse } from "next/server";
 
 const mockRateLimitResponse = jest.fn();
 const mockHasAdminSession = jest.fn();
 const mockHasAdminSecret = jest.fn();
 const mockBackfill = jest.fn();
+const mockGetParity = jest.fn();
 const mockLogError = jest.fn();
 
 jest.mock("@/lib/ratelimit", () => ({
@@ -18,6 +19,7 @@ jest.mock("@/lib/auth", () => ({
 
 jest.mock("@/lib/alertsPostgres", () => ({
   backfillPriceAlertsToPostgres: (...args: unknown[]) => mockBackfill(...args),
+  getPriceAlertsStoreParity: (...args: unknown[]) => mockGetParity(...args),
 }));
 
 jest.mock("@/lib/logger", () => ({
@@ -31,6 +33,36 @@ describe("POST /api/admin/backfill/price-alerts", () => {
     mockHasAdminSession.mockReturnValue(true);
     mockHasAdminSecret.mockReturnValue(false);
     mockBackfill.mockResolvedValue({ dryRun: true, scanned: 2, valid: 1, upserted: 0, failed: 0 });
+    mockGetParity.mockResolvedValue({
+      redis: { scanned: 2, valid: 1, active: 1 },
+      postgres: { total: 1, active: 1 },
+      missingInPostgres: [],
+      extraInPostgres: [],
+      activeMismatch: [],
+      inSync: true,
+    });
+  });
+
+  it("returns Redis/Postgres parity status for authenticated admins", async () => {
+    const res = await GET(new NextRequest("http://localhost/api/admin/backfill/price-alerts", { method: "GET" }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.ok).toBe(true);
+    expect(data.inSync).toBe(true);
+    expect(data.redis.active).toBe(1);
+    expect(mockGetParity).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects unauthenticated parity status requests", async () => {
+    mockHasAdminSession.mockReturnValue(false);
+
+    const res = await GET(new NextRequest("http://localhost/api/admin/backfill/price-alerts", { method: "GET" }));
+    const data = await res.json();
+
+    expect(res.status).toBe(401);
+    expect(data.ok).toBe(false);
+    expect(mockGetParity).not.toHaveBeenCalled();
   });
 
   it("rejects unauthenticated requests", async () => {

@@ -1,4 +1,5 @@
 const mockUpsert = jest.fn();
+const mockFindMany = jest.fn();
 const mockLogWarn = jest.fn();
 const mockBuildCriticalRedisBackup = jest.fn();
 
@@ -6,6 +7,7 @@ jest.mock("@/lib/db", () => ({
   prisma: {
     priceAlertRecord: {
       upsert: (...args: unknown[]) => mockUpsert(...args),
+      findMany: (...args: unknown[]) => mockFindMany(...args),
     },
   },
 }));
@@ -20,6 +22,7 @@ jest.mock("@/lib/redisBackup", () => ({
 
 import {
   backfillPriceAlertsToPostgres,
+  getPriceAlertsStoreParity,
   isPriceAlertPostgresSyncEnabled,
   isPriceAlertRecord,
   priceAlertToRecordData,
@@ -66,6 +69,9 @@ describe("alertsPostgres", () => {
         },
       },
     });
+    mockFindMany.mockResolvedValue([
+      { id: "alt_123", active: true },
+    ]);
   });
 
   afterAll(() => {
@@ -156,5 +162,48 @@ describe("alertsPostgres", () => {
       failed: 0,
     });
     expect(mockUpsert).toHaveBeenCalledTimes(1);
+  });
+
+  it("compares Redis alerts with their Postgres mirrors", async () => {
+    mockBuildCriticalRedisBackup.mockResolvedValue({
+      sources: {
+        priceAlerts: {
+          alerts: [
+            { id: "alt_123", value: alert },
+            { id: "alt_inactive", value: { ...alert, id: "alt_inactive", active: false } },
+            { id: "alt_missing", value: { ...alert, id: "alt_missing" } },
+            { id: "bad", value: { nope: true } },
+          ],
+        },
+      },
+    });
+    mockFindMany.mockResolvedValue([
+      { id: "alt_123", active: true },
+      { id: "alt_inactive", active: true },
+      { id: "alt_extra", active: true },
+    ]);
+
+    await expect(getPriceAlertsStoreParity()).resolves.toEqual({
+      redis: {
+        scanned: 4,
+        valid: 3,
+        active: 2,
+      },
+      postgres: {
+        total: 3,
+        active: 3,
+      },
+      missingInPostgres: ["alt_missing"],
+      extraInPostgres: ["alt_extra"],
+      activeMismatch: ["alt_inactive"],
+      inSync: false,
+    });
+
+    expect(mockFindMany).toHaveBeenCalledWith({
+      select: {
+        id: true,
+        active: true,
+      },
+    });
   });
 });
