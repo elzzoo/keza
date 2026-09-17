@@ -3,6 +3,15 @@ import { withSentryConfig } from "@sentry/nextjs";
 import bundleAnalyzer from "@next/bundle-analyzer";
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
 
+const isSentryUploadEnvironment = process.env.VERCEL === "1" || process.env.CI === "true";
+const sentryServerUploadEnabled = Boolean(
+  isSentryUploadEnvironment && process.env.SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN,
+);
+const sentryClientUploadEnabled = Boolean(
+  isSentryUploadEnvironment && process.env.NEXT_PUBLIC_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN,
+);
+const sentryUploadEnabled = sentryServerUploadEnabled || sentryClientUploadEnabled;
+
 /** @type {import('next').NextConfig} */
 
 const SECURITY_HEADERS = [
@@ -97,13 +106,20 @@ export default withBundleAnalyzer(withSentryConfig(nextConfig, {
   // Source maps are uploaded automatically on build.
   silent: true, // suppress "Creating release" logs
 
-  // Disable the Sentry webpack plugin (source-map upload) unless both DSN *and*
-  // SENTRY_AUTH_TOKEN are present. Without the auth token the upload would fail
-  // the build; error tracking still works fine without source maps.
-  disableServerWebpackPlugin:
-    !process.env.SENTRY_DSN || !process.env.SENTRY_AUTH_TOKEN,
-  disableClientWebpackPlugin:
-    !process.env.NEXT_PUBLIC_SENTRY_DSN || !process.env.SENTRY_AUTH_TOKEN,
+  // Only create Sentry releases / upload source maps in CI/Vercel. Local .env
+  // files may contain SENTRY_AUTH_TOKEN, and sentry-cli can otherwise block
+  // local builds while trying to create a release over a flaky network.
+  release: {
+    create: sentryUploadEnabled,
+    finalize: sentryUploadEnabled,
+    setCommits: sentryUploadEnabled ? undefined : false,
+    deploy: sentryUploadEnabled ? undefined : false,
+  },
+  sourcemaps: {
+    disable: !sentryUploadEnabled,
+  },
+  disableServerWebpackPlugin: !sentryServerUploadEnabled,
+  disableClientWebpackPlugin: !sentryClientUploadEnabled,
 
   // Tree-shake Sentry logger statements to keep bundle small
   hideSourceMaps: true,

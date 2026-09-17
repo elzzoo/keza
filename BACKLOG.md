@@ -14,7 +14,7 @@
 4. Migration progressive des alertes utilisateurs de Redis vers Postgres (démarré)
 5. i18n URL réelle `/en` `/fr` + hreflang
 6. Continuer à réduire les gros modules UI/data restants
-7. Dev-experience : le build local peut se suspendre sur `sentry-cli releases new` quand `SENTRY_AUTH_TOKEN` est présent dans `.env.local`; documenter ou isoler l'upload Sentry pour éviter de bloquer les builds locaux.
+7. Dev-experience : le build local pouvait se suspendre sur `sentry-cli releases new` quand `SENTRY_AUTH_TOKEN` était présent dans `.env.local`; corrigé en limitant l'upload Sentry aux builds CI/Vercel.
 
 ## Nouveaux items — analyse de ce soir
 
