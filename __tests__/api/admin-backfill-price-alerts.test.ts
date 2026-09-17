@@ -7,6 +7,7 @@ const mockHasAdminSecret = jest.fn();
 const mockBackfill = jest.fn();
 const mockGetParity = jest.fn();
 const mockLogError = jest.fn();
+const mockRedisGet = jest.fn();
 
 jest.mock("@/lib/ratelimit", () => ({
   rateLimitResponse: (...args: unknown[]) => mockRateLimitResponse(...args),
@@ -22,6 +23,16 @@ jest.mock("@/lib/alertsPostgres", () => ({
   getPriceAlertsStoreParity: (...args: unknown[]) => mockGetParity(...args),
 }));
 
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    get: (...args: unknown[]) => mockRedisGet(...args),
+  },
+}));
+
+jest.mock("@/lib/redisBackup", () => ({
+  REDIS_BACKUP_LAST_KEY: "keza:backup:redis:last",
+}));
+
 jest.mock("@/lib/logger", () => ({
   logError: (...args: unknown[]) => mockLogError(...args),
 }));
@@ -33,6 +44,7 @@ describe("POST /api/admin/backfill/price-alerts", () => {
     mockHasAdminSession.mockReturnValue(true);
     mockHasAdminSecret.mockReturnValue(false);
     mockBackfill.mockResolvedValue({ dryRun: true, scanned: 2, valid: 1, upserted: 0, failed: 0 });
+    mockRedisGet.mockResolvedValue(new Date().toISOString());
     mockGetParity.mockResolvedValue({
       redis: { scanned: 2, valid: 1, active: 1 },
       postgres: { total: 1, active: 1 },
@@ -98,15 +110,47 @@ describe("POST /api/admin/backfill/price-alerts", () => {
     expect(mockBackfill).toHaveBeenCalledWith({ dryRun: true });
   });
 
-  it("runs the write backfill only when dryRun=false", async () => {
+  it("requires explicit confirmation for write backfills", async () => {
+    const res = await POST(new NextRequest("http://localhost/api/admin/backfill/price-alerts?dryRun=false", { method: "POST" }));
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.code).toBe("CONFIRMATION_REQUIRED");
+    expect(mockBackfill).not.toHaveBeenCalled();
+    expect(mockRedisGet).not.toHaveBeenCalled();
+  });
+
+  it("requires a fresh Redis backup before write backfills", async () => {
+    mockRedisGet.mockResolvedValue(null);
+
+    const res = await POST(
+      new NextRequest("http://localhost/api/admin/backfill/price-alerts?dryRun=false&confirm=BACKFILL_PRICE_ALERTS", {
+        method: "POST",
+      }),
+    );
+    const data = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(data.code).toBe("FRESH_BACKUP_REQUIRED");
+    expect(data.lastBackupAt).toBeNull();
+    expect(mockRedisGet).toHaveBeenCalledWith("keza:backup:redis:last");
+    expect(mockBackfill).not.toHaveBeenCalled();
+  });
+
+  it("runs the write backfill only when dryRun=false, confirmation is explicit, and a fresh backup exists", async () => {
     mockBackfill.mockResolvedValue({ dryRun: false, scanned: 2, valid: 1, upserted: 1, failed: 0 });
 
-    const res = await POST(new NextRequest("http://localhost/api/admin/backfill/price-alerts?dryRun=false", { method: "POST" }));
+    const res = await POST(
+      new NextRequest("http://localhost/api/admin/backfill/price-alerts?dryRun=false&confirm=BACKFILL_PRICE_ALERTS", {
+        method: "POST",
+      }),
+    );
     const data = await res.json();
 
     expect(res.status).toBe(200);
     expect(data.dryRun).toBe(false);
     expect(data.upserted).toBe(1);
+    expect(mockRedisGet).toHaveBeenCalledWith("keza:backup:redis:last");
     expect(mockBackfill).toHaveBeenCalledWith({ dryRun: false });
   });
 });

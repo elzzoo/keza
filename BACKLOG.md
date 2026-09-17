@@ -13,7 +13,7 @@
 1. Redis namespace par environnement + stratégie backup/export (metadata backup livré, exports manuels/cron opérationnels)
 2. Alerting automatique quand cron health = stale/degraded (livré)
 3. Nettoyage des `logWarn`/`logError` bruyants
-4. Migration progressive des alertes utilisateurs de Redis vers Postgres (dual-write + backfill + statut de parité en cours)
+4. Migration progressive des alertes utilisateurs de Redis vers Postgres (dual-write + backfill + statut de parité + garde-fou backup/confirmation en cours)
 5. i18n URL réelle `/en` `/fr` + hreflang
 6. Continuer à réduire les gros modules UI/data restants
 7. Dev-experience : le build local pouvait se suspendre sur `sentry-cli releases new` quand `SENTRY_AUTH_TOKEN` était présent dans `.env.local`; corrigé en limitant l'upload Sentry aux builds CI/Vercel.

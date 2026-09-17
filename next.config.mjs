@@ -3,7 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 import bundleAnalyzer from "@next/bundle-analyzer";
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true" });
 
-const isSentryUploadEnvironment = process.env.VERCEL === "1" || process.env.CI === "true";
+const isSentryUploadEnvironment = process.env.VERCEL === "1";
 const sentryServerUploadEnabled = Boolean(
   isSentryUploadEnvironment && process.env.SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN,
 );
@@ -101,27 +101,26 @@ const nextConfig = {
   },
 };
 
-export default withBundleAnalyzer(withSentryConfig(nextConfig, {
-  // Sentry organization and project are read from SENTRY_ORG and SENTRY_PROJECT env vars.
-  // Source maps are uploaded automatically on build.
-  silent: true, // suppress "Creating release" logs
+const configWithOptionalSentry = sentryUploadEnabled
+  ? withSentryConfig(nextConfig, {
+      // Sentry organization and project are read from SENTRY_ORG and SENTRY_PROJECT env vars.
+      // Source maps are uploaded automatically on Vercel builds only.
+      silent: true, // suppress "Creating release" logs
 
-  // Only create Sentry releases / upload source maps in CI/Vercel. Local .env
-  // files may contain SENTRY_AUTH_TOKEN, and sentry-cli can otherwise block
-  // local builds while trying to create a release over a flaky network.
-  release: {
-    create: sentryUploadEnabled,
-    finalize: sentryUploadEnabled,
-    setCommits: sentryUploadEnabled ? undefined : false,
-    deploy: sentryUploadEnabled ? undefined : false,
-  },
-  sourcemaps: {
-    disable: !sentryUploadEnabled,
-  },
-  disableServerWebpackPlugin: !sentryServerUploadEnabled,
-  disableClientWebpackPlugin: !sentryClientUploadEnabled,
+      release: {
+        create: true,
+        finalize: true,
+      },
+      sourcemaps: {
+        disable: false,
+      },
+      disableServerWebpackPlugin: !sentryServerUploadEnabled,
+      disableClientWebpackPlugin: !sentryClientUploadEnabled,
 
-  // Tree-shake Sentry logger statements to keep bundle small
-  hideSourceMaps: true,
-  widenClientFileUpload: false,
-}));
+      // Tree-shake Sentry logger statements to keep bundle small
+      hideSourceMaps: true,
+      widenClientFileUpload: false,
+    })
+  : nextConfig;
+
+export default withBundleAnalyzer(configWithOptionalSentry);

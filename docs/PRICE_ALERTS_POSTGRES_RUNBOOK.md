@@ -10,7 +10,7 @@ Redis remains the source of truth until the `PRICE_ALERTS_POSTGRES_SYNC=1` flag 
 - `lib/alertsPostgres.ts` can upsert Redis `PriceAlert` objects into Postgres.
 - `lib/alerts.ts` dual-writes only when `PRICE_ALERTS_POSTGRES_SYNC=1`.
 - `/api/admin/backfill/price-alerts` exposes a safe GET parity check between Redis and Postgres.
-- `/api/admin/backfill/price-alerts?dryRun=false` can run the Redis-to-Postgres backfill after an authenticated dry run.
+- `/api/admin/backfill/price-alerts?dryRun=false&confirm=BACKFILL_PRICE_ALERTS` can run the Redis-to-Postgres backfill after an authenticated dry run and a fresh Redis backup.
 - `/api/admin/export/redis` and `/api/cron/redis-backup` provide a recoverable Redis snapshot before migration work.
 
 ## Activation Checklist
@@ -20,6 +20,7 @@ Redis remains the source of truth until the `PRICE_ALERTS_POSTGRES_SYNC=1` flag 
    - If `ADMIN_BACKUP_EMAIL` is configured, status should show an emailed backup.
 
 2. Download a manual backup from `/admin` using `Backup JSON Redis`.
+   - Manual exports update the recorded backup timestamp used by the write-backfill guard.
 
 3. Apply the Prisma migration to the production database.
    ```bash
@@ -65,7 +66,7 @@ If anything looks wrong:
 
 Once dual-write has been stable for several days:
 
-1. Run `POST /api/admin/backfill/price-alerts?dryRun=false` once, after a fresh Redis backup.
+1. Run `POST /api/admin/backfill/price-alerts?dryRun=false&confirm=BACKFILL_PRICE_ALERTS` once, after a fresh Redis backup.
 2. Re-check `/api/admin/backfill/price-alerts` until `inSync` is true.
 3. Add read-through verification in admin, not in user-facing traffic.
 4. Only then consider moving reads from Redis to Postgres.

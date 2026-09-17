@@ -8,6 +8,7 @@ const mockRedisGet = jest.fn();
 const mockRedisLrange = jest.fn();
 const mockRedisZrange = jest.fn();
 const mockRedisKeys = jest.fn();
+const mockRedisSet = jest.fn();
 const mockLogError = jest.fn();
 const mockCaptureMessage = jest.fn();
 
@@ -24,11 +25,23 @@ jest.mock("@/lib/redis", () => ({
   redis: {
     smembers: (...args: unknown[]) => mockRedisSmembers(...args),
     get: (...args: unknown[]) => mockRedisGet(...args),
+    set: (...args: unknown[]) => mockRedisSet(...args),
     lrange: (...args: unknown[]) => mockRedisLrange(...args),
     zrange: (...args: unknown[]) => mockRedisZrange(...args),
     keys: (...args: unknown[]) => mockRedisKeys(...args),
   },
 }));
+
+jest.mock("@/lib/redisBackup", () => {
+  const actual = jest.requireActual("@/lib/redisBackup");
+  return {
+    ...actual,
+    REDIS_BACKUP_LAST_KEY: "keza:backup:redis:last",
+    REDIS_BACKUP_COUNTS_KEY: "keza:backup:redis:last_counts",
+    REDIS_BACKUP_META_KEY: "keza:backup:redis:last_meta",
+    REDIS_BACKUP_STATE_TTL_SECONDS: 30 * 24 * 60 * 60,
+  };
+});
 
 jest.mock("@/lib/logger", () => ({
   logError: (...args: unknown[]) => mockLogError(...args),
@@ -65,6 +78,7 @@ describe("GET /api/admin/export/redis", () => {
       return null;
     });
     mockRedisLrange.mockResolvedValue([JSON.stringify({ email: "lead@example.com", company: "Acme" })]);
+    mockRedisSet.mockResolvedValue("OK");
     mockRedisZrange.mockImplementation(async (key: string) => {
       if (key === "keza:pro:waitlist") return ["pro@example.com"];
       if (key === "keza:newsletter:subscribers") return ["news@example.com"];
@@ -121,6 +135,25 @@ describe("GET /api/admin/export/redis", () => {
       newsletterSubscribers: 1,
       milesAlerts: 1,
     });
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      "keza:backup:redis:last",
+      data.exportedAt,
+      expect.objectContaining({ ex: expect.any(Number) }),
+    );
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      "keza:backup:redis:last_counts",
+      data.counts,
+      expect.objectContaining({ ex: expect.any(Number) }),
+    );
+    expect(mockRedisSet).toHaveBeenCalledWith(
+      "keza:backup:redis:last_meta",
+      {
+        exportedAt: data.exportedAt,
+        emailed: false,
+        warning: "manual admin export",
+      },
+      expect.objectContaining({ ex: expect.any(Number) }),
+    );
     expect(mockCaptureMessage).toHaveBeenCalledWith("[admin] JSON export: redis critical data", "info");
   });
 
