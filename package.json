@@ -22,8 +22,7 @@
     "test:live": "jest __tests__/integration __tests__/api/cron __tests__/lib/alertsEngine.test.ts __tests__/lib/p1-4-cache-race-condition.test.ts"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.1.0",
-    "@prisma/adapter-neon": "^7.8.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@sentry/nextjs": "^10.50.0",
     "@upstash/redis": "^1.37.0",
@@ -32,6 +31,7 @@
     "inngest": "^4.7.0",
     "next": "15.3.9",
     "next-auth": "^4.24.14",
+    "pg": "^8.23.0",
     "react": "^18",
     "react-dom": "^18",
     "react-simple-maps": "^3.0.0",
