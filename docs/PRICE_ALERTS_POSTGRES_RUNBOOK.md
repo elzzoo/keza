@@ -15,33 +15,38 @@ Redis remains the source of truth until the `PRICE_ALERTS_POSTGRES_SYNC=1` flag 
 
 ## Activation Checklist
 
-1. Confirm production backup health in `/admin`.
+1. Confirm Vercel uses a serverless-compatible Postgres URL.
+   - Supabase direct URLs such as `postgresql://...@db.<project>.supabase.co:5432/...` can fail from Vercel serverless with Prisma `P1001`.
+   - Prefer the Supabase pooler/Supavisor URL in `POSTGRES_PRISMA_URL` or `POSTGRES_URL`.
+   - Keep `DATABASE_URL` as a fallback only if it is already a reachable pooled URL.
+
+2. Confirm production backup health in `/admin`.
    - Latest Redis backup should be recent.
    - If `ADMIN_BACKUP_EMAIL` is configured, status should show an emailed backup.
 
-2. Download a manual backup from `/admin` using `Backup JSON Redis`.
+3. Download a manual backup from `/admin` using `Backup JSON Redis`.
    - Manual exports update the recorded backup timestamp used by the write-backfill guard.
 
-3. Apply the Prisma migration to the production database.
+4. Apply the Prisma migration to the production database.
    ```bash
    npx prisma migrate deploy
    ```
 
-4. Verify the new table exists.
+5. Verify the new table exists.
    ```sql
    SELECT COUNT(*) FROM "PriceAlertRecord";
    ```
 
-5. Enable dual-write only after the migration succeeds.
+6. Enable dual-write only after the migration succeeds.
    ```env
    PRICE_ALERTS_POSTGRES_SYNC=1
    ```
 
-6. Create one test alert in production.
+7. Create one test alert in production.
 
-7. Verify it still appears in `/alertes` through the Redis-backed flow.
+8. Verify it still appears in `/alertes` through the Redis-backed flow.
 
-8. Verify the Postgres mirror row exists.
+9. Verify the Postgres mirror row exists.
    ```sql
    SELECT id, email, "routeFrom", "routeTo", active, "notifFrequency"
    FROM "PriceAlertRecord"
@@ -49,7 +54,7 @@ Redis remains the source of truth until the `PRICE_ALERTS_POSTGRES_SYNC=1` flag 
    LIMIT 5;
    ```
 
-9. Open `/api/admin/backfill/price-alerts` as admin and verify:
+10. Open `/api/admin/backfill/price-alerts` as admin and verify:
    - `inSync` is `true`
    - `missingInPostgres`, `extraInPostgres`, and `activeMismatch` are empty arrays
 

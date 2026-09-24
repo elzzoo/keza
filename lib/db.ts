@@ -6,6 +6,14 @@ const globalForPrisma = global as unknown as { prisma?: PrismaClient };
 
 let _prisma: PrismaClient | undefined;
 
+function getRuntimeDatabaseUrl(): string | undefined {
+  return (
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL
+  );
+}
+
 function createPrismaOptions(databaseUrl: string): ConstructorParameters<typeof PrismaClient>[0] {
   const log: Array<Prisma.LogLevel | Prisma.LogDefinition> =
     process.env.NODE_ENV === "development"
@@ -39,9 +47,9 @@ function createPrismaOptions(databaseUrl: string): ConstructorParameters<typeof 
 export function getPrismaClient(): PrismaClient {
   if (_prisma) return _prisma;
 
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = getRuntimeDatabaseUrl();
   if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required to initialize Prisma.");
+    throw new Error("DATABASE_URL or POSTGRES_PRISMA_URL is required to initialize Prisma.");
   }
 
   _prisma = new PrismaClient(createPrismaOptions(databaseUrl));
