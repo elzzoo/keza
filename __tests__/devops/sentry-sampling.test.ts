@@ -40,6 +40,20 @@ describe("Sentry Trace Sampling", () => {
     expect(configStr).toContain("replaysOnErrorSampleRate");
   });
 
+  it("client-side replay sampling is low by default and env configurable", async () => {
+    const fs = await import("fs");
+    const path = await import("path");
+    const configPath = path.join(process.cwd(), "instrumentation-client.ts");
+    const configStr = fs.readFileSync(configPath, "utf-8");
+
+    expect(configStr).toContain("NEXT_PUBLIC_SENTRY_REPLAY_SAMPLE_RATE");
+    expect(configStr).toContain("NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE");
+    expect(configStr).toContain("0.01");
+    expect(configStr).toContain("0.5");
+    expect(configStr).not.toContain("replaysOnErrorSampleRate: 1.0");
+    expect(configStr).not.toContain("replaysSessionSampleRate: 1.0");
+  });
+
   it("server config includes HTTP integration for better errors", async () => {
     const fs = await import("fs");
     const path = await import("path");

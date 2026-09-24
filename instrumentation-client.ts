@@ -4,6 +4,22 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+function parseSampleRate(value: string | undefined, fallback: number) {
+  if (value === undefined) return fallback;
+  const rate = Number(value);
+  if (!Number.isFinite(rate)) return fallback;
+  return Math.min(1, Math.max(0, rate));
+}
+
+const replaySessionSampleRate = parseSampleRate(
+  process.env.NEXT_PUBLIC_SENTRY_REPLAY_SAMPLE_RATE,
+  0.01
+);
+const replayOnErrorSampleRate = parseSampleRate(
+  process.env.NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE,
+  0.5
+);
+
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
@@ -12,11 +28,13 @@ Sentry.init({
   // and improves correlation with server-side errors
   tracesSampleRate: 0.5,
 
-  // Capture 5% of sessions for session replay
-  replaysSessionSampleRate: 0.05,
+  // Keep Replay cheap by default. Override with NEXT_PUBLIC_SENTRY_REPLAY_SAMPLE_RATE
+  // only during short UX/debugging windows.
+  replaysSessionSampleRate: replaySessionSampleRate,
 
-  // Capture 100% of sessions with an error for replay debugging
-  replaysOnErrorSampleRate: 1.0,
+  // Error replays are valuable, but 100% makes the ~120KB Replay chunk too common.
+  // Override with NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE when investigating.
+  replaysOnErrorSampleRate: replayOnErrorSampleRate,
 
   environment: process.env.NODE_ENV,
 
@@ -44,7 +62,7 @@ export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
 // replay. Adding it after the page has settled instead lets it load in its
 // own chunk, off the critical path — replaysSessionSampleRate/
 // replaysOnErrorSampleRate above still apply once it's registered.
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && (replaySessionSampleRate > 0 || replayOnErrorSampleRate > 0)) {
   const loadReplay = () => {
     Sentry.addIntegration(Sentry.replayIntegration());
   };
