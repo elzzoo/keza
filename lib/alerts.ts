@@ -97,13 +97,14 @@ async function removeFromIndex(key: string, id: string): Promise<void> {
   await redis.srem(key, id);
 }
 
-function syncAlertRecord(alert: PriceAlert): void {
+async function syncAlertRecord(alert: PriceAlert): Promise<void> {
   if (process.env.PRICE_ALERTS_POSTGRES_SYNC !== "1") return;
-  import("@/lib/alertsPostgres")
-    .then(({ syncPriceAlertToPostgres }) => syncPriceAlertToPostgres(alert))
-    .catch((err: unknown) => {
-      logError("[alerts] postgres sync import failed", err);
-    });
+  try {
+    const { syncPriceAlertToPostgres } = await import("@/lib/alertsPostgres");
+    await syncPriceAlertToPostgres(alert);
+  } catch (err: unknown) {
+    logError("[alerts] postgres sync failed", err);
+  }
 }
 
 // ─── Create alert ───────────────────────────────────────────────────────────
@@ -146,7 +147,7 @@ export async function createAlert(params: {
   await addToIndex(ALERTS_BY_EMAIL(alert.email), id);
   await addToIndex(ALERTS_BY_ROUTE(alert.from, alert.to), id);
   await redis.sadd(ALL_ROUTES_KEY, `${alert.from}:${alert.to}`);
-  syncAlertRecord(alert);
+  await syncAlertRecord(alert);
 
   return alert;
 }
@@ -195,7 +196,7 @@ export async function updateAlertFrequency(
   if (!alert) return false;
   alert.notifFrequency = frequency;
   await redis.set(ALERT_KEY(id), alert, { ex: INDEX_TTL });
-  syncAlertRecord(alert);
+  await syncAlertRecord(alert);
   return true;
 }
 
@@ -241,7 +242,7 @@ export async function deactivateAlert(id: string): Promise<boolean> {
   if (remaining.length === 0) {
     await redis.srem(ALL_ROUTES_KEY, `${alert.from}:${alert.to}`);
   }
-  syncAlertRecord(alert);
+  await syncAlertRecord(alert);
 
   return true;
 }
@@ -255,7 +256,7 @@ export async function updateAlertAfterCheck(id: string, lastPrice: number, notif
   alert.lastPrice = lastPrice;
   if (notified) alert.notifCount++;
   await redis.set(ALERT_KEY(id), alert, { ex: 90 * 86400 });
-  syncAlertRecord(alert);
+  await syncAlertRecord(alert);
 }
 
 // ─── Send notification email ────────────────────────────────────────────────
