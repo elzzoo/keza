@@ -152,6 +152,28 @@ describe("Results", () => {
     expect(screen.getByText(/2 flights found/i)).toBeInTheDocument();
   });
 
+  it("summarizes price confidence by source", () => {
+    const flights = [
+      makeFlight({ searchId: "s1", source: "DUFFEL", priceConfidence: "HIGH" }),
+      makeFlight({ searchId: "s2", source: "TP", priceConfidence: "LOW" }),
+      makeFlight({
+        searchId: "s3",
+        source: "SYNTHETIC",
+        priceConfidence: "ESTIMATED",
+        isSupplemental: true,
+      }),
+    ];
+    render(
+      <Results results={flights} loading={false} lang="en" onBack={noop} />
+    );
+
+    expect(screen.getByText("Price confidence")).toBeInTheDocument();
+    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText("Cache")).toBeInTheDocument();
+    expect(screen.getByText("Estimated")).toBeInTheDocument();
+    expect(screen.getByText(/Live prices are available for part/i)).toBeInTheDocument();
+  });
+
   it("shows loading text in French when lang=fr", () => {
     render(
       <Results results={[]} loading={true} lang="fr" onBack={noop} />

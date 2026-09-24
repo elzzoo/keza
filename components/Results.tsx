@@ -48,6 +48,15 @@ const L = {
     loading: "Recherche en cours…",
     businessBannerTitle: "Mode Business — comparaison vs prix Business cash",
     businessBannerDesc: "Les miles en Business offrent souvent 5–8× plus de valeur qu'en éco · Prix cash estimé (×4 éco)",
+    qualityTitle: "Qualité des prix",
+    qualityLive: "Live",
+    qualityCached: "Cache",
+    qualityEstimated: "Estimé",
+    qualityAllLive: "Prix temps réel disponibles sur tous les résultats affichés.",
+    qualitySomeLive: "Prix temps réel disponibles sur une partie des résultats.",
+    qualityCachedOnly: "Prix issus de cache fournisseur. Vérifiez le tarif final avant réservation.",
+    qualityEstimatedOnly: "Prix indicatifs. Vérifiez auprès de la compagnie avant de décider.",
+    qualityMixedEstimate: "Résultats mêlant cache fournisseur et estimations de route.",
   },
   en: {
     results: "Results",
@@ -70,8 +79,48 @@ const L = {
     loading: "Searching…",
     businessBannerTitle: "Business mode — compared against Business cash price",
     businessBannerDesc: "Miles in Business often deliver 5–8× more value than economy · Cash price estimated (×4 eco)",
+    qualityTitle: "Price confidence",
+    qualityLive: "Live",
+    qualityCached: "Cache",
+    qualityEstimated: "Estimated",
+    qualityAllLive: "Live prices are available for every displayed result.",
+    qualitySomeLive: "Live prices are available for part of these results.",
+    qualityCachedOnly: "Prices come from provider cache. Verify the final fare before booking.",
+    qualityEstimatedOnly: "Prices are indicative. Verify with the airline before deciding.",
+    qualityMixedEstimate: "Results combine provider cache and route estimates.",
   },
 };
+
+type PriceQualitySummary = {
+  live: number;
+  cached: number;
+  estimated: number;
+};
+
+function getPriceQualitySummary(results: FlightResult[]): PriceQualitySummary {
+  return results.reduce<PriceQualitySummary>(
+    (summary, result) => {
+      if (result.isSupplemental || result.source === "SYNTHETIC" || result.priceConfidence === "ESTIMATED") {
+        summary.estimated += 1;
+      } else if (result.source === "TP" || result.priceConfidence === "LOW") {
+        summary.cached += 1;
+      } else {
+        summary.live += 1;
+      }
+      return summary;
+    },
+    { live: 0, cached: 0, estimated: 0 }
+  );
+}
+
+function getPriceQualityMessage(summary: PriceQualitySummary, lang: "fr" | "en") {
+  const t = L[lang];
+  if (summary.live > 0 && summary.cached === 0 && summary.estimated === 0) return t.qualityAllLive;
+  if (summary.live > 0) return t.qualitySomeLive;
+  if (summary.estimated > 0 && summary.cached > 0) return t.qualityMixedEstimate;
+  if (summary.estimated > 0) return t.qualityEstimatedOnly;
+  return t.qualityCachedOnly;
+}
 
 function SkeletonCard() {
   return (
@@ -149,6 +198,12 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
     );
     return bestSavingsResult?.priceConfidence !== "HIGH";
   })();
+  const priceQuality = useMemo(() => getPriceQualitySummary(results), [results]);
+  const priceQualityItems = [
+    { key: "live", label: t.qualityLive, count: priceQuality.live, tone: "text-success bg-success/10 border-success/20" },
+    { key: "cached", label: t.qualityCached, count: priceQuality.cached, tone: "text-warning bg-warning/10 border-warning/20" },
+    { key: "estimated", label: t.qualityEstimated, count: priceQuality.estimated, tone: "text-muted bg-surface-2 border-border" },
+  ].filter(item => item.count > 0);
 
   // Use milesOptions from the best-deal result, fallback to first result
   const bestResultOptions =
@@ -296,6 +351,34 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
               )}
             </p>
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Price source confidence */}
+      {results.length > 0 && (
+        <div className="rounded-xl border border-border bg-surface px-4 py-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold text-fg">{t.qualityTitle}</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                {getPriceQualityMessage(priceQuality, lang)}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {priceQualityItems.map(item => (
+                <span
+                  key={item.key}
+                  className={clsx(
+                    "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-semibold whitespace-nowrap",
+                    item.tone
+                  )}
+                >
+                  {item.label}
+                  <span className="tabular-nums text-fg">{item.count}</span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}
