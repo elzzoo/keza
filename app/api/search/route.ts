@@ -14,6 +14,7 @@ import { redis } from "@/lib/redis";
 import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
 import { parseSearchParams } from "@/lib/searchInput";
 import { buildSearchCacheKey } from "@/lib/searchCacheKey";
+import { recordSearchObservability } from "@/lib/searchObservability";
 
 // Max time to wait for a full search before returning with partial flag.
 // Must be < maxDuration (10s) to ensure graceful partial response fires before
@@ -136,11 +137,6 @@ export async function POST(request: Request) {
       fromCache
         ? redis.incr(`keza:stats:cache:hits:${today}`)
         : redis.incr(`keza:stats:cache:misses:${today}`),
-      ...(results.slice(0, 1).map((r) =>
-        r?.source === "DUFFEL"
-          ? redis.incr(`keza:stats:provider:duffel:${today}`)
-          : redis.incr(`keza:stats:provider:tp:${today}`)
-      )),
       redis.expire(`keza:stats:searches:${today}`, 30 * 24 * 60 * 60),
       // Track cumulative savings for metrics (internal analytics only)
       ...(bestSaving > 0 && !fromCache
@@ -150,6 +146,14 @@ export async function POST(request: Request) {
       redis.zincrby(`keza:stats:routes:${today}`, 1, `${from}-${to}`)
         .then(() => redis.expire(`keza:stats:routes:${today}`, 7 * 24 * 60 * 60))
         .catch(() => {}),
+      recordSearchObservability({
+        from,
+        to,
+        results,
+        partial,
+        fromCache,
+        responseTimeMs: Date.now() - _t0,
+      }),
     ]).catch(() => {
       // Stats tracking failed; this is non-critical, log and continue
       logWarn("[search] Stats tracking failed", undefined, { route: `${from}-${to}`, cacheHit: fromCache });
