@@ -11,6 +11,19 @@ import { REDIS_BACKUP_LAST_KEY } from "@/lib/redisBackup";
 const WRITE_CONFIRMATION = "BACKFILL_PRICE_ALERTS";
 const REQUIRED_BACKUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
+function getAdminErrorDetails(err: unknown): { name: string; message: string; code?: string } {
+  if (!(err instanceof Error)) {
+    return { name: "UnknownError", message: String(err).slice(0, 300) };
+  }
+
+  const maybeCode = (err as Error & { code?: unknown }).code;
+  return {
+    name: err.name || "Error",
+    message: err.message.slice(0, 300),
+    ...(typeof maybeCode === "string" ? { code: maybeCode } : {}),
+  };
+}
+
 async function getFreshRedisBackupStatus(now = Date.now()): Promise<{
   fresh: boolean;
   lastBackupAt: string | null;
@@ -51,7 +64,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, ...parity });
   } catch (err) {
     logError("[api/admin/backfill/price-alerts] status", err);
-    return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Internal error", details: getAdminErrorDetails(err) },
+      { status: 500 },
+    );
   }
 }
 
@@ -101,6 +117,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     logError("[api/admin/backfill/price-alerts]", err);
-    return NextResponse.json({ ok: false, error: "Internal error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Internal error", details: getAdminErrorDetails(err) },
+      { status: 500 },
+    );
   }
 }

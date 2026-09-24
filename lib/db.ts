@@ -19,8 +19,19 @@ function createPrismaOptions(databaseUrl: string): ConstructorParameters<typeof 
     };
   }
 
+  const poolConfig: Exclude<ConstructorParameters<typeof PrismaPg>[0], string> = {
+    connectionString: databaseUrl,
+    max: 1,
+    connectionTimeoutMillis: 5_000,
+    idleTimeoutMillis: 10_000,
+  };
+
+  if (/supabase\.(co|com)/i.test(databaseUrl) && !/[?&]sslmode=/i.test(databaseUrl)) {
+    poolConfig.ssl = { rejectUnauthorized: false };
+  }
+
   return {
-    adapter: new PrismaPg(databaseUrl),
+    adapter: new PrismaPg(poolConfig),
     log,
   };
 }
