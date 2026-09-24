@@ -1,217 +1,200 @@
 // __tests__/integration/p5-2-scoring.integration.test.ts
-// P5.2 Task 2: Integration tests for scoring engine in search pipeline
+// P5.2 Task 2: deterministic integration tests for scoring in the search pipeline.
+
+const mockRedisGet = jest.fn();
+const mockRedisSet = jest.fn();
+const mockFetchFromDuffel = jest.fn();
+const mockFetchFromAmadeus = jest.fn();
+const mockFetchFromTravelpayouts = jest.fn();
+const mockGetEffectivePrices = jest.fn();
+
+jest.mock("@/lib/config", () => ({
+  ENABLE_MULTI_LEG_ROUTING: false,
+  ENABLE_P5_2_SOFT_LAUNCH: true,
+  P5_2_BASELINE_ONLY: true,
+}));
+
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    get: (...args: unknown[]) => mockRedisGet(...args),
+    set: (...args: unknown[]) => mockRedisSet(...args),
+  },
+}));
+
+jest.mock("@/lib/duffelProvider", () => ({
+  fetchFromDuffel: (...args: unknown[]) => mockFetchFromDuffel(...args),
+}));
+
+jest.mock("@/lib/amadeusProvider", () => ({
+  fetchFromAmadeus: (...args: unknown[]) => mockFetchFromAmadeus(...args),
+}));
+
+jest.mock("@/lib/engine/travelpayouts", () => ({
+  fetchFromTravelpayouts: (...args: unknown[]) => mockFetchFromTravelpayouts(...args),
+  buildAviasalesUrl: jest.fn(() => "https://booking.example/search"),
+}));
+
+jest.mock("@/lib/promotions/engine", () => ({
+  loadPromotions: jest.fn(async () => []),
+  applyPromotions: jest.fn((flights) => flights),
+}));
+
+jest.mock("@/lib/costEngine", () => ({
+  getEffectivePrices: (...args: unknown[]) => mockGetEffectivePrices(...args),
+  initializeBonusTransfers: jest.fn(async () => undefined),
+  buildCostOptions: jest.fn((flight) => ({
+    cashCost: flight.totalPrice,
+    milesCost: flight.totalPrice,
+    savings: 0,
+    recommendation: "USE_CASH",
+    bestOption: null,
+    milesOptions: [],
+    explanation: "Use cash",
+    displayMessage: "Cash wins",
+    disclaimer: "",
+  })),
+}));
+
+jest.mock("@/lib/autoCalibrate", () => ({
+  recordObservation: jest.fn(),
+}));
+
+jest.mock("@/lib/logger", () => ({
+  logError: jest.fn(),
+  logWarn: jest.fn(),
+}));
 
 import { searchEngine } from "@/lib/engine/index";
 import type { FlightResult } from "@/lib/engine/types";
 
-// Live Duffel/TP calls — allow slow network
-jest.setTimeout(30000);
-
 describe("P5.2 Task 2: Scoring Engine Integration", () => {
-  /**
-   * Test 1: Verify scoring engine is integrated into search pipeline
-   * Checks that all results have scoringResult attached (when P5.2 is enabled)
-   */
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRedisGet.mockResolvedValue(null);
+    mockRedisSet.mockResolvedValue("OK");
+    mockFetchFromDuffel.mockResolvedValue([]);
+    mockFetchFromAmadeus.mockResolvedValue([]);
+    mockFetchFromTravelpayouts.mockResolvedValue([
+      {
+        from: "SIN",
+        to: "LAX",
+        price: 720,
+        airlines: ["Singapore Airlines"],
+        stops: 0,
+        duration: 930,
+        cabinResolved: true,
+        source: "TP",
+        priceConfidence: "LOW",
+      },
+      {
+        from: "SIN",
+        to: "LAX",
+        price: 640,
+        airlines: ["United Airlines"],
+        stops: 1,
+        duration: 1120,
+        cabinResolved: true,
+        source: "TP",
+        priceConfidence: "LOW",
+      },
+    ]);
+    mockGetEffectivePrices.mockResolvedValue(new Map());
+  });
+
   it("scores all results from search pipeline when enabled", async () => {
-    const results = await searchEngine({
-      from: "SIN",
-      to: "LAX",
-      date: "2026-08-15",
-      cabin: "economy",
-      passengers: 1,
-    });
+    const results = await runSearch("economy");
 
-    // Skip this test if no results (API timeout in test environment)
-    if (results.length === 0) {
-      console.warn("[test] Skipping - no results from API");
-      expect(true).toBe(true); // Pass if no results
-      return;
-    }
-
-    // If P5.2 is enabled, all results should have scoringResult
-    // If not enabled, that's OK - just verify flights exist
-    if (results[0]?.scoringResult) {
-      for (const flight of results) {
-        expect(flight.scoringResult).toBeDefined();
-        expect(flight.scoringResult?.overallScore).toBeGreaterThanOrEqual(0);
-        expect(flight.scoringResult?.overallScore).toBeLessThanOrEqual(100);
-      }
-    } else {
-      // P5.2 not enabled in test environment - just verify we got results
-      expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeGreaterThanOrEqual(2);
+    for (const flight of results) {
+      expect(flight.scoringResult).toBeDefined();
+      expect(flight.scoringResult?.overallScore).toBeGreaterThanOrEqual(0);
+      expect(flight.scoringResult?.overallScore).toBeLessThanOrEqual(100);
     }
   });
 
-  /**
-   * Test 2: Verify results are scored (sorting only enabled when P5_2_BASELINE_ONLY=false)
-   * Higher score = better flight
-   * Week 1-2 (P5_2_BASELINE_ONLY=true): scores calculated but baseline ranking maintained
-   * Week 3+ (P5_2_BASELINE_ONLY=false): results re-sorted by score descending
-   */
-  it("scores results (baseline ranking maintained during Week 1-2)", async () => {
-    const results = await searchEngine({
-      from: "SIN",
-      to: "LAX",
-      date: "2026-08-15",
-      cabin: "economy",
-      passengers: 1,
-    });
+  it("scores results while keeping baseline ordering during Week 1-2", async () => {
+    const results = await runSearch("economy");
 
-    // Skip if no results
-    if (results.length === 0) {
-      console.warn("[test] Skipping - no results from API");
-      expect(true).toBe(true);
-      return;
-    }
-
-    // Verify scores are calculated when P5.2 is enabled
-    if (results[0]?.scoringResult && results.length > 1) {
-      // All results should have scoring data
-      for (const flight of results) {
-        expect(flight.scoringResult?.overallScore).toBeGreaterThanOrEqual(0);
-        expect(flight.scoringResult?.overallScore).toBeLessThanOrEqual(100);
-      }
-      // Note: During P5_2_BASELINE_ONLY=true phase, results use baseline ranking (API order)
-      // not re-sorted by score. Sorting verification will be enabled in Week 3+
+    expect(results.length).toBeGreaterThanOrEqual(2);
+    for (const flight of results) {
+      expect(flight.scoringResult?.overallScore).toBeGreaterThanOrEqual(0);
+      expect(flight.scoringResult?.overallScore).toBeLessThanOrEqual(100);
     }
   });
 
-  /**
-   * Test 3: Verify no regression - all P5.1 fields still present
-   * Ensures existing functionality is preserved (cash, miles, recommendation)
-   */
-  it("preserves all P5.1 fields (no regression)", async () => {
-    const results = await searchEngine({
-      from: "SIN",
-      to: "LAX",
-      date: "2026-08-15",
-      cabin: "economy",
-      passengers: 1,
-    });
-
-    if (results.length === 0) {
-      console.warn("[test] Skipping - no results from API");
-      expect(true).toBe(true);
-      return;
-    }
-
+  it("preserves all P5.1 fields", async () => {
+    const results = await runSearch("economy");
     const flight = results[0];
 
-    // P5.1 core fields must still exist
     expect(flight).toHaveProperty("from");
     expect(flight).toHaveProperty("to");
     expect(flight).toHaveProperty("cashCost");
     expect(flight.cashCost).toBeGreaterThanOrEqual(0);
-
-    // Miles options must be present
     expect(flight).toHaveProperty("milesOptions");
     expect(Array.isArray(flight.milesOptions)).toBe(true);
-
-    // Recommendation must be valid
     expect(flight).toHaveProperty("recommendation");
-    expect(["USE_MILES", "USE_CASH", "IF_HAVE_MILES"]).toContain(
-      flight.recommendation
-    );
-
-    // Best option may be null but must be present
+    expect(["USE_MILES", "USE_CASH", "IF_HAVE_MILES"]).toContain(flight.recommendation);
     expect(flight).toHaveProperty("bestOption");
   });
 
-  /**
-   * Test 4: Verify scoring breakdown is valid
-   * All 6 signals must be present and in valid ranges
-   */
   it("provides valid scoring breakdown with all 6 signals", async () => {
-    const results = await searchEngine({
-      from: "SIN",
-      to: "LAX",
-      date: "2026-08-15",
-      cabin: "economy",
-      passengers: 1,
-    });
+    const results = await runSearch("economy");
+    const breakdown = results[0].scoringResult?.breakdown;
 
-    if (results.length === 0) {
-      console.warn("[test] Skipping - no results from API");
-      expect(true).toBe(true);
-      return;
-    }
+    expect(breakdown).toBeDefined();
+    expect(breakdown).toHaveProperty("cabin");
+    expect(breakdown).toHaveProperty("accessibility");
+    expect(breakdown).toHaveProperty("price");
+    expect(breakdown).toHaveProperty("connections");
+    expect(breakdown).toHaveProperty("layover");
+    expect(breakdown).toHaveProperty("carrier");
 
-    const flight = results[0];
-    const breakdown = flight.scoringResult?.breakdown;
+    const signals = [
+      breakdown!.cabin,
+      breakdown!.accessibility,
+      breakdown!.price,
+      breakdown!.connections,
+      breakdown!.layover,
+      breakdown!.carrier,
+    ];
 
-    // Only check breakdown if scoring is enabled
-    if (breakdown) {
-      // All 6 signals must be present
-      expect(breakdown).toHaveProperty("cabin");
-      expect(breakdown).toHaveProperty("accessibility");
-      expect(breakdown).toHaveProperty("price");
-      expect(breakdown).toHaveProperty("connections");
-      expect(breakdown).toHaveProperty("layover");
-      expect(breakdown).toHaveProperty("carrier");
-
-      // All signals must be in 0-100 range
-      const signals = [
-        breakdown.cabin,
-        breakdown.accessibility,
-        breakdown.price,
-        breakdown.connections,
-        breakdown.layover,
-        breakdown.carrier,
-      ];
-
-      for (const signal of signals) {
-        expect(signal).toBeGreaterThanOrEqual(0);
-        expect(signal).toBeLessThanOrEqual(100);
-      }
+    for (const signal of signals) {
+      expect(signal).toBeGreaterThanOrEqual(0);
+      expect(signal).toBeLessThanOrEqual(100);
     }
   });
 
-  /**
-   * Test 5: Verify scoring engine handles various cabin classes
-   * Tests that scoring works consistently across economy, premium, business cabins
-   */
-  it("scores flights correctly across different cabin classes", async () => {
-    const cabins = ["economy", "premium"];
+  it("scores flights consistently across cabin classes", async () => {
+    const cabins = ["economy", "premium"] as const;
     const resultsPerCabin: Record<string, FlightResult[]> = {};
 
     for (const cabin of cabins) {
-      const results = await searchEngine({
-        from: "SIN",
-        to: "LAX",
-        date: "2026-08-15",
-        cabin: cabin as "economy" | "premium",
-        passengers: 1,
-      });
-      resultsPerCabin[cabin] = results;
+      resultsPerCabin[cabin] = await runSearch(cabin);
     }
 
-    // Verify we got results for at least one cabin class
-    let totalResults = 0;
     for (const [cabin, results] of Object.entries(resultsPerCabin)) {
-      totalResults += results.length;
+      expect(cabin).toMatch(/economy|premium/);
+      expect(results.length).toBeGreaterThan(0);
 
-      if (results.length > 0) {
-        // All results for this cabin should have consistent cabin score
-        const cabinScores = results
-          .map((f) => f.scoringResult?.breakdown.cabin ?? 0)
-          .filter((s) => s > 0);
+      const cabinScores = results
+        .map((flight) => flight.scoringResult?.breakdown.cabin ?? 0)
+        .filter((score) => score > 0);
 
-        if (cabinScores.length > 0) {
-          // Cabin score should be deterministic based on cabin class
-          const firstCabinScore = cabinScores[0];
-          for (const score of cabinScores) {
-            expect(score).toBe(firstCabinScore);
-          }
-        }
+      expect(cabinScores.length).toBeGreaterThan(0);
+      const firstCabinScore = cabinScores[0];
+      for (const score of cabinScores) {
+        expect(score).toBe(firstCabinScore);
       }
-    }
-
-    // At least one cabin class should return results (or test is skipped)
-    if (totalResults === 0) {
-      console.warn("[test] Skipping - no results from API");
-      expect(true).toBe(true);
-    } else {
-      expect(totalResults).toBeGreaterThan(0);
     }
   });
 });
+
+async function runSearch(cabin: "economy" | "premium"): Promise<FlightResult[]> {
+  return searchEngine({
+    from: "SIN",
+    to: "LAX",
+    date: "2026-08-15",
+    cabin,
+    passengers: 1,
+  });
+}
