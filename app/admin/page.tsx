@@ -23,6 +23,7 @@ import { B2BLeadsTable } from "./components/B2BLeadsTable";
 import { LoginForm } from "./components/LoginForm";
 import { AdminHeader } from "./components/AdminHeader";
 import { AdminQuickLinks } from "./components/AdminQuickLinks";
+import { AdminErrorBanner } from "./components/AdminErrorBanner";
 
 export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
@@ -66,12 +67,7 @@ export default async function AdminPage({
       <div className="mx-auto max-w-4xl">
         <AdminHeader fetchedAt={stats?.fetchedAt ?? null} />
 
-        {/* Error state */}
-        {error && (
-          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            <strong>Erreur Redis :</strong> {error}
-          </div>
-        )}
+        {error && <AdminErrorBanner message={error} />}
 
         {/* Stats grid */}
         {stats && (
