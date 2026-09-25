@@ -27,9 +27,10 @@ export function CheapestDatesCalendar({ from, to, lang }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     setStatus("loading");
     setDays([]);
-    fetch(`/api/calendar?from=${from}&to=${to}&month=${month}`)
+    fetch(`/api/calendar?from=${from}&to=${to}&month=${month}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
       .then((data: { days?: CalendarDay[] } | null) => {
         if (cancelled) return;
@@ -38,7 +39,10 @@ export function CheapestDatesCalendar({ from, to, lang }: Props) {
         setStatus("ok");
       })
       .catch(() => { if (!cancelled) setStatus("empty"); });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [from, to, month]);
 
   function prevMonth() {
@@ -124,7 +128,7 @@ export function CheapestDatesCalendar({ from, to, lang }: Props) {
       ) : (
         <div className="grid grid-cols-7 gap-1">
           {cells.map((day, i) => {
-            if (day === null) return <div key={i} />;
+            if (day === null) return <div key={`empty-${month}-${i}`} />;
             const dateStr = `${year}-${String(monthNum).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const price = priceMap.get(dateStr);
             const isCheap = price !== undefined && price <= threshold;
@@ -133,7 +137,7 @@ export function CheapestDatesCalendar({ from, to, lang }: Props) {
 
             return (
               <a
-                key={i}
+                key={dateStr}
                 href={price ? `/?from=${from}&to=${to}&date=${dateStr}` : undefined}
                 className={[
                   "relative flex flex-col items-center justify-center rounded-lg py-1.5 text-center transition-all",
