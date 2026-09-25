@@ -156,6 +156,9 @@ export async function fetchBackupStatus() {
   };
 }
 
+export type AdminStats = Awaited<ReturnType<typeof fetchStats>>;
+export type BackupStatus = Awaited<ReturnType<typeof fetchBackupStatus>>;
+
 export async function fetchPriceAlertsParityStatus(): Promise<PriceAlertsParityStatus> {
   try {
     const data = await getPriceAlertsStoreParity();
