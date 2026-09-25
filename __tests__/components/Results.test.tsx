@@ -4,7 +4,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { Results } from "@/components/Results";
+import { getFlightResultKey, Results } from "@/components/Results";
 import type { FlightResult } from "@/lib/engine";
 
 // Mock useProfile
@@ -75,6 +75,28 @@ const makeFlight = (overrides: Partial<FlightResult> = {}): FlightResult => ({
 const noop = () => {};
 
 describe("Results", () => {
+  it("builds distinct stable keys for same-route flight results", () => {
+    const base = makeFlight({
+      from: "CDG",
+      to: "JFK",
+      searchId: "same-search",
+      source: "TP",
+      airlines: ["Air France"],
+      stops: 0,
+      duration: 480,
+      totalPrice: 800,
+    });
+    const sameRouteDifferentCarrier = makeFlight({
+      ...base,
+      source: "DUFFEL",
+      airlines: ["Delta Air Lines"],
+      totalPrice: 820,
+    });
+
+    expect(getFlightResultKey(base)).not.toBe(getFlightResultKey(sameRouteDifferentCarrier));
+    expect(getFlightResultKey(base)).toBe(getFlightResultKey({ ...base }));
+  });
+
   it("shows loading spinner when loading=true", () => {
     render(
       <Results results={[]} loading={true} lang="en" onBack={noop} />

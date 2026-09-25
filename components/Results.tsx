@@ -122,6 +122,26 @@ function getPriceQualityMessage(summary: PriceQualitySummary, lang: "fr" | "en")
   return t.qualityCachedOnly;
 }
 
+export function getFlightResultKey(flight: FlightResult): string {
+  const airlines = [...flight.airlines].sort().join("+") || "unknown";
+  const returnAirlines = [...(flight.returnAirlines ?? [])].sort().join("+") || "none";
+  const bookingOrPrice = flight.bookingLink ?? `price:${flight.totalPrice ?? flight.price}`;
+
+  return [
+    flight.searchId,
+    flight.source ?? "unknown",
+    flight.from,
+    flight.to,
+    airlines,
+    `stops:${flight.stops ?? 0}`,
+    `duration:${flight.duration ?? 0}`,
+    flight.tripType,
+    flight.cabin,
+    `return:${returnAirlines}:${flight.returnPrice ?? 0}`,
+    bookingOrPrice,
+  ].join("|");
+}
+
 function SkeletonCard() {
   return (
     <div className="bg-surface rounded-2xl border border-border overflow-hidden">
@@ -534,7 +554,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       ) : (
         <div className="space-y-3 stagger-children">
           {filtered.map((f, i) => (
-            <div key={`${f.searchId}-${f.from}-${f.to}`} className="animate-fade-up">
+            <div key={getFlightResultKey(f)} className="animate-fade-up">
               <FlightCard
                 flight={f}
                 lang={lang}
