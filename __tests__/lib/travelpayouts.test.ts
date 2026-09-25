@@ -1,4 +1,4 @@
-import { buildAviasalesUrl } from "../../lib/engine/travelpayouts";
+import { buildAviasalesUrl, getTravelpayoutsDepartureDay } from "../../lib/engine/travelpayouts";
 
 // Regression guard for a production audit finding: Aviasales' /search path
 // parser expects DDMM (day + month, 4 digits, NO year) per date segment.
@@ -64,5 +64,23 @@ describe("Aviasales URL generation", () => {
   it("pads single-digit day/month to 2 digits (Aviasales requires fixed-width DDMM)", () => {
     const url = buildAviasalesUrl("CDG", "JFK", "2026-01-05", undefined, 1);
     expect(url).toContain("CDG0501JFK"); // day=05, month=01 — not "51" or "15"
+  });
+});
+
+describe("Travelpayouts departure date parsing", () => {
+  it("extracts a YYYY-MM-DD day from an ISO timestamp", () => {
+    expect(getTravelpayoutsDepartureDay("2026-06-01T10:00:00Z")).toBe("2026-06-01");
+  });
+
+  it("accepts a bare YYYY-MM-DD date", () => {
+    expect(getTravelpayoutsDepartureDay("2026-06-01")).toBe("2026-06-01");
+  });
+
+  it("rejects null, non-string, empty, and malformed dates", () => {
+    expect(getTravelpayoutsDepartureDay(null)).toBeNull();
+    expect(getTravelpayoutsDepartureDay(123)).toBeNull();
+    expect(getTravelpayoutsDepartureDay("")).toBeNull();
+    expect(getTravelpayoutsDepartureDay("bad-date")).toBeNull();
+    expect(getTravelpayoutsDepartureDay("2026-6-1")).toBeNull();
   });
 });

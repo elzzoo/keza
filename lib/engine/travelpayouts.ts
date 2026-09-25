@@ -73,6 +73,12 @@ function toDDMM(isoDate: string): string {
   return `${day}${month}`;
 }
 
+export function getTravelpayoutsDepartureDay(departureAt: unknown): string | null {
+  if (typeof departureAt !== "string") return null;
+  const day = departureAt.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
+}
+
 export function buildAviasalesUrl(
   from: string,
   to: string,
@@ -191,9 +197,7 @@ export async function fetchV3(
   // Deduplicate by (airline, departure date) — keep cheapest price per pairing
   const seen = new Map<string, typeof json.data[0]>();
   for (const f of json.data) {
-    // Extract date safely: departure_at should be ISO format (YYYY-MM-DD...), fallback to empty string
-    const day = f.departure_at && typeof f.departure_at === "string" ? f.departure_at.slice(0, 10) : "";
-    // Skip records without valid departure date to prevent cache key collisions
+    const day = getTravelpayoutsDepartureDay(f.departure_at);
     if (!day) continue;
     const key = `${f.airline}::${day}`;
     const existing = seen.get(key);
@@ -396,7 +400,7 @@ export async function fetchV3Calendar(
 
   const byDate = new Map<string, CalendarDay>();
   for (const f of json.data) {
-    const day = f.departure_at?.slice(0, 10) ?? "";
+    const day = getTravelpayoutsDepartureDay(f.departure_at);
     if (!day) continue;
     const existing = byDate.get(day);
     if (!existing || f.price < existing.price) {
