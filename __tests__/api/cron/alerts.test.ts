@@ -1,9 +1,28 @@
+const mockCppBaselineStore = new Map<string, unknown>();
+const mockRedisGet = jest.fn(async (key: string) => mockCppBaselineStore.get(key) ?? null);
+const mockRedisSet = jest.fn(async (key: string, value: unknown) => {
+  mockCppBaselineStore.set(key, value);
+  return "OK";
+});
+
+jest.mock("@/lib/redis", () => ({
+  redis: {
+    get: (...args: [string]) => mockRedisGet(...args),
+    set: (...args: [string, unknown]) => mockRedisSet(...args),
+  },
+}));
+
 import {
   recordCppObservation,
   trackBaselineCpp,
 } from "@/lib/alertsEngine";
 
 describe("cron/alerts — miles alert detection", () => {
+  beforeEach(() => {
+    mockCppBaselineStore.clear();
+    jest.clearAllMocks();
+  });
+
   it("should detect >10% CPP improvement on cron run", async () => {
     const routeKey = `SIN:LAX:Singapore KrisFlyer:${Date.now()}`;
 
