@@ -6,7 +6,6 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth";
 import { getDailyCronStatus } from "@/lib/cronStatus";
-import type { CronHealthStatus } from "@/lib/cronState";
 import {
   REDIS_BACKUP_COUNTS_KEY,
   REDIS_BACKUP_LAST_KEY,
@@ -17,6 +16,13 @@ import {
   getPriceAlertsStoreParity,
   type PriceAlertsStoreParity,
 } from "@/lib/alertsPostgres";
+import {
+  cronHealthColor,
+  cronHealthLabel,
+  formatDate,
+  formatMismatchIds,
+  formatTtl,
+} from "./format";
 
 // ─── B2B Lead type ───────────────────────────────────────────────────────────
 
@@ -219,30 +225,6 @@ function StatCard({
   );
 }
 
-function cronHealthLabel(health: CronHealthStatus): string {
-  const labels: Record<CronHealthStatus, string> = {
-    ok: "OK",
-    running: "En cours",
-    stale: "En retard",
-    degraded: "Dégradé",
-    unknown: "Inconnu",
-  };
-  return labels[health];
-}
-
-function cronHealthColor(health: CronHealthStatus): "blue" | "green" | "amber" | "purple" {
-  if (health === "ok") return "green";
-  if (health === "running") return "blue";
-  if (health === "unknown") return "purple";
-  return "amber";
-}
-
-function formatMismatchIds(ids: string[]): string {
-  if (ids.length === 0) return "aucun";
-  const visible = ids.slice(0, 5).join(", ");
-  return ids.length > 5 ? `${visible} +${ids.length - 5}` : visible;
-}
-
 function LoginForm({ hasError }: { hasError: boolean }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -311,20 +293,6 @@ export default async function AdminPage({
     ]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Erreur Redis inconnue";
-  }
-
-  function formatTtl(seconds: number): string {
-    if (seconds <= 0) return "expiré";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    if (h > 0) return `expire dans ${h}h ${m}m`;
-    return `expire dans ${m}m`;
-  }
-
-  function formatDate(iso: string | null): string {
-    if (!iso) return "jamais";
-    const d = new Date(iso);
-    return d.toLocaleString("fr-FR", { timeZone: "Europe/Paris", dateStyle: "short", timeStyle: "medium" });
   }
 
   return (
