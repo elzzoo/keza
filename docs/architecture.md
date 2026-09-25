@@ -76,22 +76,20 @@ Sur les dernières 48h, en plus de la convergence moteur ci-dessus, `main` a re�
 Le compte Duffel tourne toujours en mode Test (compagnie fictive "Duffel Airways"/ZZ). Aucun prix cash réel n'a jamais transité par le moteur en production. C'est un blocage produit documenté dans l'audit stratégique (voir conversation), pas un problème de code — l'activation nécessite une vérification d'identité (Stripe Connect) côté dashboard Duffel, jamais lancée.
 
 ### 4.2 Données programmes
-Le doublon `Finnair Plus` précédemment détecté dans `GLOBAL_PROGRAMS` est corrigé (`f84a88b`). Le risque restant sur ce fichier est surtout maintenabilité : le catalogue reste volumineux et manuel, donc les futurs ajouts doivent conserver des tests de non-duplication et de cohérence des partenaires de transfert.
+Le doublon `Finnair Plus` précédemment détecté dans `GLOBAL_PROGRAMS` est corrigé (`f84a88b`). Le catalogue a ensuite été découpé en modules (`lib/globalPrograms/{data,types,bankPointValues,lookups,index}.ts`) en conservant l'API publique `@/lib/globalPrograms`. Le risque restant est surtout data-quality : les futurs ajouts doivent conserver les tests de non-duplication et de cohérence des partenaires de transfert.
 
 ### 4.3 Fichiers volumineux
-Deux fichiers dépassent largement la taille confortable pour édition/relecture (voir section 5) :
-- `lib/globalPrograms.ts` — 837 lignes, ~53 programmes en un seul tableau
-- `app/admin/page.tsx` — 704 lignes, mélange fetch de données + composants de présentation + une page entière de JSX
+Le fichier restant le plus inconfortable est `app/admin/page.tsx` : les helpers de formatage et les fonctions de fetch Redis/Postgres ont été extraits, mais la page contient encore les composants de présentation et une grande portion de JSX.
 
 ### 4.4 Bundle — voir section 6
 
-## 5. Propositions de découpage (analyse — non implémentées)
+## 5. Propositions de découpage
 
 Voir le détail complet dans les propositions séparées ci-dessous. Résumé :
 
-**`lib/globalPrograms.ts`** → éclater en `lib/globalPrograms/{types,bankPointValues,data/*,lookups,index}.ts`, l'`index.ts` ré-exportant tout pour que les 5 fichiers consommateurs existants n'aient rien à changer. Risque très faible : fichier de données pures, aucune logique métier, aucun effet de bord.
+**`lib/globalPrograms.ts`** → fait. Le catalogue vit désormais sous `lib/globalPrograms/` et `index.ts` ré-exporte l'API publique existante.
 
-**`app/admin/page.tsx`** → extraire les fonctions de fetch (`fetchStats`, `fetchB2BLeads`, `fetchBackupStatus`) dans `app/admin/data.ts`, les helpers de formatage (`formatTtl`, `formatDate`, `cronHealthLabel/Color`) dans `app/admin/format.ts`, et découper le JSX en composants de section (`StatsOverview`, `CronObservability`, `EmailEngagement`, `AffiliateRevenue`, `EngineObservability`, `SystemDetails`, `B2BLeadsTable`) sous `app/admin/sections/`. Le `page.tsx` final devient un orchestrateur fin (~80 lignes) : auth check, fetch parallèle, composition des sections. Risque faible mais non nul : le fichier lit `verifyAdminSessionToken` (auth) — la proposition ne touche pas cette logique, seulement l'extraction de présentation autour, mais Codex traite l'auth ce soir donc ce chantier doit attendre confirmation qu'il n'y touche pas en parallèle.
+**`app/admin/page.tsx`** → partiellement fait. `app/admin/format.ts` contient les helpers purs, `app/admin/data.ts` contient les fetchs Redis/Postgres. Prochaine étape : découper le JSX en composants de section (`StatsOverview`, `CronObservability`, `EmailEngagement`, `AffiliateRevenue`, `EngineObservability`, `SystemDetails`, `B2BLeadsTable`) sous `app/admin/sections/`. L'auth reste dans `page.tsx`.
 
 ## 6. Bundle — résultats de l'audit
 
