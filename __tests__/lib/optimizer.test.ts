@@ -15,6 +15,21 @@ describe("optimizeMiles", () => {
       expect(result.type).toBe("DIRECT");
     });
 
+    test.each([
+      ["Swiss", "Swiss Miles"],
+      ["Swiss International Air Lines", "Swiss Miles"],
+      ["TAP Air Portugal", "TAP Air Portugal Miles"],
+      ["LOT Polish Airlines", "LOT Polish Airlines Frequent Flyer"],
+      ["SAS", "SAS EuroBonus"],
+      ["Scandinavian Airlines", "SAS EuroBonus"],
+      ["Air India", "Air India Flying Returns"],
+      ["EVA Air", "EVA Infinity MileageLands"],
+      ["Asiana Airlines", "Asiana Club"],
+    ])("returns DIRECT type for P5 airline %s with %s", (airline, program) => {
+      const result = optimizeMiles([airline], [program]);
+      expect(result).toEqual({ type: "DIRECT", program });
+    });
+
     test("falls back to CASH when no programs match", () => {
       const result = optimizeMiles(["Nonexistent Airline"], ["Nonexistent Program"]);
       expect(result).toEqual({ type: "CASH" });
