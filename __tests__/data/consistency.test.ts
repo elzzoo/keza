@@ -29,7 +29,7 @@
 import { TRANSFER_BONUSES } from "@/data/transferBonuses";
 import { TRANSFERS }         from "@/lib/transfers";
 import { GLOBAL_PROGRAMS }   from "@/lib/globalPrograms";
-import { MILES_PRICE_MAP }   from "@/data/milesPrices";
+import { MILES_PRICES, MILES_PRICE_MAP }   from "@/data/milesPrices";
 import {
   ACQUISITION_PROGRAM_DATA,
   supportedPrograms,
@@ -81,6 +81,27 @@ describe("globalPrograms.ts internal integrity", () => {
         `globalPrograms.ts contains duplicate program names:\n` +
         duplicates.map((entry) => `  • ${entry}`).join("\n") +
         "\n\nRemove duplicate entries or merge their data before shipping.",
+      );
+    }
+  });
+});
+
+describe("milesPrices.ts internal integrity", () => {
+  it("has no duplicate program records", () => {
+    const counts = new Map<string, number>();
+    for (const record of MILES_PRICES) {
+      counts.set(record.program, (counts.get(record.program) ?? 0) + 1);
+    }
+
+    const duplicates = [...counts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([program, count]) => `${program} (${count})`);
+
+    if (duplicates.length > 0) {
+      throw new Error(
+        `milesPrices.ts contains duplicate program records:\n` +
+        duplicates.map((entry) => `  • ${entry}`).join("\n") +
+        "\n\nMerge duplicate records so MILES_PRICE_MAP cannot silently overwrite values.",
       );
     }
   });
