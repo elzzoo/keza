@@ -62,6 +62,31 @@ function longName(short: string): string {
 const GP_BY_NAME = new Map(GLOBAL_PROGRAMS.map(p => [p.name, p]));
 
 // ---------------------------------------------------------------------------
+// 0. globalPrograms.ts internal integrity
+// ---------------------------------------------------------------------------
+
+describe("globalPrograms.ts internal integrity", () => {
+  it("has no duplicate program names", () => {
+    const counts = new Map<string, number>();
+    for (const program of GLOBAL_PROGRAMS) {
+      counts.set(program.name, (counts.get(program.name) ?? 0) + 1);
+    }
+
+    const duplicates = [...counts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([name, count]) => `${name} (${count})`);
+
+    if (duplicates.length > 0) {
+      throw new Error(
+        `globalPrograms.ts contains duplicate program names:\n` +
+        duplicates.map((entry) => `  • ${entry}`).join("\n") +
+        "\n\nRemove duplicate entries or merge their data before shipping.",
+      );
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 1. transfers.ts (optimizer) ⊆ transferBonuses.ts (cost engine)
 // ---------------------------------------------------------------------------
 
