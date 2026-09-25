@@ -3,7 +3,9 @@ import { searchEngine } from "@/lib/engine";
 import { PROGRAM_TO_AIRLINE } from "@/lib/costEngine";
 import { getMilesRequired } from "@/data/awardCharts";
 
-describe("P5 Final Validation - All Corridors + Programs (Task 4.1)", () => {
+const describeLive = process.env.RUN_LIVE_TESTS === "1" ? describe : describe.skip;
+
+describeLive("P5 Final Validation - All Corridors + Programs (Task 4.1)", () => {
   // P5 Major Corridors across all phases and regions
   // Phase 1: 31 existing + 78 new (Europe + Asia + Middle East + US Hub + Africa) = 109
   // Phase 3: 68 additional (LatAm + Pacific + Africa consolidation) = 68

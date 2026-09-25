@@ -6,73 +6,7 @@
  * Data reflects 2025-2026 published rates and typical sale pricing.
  */
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export type Alliance = "Star Alliance" | "Oneworld" | "SkyTeam" | "Independent";
-export type TaxProfile = "low" | "medium" | "high";
-
-export interface LoyaltyProgram {
-  /** Canonical display name */
-  name: string;
-  /** IATA code of the operating airline */
-  airlineCode: string;
-  /** Operating airline full name */
-  airline: string;
-  alliance: Alliance;
-  /**
-   * Cost to purchase 1 000 miles directly from the airline, in USD.
-   * Reflects typical sale pricing (not rack rate). null = not purchasable.
-   */
-  purchaseMileCostPer1000: number | null;
-  /**
-   * Market value of 1 mile/point in US cents.
-   * Used for "what are my existing miles worth?" calculations.
-   */
-  marketValueCents: number;
-  /**
-   * Simplified tax profile for award redemptions.
-   * - "low"    → minimal carrier surcharges (<$50 one-way economy)
-   * - "medium" → moderate surcharges ($50-$200)
-   * - "high"   → heavy fuel surcharges ($200+, e.g. BA long-haul)
-   */
-  taxProfile: TaxProfile;
-  /**
-   * Bank/credit-card currencies that can transfer INTO this program.
-   * Uses canonical currency names.
-   */
-  transferPartnersFrom: string[];
-  /**
-   * false = program is sanctioned, defunct, or irrelevant for international
-   * award redemptions. Filtered out by the cost engine.
-   * Defaults to true when omitted.
-   */
-  isBookable?: boolean;
-  /**
-   * How easily a typical user can access this program.
-   * 1 = widely accessible (major transfer partners, universally known)
-   * 2 = moderately accessible (limited transfer partners or regional)
-   * 3 = hard to access (no transfer partners, not purchasable, niche airline)
-   * Defaults to 2 when omitted.
-   */
-  accessibilityScore?: 1 | 2 | 3;
-}
-
-// ---------------------------------------------------------------------------
-// Bank point values (cost per point in USD cents) — for acquisition math
-// ---------------------------------------------------------------------------
-
-export const BANK_POINT_VALUES: Record<string, number> = {
-  "Chase Ultimate Rewards":       2.0,   // ~2c per point via Pay Yourself Back / portal
-  "Amex Membership Rewards":      2.0,
-  "Citi ThankYou":                1.7,
-  "Capital One Miles":            1.85,
-  "Bilt Rewards":                 1.8,
-  "Marriott Bonvoy":              0.7,   // 3:1 transfer ratio already baked in below
-  "Wells Fargo Rewards":          1.5,
-  "Brex Rewards":                 1.5,
-};
+import type { LoyaltyProgram } from "./types";
 
 // ---------------------------------------------------------------------------
 // Programs
@@ -796,31 +730,3 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 3,
   },
 ];
-
-// ---------------------------------------------------------------------------
-// Lookup helpers
-// ---------------------------------------------------------------------------
-
-/** Map from program name to program data for O(1) lookups. */
-export const PROGRAMS_BY_NAME: Record<string, LoyaltyProgram> = {};
-for (const p of GLOBAL_PROGRAMS) {
-  PROGRAMS_BY_NAME[p.name] = p;
-}
-
-/** Map from IATA airline code to program data. */
-export const PROGRAMS_BY_AIRLINE_CODE: Record<string, LoyaltyProgram> = {};
-for (const p of GLOBAL_PROGRAMS) {
-  PROGRAMS_BY_AIRLINE_CODE[p.airlineCode] = p;
-}
-
-/** Get all programs that a given bank currency can transfer to. */
-export function programsForBankCurrency(currency: string): LoyaltyProgram[] {
-  return GLOBAL_PROGRAMS.filter((p) =>
-    p.transferPartnersFrom.includes(currency),
-  );
-}
-
-/** Get all programs in a given alliance. */
-export function programsByAlliance(alliance: Alliance): LoyaltyProgram[] {
-  return GLOBAL_PROGRAMS.filter((p) => p.alliance === alliance);
-}

@@ -19,7 +19,7 @@
     "lighthouse:compare": "ts-node scripts/run-lighthouse.ts compare",
     "lighthouse:audit": "ts-node scripts/run-lighthouse.ts audit",
     "lighthouse:clean": "ts-node scripts/run-lighthouse.ts clean",
-    "test:live": "jest __tests__/integration __tests__/api/cron __tests__/lib/alertsEngine.test.ts __tests__/lib/p1-4-cache-race-condition.test.ts"
+    "test:live": "RUN_LIVE_TESTS=1 jest __tests__/integration __tests__/api/cron __tests__/lib/alertsEngine.test.ts __tests__/lib/p1-4-cache-race-condition.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

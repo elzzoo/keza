@@ -5,7 +5,9 @@
 import { searchEngine } from "@/lib/engine/index";
 import type { FlightResult } from "@/lib/engine/types";
 
-describe("P3: Pricing Validation for New Corridors", () => {
+const describeLive = process.env.RUN_LIVE_TESTS === "1" ? describe : describe.skip;
+
+describeLive("P3: Pricing Validation for New Corridors", () => {
   const testDate = "2026-08-15";
 
   function validatePricingSanity(result: FlightResult, _corridor: string): void {
