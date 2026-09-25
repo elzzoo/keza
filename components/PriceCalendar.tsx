@@ -60,25 +60,29 @@ export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabi
   const [year, month] = viewMonth.split("-").map(Number);
 
   // Fetch calendar prices
-  const fetchCalendar = useCallback(async (m: string) => {
+  const fetchCalendar = useCallback(async (m: string, signal: AbortSignal) => {
     if (!from || !to || from === to) return;
     setLoading(true);
     setError(false);
     try {
-      const res = await fetch(`/api/calendar?from=${from}&to=${to}&month=${m}`);
+      const res = await fetch(`/api/calendar?from=${from}&to=${to}&month=${m}`, { signal });
       if (!res.ok) throw new Error();
       const data = await res.json() as { days: CalendarDay[] };
+      if (signal.aborted) return;
       setDays(data.days ?? []);
     } catch {
+      if (signal.aborted) return;
       setError(true);
       setDays([]);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
   }, [from, to]);
 
   useEffect(() => {
-    fetchCalendar(viewMonth);
+    const controller = new AbortController();
+    void fetchCalendar(viewMonth, controller.signal);
+    return () => controller.abort();
   }, [viewMonth, fetchCalendar]);
 
   // Price map: date → price (with cabin multiplier)
@@ -260,6 +264,12 @@ export function PriceCalendar({ from, to, selectedDate, onSelectDate, lang, cabi
           {error && (
             <span className="text-[10px] text-danger">{fr ? "Erreur de chargement" : "Load error"}</span>
           )}
+        </div>
+      )}
+
+      {!loading && prices.length === 0 && error && from && to && from !== to && (
+        <div className="px-4 py-6 text-center text-sm text-danger">
+          {fr ? "Erreur de chargement" : "Load error"}
         </div>
       )}
 
