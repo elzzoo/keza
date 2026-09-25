@@ -9,7 +9,11 @@ import { hasCronSecret } from "@/lib/auth";
 // Unified handler for both GET (Vercel Cron) and POST (Inngest, backup dispatcher)
 async function handleTrialReminder() {
   try {
-    logWarn("[cron/trial-reminder] Starting trial reminder scan");
+    // Lifecycle log, not a warning — every daily run starts one, so sending
+    // it through logWarn (which forwards to Sentry as a message) generated
+    // a Sentry entry for a routine, expected event. Plain console.log keeps
+    // it visible in Vercel function logs without the Sentry noise.
+    console.log("[cron/trial-reminder] Starting trial reminder scan");
 
     const pendingKeys = await redis.smembers("keza:trial:pending_reminders");
     let reminded = 0;
