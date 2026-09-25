@@ -20,45 +20,11 @@ import {
 } from "./data";
 import { StatCard } from "./components/StatCard";
 import { B2BLeadsTable } from "./components/B2BLeadsTable";
+import { LoginForm } from "./components/LoginForm";
+import { AdminHeader } from "./components/AdminHeader";
 
 export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
-
-function LoginForm({ hasError }: { hasError: boolean }) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold text-gray-900">Admin Xalifly</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Accès restreint. Entrez le secret admin.
-        </p>
-        {hasError && (
-          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            Secret incorrect. Réessayez.
-          </p>
-        )}
-        <form method="POST" action="/api/admin/session" className="mt-6 space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700">Secret</span>
-            <input
-              type="password"
-              name="secret"
-              autoComplete="off"
-              required
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </label>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-          >
-            Accéder →
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -97,29 +63,7 @@ export default async function AdminPage({
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Données en temps réel ·{" "}
-              {stats ? formatDate(stats.fetchedAt) : "—"}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-              Xalifly
-            </span>
-            <form method="POST" action="/api/admin/session?_method=DELETE">
-              <button
-                type="submit"
-                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-100"
-              >
-                Déconnexion
-              </button>
-            </form>
-          </div>
-        </div>
+        <AdminHeader fetchedAt={stats?.fetchedAt ?? null} />
 
         {/* Error state */}
         {error && (
