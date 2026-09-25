@@ -11,18 +11,8 @@ import {
   type B2BLead,
   type PriceAlertsParityStatus,
 } from "./data";
-import { B2BLeadsTable } from "./components/B2BLeadsTable";
 import { LoginForm } from "./components/LoginForm";
-import { AdminHeader } from "./components/AdminHeader";
-import { AdminQuickLinks } from "./components/AdminQuickLinks";
-import { AdminErrorBanner } from "./components/AdminErrorBanner";
-import { EmailEngagementSection } from "./components/EmailEngagementSection";
-import { AffiliateRevenueSection } from "./components/AffiliateRevenueSection";
-import { SystemDetailsSection } from "./components/SystemDetailsSection";
-import { AdminOverviewSection } from "./components/AdminOverviewSection";
-import { PriceAlertsParitySection } from "./components/PriceAlertsParitySection";
-import { CronStatusSection } from "./components/CronStatusSection";
-import { EngineObservabilitySection } from "./components/EngineObservabilitySection";
+import { AdminDashboard } from "./components/AdminDashboard";
 
 export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
@@ -62,44 +52,13 @@ export default async function AdminPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="mx-auto max-w-4xl">
-        <AdminHeader fetchedAt={stats?.fetchedAt ?? null} />
-
-        {error && <AdminErrorBanner message={error} />}
-
-        {/* Stats grid */}
-        {stats && (
-          <>
-            <AdminOverviewSection stats={stats} backupStatus={backupStatus} />
-
-            {priceAlertsParity && <PriceAlertsParitySection status={priceAlertsParity} />}
-
-            {cronStatus && <CronStatusSection cronStatus={cronStatus} />}
-
-            <EmailEngagementSection
-              confirmationOpens={stats.totalConfirmationOpens}
-              priceDropOpens={stats.totalPriceDropOpens}
-              digestOpens={stats.totalDigestOpens}
-            />
-
-            <AffiliateRevenueSection
-              clicksToday={stats.clicksToday}
-              clicksTotal={stats.clicksTotal}
-              estimatedBookings={stats.estimatedBookings}
-              estimatedRevenue={stats.estimatedRevenue}
-            />
-
-            <EngineObservabilitySection engineStats={stats.engineStats} />
-
-            <SystemDetailsSection stats={stats} backupStatus={backupStatus} />
-
-            <AdminQuickLinks pushSubscriptions={stats.pushSubscriptions} />
-
-            <B2BLeadsTable leads={leads} />
-          </>
-        )}
-      </div>
-    </div>
+    <AdminDashboard
+      stats={stats}
+      leads={leads}
+      cronStatus={cronStatus}
+      backupStatus={backupStatus}
+      priceAlertsParity={priceAlertsParity}
+      error={error}
+    />
   );
 }
