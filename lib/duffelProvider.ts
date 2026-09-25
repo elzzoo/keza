@@ -149,6 +149,18 @@ export function parseDurationMinutes(iso: string): number {
   return (Number(match[1] ?? 0) * 60) + Number(match[2] ?? 0);
 }
 
+export function sanitizeDuffelErrorBody(body: string): string {
+  return body
+    .slice(0, 200)
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer ***")
+    .replace(/("(?:api[_-]?key|authorization|token)"\s*:\s*)"[^"]*"/gi, '$1"***"')
+    .replace(/('(?:api[_-]?key|authorization|token)'\s*:\s*)'[^']*'/gi, "$1'***'")
+    .replace(/\b(api[_-]?key|authorization|token)=([^&\s]+)/gi, "$1=***")
+    .replace(/\b(api[_-]?key|authorization|token):\s*[^\s,;}]+/gi, "$1: ***")
+    .replace(/\b(sk|pk)_(live|test)_[A-Za-z0-9_=-]+/g, "$1_$2_***")
+    .replace(/\bduffel_(live|test)_[A-Za-z0-9_=-]+/g, "duffel_$1_***");
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
@@ -246,8 +258,8 @@ export async function fetchFromDuffel(
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      // Sanitize error body to avoid leaking API keys or sensitive data
-      const sanitized = body.slice(0, 200).replace(/api[_-]?key|authorization|token/gi, "***");
+      // Sanitize error body to avoid leaking API keys or sensitive data.
+      const sanitized = sanitizeDuffelErrorBody(body);
       logError(`[duffel] ${res.status} for ${from}→${to}: ${sanitized}`);
       // Check for 429 rate limiting
       if (res.status === 429) {

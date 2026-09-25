@@ -2,20 +2,41 @@
 // Tests for pure helpers and FX rate logic in lib/duffelProvider.ts
 
 const mockRedisGet = jest.fn();
+const mockRedisSetex = jest.fn();
+const mockLogError = jest.fn();
+const mockLogWarn = jest.fn();
 
 jest.mock("@/lib/redis", () => ({
   redis: {
     get: (...args: unknown[]) => mockRedisGet(...args),
+    setex: (...args: unknown[]) => mockRedisSetex(...args),
   },
 }));
 
-import { parseDurationMinutes, toUsd } from "@/lib/duffelProvider";
+jest.mock("@/lib/logger", () => ({
+  logError: (...args: unknown[]) => mockLogError(...args),
+  logWarn: (...args: unknown[]) => mockLogWarn(...args),
+}));
+
+import {
+  fetchFromDuffel,
+  parseDurationMinutes,
+  sanitizeDuffelErrorBody,
+  toUsd,
+} from "@/lib/duffelProvider";
 
 beforeEach(() => {
   jest.clearAllMocks();
   // Reset the module-level cache between tests
   jest.resetModules();
   mockRedisGet.mockResolvedValue(null);
+  mockRedisSetex.mockResolvedValue("OK");
+  process.env.DUFFEL_API_KEY = "duffel_test_local";
+  global.fetch = jest.fn();
+});
+
+afterEach(() => {
+  delete process.env.DUFFEL_API_KEY;
 });
 
 // ─── parseDurationMinutes ─────────────────────────────────────────────────────
@@ -102,5 +123,133 @@ describe("toUsd", () => {
     mockRedisGet.mockResolvedValue(null);
     const result = await toUsd("0", "XYZ");
     expect(result).toBeNull();
+  });
+});
+
+// ─── sanitizeDuffelErrorBody ─────────────────────────────────────────────────
+
+describe("sanitizeDuffelErrorBody", () => {
+  it("removes bearer tokens, JSON secrets, query params, and provider key patterns", () => {
+    const result = sanitizeDuffelErrorBody(
+      [
+        'Authorization: Bearer sk_live_supersecret',
+        '{"token":"duffel_live_hidden","api_key":"plain-secret"}',
+        "https://example.test/?api_key=another-secret&safe=1",
+      ].join(" ")
+    );
+
+    expect(result).toContain("*** ***");
+    expect(result).toContain('"token":"***"');
+    expect(result).toContain('"api_key":"***"');
+    expect(result).toContain("api_key=***");
+    expect(result).not.toContain("sk_live_supersecret");
+    expect(result).not.toContain("duffel_live_hidden");
+    expect(result).not.toContain("plain-secret");
+    expect(result).not.toContain("another-secret");
+  });
+});
+
+// ─── fetchFromDuffel — failure hardening ─────────────────────────────────────
+
+describe("fetchFromDuffel", () => {
+  it("returns [] without calling Duffel when the API key is missing", async () => {
+    delete process.env.DUFFEL_API_KEY;
+
+    await expect(fetchFromDuffel("CDG", "JFK", "2026-10-10")).resolves.toEqual([]);
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("sanitizes non-OK error bodies before logging them", async () => {
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce(new Response("temporary server error", { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response('{"Authorization":"Bearer sk_live_secret","token":"duffel_live_secret"}', {
+          status: 500,
+        })
+      );
+
+    await expect(fetchFromDuffel("CDG", "JFK", "2026-10-10")).resolves.toEqual([]);
+
+    const logged = mockLogError.mock.calls.map((call) => call.join(" ")).join("\n");
+    expect(logged).toContain("[duffel] 500");
+    expect(logged).not.toContain("sk_live_secret");
+    expect(logged).not.toContain("duffel_live_secret");
+  });
+
+  it("logs retry-after context for 429 responses and falls back cleanly", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      new Response('{"error":"rate limited"}', {
+        status: 429,
+        headers: { "Retry-After": "17" },
+      })
+    );
+
+    await expect(fetchFromDuffel("CDG", "JFK", "2026-10-10")).resolves.toEqual([]);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(mockLogWarn).toHaveBeenCalledWith(
+      "[duffel] rate limited (retry after 17s), falling back to Travelpayouts"
+    );
+  });
+
+  it("returns [] for invalid JSON responses", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce(new Response("not-json", { status: 200 }));
+
+    await expect(fetchFromDuffel("CDG", "JFK", "2026-10-10")).resolves.toEqual([]);
+
+    expect(mockLogError).toHaveBeenCalledWith("[duffel] invalid JSON response for CDG→JFK");
+  });
+
+  it("returns [] when the response has no offers array", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      Response.json({ data: { offers: null } }, { status: 200 })
+    );
+
+    await expect(fetchFromDuffel("CDG", "JFK", "2026-10-10")).resolves.toEqual([]);
+
+    expect(mockLogWarn).toHaveBeenCalledWith(
+      "[duffel] invalid response structure for CDG→JFK: offers is not an array"
+    );
+  });
+
+  it("skips malformed offers but keeps valid offers", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      Response.json({
+        data: {
+          offers: [
+            { total_amount: "400", total_currency: "USD", slices: [] },
+            {
+              id: "off_valid",
+              total_amount: "500",
+              total_currency: "USD",
+              slices: [
+                {
+                  duration: "PT8H10M",
+                  segments: [
+                    {
+                      operating_carrier: { iata_code: "AF" },
+                      departing_at: "2026-10-10T10:00:00",
+                      arriving_at: "2026-10-10T18:10:00",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    await expect(fetchFromDuffel("CDG", "JFK", "2026-10-10")).resolves.toEqual([
+      {
+        from: "CDG",
+        to: "JFK",
+        price: 500,
+        airlines: ["Air France"],
+        stops: 0,
+        duration: 490,
+      },
+    ]);
   });
 });
