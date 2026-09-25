@@ -4,6 +4,8 @@
 const mockRedisGet = jest.fn();
 const mockRedisSetex = jest.fn();
 const mockRedisDel = jest.fn();
+const mockLogError = jest.fn();
+const mockLogWarn = jest.fn();
 
 jest.mock("@/lib/redis", () => ({
   redis: {
@@ -11,6 +13,11 @@ jest.mock("@/lib/redis", () => ({
     setex: (...args: unknown[]) => mockRedisSetex(...args),
     del: (...args: unknown[]) => mockRedisDel(...args),
   },
+}));
+
+jest.mock("@/lib/logger", () => ({
+  logError: (...args: unknown[]) => mockLogError(...args),
+  logWarn: (...args: unknown[]) => mockLogWarn(...args),
 }));
 
 import { fetchFromAmadeus } from "@/lib/amadeusProvider";
@@ -92,6 +99,31 @@ describe("fetchFromAmadeus — OAuth2 token handling", () => {
 
     expect(result).toEqual([]);
     expect(mockRedisDel).toHaveBeenCalledWith("amadeus:oauth:token");
+  });
+
+  it("sanitizes provider error bodies before logging them", async () => {
+    mockRedisGet.mockResolvedValueOnce("cached-token");
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => "temporary server error",
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () =>
+          '{"authorization":"Bearer sk_live_secret","client_secret":"plain-secret","token":"duffel_live_hidden"}',
+      });
+
+    const result = await fetchFromAmadeus("DSS", "CDG", "2026-09-01");
+
+    const logged = mockLogError.mock.calls.map((call) => call.join(" ")).join("\n");
+    expect(result).toEqual([]);
+    expect(logged).toContain("[amadeus] 500");
+    expect(logged).not.toContain("sk_live_secret");
+    expect(logged).not.toContain("plain-secret");
+    expect(logged).not.toContain("duffel_live_hidden");
   });
 
   it("returns [] when the token endpoint itself fails", async () => {

@@ -5,6 +5,7 @@ import { redis } from "@/lib/redis";
 import { logError, logWarn } from "@/lib/logger";
 import { toUsd, parseDurationMinutes } from "./duffelProvider";
 import { AMADEUS_TIMEOUT_MS } from "@/lib/config";
+import { sanitizeProviderErrorBody } from "@/lib/providerErrorSanitizer";
 
 type Cabin = "economy" | "premium" | "business" | "first";
 
@@ -190,7 +191,7 @@ export async function fetchFromAmadeus(
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      const sanitized = body.slice(0, 200).replace(/api[_-]?key|authorization|token/gi, "***");
+      const sanitized = sanitizeProviderErrorBody(body);
       logError(`[amadeus] ${res.status} for ${from}→${to}: ${sanitized}`);
       await trackAmadeusError(true);
       // A 401 usually means the cached token expired server-side before our

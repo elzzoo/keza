@@ -5,6 +5,7 @@ import { redis } from "@/lib/redis";
 import { logError, logWarn } from "@/lib/logger";
 import { roundPrice } from "@/lib/roundPrice";
 import { DUFFEL_TIMEOUT_MS } from "@/lib/config";
+import { sanitizeProviderErrorBody } from "@/lib/providerErrorSanitizer";
 
 const DUFFEL_ERROR_TRACKING_KEY = "duffel:errors:1m";
 
@@ -150,15 +151,7 @@ export function parseDurationMinutes(iso: string): number {
 }
 
 export function sanitizeDuffelErrorBody(body: string): string {
-  return body
-    .slice(0, 200)
-    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer ***")
-    .replace(/("(?:api[_-]?key|authorization|token)"\s*:\s*)"[^"]*"/gi, '$1"***"')
-    .replace(/('(?:api[_-]?key|authorization|token)'\s*:\s*)'[^']*'/gi, "$1'***'")
-    .replace(/\b(api[_-]?key|authorization|token)=([^&\s]+)/gi, "$1=***")
-    .replace(/\b(api[_-]?key|authorization|token):\s*[^\s,;}]+/gi, "$1: ***")
-    .replace(/\b(sk|pk)_(live|test)_[A-Za-z0-9_=-]+/g, "$1_$2_***")
-    .replace(/\bduffel_(live|test)_[A-Za-z0-9_=-]+/g, "duffel_$1_***");
+  return sanitizeProviderErrorBody(body);
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
