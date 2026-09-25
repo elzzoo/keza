@@ -42,6 +42,12 @@ describe("PROGRAMS data integrity", () => {
     expect(unique.size).toBe(PROGRAMS.length);
   });
 
+  it("all names are unique", () => {
+    const names = PROGRAMS.map((p) => p.name);
+    const unique = new Set(names);
+    expect(unique.size).toBe(PROGRAMS.length);
+  });
+
   it("top program by score has score >= 80", () => {
     const top = Math.max(...PROGRAMS.map((p) => p.score));
     expect(top).toBeGreaterThanOrEqual(80);
