@@ -7,7 +7,6 @@ import {
   cronHealthColor,
   cronHealthLabel,
   formatDate,
-  formatMismatchIds,
 } from "./format";
 import {
   fetchB2BLeads,
@@ -27,6 +26,7 @@ import { EmailEngagementSection } from "./components/EmailEngagementSection";
 import { AffiliateRevenueSection } from "./components/AffiliateRevenueSection";
 import { SystemDetailsSection } from "./components/SystemDetailsSection";
 import { AdminOverviewSection } from "./components/AdminOverviewSection";
+import { PriceAlertsParitySection } from "./components/PriceAlertsParitySection";
 
 export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
@@ -77,78 +77,7 @@ export default async function AdminPage({
           <>
             <AdminOverviewSection stats={stats} backupStatus={backupStatus} />
 
-            {/* Price alerts Postgres migration */}
-            {priceAlertsParity && (
-              <div className="mt-8">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-700">
-                  Migration alertes Redis/Postgres
-                </h2>
-                {priceAlertsParity.ok ? (
-                  <>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                      <StatCard
-                        label="Parité"
-                        value={priceAlertsParity.data.inSync ? "OK" : "Écart"}
-                        sub={
-                          priceAlertsParity.data.inSync
-                            ? "Redis et Postgres alignés"
-                            : "vérifier les écarts ci-dessous"
-                        }
-                        color={priceAlertsParity.data.inSync ? "green" : "amber"}
-                      />
-                      <StatCard
-                        label="Redis actives"
-                        value={priceAlertsParity.data.redis.active}
-                        sub={`${priceAlertsParity.data.redis.valid}/${priceAlertsParity.data.redis.scanned} valides`}
-                        color="blue"
-                      />
-                      <StatCard
-                        label="Postgres actives"
-                        value={priceAlertsParity.data.postgres.active}
-                        sub={`${priceAlertsParity.data.postgres.total} miroir(s)`}
-                        color="purple"
-                      />
-                      <StatCard
-                        label="Écarts"
-                        value={
-                          priceAlertsParity.data.missingInPostgres.length +
-                          priceAlertsParity.data.extraInPostgres.length +
-                          priceAlertsParity.data.activeMismatch.length
-                        }
-                        sub="missing + extra + active"
-                        color={priceAlertsParity.data.inSync ? "green" : "amber"}
-                      />
-                    </div>
-                    {!priceAlertsParity.data.inSync && (
-                      <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                        <p className="font-semibold">Écarts de migration à corriger avant bascule de lecture.</p>
-                        <dl className="mt-3 grid gap-2">
-                          <div>
-                            <dt className="font-medium">Manquantes dans Postgres</dt>
-                            <dd className="font-mono text-xs">{formatMismatchIds(priceAlertsParity.data.missingInPostgres)}</dd>
-                          </div>
-                          <div>
-                            <dt className="font-medium">En trop dans Postgres</dt>
-                            <dd className="font-mono text-xs">{formatMismatchIds(priceAlertsParity.data.extraInPostgres)}</dd>
-                          </div>
-                          <div>
-                            <dt className="font-medium">État actif différent</dt>
-                            <dd className="font-mono text-xs">{formatMismatchIds(priceAlertsParity.data.activeMismatch)}</dd>
-                          </div>
-                        </dl>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                    <p className="font-semibold">Statut indisponible.</p>
-                    <p className="mt-1">
-                      {priceAlertsParity.error}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            {priceAlertsParity && <PriceAlertsParitySection status={priceAlertsParity} />}
 
             {/* Cron observability */}
             {cronStatus && (
