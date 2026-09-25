@@ -76,55 +76,96 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (!from || !to || from === to) {
+      setMonthData([]);
       setLoading(false);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
 
     const cacheKey = `heatmap:${from}:${to}:${cabin ?? "economy"}`;
-    const cached = typeof window !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
-
-    if (cached) {
+    const readCached = (): MonthData[] | null => {
+      if (typeof window === "undefined") return null;
+      let cached: string | null = null;
       try {
-        const data = JSON.parse(cached) as MonthData[];
-        setMonthData(data);
-        setLoading(false);
-        return;
+        cached = sessionStorage.getItem(cacheKey);
       } catch {
-        // Invalid cache, proceed to fetch
+        return null;
+      }
+      if (!cached) return null;
+      try {
+        const parsed = JSON.parse(cached) as unknown;
+        if (!Array.isArray(parsed)) return null;
+        return parsed.filter((item): item is MonthData =>
+          item !== null &&
+          typeof item === "object" &&
+          typeof (item as MonthData).month === "string" &&
+          typeof (item as MonthData).minPrice === "number"
+        );
+      } catch {
+        return null;
+      }
+    };
+
+    const writeCached = (data: MonthData[]) => {
+      if (typeof window === "undefined" || data.length === 0) return;
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch {
+        // Storage full or unavailable, silently skip caching
+      }
+    };
+
+    async function loadHeatmap() {
+      const cached = readCached();
+      if (cached && cached.length > 0) {
+        if (!cancelled) {
+          setMonthData(cached);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const months = getNextMonths(6);
+      setLoading(true);
+
+      try {
+        const results = await Promise.all(
+          months.map(async (m) => {
+            try {
+              const res = await fetch(`/api/calendar?from=${from}&to=${to}&month=${m}`);
+              if (!res.ok) return null;
+              const data = (await res.json()) as { days?: CalendarDay[] };
+              const days = data.days ?? [];
+              if (days.length === 0) return null;
+              const prices = days.map((d) => Math.round(d.price * mult));
+              const minPrice = Math.min(...prices);
+              return { month: m, minPrice } satisfies MonthData;
+            } catch {
+              return null;
+            }
+          })
+        );
+        if (cancelled) return;
+
+        const valid = results.filter((r): r is MonthData => r !== null);
+        setMonthData(valid);
+        writeCached(valid);
+      } catch {
+        if (!cancelled) setMonthData([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
 
-    const months = getNextMonths(6);
-    setLoading(true);
+    void loadHeatmap();
 
-    Promise.all(
-      months.map(async (m) => {
-        try {
-          const res = await fetch(`/api/calendar?from=${from}&to=${to}&month=${m}`);
-          if (!res.ok) return null;
-          const data = (await res.json()) as { days: CalendarDay[] };
-          const days = data.days ?? [];
-          if (days.length === 0) return null;
-          const prices = days.map((d) => Math.round(d.price * mult));
-          const minPrice = Math.min(...prices);
-          return { month: m, minPrice } satisfies MonthData;
-        } catch {
-          return null;
-        }
-      })
-    ).then((results) => {
-      const valid = results.filter((r): r is MonthData => r !== null);
-      setMonthData(valid);
-      if (typeof window !== "undefined" && valid.length > 0) {
-        try {
-          sessionStorage.setItem(cacheKey, JSON.stringify(valid));
-        } catch {
-          // Storage full or unavailable, silently skip caching
-        }
-      }
-      setLoading(false);
-    });
+    return () => {
+      cancelled = true;
+    };
   }, [from, to, cabin, mult]);
 
   if (loading) {
