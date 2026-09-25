@@ -129,6 +129,28 @@ describe("transferBonuses.ts internal integrity", () => {
   });
 });
 
+describe("transfers.ts internal integrity", () => {
+  it("has no duplicate transfer pairs", () => {
+    const counts = new Map<string, number>();
+    for (const transfer of TRANSFERS) {
+      const key = `${transfer.from}::${transfer.to}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+
+    const duplicates = [...counts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([key, count]) => `${key.replace("::", " → ")} (${count})`);
+
+    if (duplicates.length > 0) {
+      throw new Error(
+        `transfers.ts contains duplicate transfer pairs:\n` +
+        duplicates.map((entry) => `  • ${entry}`).join("\n") +
+        "\n\nMerge duplicate optimizer transfer rows so routing remains deterministic.",
+      );
+    }
+  });
+});
+
 // ---------------------------------------------------------------------------
 // 1. transfers.ts (optimizer) ⊆ transferBonuses.ts (cost engine)
 // ---------------------------------------------------------------------------
