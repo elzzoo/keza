@@ -24,6 +24,8 @@ import { LoginForm } from "./components/LoginForm";
 import { AdminHeader } from "./components/AdminHeader";
 import { AdminQuickLinks } from "./components/AdminQuickLinks";
 import { AdminErrorBanner } from "./components/AdminErrorBanner";
+import { EmailEngagementSection } from "./components/EmailEngagementSection";
+import { AffiliateRevenueSection } from "./components/AffiliateRevenueSection";
 
 export const metadata: Metadata = { title: "Admin — Xalifly", robots: "noindex" };
 export const dynamic = "force-dynamic";
@@ -233,65 +235,18 @@ export default async function AdminPage({
               </div>
             )}
 
-            {/* Email engagement */}
-            <div className="mt-8">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
-                Email Engagement — 7 derniers jours
-              </h2>
-              <div className="grid grid-cols-3 gap-4">
-                <StatCard
-                  label="Confirmations ouvertes"
-                  value={stats.totalConfirmationOpens}
-                  sub="emails de création d'alerte"
-                  color="blue"
-                />
-                <StatCard
-                  label="Alertes prix ouvertes"
-                  value={stats.totalPriceDropOpens}
-                  sub="notifications de baisse"
-                  color="green"
-                />
-                <StatCard
-                  label="Digests ouverts"
-                  value={stats.totalDigestOpens}
-                  sub="récaps hebdos"
-                  color="purple"
-                />
-              </div>
-            </div>
+            <EmailEngagementSection
+              confirmationOpens={stats.totalConfirmationOpens}
+              priceDropOpens={stats.totalPriceDropOpens}
+              digestOpens={stats.totalDigestOpens}
+            />
 
-            {/* Affiliate clicks + revenue */}
-            <div className="mt-8">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
-                Clicks Affiliés &amp; Revenu
-              </h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <StatCard
-                  label="Clicks aujourd'hui"
-                  value={stats.clicksToday}
-                  sub="bouton Réserver"
-                  color="blue"
-                />
-                <StatCard
-                  label="Clicks total"
-                  value={stats.clicksTotal}
-                  sub="depuis le lancement"
-                  color="purple"
-                />
-                <StatCard
-                  label="Réservations estimées"
-                  value={stats.estimatedBookings}
-                  sub="3% conversion × clicks"
-                  color="amber"
-                />
-                <StatCard
-                  label="Revenu estimé"
-                  value={`$${stats.estimatedRevenue}`}
-                  sub="à $18 de commission moy."
-                  color="green"
-                />
-              </div>
-            </div>
+            <AffiliateRevenueSection
+              clicksToday={stats.clicksToday}
+              clicksTotal={stats.clicksTotal}
+              estimatedBookings={stats.estimatedBookings}
+              estimatedRevenue={stats.estimatedRevenue}
+            />
 
             {/* Engine Observability — 7 days */}
             <div className="mt-8">
