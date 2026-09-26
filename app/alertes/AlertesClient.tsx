@@ -121,10 +121,10 @@ function progressPct(alert: PriceAlert): number {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function AlertesClient() {
+export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en" }) {
   const { profile } = useProfile();
   const { isActive: hasProAccess } = useProAccess();
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+  const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const [email, setEmail] = useState("");
   const [alerts, setAlerts] = useState<PriceAlert[] | null>(null);
   const [manageToken, setManageToken] = useState("");
@@ -137,6 +137,9 @@ export function AlertesClient() {
   const fr = lang === "fr";
 
   const cabinLabels = fr ? CABIN_LABELS_FR : CABIN_LABELS_EN;
+  const homeHref = fr ? "/" : "/en";
+  const proHref = fr ? "/pro" : "/en/pro";
+  const dealsHref = fr ? "/deals" : "/en/deals";
 
   const fetchAlerts = useCallback(async (emailArg: string, tokenArg: string) => {
     const normalizedEmail = emailArg.trim().toLowerCase();
@@ -311,7 +314,7 @@ export function AlertesClient() {
                   : "Configure alerts for 2, 3, or 4 passengers with Xalifly Pro."}
               </p>
               <Link
-                href="/pro"
+                href={proHref}
                 className="inline-block text-sm text-amber-700 font-bold underline"
               >
                 {fr ? "Passer à Xalifly Pro →" : "Upgrade to Xalifly Pro →"}
@@ -363,12 +366,12 @@ export function AlertesClient() {
                     : `No active alerts for ${email.trim().toLowerCase()}.`}
                 </p>
                 <Link
-                  href="/"
+                  href={homeHref}
                   className="inline-block text-sm text-primary hover:underline"
                 >
                   {fr ? "Rechercher un vol →" : "Search a flight →"}
                 </Link>
-                <Link href="/deals" className="inline-block text-sm text-muted hover:text-primary hover:underline">
+                <Link href={dealsHref} className="inline-block text-sm text-muted hover:text-primary hover:underline">
                   {fr ? "Voir les deals du moment →" : "Browse current deals →"}
                 </Link>
               </div>
@@ -384,6 +387,24 @@ export function AlertesClient() {
               <p className="text-xs text-muted mb-2">
                 {alerts.length} {fr ? "alerte(s) active(s)" : "active alert(s)"}
               </p>
+              {!hasProAccess && alerts.length >= 3 && (
+                <div className="rounded-lg border border-primary/25 bg-primary/10 p-4">
+                  <p className="text-sm font-semibold text-fg">
+                    {fr ? "Limite gratuite atteinte" : "Free alert limit reached"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    {fr
+                      ? "Tu surveilles déjà 3 routes. Xalifly Pro débloque les alertes illimitées et les alertes multi-passagers."
+                      : "You are already tracking 3 routes. Xalifly Pro unlocks unlimited alerts and multi-passenger alerts."}
+                  </p>
+                  <Link
+                    href={proHref}
+                    className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
+                  >
+                    {fr ? "Débloquer Xalifly Pro →" : "Unlock Xalifly Pro →"}
+                  </Link>
+                </div>
+              )}
               {deleteError && (
                 <p className="text-xs text-red-400 mb-2">{deleteError}</p>
               )}

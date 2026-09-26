@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export default function EnAlertesPage() {
   return (
     <ErrorBoundary lang="en">
-      <AlertesClient />
+      <AlertesClient initialLang="en" />
     </ErrorBoundary>
   );
 }
