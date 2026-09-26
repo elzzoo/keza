@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité — Xalifly",
   description: "Politique de confidentialité et protection des données personnelles de Xalifly.",
+  alternates: {
+    canonical: `${SITE_URL}/confidentialite`,
+    languages: { fr: `${SITE_URL}/confidentialite`, en: `${SITE_URL}/en/privacy` },
+  },
 };
 
 export default function Confidentialite() {

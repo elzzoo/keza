@@ -26,12 +26,48 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95,
       alternates: { languages: { fr: BASE_URL, en: `${BASE_URL}/en` } },
     },
-    // ── Static FR pages (no EN equivalent) ───────────────────────────────────
+    // ── Business and compliance pages ────────────────────────────────────────
     {
       url: `${BASE_URL}/entreprises`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
+      alternates: { languages: { fr: `${BASE_URL}/entreprises`, en: `${BASE_URL}/en/entreprises` } },
+    },
+    {
+      url: `${BASE_URL}/en/entreprises`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+      alternates: { languages: { fr: `${BASE_URL}/entreprises`, en: `${BASE_URL}/en/entreprises` } },
+    },
+    {
+      url: `${BASE_URL}/mentions-legales`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+      alternates: { languages: { fr: `${BASE_URL}/mentions-legales`, en: `${BASE_URL}/en/legal` } },
+    },
+    {
+      url: `${BASE_URL}/en/legal`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+      alternates: { languages: { fr: `${BASE_URL}/mentions-legales`, en: `${BASE_URL}/en/legal` } },
+    },
+    {
+      url: `${BASE_URL}/confidentialite`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+      alternates: { languages: { fr: `${BASE_URL}/confidentialite`, en: `${BASE_URL}/en/privacy` } },
+    },
+    {
+      url: `${BASE_URL}/en/privacy`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+      alternates: { languages: { fr: `${BASE_URL}/confidentialite`, en: `${BASE_URL}/en/privacy` } },
     },
     {
       url: `${BASE_URL}/pro`,

@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Mentions légales — Xalifly",
   description: "Mentions légales et informations juridiques de Xalifly.",
+  alternates: {
+    canonical: `${SITE_URL}/mentions-legales`,
+    languages: { fr: `${SITE_URL}/mentions-legales`, en: `${SITE_URL}/en/legal` },
+  },
 };
 
 export default function MentionsLegales() {

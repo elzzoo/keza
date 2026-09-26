@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Legal Notice — Xalifly",
   description: "Legal information for Xalifly.",
+  alternates: {
+    canonical: `${SITE_URL}/en/legal`,
+    languages: { fr: `${SITE_URL}/mentions-legales`, en: `${SITE_URL}/en/legal` },
+  },
 };
 
 export default function LegalNotice() {
