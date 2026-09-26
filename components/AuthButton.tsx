@@ -11,6 +11,9 @@ interface Props {
 export function AuthButton({ lang }: Props) {
   const { data: session, status } = useSession();
   const fr = lang === "fr";
+  const accountHref = "/compte";
+  const walletHref = fr ? "/profil" : "/en/profile";
+  const signOutHref = fr ? "/" : "/en";
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -44,19 +47,19 @@ export function AuthButton({ lang }: Props) {
         {/* Dropdown */}
         <div className="absolute right-0 top-10 z-50 hidden group-focus-within:flex flex-col bg-surface border border-border rounded-xl shadow-lg overflow-hidden min-w-[160px]">
           <a
-            href="/compte"
+            href={accountHref}
             className="px-4 py-2.5 text-xs text-fg hover:bg-surface-2 transition-colors"
           >
             👤 {fr ? "Mon compte" : "My account"}
           </a>
           <a
-            href="/profil"
+            href={walletHref}
             className="px-4 py-2.5 text-xs text-fg hover:bg-surface-2 transition-colors"
           >
             💳 {fr ? "Wallet miles" : "Miles wallet"}
           </a>
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => signOut({ callbackUrl: signOutHref })}
             className="px-4 py-2.5 text-xs text-left text-muted hover:text-fg hover:bg-surface-2 transition-colors border-t border-border"
           >
             {fr ? "Se déconnecter" : "Sign out"}
