@@ -3,6 +3,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import type { Destination, Region } from "@/data/destinations";
+import { AIRPORTS } from "@/data/airports";
 import type { DestinationPriceHistory, MonthlyPrice } from "@/lib/priceHistory";
 import type { DealRecommendation } from "@/lib/dealsEngine";
 
@@ -41,6 +42,8 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
   NEUTRAL:   "IF YOU HAVE MILES",
   USE_CASH:  "CASH WINS",
 };
+
+const MONTH_LABELS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // SVG viewBox: 0 0 400 80. Points mapped into y ∈ [5, 75].
 function buildSparkline(monthlyPrices: MonthlyPrice[]): {
@@ -98,6 +101,10 @@ export function PriceChart({ histories, destinations, lang }: Props) {
 function PriceChartInner({ histories, destinations, lang }: Props) {
   const recLabels = lang === "fr" ? REC_LABELS_FR : REC_LABELS_EN;
   const fromLabel = lang === "fr" ? "depuis Dakar (DSS)" : "from Dakar (DSS)";
+  const monthLabel = (month: MonthlyPrice) =>
+    lang === "fr" ? month.monthLabel : MONTH_LABELS_EN[month.month] ?? month.monthLabel;
+  const destinationCity = (dest: Destination) =>
+    lang === "fr" ? dest.city : AIRPORTS.find((a) => a.code === dest.iata)?.cityEn ?? dest.city;
 
   // Default: Africa → first Africa destination (CMN = Casablanca)
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("africa");
@@ -125,11 +132,18 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
   }, [selectedIata]);
 
   const selectedDest = destinations.find((d) => d.iata === selectedIata) ?? destinations[0];
+  const selectedAirport = AIRPORTS.find((a) => a.code === selectedDest.iata);
+  const selectedCity = lang === "fr"
+    ? selectedDest.city
+    : selectedAirport?.cityEn ?? selectedDest.city;
+  const selectedCountry = lang === "fr"
+    ? selectedDest.country
+    : selectedAirport?.countryEn ?? selectedDest.country;
   const history = histories.find((h) => h.iata === selectedIata) ?? histories[0];
   const { monthlyPrices, bestMonths, worstMonths } = history;
 
-  const bestMonthLabels = bestMonths.map((i) => monthlyPrices[i].monthLabel);
-  const worstMonthLabels = worstMonths.map((i) => monthlyPrices[i].monthLabel);
+  const bestMonthLabels = bestMonths.map((i) => monthLabel(monthlyPrices[i]));
+  const worstMonthLabels = worstMonths.map((i) => monthLabel(monthlyPrices[i]));
   const cheapestMonth = monthlyPrices[bestMonths[0] ?? 0];
   const displayMonth = selectedMonthIdx !== null ? monthlyPrices[selectedMonthIdx] : cheapestMonth;
   const chartColor = REC_COLORS[cheapestMonth.recommendation];
@@ -137,10 +151,10 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
   const { polylinePoints, areaPath, dots, minPrice, maxPrice, minIdx, maxIdx } =
     buildSparkline(monthlyPrices);
 
-  // x-axis label positions (every other month: Jan Mar Mai Jul Sep Nov)
+  // x-axis label positions (every other month)
   const xAxisLabels = [0, 2, 4, 6, 8, 10].map((i) => ({
     x: (i / 11) * 400,
-    label: monthlyPrices[i].monthLabel,
+    label: monthLabel(monthlyPrices[i]),
   }));
 
   const gradId = `grad-${selectedIata}`;
@@ -178,7 +192,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
                 : "bg-transparent border-border text-muted hover:text-fg hover:border-border/60"
             }`}
           >
-            {d.flag} {d.city}
+            {d.flag} {destinationCity(d)}
           </button>
         ))}
       </div>
@@ -189,8 +203,8 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">{selectedDest.flag}</span>
           <div>
-            <div className="font-black text-fg text-base">{selectedDest.city}</div>
-            <div className="text-xs text-muted">{selectedDest.country} · {fromLabel}</div>
+            <div className="font-black text-fg text-base">{selectedCity}</div>
+            <div className="text-xs text-muted">{selectedCountry} · {fromLabel}</div>
           </div>
         </div>
 
@@ -205,7 +219,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
             viewBox="0 0 400 90"
             className="w-full"
             style={{ height: "120px" }}
-            aria-label={lang === "fr" ? `Graphique des prix pour ${selectedDest.city}` : `Price chart for ${selectedDest.city}`}
+            aria-label={lang === "fr" ? `Graphique des prix pour ${selectedCity}` : `Price chart for ${selectedCity}`}
           >
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -306,7 +320,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
           <span className="mr-1">💡</span>
           <span className="font-bold text-muted mr-1">
             {selectedMonthIdx !== null
-              ? displayMonth.monthLabel
+              ? monthLabel(displayMonth)
               : (lang === "fr" ? "Meilleur mois" : "Best month")}
             {" "}—
           </span>
@@ -314,7 +328,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
             <span className="text-muted">
               En{" "}
               <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
-                {displayMonth.monthLabel}
+                {monthLabel(displayMonth)}
               </strong>
               , tes miles valent{" "}
               <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
@@ -329,7 +343,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
             <span className="text-muted">
               In{" "}
               <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
-                {displayMonth.monthLabel}
+                {monthLabel(displayMonth)}
               </strong>
               , your miles are worth{" "}
               <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>

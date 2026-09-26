@@ -103,8 +103,11 @@ describe("PriceChart i18n", () => {
       />
     );
 
-    expect(screen.getByText(/from Dakar \(DSS\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Morocco · from Dakar \(DSS\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jan · Feb · Mar · Apr/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jun · Jul · Aug · Dec/i)).toBeInTheDocument();
     expect(screen.getByText(/your miles are worth/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/price chart for/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Maroc|Fév|Aoû|Déc/)).not.toBeInTheDocument();
   });
 });
