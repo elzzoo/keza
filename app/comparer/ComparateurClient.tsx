@@ -53,10 +53,10 @@ export function buildComparisonData(iatas: string[]) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function ComparateurClient() {
+export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" | "en" }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+  const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const fr = lang === "fr";
 
   const slotA = searchParams.get("a")?.toUpperCase() ?? "";
@@ -79,7 +79,7 @@ export function ComparateurClient() {
     } else {
       params.delete(slot);
     }
-    router.replace(`/comparer?${params.toString()}`);
+    router.replace(`${fr ? "/comparer" : "/en/comparer"}?${params.toString()}`);
   }
 
   const selected = useMemo(
@@ -93,6 +93,8 @@ export function ComparateurClient() {
       : selected.length === 2
       ? "grid-cols-2"
       : "grid-cols-3";
+  const destinationPath = (iata: string) =>
+    `${fr ? "/destinations" : "/en/destinations"}/${iata.toLowerCase()}`;
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -201,7 +203,7 @@ export function ComparateurClient() {
                     </div>
                     <div>
                       <Link
-                        href={`/destinations/${dest.iata.toLowerCase()}`}
+                        href={destinationPath(dest.iata)}
                         className="text-xs text-muted hover:text-fg transition-colors"
                       >
                         {fr ? "Voir la fiche →" : "View details →"}

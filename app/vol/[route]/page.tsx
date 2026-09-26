@@ -54,20 +54,29 @@ export async function generateMetadata(
     meta.seasonTip.fr.slice(0, 100) + "…";
 
   const ogUrl    = `${SITE_URL}/api/og?from=${from}&to=${to}&lang=fr`;
-  const canonical = `${SITE_URL}/vol/${route}`;
-  const enUrl = `${SITE_URL}/en/vol/${route}`;
+  const pageUrl  = `${SITE_URL}/vol/${route}`;
+  // /vol/[route] and /flights/[route] render overlapping corridor content
+  // (same ROUTE_META-derived FAQ, stats, "best programs") for any pair also
+  // reachable at /flights — which additionally has live pricing and covers
+  // every IATA pair, not just the ones in ROUTE_META. To avoid Google
+  // treating these as duplicate content, this page keeps serving real
+  // visitors and internal links (profile "recent routes", related-routes
+  // module) unchanged, but declares /flights/{ROUTE} as canonical instead
+  // of itself — consolidating ranking signal there rather than splitting it.
+  const canonicalRoute = `${SITE_URL}/flights/${from}-${to}`;
+  const canonicalRouteEn = `${SITE_URL}/en/flights/${from}-${to}`;
 
   return {
     title,
     description,
     alternates: {
-      canonical,
-      languages: { fr: canonical, en: enUrl },
+      canonical: canonicalRoute,
+      languages: { fr: canonicalRoute, en: canonicalRouteEn },
     },
     openGraph: {
       title,
       description,
-      url: canonical,
+      url: pageUrl,
       siteName: "Xalifly",
       locale: "fr_FR",
       type: "website",

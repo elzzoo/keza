@@ -11,6 +11,8 @@ describe("Footer", () => {
 
     expect(screen.getByRole("link", { name: "Rechercher" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Mon compte" })).toHaveAttribute("href", "/compte");
+    expect(screen.getByRole("link", { name: "Carte des destinations" })).toHaveAttribute("href", "/carte");
+    expect(screen.getByRole("link", { name: "Comparer" })).toHaveAttribute("href", "/comparer");
   });
 
   it("links English legal and business items to English routes", () => {
@@ -19,6 +21,8 @@ describe("Footer", () => {
     expect(screen.getByRole("link", { name: "Legal" })).toHaveAttribute("href", "/en/legal");
     expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/en/privacy");
     expect(screen.getByRole("link", { name: "For Business" })).toHaveAttribute("href", "/en/entreprises");
+    expect(screen.getByRole("link", { name: "Destination map" })).toHaveAttribute("href", "/en/carte");
+    expect(screen.getByRole("link", { name: "Compare" })).toHaveAttribute("href", "/en/comparer");
   });
 
   it("links English popular routes to English route pages", () => {

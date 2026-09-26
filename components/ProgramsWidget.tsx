@@ -21,6 +21,7 @@ const TOP5 = PROGRAMS.slice(0, 5);
 export function ProgramsWidget({ lang }: Props) {
   const t = L[lang];
   const { profile, setBalances, setBankPoints } = useProfile();
+  const programsPath = lang === "fr" ? "/programmes" : "/en/programmes";
 
   return (
     <div className="bg-surface border border-border rounded-2xl p-4" data-programs-widget="">
@@ -31,7 +32,7 @@ export function ProgramsWidget({ lang }: Props) {
           <span className="text-xs font-bold text-muted uppercase tracking-wider">{t.title}</span>
         </div>
         <Link
-          href="/programmes"
+          href={programsPath}
           className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
         >
           {t.seeAll}
@@ -43,7 +44,7 @@ export function ProgramsWidget({ lang }: Props) {
         {TOP5.map((program, index) => (
           <a
             key={program.id}
-            href={`/programmes#${program.id}`}
+            href={`${programsPath}#${program.id}`}
             onClick={() => trackProgramClick({ id: program.id, name: program.name })}
             className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-2 transition-colors group cursor-pointer"
           >

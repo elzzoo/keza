@@ -52,20 +52,24 @@ export async function generateMetadata(
     (meta.seasonTip.en ?? meta.seasonTip.fr).slice(0, 100) + "…";
 
   const ogUrl    = `${SITE_URL}/api/og?from=${from}&to=${to}&lang=en`;
-  const canonical = `${SITE_URL}/en/vol/${route}`;
-  const frUrl     = `${SITE_URL}/vol/${route}`;
+  const pageUrl  = `${SITE_URL}/en/vol/${route}`;
+  // See the FR /vol/[route] page for the full rationale: this canonicalizes
+  // to /en/flights/{ROUTE} instead of itself to avoid duplicate-content
+  // overlap with the live, broader-coverage /flights corridor pages.
+  const canonicalRouteFr = `${SITE_URL}/flights/${from}-${to}`;
+  const canonicalRouteEn = `${SITE_URL}/en/flights/${from}-${to}`;
 
   return {
     title,
     description,
     alternates: {
-      canonical,
-      languages: { fr: frUrl, en: canonical },
+      canonical: canonicalRouteEn,
+      languages: { fr: canonicalRouteFr, en: canonicalRouteEn },
     },
     openGraph: {
       title,
       description,
-      url: canonical,
+      url: pageUrl,
       siteName: "Xalifly",
       locale: "en_US",
       type: "website",

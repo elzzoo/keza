@@ -6,6 +6,7 @@ const LINKS = {
     privacy: "/confidentialite",
     business: "/entreprises",
     product:  { title: "Produit",           items: [{ label: "Rechercher", href: "/" }, { label: "Deals", href: "/deals" }, { label: "Calculateur", href: "/calculateur" }, { label: "Alertes prix", href: "/alertes" }, { label: "Alertes miles", href: "/miles-alerts" }, { label: "Mon compte", href: "/compte" }] },
+    explore:  { title: "Explorer",          items: [{ label: "Carte des destinations", href: "/carte" }, { label: "Prix par mois", href: "/prix" }, { label: "Comparer", href: "/comparer" }, { label: "Toutes les routes", href: "/vol" }] },
     programs: { title: "Programmes miles",  items: [{ label: "Flying Blue (Air France)", href: "https://www.flyingblue.com" }, { label: "Miles&Smiles (Turkish)", href: "https://www.turkishairlines.com/fr-fr/miles-smiles/" }, { label: "LifeMiles (Avianca)", href: "https://www.lifemiles.com" }, { label: "Aeroplan (Air Canada)", href: "https://www.aircanada.com/aeroplan" }] },
     routes:   { title: "Routes populaires", items: [{ label: "Dakar → Paris", href: "/flights/DSS-CDG" }, { label: "New York → Londres", href: "/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/flights/CDG-NRT" }, { label: "Lagos → Londres", href: "/flights/LOS-LHR" }] },
   },
@@ -14,6 +15,7 @@ const LINKS = {
     privacy: "/en/privacy",
     business: "/en/entreprises",
     product:  { title: "Product",       items: [{ label: "Search", href: "/en" }, { label: "Deals", href: "/en/deals" }, { label: "Calculator", href: "/en/calculateur" }, { label: "Price alerts", href: "/en/alertes" }, { label: "Miles alerts", href: "/en/miles-alerts" }, { label: "My account", href: "/en/profile" }] },
+    explore:  { title: "Explore",       items: [{ label: "Destination map", href: "/en/carte" }, { label: "Monthly prices", href: "/en/prix" }, { label: "Compare", href: "/en/comparer" }, { label: "All routes", href: "/en/vol" }] },
     programs: { title: "Miles programs", items: [{ label: "Flying Blue (Air France)", href: "https://www.flyingblue.com" }, { label: "Miles&Smiles (Turkish)", href: "https://www.turkishairlines.com/en-int/miles-smiles/" }, { label: "LifeMiles (Avianca)", href: "https://www.lifemiles.com" }, { label: "Aeroplan (Air Canada)", href: "https://www.aircanada.com/aeroplan" }] },
     routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris", href: "/en/flights/DSS-CDG" }, { label: "New York → London", href: "/en/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/en/flights/CDG-NRT" }, { label: "Lagos → London", href: "/en/flights/LOS-LHR" }] },
   },
@@ -26,7 +28,7 @@ export function Footer({ lang }: Props) {
   return (
     <footer className="bg-surface border-t border-border mt-16">
       <div className="max-w-5xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="font-black text-xl mb-2">
@@ -44,7 +46,7 @@ export function Footer({ lang }: Props) {
           </div>
 
           {/* Links */}
-          {[l.product, l.programs, l.routes].map((col) => (
+          {[l.product, l.explore, l.programs, l.routes].map((col) => (
             <div key={col.title}>
               <h4 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">{col.title}</h4>
               <ul className="space-y-2">

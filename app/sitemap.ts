@@ -2,8 +2,6 @@ import type { MetadataRoute } from "next";
 import { DESTINATIONS } from "@/data/destinations";
 import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 import { POPULAR_ROUTES } from "@/data/popularRoutes";
-import { ROUTE_META } from "@/data/routeMeta";
-import { iataToSlug } from "@/lib/routeSlug";
 
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -246,7 +244,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // ── /vol/[route] corridor SEO pages (FR + EN) ────────────────────────────────
+  // ── /vol index (FR + EN) ─────────────────────────────────────────────────
+  // Only the index/listing page is submitted here. The per-route /vol/[route]
+  // pages are NOT listed: they now declare /flights/{ROUTE} as their
+  // canonical (see app/vol/[route]/page.tsx) since that page covers the same
+  // corridor content plus live pricing for every IATA pair, not just the
+  // ones with ROUTE_META entries. Sitemaps should only list canonical URLs —
+  // every route below is already covered via the /flights POPULAR_ROUTES
+  // loop above (verified: all ROUTE_META keys are a subset of POPULAR_ROUTES).
   pages.push(
     {
       url: `${BASE_URL}/vol`,
@@ -263,17 +268,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       alternates: { languages: { fr: `${BASE_URL}/vol`, en: `${BASE_URL}/en/vol` } },
     },
   );
-  for (const key of ROUTE_META.keys()) {
-    const [from, to] = key.split("-");
-    const slug = iataToSlug(from!, to!);
-    const frUrl = `${BASE_URL}/vol/${slug}`;
-    const enUrl = `${BASE_URL}/en/vol/${slug}`;
-    const alts  = { languages: { fr: frUrl, en: enUrl } };
-    pages.push(
-      { url: frUrl, lastModified: now, changeFrequency: "daily" as const, priority: 0.85, alternates: alts },
-      { url: enUrl, lastModified: now, changeFrequency: "daily" as const, priority: 0.80, alternates: alts },
-    );
-  }
 
   // Destination pages
   for (const dest of DESTINATIONS) {

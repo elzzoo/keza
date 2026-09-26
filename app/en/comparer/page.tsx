@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function EnComparateurPage() {
   return (
     <Suspense fallback={null}>
-      <ComparateurClient />
+      <ComparateurClient initialLang="en" />
     </Suspense>
   );
 }

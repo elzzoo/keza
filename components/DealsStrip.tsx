@@ -22,6 +22,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
   const t = L[lang];
   const { currency, exchangeRates } = useProfile();
   const { deals, loading, error } = useDeals();
+  const dealsPath = lang === "fr" ? "/deals" : "/en/deals";
 
   useEffect(() => {
     if (!error) return;
@@ -44,7 +45,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
             {t.title}
           </span>
         </div>
-        <Link href="/deals" className="text-xs text-muted hover:text-primary transition-colors">
+        <Link href={dealsPath} className="text-xs text-muted hover:text-primary transition-colors">
             {t.all}
           </Link>
       </div>

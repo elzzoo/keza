@@ -76,6 +76,8 @@ export function WorldMap({ destinations, lang }: Props) {
   const t = L[lang];
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");
   const [selected, setSelected] = useState<DestinationWithRec | null>(null);
+  const destinationPath = (iata: string) =>
+    `${lang === "fr" ? "/destinations" : "/en/destinations"}/${iata.toLowerCase()}`;
 
   const handleMarkerClick = useCallback(
     (dest: DestinationWithRec) => {
@@ -192,7 +194,7 @@ export function WorldMap({ destinations, lang }: Props) {
             <div><div className="text-muted">CPM</div><div className="font-bold text-fg">{selected.cpm.toFixed(1)}{t.cpm}</div></div>
             <div className="ml-auto self-center inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black" style={{ backgroundColor: `${REC_COLORS[selected.recommendation]}22`, color: REC_COLORS[selected.recommendation], border: `1px solid ${REC_COLORS[selected.recommendation]}44` }}>{recLabels[selected.recommendation]}</div>
           </div>
-          <a href={`/destinations/${selected.iata.toLowerCase()}`} className="block w-full text-center bg-primary text-white text-xs font-bold py-2 rounded-xl hover:bg-primary/90 transition-colors mt-3">{t.searchBtn}</a>
+          <a href={destinationPath(selected.iata)} className="block w-full text-center bg-primary text-white text-xs font-bold py-2 rounded-xl hover:bg-primary/90 transition-colors mt-3">{t.searchBtn}</a>
         </div>
       )}
 
@@ -246,7 +248,7 @@ export function WorldMap({ destinations, lang }: Props) {
             </div>
           </div>
           <a
-            href={`/destinations/${selected.iata.toLowerCase()}`}
+            href={destinationPath(selected.iata)}
             className="block w-full text-center bg-primary text-white text-xs font-bold py-2.5 rounded-xl hover:bg-primary/90 transition-colors"
           >
             {t.searchBtn}

@@ -14,6 +14,7 @@ const L = {
 
 export function MilesCalculatorWidget({ lang }: Props) {
   const t = L[lang];
+  const calculatorPath = lang === "fr" ? "/calculateur" : "/en/calculateur";
   const [miles, setMiles]     = useState(50000);
   const [programIdx, setProgramIdx] = useState(0);
 
@@ -60,7 +61,7 @@ export function MilesCalculatorWidget({ lang }: Props) {
       </div>
 
       <a
-        href="/calculateur"
+        href={calculatorPath}
         className="mt-3 block text-xs text-primary/70 hover:text-primary transition-colors"
       >
         {t.detail}

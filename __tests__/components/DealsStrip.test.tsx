@@ -58,6 +58,7 @@ describe("DealsStrip", () => {
     await waitFor(() => {
       expect(screen.getByText("Live deals")).toBeInTheDocument();
     });
+    expect(screen.getByRole("link", { name: "See all →" })).toHaveAttribute("href", "/en/deals");
   });
 
   it("renders deal cards with readable text in light mode", async () => {

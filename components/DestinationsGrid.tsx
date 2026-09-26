@@ -92,6 +92,7 @@ function DestinationCard({
 export function DestinationsGrid({ lang, onSelect }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const t = L[lang];
+  const mapPath = lang === "fr" ? "/carte" : "/en/carte";
 
   const filtered = useMemo(
     () => filter === "all" ? DESTINATIONS : DESTINATIONS.filter((d) => d.region === filter),
@@ -106,7 +107,7 @@ export function DestinationsGrid({ lang, onSelect }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-black text-fg">{t.title}</h2>
-        <a href="/carte" className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors">{t.seeAll}</a>
+        <a href={mapPath} className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors">{t.seeAll}</a>
       </div>
 
       {/* Filters */}

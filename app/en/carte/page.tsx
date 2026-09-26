@@ -98,7 +98,7 @@ export default function EnCartePage() {
         {/* CTA back to search */}
         <div className="mt-6 text-center">
           <Link
-            href="/"
+            href="/en"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
           >
             ✈ Search a flight
