@@ -8,7 +8,11 @@ export const metadata: Metadata = {
     "Compare cash prices and miles redemptions for flights. Find the best value — pay with cash or points.",
   alternates: {
     canonical: `${SITE_URL}/en`,
-    languages: { fr: `${SITE_URL}` },
+    languages: {
+      fr: SITE_URL,
+      en: `${SITE_URL}/en`,
+      "x-default": SITE_URL,
+    },
   },
   openGraph: {
     title: "Xalifly — Compare Flight Prices: Cash vs Miles",

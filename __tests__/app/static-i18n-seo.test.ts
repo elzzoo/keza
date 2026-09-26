@@ -1,3 +1,5 @@
+import { metadata as homeMetadata } from "@/app/page";
+import { metadata as enHomeMetadata } from "@/app/en/page";
 import { metadata as businessMetadata } from "@/app/entreprises/layout";
 import { metadata as enBusinessMetadata } from "@/app/en/entreprises/page";
 import { metadata as legalMetadata } from "@/app/mentions-legales/page";
@@ -10,6 +12,19 @@ import sitemap from "@/app/sitemap";
 import { SITE_URL } from "@/lib/siteConfig";
 
 describe("static i18n SEO metadata", () => {
+  it("declares bilingual alternates for homepages", () => {
+    const languages = { fr: SITE_URL, en: `${SITE_URL}/en`, "x-default": SITE_URL };
+
+    expect(homeMetadata.alternates).toMatchObject({
+      canonical: SITE_URL,
+      languages,
+    });
+    expect(enHomeMetadata.alternates).toMatchObject({
+      canonical: `${SITE_URL}/en`,
+      languages,
+    });
+  });
+
   it("declares bilingual alternates for business pages", () => {
     const languages = { fr: `${SITE_URL}/entreprises`, en: `${SITE_URL}/en/entreprises` };
 
