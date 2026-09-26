@@ -13,6 +13,7 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NEXTAUTH_SECRET: "fake-nextauth-secret-32-chars-minimum"
+  POSTGRES_PRISMA_URL: "postgresql://postgres:postgres@localhost:5432/postgres?pgbouncer=true"
 
 jobs:
   # ── Lint + type check ────────────────────────────────────────────────────────
