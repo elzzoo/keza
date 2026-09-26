@@ -55,11 +55,15 @@ export async function generateMetadata(
 
   const ogUrl    = `${SITE_URL}/api/og?from=${from}&to=${to}&lang=fr`;
   const canonical = `${SITE_URL}/vol/${route}`;
+  const enUrl = `${SITE_URL}/en/vol/${route}`;
 
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: { fr: canonical, en: enUrl },
+    },
     openGraph: {
       title,
       description,

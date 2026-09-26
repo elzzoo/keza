@@ -10,12 +10,16 @@ export const metadata: Metadata = {
   description:
     "Comparez le prix cash vs miles sur plus de 50 routes internationales. " +
     "Afrique, Europe, USA, Asie — Xalifly calcule quelle option est la moins chère.",
-  alternates: { canonical: `${SITE_URL}/vol` },
+  alternates: {
+    canonical: `${SITE_URL}/vol`,
+    languages: { fr: `${SITE_URL}/vol`, en: `${SITE_URL}/en/vol` },
+  },
   openGraph: {
     title: "Vols Cash vs Miles — Toutes les routes | Xalifly",
     description: "50+ routes internationales comparées cash vs miles en temps réel.",
     url: `${SITE_URL}/vol`,
     siteName: "Xalifly",
+    locale: "fr_FR",
     images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630 }],
   },
 };

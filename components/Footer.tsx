@@ -5,7 +5,7 @@ const LINKS = {
     legal: "/mentions-legales",
     privacy: "/confidentialite",
     business: "/entreprises",
-    product:  { title: "Produit",           items: [{ label: "Rechercher", href: "#" }, { label: "Deals", href: "/deals" }, { label: "Calculateur", href: "/calculateur" }, { label: "Alertes prix", href: "/alertes" }, { label: "Alertes miles", href: "/miles-alerts" }, { label: "Mon compte", href: "/compte" }] },
+    product:  { title: "Produit",           items: [{ label: "Rechercher", href: "/" }, { label: "Deals", href: "/deals" }, { label: "Calculateur", href: "/calculateur" }, { label: "Alertes prix", href: "/alertes" }, { label: "Alertes miles", href: "/miles-alerts" }, { label: "Mon compte", href: "/compte" }] },
     programs: { title: "Programmes miles",  items: [{ label: "Flying Blue (Air France)", href: "https://www.flyingblue.com" }, { label: "Miles&Smiles (Turkish)", href: "https://www.turkishairlines.com/fr-fr/miles-smiles/" }, { label: "LifeMiles (Avianca)", href: "https://www.lifemiles.com" }, { label: "Aeroplan (Air Canada)", href: "https://www.aircanada.com/aeroplan" }] },
     routes:   { title: "Routes populaires", items: [{ label: "Dakar → Paris", href: "/flights/DSS-CDG" }, { label: "New York → Londres", href: "/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/flights/CDG-NRT" }, { label: "Lagos → Londres", href: "/flights/LOS-LHR" }] },
   },
@@ -15,7 +15,7 @@ const LINKS = {
     business: "/en/entreprises",
     product:  { title: "Product",       items: [{ label: "Search", href: "/en" }, { label: "Deals", href: "/en/deals" }, { label: "Calculator", href: "/en/calculateur" }, { label: "Price alerts", href: "/en/alertes" }, { label: "Miles alerts", href: "/en/miles-alerts" }, { label: "My account", href: "/en/profile" }] },
     programs: { title: "Miles programs", items: [{ label: "Flying Blue (Air France)", href: "https://www.flyingblue.com" }, { label: "Miles&Smiles (Turkish)", href: "https://www.turkishairlines.com/en-int/miles-smiles/" }, { label: "LifeMiles (Avianca)", href: "https://www.lifemiles.com" }, { label: "Aeroplan (Air Canada)", href: "https://www.aircanada.com/aeroplan" }] },
-    routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris", href: "/flights/DSS-CDG" }, { label: "New York → London", href: "/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/flights/CDG-NRT" }, { label: "Lagos → London", href: "/flights/LOS-LHR" }] },
+    routes:   { title: "Popular routes", items: [{ label: "Dakar → Paris", href: "/en/flights/DSS-CDG" }, { label: "New York → London", href: "/en/flights/JFK-LHR" }, { label: "Paris → Tokyo", href: "/en/flights/CDG-NRT" }, { label: "Lagos → London", href: "/en/flights/LOS-LHR" }] },
   },
 };
 
