@@ -11,7 +11,7 @@ interface Props {
 export function AuthButton({ lang }: Props) {
   const { data: session, status } = useSession();
   const fr = lang === "fr";
-  const accountHref = "/compte";
+  const accountHref = fr ? "/compte" : "/en/profile";
   const walletHref = fr ? "/profil" : "/en/profile";
   const signOutHref = fr ? "/" : "/en";
   const [mounted, setMounted] = useState(false);

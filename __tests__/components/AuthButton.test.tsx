@@ -38,6 +38,10 @@ describe("AuthButton", () => {
 
     render(<AuthButton lang="en" />);
 
+    expect(await screen.findByRole("link", { name: /my account/i })).toHaveAttribute(
+      "href",
+      "/en/profile"
+    );
     expect(await screen.findByRole("link", { name: /miles wallet/i })).toHaveAttribute(
       "href",
       "/en/profile"
