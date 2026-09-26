@@ -1,5 +1,6 @@
 const mockUpsert = jest.fn();
 const mockFindMany = jest.fn();
+const mockFindUnique = jest.fn();
 const mockLogWarn = jest.fn();
 const mockBuildCriticalRedisBackup = jest.fn();
 
@@ -8,6 +9,7 @@ jest.mock("@/lib/db", () => ({
     priceAlertRecord: {
       upsert: (...args: unknown[]) => mockUpsert(...args),
       findMany: (...args: unknown[]) => mockFindMany(...args),
+      findUnique: (...args: unknown[]) => mockFindUnique(...args),
     },
   },
 }));
@@ -22,6 +24,11 @@ jest.mock("@/lib/redisBackup", () => ({
 
 import {
   backfillPriceAlertsToPostgres,
+  getActivePriceAlertsByEmailFromPostgres,
+  getActivePriceAlertsByRouteFromPostgres,
+  getAllActivePriceAlertRoutesFromPostgres,
+  getAllActivePriceAlertsByEmailFromPostgres,
+  getPriceAlertByIdFromPostgres,
   getPriceAlertsStoreParity,
   isPriceAlertPostgresSyncEnabled,
   isPriceAlertRecord,
@@ -59,6 +66,7 @@ describe("alertsPostgres", () => {
     process.env = { ...OLD_ENV };
     delete process.env.PRICE_ALERTS_POSTGRES_SYNC;
     mockUpsert.mockResolvedValue({});
+    mockFindUnique.mockResolvedValue(null);
     mockBuildCriticalRedisBackup.mockResolvedValue({
       sources: {
         priceAlerts: {
@@ -112,6 +120,124 @@ describe("alertsPostgres", () => {
     expect(isPriceAlertRecord(alert)).toBe(true);
     expect(isPriceAlertRecord({ ...alert, targetPrice: "720" })).toBe(false);
     expect(isPriceAlertRecord(null)).toBe(false);
+  });
+
+  it("maps a durable Postgres record back to PriceAlert", async () => {
+    mockFindUnique.mockResolvedValue({
+      id: "alt_123",
+      email: "user@example.com",
+      routeFrom: "DSS",
+      routeTo: "CDG",
+      cabin: "economy",
+      basePrice: 800,
+      targetPrice: 720,
+      createdAt: new Date("2026-09-16T10:00:00.000Z"),
+      lastCheckedAt: new Date("2026-09-16T11:00:00.000Z"),
+      lastPrice: 710,
+      notifCount: 1,
+      active: true,
+      notifFrequency: "instant",
+      milesProgram: "Flying Blue",
+      milesTargetCpp: 1.4,
+      milesBaseCpp: 1.1,
+      rawJson: alert,
+      syncedAt: new Date("2026-09-16T12:00:00.000Z"),
+    });
+
+    await expect(getPriceAlertByIdFromPostgres("alt_123")).resolves.toEqual(alert);
+    expect(mockFindUnique).toHaveBeenCalledWith({ where: { id: "alt_123" } });
+  });
+
+  it("reads active alerts by email and route from Postgres", async () => {
+    const record = {
+      id: "alt_123",
+      email: "user@example.com",
+      routeFrom: "DSS",
+      routeTo: "CDG",
+      cabin: "economy",
+      basePrice: 800,
+      targetPrice: 720,
+      createdAt: new Date("2026-09-16T10:00:00.000Z"),
+      lastCheckedAt: new Date("2026-09-16T11:00:00.000Z"),
+      lastPrice: 710,
+      notifCount: 1,
+      active: true,
+      notifFrequency: "instant",
+      milesProgram: "Flying Blue",
+      milesTargetCpp: 1.4,
+      milesBaseCpp: 1.1,
+      rawJson: alert,
+      syncedAt: new Date("2026-09-16T12:00:00.000Z"),
+    };
+    mockFindMany.mockResolvedValue([record]);
+
+    await expect(getActivePriceAlertsByEmailFromPostgres("USER@example.com")).resolves.toEqual([alert]);
+    expect(mockFindMany).toHaveBeenLastCalledWith({
+      where: { email: "user@example.com", active: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    await expect(getActivePriceAlertsByRouteFromPostgres("dss", "cdg")).resolves.toEqual([alert]);
+    expect(mockFindMany).toHaveBeenLastCalledWith({
+      where: { routeFrom: "DSS", routeTo: "CDG", active: true },
+      orderBy: { createdAt: "asc" },
+    });
+  });
+
+  it("reads active route keys and grouped alerts from Postgres", async () => {
+    mockFindMany.mockResolvedValueOnce([
+      { routeFrom: "CDG", routeTo: "JFK" },
+      { routeFrom: "DSS", routeTo: "CDG" },
+    ]);
+
+    await expect(getAllActivePriceAlertRoutesFromPostgres()).resolves.toEqual([
+      "CDG:JFK",
+      "DSS:CDG",
+    ]);
+
+    const otherAlert = { ...alert, id: "alt_456", email: "other@example.com", to: "JFK" };
+    mockFindMany.mockResolvedValueOnce([
+      {
+        id: "alt_123",
+        email: "user@example.com",
+        routeFrom: "DSS",
+        routeTo: "CDG",
+        cabin: "economy",
+        basePrice: 800,
+        targetPrice: 720,
+        createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        lastCheckedAt: new Date("2026-09-16T11:00:00.000Z"),
+        lastPrice: 710,
+        notifCount: 1,
+        active: true,
+        notifFrequency: "instant",
+        milesProgram: "Flying Blue",
+        milesTargetCpp: 1.4,
+        milesBaseCpp: 1.1,
+      },
+      {
+        id: "alt_456",
+        email: "other@example.com",
+        routeFrom: "DSS",
+        routeTo: "JFK",
+        cabin: "economy",
+        basePrice: 800,
+        targetPrice: 720,
+        createdAt: new Date("2026-09-16T10:00:00.000Z"),
+        lastCheckedAt: new Date("2026-09-16T11:00:00.000Z"),
+        lastPrice: 710,
+        notifCount: 1,
+        active: true,
+        notifFrequency: "instant",
+        milesProgram: "Flying Blue",
+        milesTargetCpp: 1.4,
+        milesBaseCpp: 1.1,
+      },
+    ]);
+
+    const grouped = await getAllActivePriceAlertsByEmailFromPostgres();
+    expect(grouped.get("user@example.com")).toEqual([alert]);
+    expect(grouped.get("other@example.com")).toEqual([otherAlert]);
   });
 
   it("does nothing while sync flag is disabled", async () => {

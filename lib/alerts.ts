@@ -107,6 +107,22 @@ async function syncAlertRecord(alert: PriceAlert): Promise<void> {
   }
 }
 
+async function readFromPostgresOrRedis<T>(
+  readFromPostgres: () => Promise<T>,
+  readFromRedis: () => Promise<T>,
+  context: string
+): Promise<T> {
+  if (process.env.PRICE_ALERTS_POSTGRES_SYNC !== "1") {
+    return readFromRedis();
+  }
+  try {
+    return await readFromPostgres();
+  } catch (err: unknown) {
+    logError(`[alerts] postgres read failed (${context}), falling back to Redis`, err);
+    return readFromRedis();
+  }
+}
+
 // ─── Create alert ───────────────────────────────────────────────────────────
 
 export async function createAlert(params: {
@@ -155,6 +171,17 @@ export async function createAlert(params: {
 // ─── Get alerts ─────────────────────────────────────────────────────────────
 
 export async function getAlertsByEmail(email: string): Promise<PriceAlert[]> {
+  return readFromPostgresOrRedis(
+    async () => {
+      const { getActivePriceAlertsByEmailFromPostgres } = await import("@/lib/alertsPostgres");
+      return getActivePriceAlertsByEmailFromPostgres(email);
+    },
+    () => getAlertsByEmailFromRedis(email),
+    "getAlertsByEmail"
+  );
+}
+
+async function getAlertsByEmailFromRedis(email: string): Promise<PriceAlert[]> {
   const ids = await getIdsFromIndex(ALERTS_BY_EMAIL(email.toLowerCase()));
   const alerts: PriceAlert[] = [];
   for (const id of ids) {
@@ -165,10 +192,28 @@ export async function getAlertsByEmail(email: string): Promise<PriceAlert[]> {
 }
 
 export async function getAlertById(id: string): Promise<PriceAlert | null> {
-  return await redis.get<PriceAlert>(ALERT_KEY(id));
+  return readFromPostgresOrRedis(
+    async () => {
+      const { getPriceAlertByIdFromPostgres } = await import("@/lib/alertsPostgres");
+      return getPriceAlertByIdFromPostgres(id);
+    },
+    () => redis.get<PriceAlert>(ALERT_KEY(id)),
+    "getAlertById"
+  );
 }
 
 export async function getAlertsByRoute(from: string, to: string): Promise<PriceAlert[]> {
+  return readFromPostgresOrRedis(
+    async () => {
+      const { getActivePriceAlertsByRouteFromPostgres } = await import("@/lib/alertsPostgres");
+      return getActivePriceAlertsByRouteFromPostgres(from, to);
+    },
+    () => getAlertsByRouteFromRedis(from, to),
+    "getAlertsByRoute"
+  );
+}
+
+async function getAlertsByRouteFromRedis(from: string, to: string): Promise<PriceAlert[]> {
   const ids = await getIdsFromIndex(ALERTS_BY_ROUTE(from, to));
   if (ids.length === 0) return [];
 
@@ -182,8 +227,17 @@ export async function getAlertsByRoute(from: string, to: string): Promise<PriceA
 }
 
 export async function getAllActiveRoutes(): Promise<string[]> {
-  const routes = await redis.smembers(ALL_ROUTES_KEY);
-  return routes;
+  return readFromPostgresOrRedis(
+    async () => {
+      const { getAllActivePriceAlertRoutesFromPostgres } = await import("@/lib/alertsPostgres");
+      return getAllActivePriceAlertRoutesFromPostgres();
+    },
+    async () => {
+      const routes = await redis.smembers(ALL_ROUTES_KEY);
+      return routes;
+    },
+    "getAllActiveRoutes"
+  );
 }
 
 // ─── Update alert frequency ─────────────────────────────────────────────────
@@ -203,6 +257,17 @@ export async function updateAlertFrequency(
 // ─── Get all active alerts grouped by email ─────────────────────────────────
 
 export async function getAllActiveAlertsByEmail(): Promise<Map<string, PriceAlert[]>> {
+  return readFromPostgresOrRedis(
+    async () => {
+      const { getAllActivePriceAlertsByEmailFromPostgres } = await import("@/lib/alertsPostgres");
+      return getAllActivePriceAlertsByEmailFromPostgres();
+    },
+    getAllActiveAlertsByEmailFromRedis,
+    "getAllActiveAlertsByEmail"
+  );
+}
+
+async function getAllActiveAlertsByEmailFromRedis(): Promise<Map<string, PriceAlert[]>> {
   const routes = await redis.smembers(ALL_ROUTES_KEY);
   const byEmail = new Map<string, PriceAlert[]>();
 

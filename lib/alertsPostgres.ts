@@ -50,6 +50,114 @@ export function isPriceAlertRecord(value: unknown): value is PriceAlert {
   );
 }
 
+function recordToPriceAlert(record: {
+  id: string;
+  email: string;
+  routeFrom: string;
+  routeTo: string;
+  cabin: string;
+  basePrice: number;
+  targetPrice: number;
+  createdAt: Date;
+  lastCheckedAt: Date | null;
+  lastPrice: number | null;
+  notifCount: number;
+  active: boolean;
+  notifFrequency: string;
+  milesProgram: string | null;
+  milesTargetCpp: number | null;
+  milesBaseCpp: number | null;
+}): PriceAlert {
+  return {
+    id: record.id,
+    email: record.email,
+    from: record.routeFrom,
+    to: record.routeTo,
+    cabin: record.cabin as PriceAlert["cabin"],
+    basePrice: record.basePrice,
+    targetPrice: record.targetPrice,
+    createdAt: record.createdAt.toISOString(),
+    ...(record.lastCheckedAt ? { lastCheckedAt: record.lastCheckedAt.toISOString() } : {}),
+    ...(record.lastPrice !== null ? { lastPrice: record.lastPrice } : {}),
+    notifCount: record.notifCount,
+    active: record.active,
+    notifFrequency: record.notifFrequency as PriceAlert["notifFrequency"],
+    ...(record.milesProgram && record.milesTargetCpp !== null && record.milesBaseCpp !== null
+      ? {
+          milesAlert: {
+            program: record.milesProgram,
+            targetCpp: record.milesTargetCpp,
+            baseCpp: record.milesBaseCpp,
+          },
+        }
+      : {}),
+  };
+}
+
+export async function getPriceAlertByIdFromPostgres(id: string): Promise<PriceAlert | null> {
+  const record = await prisma.priceAlertRecord.findUnique({ where: { id } });
+  return record ? recordToPriceAlert(record) : null;
+}
+
+export async function getActivePriceAlertsByEmailFromPostgres(email: string): Promise<PriceAlert[]> {
+  const records = await prisma.priceAlertRecord.findMany({
+    where: {
+      email: email.toLowerCase(),
+      active: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return records.map(recordToPriceAlert);
+}
+
+export async function getActivePriceAlertsByRouteFromPostgres(
+  from: string,
+  to: string
+): Promise<PriceAlert[]> {
+  const records = await prisma.priceAlertRecord.findMany({
+    where: {
+      routeFrom: from.toUpperCase(),
+      routeTo: to.toUpperCase(),
+      active: true,
+    },
+    orderBy: { createdAt: "asc" },
+  });
+  return records.map(recordToPriceAlert);
+}
+
+export async function getAllActivePriceAlertRoutesFromPostgres(): Promise<string[]> {
+  const records = await prisma.priceAlertRecord.findMany({
+    where: { active: true },
+    distinct: ["routeFrom", "routeTo"],
+    select: {
+      routeFrom: true,
+      routeTo: true,
+    },
+    orderBy: [
+      { routeFrom: "asc" },
+      { routeTo: "asc" },
+    ],
+  });
+  return records.map((record) => `${record.routeFrom}:${record.routeTo}`);
+}
+
+export async function getAllActivePriceAlertsByEmailFromPostgres(): Promise<Map<string, PriceAlert[]>> {
+  const records = await prisma.priceAlertRecord.findMany({
+    where: { active: true },
+    orderBy: [
+      { email: "asc" },
+      { createdAt: "asc" },
+    ],
+  });
+  const byEmail = new Map<string, PriceAlert[]>();
+  for (const alert of records.map(recordToPriceAlert)) {
+    const existing = byEmail.get(alert.email) ?? [];
+    existing.push(alert);
+    byEmail.set(alert.email, existing);
+  }
+  return byEmail;
+}
+
 export async function upsertPriceAlertRecord(alert: PriceAlert): Promise<boolean> {
   try {
     const data = priceAlertToRecordData(alert);
