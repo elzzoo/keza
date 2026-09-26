@@ -5,10 +5,7 @@ import { getAllUserPortfolios, getUserCredentials } from "@/lib/portfolio";
 import { syncUserBalances } from "@/lib/balanceSync";
 import { logError } from "@/lib/logger";
 import * as Sentry from "@sentry/nextjs";
-
-function isAutomaticBalanceSyncEnabled(): boolean {
-  return process.env.BALANCE_SYNC_ENABLED === "true";
-}
+import { isAutomaticBalanceSyncEnabled } from "@/lib/balanceSyncConfig";
 
 export async function GET(req: NextRequest) {
   const limited = await rateLimitResponse(req, {

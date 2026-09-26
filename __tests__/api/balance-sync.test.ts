@@ -4,6 +4,7 @@ const mockGetServerSession = jest.fn();
 const mockCheckBalanceSyncLimit = jest.fn();
 const mockGetUserCredentials = jest.fn();
 const mockSyncUserBalances = jest.fn();
+const mockGetLastSyncTime = jest.fn();
 
 jest.mock("next-auth", () => ({
   getServerSession: (...args: unknown[]) => mockGetServerSession(...args),
@@ -21,6 +22,7 @@ jest.mock("@/lib/portfolio", () => ({
 
 jest.mock("@/lib/balanceSync", () => ({
   syncUserBalances: (...args: unknown[]) => mockSyncUserBalances(...args),
+  getLastSyncTime: (...args: unknown[]) => mockGetLastSyncTime(...args),
 }));
 
 jest.mock("@/lib/logger", () => ({
@@ -28,6 +30,7 @@ jest.mock("@/lib/logger", () => ({
 }));
 
 import { POST } from "@/app/api/balance/sync/route";
+import { GET as GET_SYNC_TIME } from "@/app/api/balance/sync-time/route";
 
 function request(): NextRequest {
   return new NextRequest("http://localhost/api/balance/sync", {
@@ -47,6 +50,7 @@ describe("POST /api/balance/sync", () => {
     mockCheckBalanceSyncLimit.mockResolvedValue({ allowed: true });
     mockGetUserCredentials.mockResolvedValue({});
     mockSyncUserBalances.mockResolvedValue([]);
+    mockGetLastSyncTime.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -62,6 +66,7 @@ describe("POST /api/balance/sync", () => {
   });
 
   it("returns 429 when the user is rate limited", async () => {
+    process.env.BALANCE_SYNC_ENABLED = "true";
     mockCheckBalanceSyncLimit.mockResolvedValueOnce({ allowed: false, retryAfterSeconds: 3600 });
 
     const res = await POST(request());
@@ -76,6 +81,7 @@ describe("POST /api/balance/sync", () => {
 
     expect(res.status).toBe(501);
     expect(body.code).toBe("BALANCE_SYNC_NOT_CONFIGURED");
+    expect(mockCheckBalanceSyncLimit).not.toHaveBeenCalled();
     expect(mockGetUserCredentials).not.toHaveBeenCalled();
     expect(mockSyncUserBalances).not.toHaveBeenCalled();
   });
@@ -97,5 +103,28 @@ describe("POST /api/balance/sync", () => {
     expect(mockSyncUserBalances).toHaveBeenCalledWith("user@example.com", {
       SINGAPORE: { username: "u", password: "p" },
     });
+  });
+
+  it("does not fetch sync time when automatic balance sync is not configured", async () => {
+    const res = await GET_SYNC_TIME(request());
+    const body = await res.json();
+
+    expect(res.status).toBe(501);
+    expect(body.code).toBe("BALANCE_SYNC_NOT_CONFIGURED");
+    expect(mockCheckBalanceSyncLimit).not.toHaveBeenCalled();
+    expect(mockGetLastSyncTime).not.toHaveBeenCalled();
+  });
+
+  it("returns last sync time when explicitly enabled", async () => {
+    process.env.BALANCE_SYNC_ENABLED = "true";
+    mockGetLastSyncTime.mockResolvedValueOnce(new Date("2026-09-26T12:00:00.000Z"));
+
+    const res = await GET_SYNC_TIME(request());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.lastSync).toBe("2026-09-26T12:00:00.000Z");
+    expect(mockCheckBalanceSyncLimit).toHaveBeenCalledWith("user@example.com", "203.0.113.10");
+    expect(mockGetLastSyncTime).toHaveBeenCalledWith("user@example.com");
   });
 });
