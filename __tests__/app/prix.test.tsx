@@ -1,6 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { Suspense } from "react";
 import PrixPage from "@/app/prix/page";
+import EnPrixPage from "@/app/en/prix/page";
+import { PriceChart } from "@/app/prix/PriceChart";
+import { DESTINATIONS } from "@/data/destinations";
+import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
 
 /**
  * P0.4 Task 3: Dynamic-Import PriceHeatmap Tests
@@ -76,5 +80,31 @@ describe("PrixPage - Dynamic Import", () => {
 
     // Component should render page structure
     expect(container.querySelector(".min-h-screen")).toBeInTheDocument();
+  });
+});
+
+describe("EnPrixPage", () => {
+  it("links English CTAs back to the English home", () => {
+    render(<EnPrixPage />);
+
+    for (const link of screen.getAllByRole("link", { name: /search a flight/i })) {
+      expect(link).toHaveAttribute("href", "/en");
+    }
+  });
+});
+
+describe("PriceChart i18n", () => {
+  it("renders the monthly value note in English", () => {
+    render(
+      <PriceChart
+        histories={getAllDestinationPriceHistories()}
+        destinations={DESTINATIONS}
+        lang="en"
+      />
+    );
+
+    expect(screen.getByText(/from Dakar \(DSS\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/your miles are worth/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/price chart for/i)).toBeInTheDocument();
   });
 });

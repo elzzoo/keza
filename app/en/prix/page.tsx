@@ -75,7 +75,7 @@ export default function EnPrixPage() {
               Price charts will be available in a few moments.
             </p>
             <Link
-              href="/"
+              href="/en"
               className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
             >
               ✈ Search a flight
@@ -93,7 +93,7 @@ export default function EnPrixPage() {
             {/* CTA */}
             <div className="mt-8 text-center">
               <Link
-                href="/"
+                href="/en"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
               >
                 ✈ Search a flight

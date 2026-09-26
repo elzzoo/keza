@@ -97,6 +97,7 @@ export function PriceChart({ histories, destinations, lang }: Props) {
 /** Inner chart — only rendered when histories & destinations are non-empty */
 function PriceChartInner({ histories, destinations, lang }: Props) {
   const recLabels = lang === "fr" ? REC_LABELS_FR : REC_LABELS_EN;
+  const fromLabel = lang === "fr" ? "depuis Dakar (DSS)" : "from Dakar (DSS)";
 
   // Default: Africa → first Africa destination (CMN = Casablanca)
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("africa");
@@ -189,7 +190,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
           <span className="text-2xl">{selectedDest.flag}</span>
           <div>
             <div className="font-black text-fg text-base">{selectedDest.city}</div>
-            <div className="text-xs text-muted">{selectedDest.country} · depuis Dakar (DSS)</div>
+            <div className="text-xs text-muted">{selectedDest.country} · {fromLabel}</div>
           </div>
         </div>
 
@@ -204,7 +205,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
             viewBox="0 0 400 90"
             className="w-full"
             style={{ height: "120px" }}
-            aria-label={`Graphique des prix pour ${selectedDest.city}`}
+            aria-label={lang === "fr" ? `Graphique des prix pour ${selectedDest.city}` : `Price chart for ${selectedDest.city}`}
           >
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -309,20 +310,37 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
               : (lang === "fr" ? "Meilleur mois" : "Best month")}
             {" "}—
           </span>
-          <span className="text-muted">
-            En{" "}
-            <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
-              {displayMonth.monthLabel}
-            </strong>
-            , tes miles valent{" "}
-            <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
-              {displayMonth.cpm.toFixed(1)}¢/mile
-            </strong>{" "}
-            →{" "}
-            <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
-              {recLabels[displayMonth.recommendation]}
-            </strong>
-          </span>
+          {lang === "fr" ? (
+            <span className="text-muted">
+              En{" "}
+              <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+                {displayMonth.monthLabel}
+              </strong>
+              , tes miles valent{" "}
+              <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+                {displayMonth.cpm.toFixed(1)}¢/mile
+              </strong>{" "}
+              →{" "}
+              <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+                {recLabels[displayMonth.recommendation]}
+              </strong>
+            </span>
+          ) : (
+            <span className="text-muted">
+              In{" "}
+              <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+                {displayMonth.monthLabel}
+              </strong>
+              , your miles are worth{" "}
+              <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+                {displayMonth.cpm.toFixed(1)}¢/mile
+              </strong>{" "}
+              →{" "}
+              <strong style={{ color: REC_COLORS[displayMonth.recommendation] }}>
+                {recLabels[displayMonth.recommendation]}
+              </strong>
+            </span>
+          )}
         </div>
       </div>
     </div>
