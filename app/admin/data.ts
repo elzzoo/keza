@@ -1,6 +1,12 @@
 import "server-only";
 
-import { getPriceAlertsStoreParity, type PriceAlertsStoreParity } from "@/lib/alertsPostgres";
+import {
+  getPriceAlertsReadSource,
+  getPriceAlertsStoreParity,
+  isPriceAlertPostgresSyncEnabled,
+  type PriceAlertsReadSource,
+  type PriceAlertsStoreParity,
+} from "@/lib/alertsPostgres";
 import type { PriceAlert } from "@/lib/alerts";
 import { redis } from "@/lib/redis";
 import {
@@ -21,7 +27,12 @@ export interface B2BLead {
 }
 
 export type PriceAlertsParityStatus =
-  | { ok: true; data: PriceAlertsStoreParity }
+  | {
+      ok: true;
+      data: PriceAlertsStoreParity;
+      postgresSyncEnabled: boolean;
+      readSource: PriceAlertsReadSource;
+    }
   | { ok: false; error: string };
 
 const ALL_ROUTES_KEY = "keza:alerts:routes";
@@ -162,7 +173,12 @@ export type BackupStatus = Awaited<ReturnType<typeof fetchBackupStatus>>;
 export async function fetchPriceAlertsParityStatus(): Promise<PriceAlertsParityStatus> {
   try {
     const data = await getPriceAlertsStoreParity();
-    return { ok: true, data };
+    return {
+      ok: true,
+      data,
+      postgresSyncEnabled: isPriceAlertPostgresSyncEnabled(),
+      readSource: getPriceAlertsReadSource(),
+    };
   } catch (err) {
     return {
       ok: false,

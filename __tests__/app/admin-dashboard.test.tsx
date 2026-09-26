@@ -49,6 +49,8 @@ const cronStatus: DailyCronStatus = {
 
 const priceAlertsParity: PriceAlertsParityStatus = {
   ok: true,
+  postgresSyncEnabled: true,
+  readSource: "postgres",
   data: {
     redis: { scanned: 18, valid: 18, active: 18 },
     postgres: { total: 18, active: 18 },

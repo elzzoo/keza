@@ -14,7 +14,13 @@ export function PriceAlertsParitySection({
       </h2>
       {status.ok ? (
         <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+            <StatCard
+              label="Lecture active"
+              value={status.readSource === "postgres" ? "Postgres" : "Redis"}
+              sub={status.postgresSyncEnabled ? "PRICE_ALERTS_POSTGRES_SYNC=1" : "flag Postgres désactivé"}
+              color={status.readSource === "postgres" ? "green" : "amber"}
+            />
             <StatCard
               label="Parité"
               value={status.data.inSync ? "OK" : "Écart"}

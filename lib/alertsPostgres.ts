@@ -10,6 +10,12 @@ export function isPriceAlertPostgresSyncEnabled(): boolean {
   return process.env.PRICE_ALERTS_POSTGRES_SYNC === "1";
 }
 
+export type PriceAlertsReadSource = "postgres" | "redis";
+
+export function getPriceAlertsReadSource(): PriceAlertsReadSource {
+  return isPriceAlertPostgresSyncEnabled() ? "postgres" : "redis";
+}
+
 export function priceAlertToRecordData(alert: PriceAlert): Prisma.PriceAlertRecordUncheckedCreateInput {
   return {
     id: alert.id,

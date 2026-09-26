@@ -2,7 +2,12 @@ import "server-only";
 
 import { NextResponse, type NextRequest } from "next/server";
 import { hasAdminSecret, hasAdminSession } from "@/lib/auth";
-import { backfillPriceAlertsToPostgres, getPriceAlertsStoreParity } from "@/lib/alertsPostgres";
+import {
+  backfillPriceAlertsToPostgres,
+  getPriceAlertsReadSource,
+  getPriceAlertsStoreParity,
+  isPriceAlertPostgresSyncEnabled,
+} from "@/lib/alertsPostgres";
 import { logError } from "@/lib/logger";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { redis } from "@/lib/redis";
@@ -61,7 +66,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   try {
     const parity = await getPriceAlertsStoreParity();
-    return NextResponse.json({ ok: true, ...parity });
+    return NextResponse.json({
+      ok: true,
+      postgresSyncEnabled: isPriceAlertPostgresSyncEnabled(),
+      readSource: getPriceAlertsReadSource(),
+      ...parity,
+    });
   } catch (err) {
     logError("[api/admin/backfill/price-alerts] status", err);
     return NextResponse.json(

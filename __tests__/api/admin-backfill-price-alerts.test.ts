@@ -6,6 +6,8 @@ const mockHasAdminSession = jest.fn();
 const mockHasAdminSecret = jest.fn();
 const mockBackfill = jest.fn();
 const mockGetParity = jest.fn();
+const mockGetPriceAlertsReadSource = jest.fn();
+const mockIsPriceAlertPostgresSyncEnabled = jest.fn();
 const mockLogError = jest.fn();
 const mockRedisGet = jest.fn();
 
@@ -21,6 +23,8 @@ jest.mock("@/lib/auth", () => ({
 jest.mock("@/lib/alertsPostgres", () => ({
   backfillPriceAlertsToPostgres: (...args: unknown[]) => mockBackfill(...args),
   getPriceAlertsStoreParity: (...args: unknown[]) => mockGetParity(...args),
+  getPriceAlertsReadSource: (...args: unknown[]) => mockGetPriceAlertsReadSource(...args),
+  isPriceAlertPostgresSyncEnabled: (...args: unknown[]) => mockIsPriceAlertPostgresSyncEnabled(...args),
 }));
 
 jest.mock("@/lib/redis", () => ({
@@ -43,6 +47,8 @@ describe("POST /api/admin/backfill/price-alerts", () => {
     mockRateLimitResponse.mockResolvedValue(null);
     mockHasAdminSession.mockReturnValue(true);
     mockHasAdminSecret.mockReturnValue(false);
+    mockGetPriceAlertsReadSource.mockReturnValue("postgres");
+    mockIsPriceAlertPostgresSyncEnabled.mockReturnValue(true);
     mockBackfill.mockResolvedValue({ dryRun: true, scanned: 2, valid: 1, upserted: 0, failed: 0 });
     mockRedisGet.mockResolvedValue(new Date().toISOString());
     mockGetParity.mockResolvedValue({
@@ -61,6 +67,8 @@ describe("POST /api/admin/backfill/price-alerts", () => {
 
     expect(res.status).toBe(200);
     expect(data.ok).toBe(true);
+    expect(data.postgresSyncEnabled).toBe(true);
+    expect(data.readSource).toBe("postgres");
     expect(data.inSync).toBe(true);
     expect(data.redis.active).toBe(1);
     expect(mockGetParity).toHaveBeenCalledTimes(1);

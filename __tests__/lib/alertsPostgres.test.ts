@@ -29,6 +29,7 @@ import {
   getAllActivePriceAlertRoutesFromPostgres,
   getAllActivePriceAlertsByEmailFromPostgres,
   getPriceAlertByIdFromPostgres,
+  getPriceAlertsReadSource,
   getPriceAlertsStoreParity,
   isPriceAlertPostgresSyncEnabled,
   isPriceAlertRecord,
@@ -88,6 +89,14 @@ describe("alertsPostgres", () => {
 
   it("keeps Postgres sync disabled by default", () => {
     expect(isPriceAlertPostgresSyncEnabled()).toBe(false);
+    expect(getPriceAlertsReadSource()).toBe("redis");
+  });
+
+  it("reports Postgres as the active read source when the sync flag is enabled", () => {
+    process.env.PRICE_ALERTS_POSTGRES_SYNC = "1";
+
+    expect(isPriceAlertPostgresSyncEnabled()).toBe(true);
+    expect(getPriceAlertsReadSource()).toBe("postgres");
   });
 
   it("maps PriceAlert to the durable record shape", () => {

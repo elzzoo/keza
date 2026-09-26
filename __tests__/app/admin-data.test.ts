@@ -1,5 +1,7 @@
 const mockRedisLrange = jest.fn();
 const mockGetPriceAlertsStoreParity = jest.fn();
+const mockGetPriceAlertsReadSource = jest.fn();
+const mockIsPriceAlertPostgresSyncEnabled = jest.fn();
 
 jest.mock("@/lib/redis", () => ({
   redis: {
@@ -9,6 +11,8 @@ jest.mock("@/lib/redis", () => ({
 
 jest.mock("@/lib/alertsPostgres", () => ({
   getPriceAlertsStoreParity: (...args: unknown[]) => mockGetPriceAlertsStoreParity(...args),
+  getPriceAlertsReadSource: (...args: unknown[]) => mockGetPriceAlertsReadSource(...args),
+  isPriceAlertPostgresSyncEnabled: (...args: unknown[]) => mockIsPriceAlertPostgresSyncEnabled(...args),
 }));
 
 import { fetchB2BLeads, fetchPriceAlertsParityStatus } from "@/app/admin/data";
@@ -16,6 +20,8 @@ import { fetchB2BLeads, fetchPriceAlertsParityStatus } from "@/app/admin/data";
 describe("admin data helpers", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetPriceAlertsReadSource.mockReturnValue("postgres");
+    mockIsPriceAlertPostgresSyncEnabled.mockReturnValue(true);
   });
 
   it("parses B2B leads and ignores malformed Redis entries", async () => {
@@ -66,7 +72,12 @@ describe("admin data helpers", () => {
       inSync: true,
     };
     mockGetPriceAlertsStoreParity.mockResolvedValueOnce(parity);
-    await expect(fetchPriceAlertsParityStatus()).resolves.toEqual({ ok: true, data: parity });
+    await expect(fetchPriceAlertsParityStatus()).resolves.toEqual({
+      ok: true,
+      data: parity,
+      postgresSyncEnabled: true,
+      readSource: "postgres",
+    });
 
     mockGetPriceAlertsStoreParity.mockRejectedValueOnce(new Error("db unavailable"));
     await expect(fetchPriceAlertsParityStatus()).resolves.toEqual({
