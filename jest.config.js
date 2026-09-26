@@ -1,3 +1,12 @@
+const liveTestPathIgnorePatterns = process.env.RUN_LIVE_TESTS === "1"
+  ? []
+  : [
+      "/__tests__/integration/",
+      "/__tests__/api/cron/",
+      "/__tests__/lib/alertsEngine.test.ts",
+      "/__tests__/lib/p1-4-cache-race-condition.test.ts",
+    ];
+
 /** @type {import('jest').Config} */
 const config = {
   preset: "ts-jest",
@@ -9,7 +18,7 @@ const config = {
     "^server-only$": "<rootDir>/__mocks__/server-only.ts",
   },
   testMatch: ["**/__tests__/**/*.test.ts", "**/__tests__/**/*.test.tsx"],
-  testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
+  testPathIgnorePatterns: ["/node_modules/", "/.worktrees/", ...liveTestPathIgnorePatterns],
   modulePathIgnorePatterns: ["/.worktrees/"],
   watchPathIgnorePatterns: ["/.worktrees/"],
   collectCoverageFrom: [
@@ -38,7 +47,7 @@ const config = {
       testTimeout: 30000,
       testEnvironment: "node",
       testMatch: ["**/__tests__/**/*.test.ts"],
-      testPathIgnorePatterns: ["/node_modules/", "/.worktrees/", "__tests__/components/"],
+      testPathIgnorePatterns: ["/node_modules/", "/.worktrees/", "__tests__/components/", ...liveTestPathIgnorePatterns],
       modulePathIgnorePatterns: ["/.worktrees/"],
       transform: {
         "^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json" }],
@@ -55,7 +64,7 @@ const config = {
       testTimeout: 30000,
       testEnvironment: "jsdom",
       testMatch: ["**/__tests__/components/**/*.test.tsx", "**/__tests__/lib/contexts/**/*.test.tsx", "**/__tests__/app/**/*.test.tsx"],
-      testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
+      testPathIgnorePatterns: ["/node_modules/", "/.worktrees/", ...liveTestPathIgnorePatterns],
       modulePathIgnorePatterns: ["/.worktrees/"],
       transform: {
         "^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.jest.json" }],

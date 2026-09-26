@@ -19,7 +19,8 @@ KEZA is a bilingual (FR/EN) flight price comparator built for diaspora travelers
 npm run dev          # Start dev server (next dev)
 npm run build        # tsc --noEmit && next lint && next build
 npm start            # next start
-npm test             # Jest (unit + component tests)
+npm test             # Jest offline suite (unit + component tests)
+npm run test:live    # Redis/cron integration tests
 npm run test:watch   # Jest watch mode
 npm run test:e2e     # Playwright e2e tests
 ```

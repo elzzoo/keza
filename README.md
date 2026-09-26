@@ -41,7 +41,8 @@ Open http://localhost:3000 — changes auto-reload via HMR.
 ### Testing
 
 ```bash
-npm test                    # Run all tests (1047 tests)
+npm test                    # Run offline unit/component tests
+npm run test:live           # Run Redis/cron integration tests
 npm test -- homeCarrier     # Run specific test suite
 npm run lint                # ESLint check
 ```
