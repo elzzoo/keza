@@ -41,6 +41,11 @@ describe("buildComparisonData", () => {
     expect(typeof result[0].bestLabels[0]).toBe("string");
   });
 
+  it("localise bestLabels en anglais quand demandé", () => {
+    const result = buildComparisonData(["CDG"], "en");
+    expect(result[0].bestLabels.join(" · ")).not.toMatch(/Fév|Aoû|Déc/);
+  });
+
   it("accepte les IATA en minuscules", () => {
     const result = buildComparisonData(["cdg"]);
     expect(result).toHaveLength(1);

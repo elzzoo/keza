@@ -7,6 +7,7 @@ import { DestinationPageClient } from "@/app/destinations/[iata]/DestinationPage
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logError } from "@/lib/logger";
 import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
+import { destinationCity } from "@/lib/destinationLocale";
 
 interface Props {
   params: Promise<{ iata: string }>;
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   if (!dest) notFound();
 
-  const title = `Flights from Dakar to ${dest.city} — Cash or Miles? | Xalifly`;
-  const description = `Flights from Dakar (DSS) to ${dest.city} (${dest.iata}). Xalifly compares cash fares and miles redemptions for this Dakar route.`;
+  const city = destinationCity(dest, "en");
+  const title = `Flights from Dakar to ${city} — Cash or Miles? | Xalifly`;
+  const description = `Flights from Dakar (DSS) to ${city} (${dest.iata}). Xalifly compares cash fares and miles redemptions for this Dakar route.`;
   const url = `${BASE_URL}/en/destinations/${dest.iata.toLowerCase()}`;
   const frUrl = `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`;
 
@@ -86,12 +88,13 @@ export default async function EnDestinationPage({ params }: Props) {
     };
   }
   const priceUsd = Math.round(dest.cashEstimateUsd);
+  const city = destinationCity(dest, "en");
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "TravelAction",
-    name: `Dakar to ${dest.city} flights — Cash or Miles?`,
-    description: `Compare cash fares (~$${priceUsd}) versus ${dest.milesEstimate.toLocaleString("en-US")} miles for a Dakar (DSS) to ${dest.city} (${dest.iata}) flight.`,
+    name: `Dakar to ${city} flights — Cash or Miles?`,
+    description: `Compare cash fares (~$${priceUsd}) versus ${dest.milesEstimate.toLocaleString("en-US")} miles for a Dakar (DSS) to ${city} (${dest.iata}) flight.`,
     fromLocation: {
       "@type": "Airport",
       name: "Blaise Diagne International Airport",
@@ -99,7 +102,7 @@ export default async function EnDestinationPage({ params }: Props) {
     },
     toLocation: {
       "@type": "Airport",
-      name: dest.city,
+      name: city,
       iataCode: dest.iata,
     },
     offers: {

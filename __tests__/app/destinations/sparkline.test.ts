@@ -77,4 +77,23 @@ describe("buildSparklinePoints", () => {
     const yValues = new Set(points.map((p) => p.y));
     expect(yValues.size).toBe(1);
   });
+
+  it("returns English month labels when requested", () => {
+    const { points } = buildSparklinePoints(FLAT_HISTORY, "en");
+
+    expect(points.map((p) => p.label)).toEqual([
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ]);
+  });
 });

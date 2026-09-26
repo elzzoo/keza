@@ -3,9 +3,9 @@
 
 import { useState, useMemo, useEffect } from "react";
 import type { Destination, Region } from "@/data/destinations";
-import { AIRPORTS } from "@/data/airports";
 import type { DestinationPriceHistory, MonthlyPrice } from "@/lib/priceHistory";
 import type { DealRecommendation } from "@/lib/dealsEngine";
+import { destinationCity, destinationCountry, destinationMonthLabel } from "@/lib/destinationLocale";
 
 interface Props {
   histories: DestinationPriceHistory[];
@@ -42,8 +42,6 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
   NEUTRAL:   "IF YOU HAVE MILES",
   USE_CASH:  "CASH WINS",
 };
-
-const MONTH_LABELS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // SVG viewBox: 0 0 400 80. Points mapped into y ∈ [5, 75].
 function buildSparkline(monthlyPrices: MonthlyPrice[]): {
@@ -101,10 +99,7 @@ export function PriceChart({ histories, destinations, lang }: Props) {
 function PriceChartInner({ histories, destinations, lang }: Props) {
   const recLabels = lang === "fr" ? REC_LABELS_FR : REC_LABELS_EN;
   const fromLabel = lang === "fr" ? "depuis Dakar (DSS)" : "from Dakar (DSS)";
-  const monthLabel = (month: MonthlyPrice) =>
-    lang === "fr" ? month.monthLabel : MONTH_LABELS_EN[month.month] ?? month.monthLabel;
-  const destinationCity = (dest: Destination) =>
-    lang === "fr" ? dest.city : AIRPORTS.find((a) => a.code === dest.iata)?.cityEn ?? dest.city;
+  const monthLabel = (month: MonthlyPrice) => destinationMonthLabel(month, lang);
 
   // Default: Africa → first Africa destination (CMN = Casablanca)
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("africa");
@@ -132,13 +127,8 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
   }, [selectedIata]);
 
   const selectedDest = destinations.find((d) => d.iata === selectedIata) ?? destinations[0];
-  const selectedAirport = AIRPORTS.find((a) => a.code === selectedDest.iata);
-  const selectedCity = lang === "fr"
-    ? selectedDest.city
-    : selectedAirport?.cityEn ?? selectedDest.city;
-  const selectedCountry = lang === "fr"
-    ? selectedDest.country
-    : selectedAirport?.countryEn ?? selectedDest.country;
+  const selectedCity = destinationCity(selectedDest, lang);
+  const selectedCountry = destinationCountry(selectedDest, lang);
   const history = histories.find((h) => h.iata === selectedIata) ?? histories[0];
   const { monthlyPrices, bestMonths, worstMonths } = history;
 
@@ -192,7 +182,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
                 : "bg-transparent border-border text-muted hover:text-fg hover:border-border/60"
             }`}
           >
-            {d.flag} {destinationCity(d)}
+            {d.flag} {destinationCity(d, lang)}
           </button>
         ))}
       </div>

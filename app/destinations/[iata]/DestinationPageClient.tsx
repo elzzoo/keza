@@ -12,6 +12,7 @@ import type { DealRecommendation } from "@/lib/dealsEngine";
 import type { DestinationPriceHistory } from "@/lib/priceHistory";
 import type { FlightResult } from "@/lib/engine";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
+import { destinationCity, destinationCountry, destinationMonthLabel, type SupportedLang } from "@/lib/destinationLocale";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -45,7 +46,7 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
 
 // ─── Sparkline builder ───────────────────────────────────────────────────────
 
-export function buildSparklinePoints(history: DestinationPriceHistory) {
+export function buildSparklinePoints(history: DestinationPriceHistory, lang: SupportedLang = "fr") {
   const prices = history.monthlyPrices.map((m) => m.price);
   const minP = Math.min(...prices);
   const maxP = Math.max(...prices);
@@ -56,7 +57,7 @@ export function buildSparklinePoints(history: DestinationPriceHistory) {
     y: 70 - ((m.price - minP) / range) * 60 + 5,
     isBest: history.bestMonths.includes(i),
     isWorst: history.worstMonths.includes(i),
-    label: m.monthLabel,
+    label: destinationMonthLabel(m, lang),
     price: m.price,
   }));
 
@@ -78,21 +79,23 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const fr = lang === "fr";
+  const city = destinationCity(dest, lang);
+  const country = destinationCountry(dest, lang);
 
   const recLabels = fr ? REC_LABELS_FR : REC_LABELS_EN;
   const color = REC_COLORS[recommendation];
 
   // Sparkline
   const { points, polyline, area, minP, maxP } = useMemo(
-    () => buildSparklinePoints(history),
-    [history]
+    () => buildSparklinePoints(history, lang),
+    [history, lang]
   );
   const minIdx = points.findIndex((p) => p.price === minP);
   const maxIdx = points.findIndex((p) => p.price === maxP);
 
   // Best/worst month labels
-  const bestLabels = history.bestMonths.map((i) => history.monthlyPrices[i].monthLabel);
-  const worstLabels = history.worstMonths.map((i) => history.monthlyPrices[i].monthLabel);
+  const bestLabels = history.bestMonths.map((i) => destinationMonthLabel(history.monthlyPrices[i], lang));
+  const worstLabels = history.worstMonths.map((i) => destinationMonthLabel(history.monthlyPrices[i], lang));
 
   // Xalifly note — cheapest month
   const cheapestMonth = useMemo(
@@ -123,7 +126,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
             {"Destinations"}
           </Link>
           <span className="mx-1.5">/</span>
-          <span className="text-fg">{dest.city}</span>
+          <span className="text-fg">{city}</span>
         </nav>
 
         {/* Hero */}
@@ -132,9 +135,9 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
             <span className="text-4xl">{dest.flag}</span>
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-fg leading-tight">
-                {dest.city}
+                {city}
               </h1>
-              <p className="text-sm text-muted">{dest.country}</p>
+              <p className="text-sm text-muted">{country}</p>
             </div>
           </div>
 
@@ -292,8 +295,8 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
           {/* Xalifly note */}
           <p className="text-xs text-muted mt-3 border-t border-border pt-3">
             💡 {fr
-              ? `En ${cheapestMonth.monthLabel}, tes miles valent ${cheapestMonth.cpm.toFixed(1)}¢/mile → ${REC_LABELS_FR[cheapestMonth.recommendation]}`
-              : `In ${cheapestMonth.monthLabel}, your miles are worth ${cheapestMonth.cpm.toFixed(1)}¢/mile → ${REC_LABELS_EN[cheapestMonth.recommendation]}`
+              ? `En ${destinationMonthLabel(cheapestMonth, lang)}, tes miles valent ${cheapestMonth.cpm.toFixed(1)}¢/mile → ${REC_LABELS_FR[cheapestMonth.recommendation]}`
+              : `In ${destinationMonthLabel(cheapestMonth, lang)}, your miles are worth ${cheapestMonth.cpm.toFixed(1)}¢/mile → ${REC_LABELS_EN[cheapestMonth.recommendation]}`
             }
           </p>
         </div>
@@ -356,8 +359,8 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{d.flag}</span>
                     <div>
-                      <div className="text-sm font-bold text-fg">{d.city}</div>
-                      <div className="text-[11px] text-muted">{d.country}</div>
+                      <div className="text-sm font-bold text-fg">{destinationCity(d, lang)}</div>
+                      <div className="text-[11px] text-muted">{destinationCountry(d, lang)}</div>
                     </div>
                   </div>
                 </Link>

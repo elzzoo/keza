@@ -9,6 +9,7 @@ import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices } from "@/lib/priceHistory";
 import type { DealRecommendation } from "@/lib/dealsEngine";
+import { destinationCity, destinationMonthLabel, type SupportedLang } from "@/lib/destinationLocale";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
 
 // ─── Pure function (exported for tests) ─────────────────────────────────────
 
-export function buildComparisonData(iatas: string[]) {
+export function buildComparisonData(iatas: string[], lang: SupportedLang = "fr") {
   return iatas
     .map((iata) => {
       const dest = DESTINATIONS.find((d) => d.iata === iata.toUpperCase());
@@ -41,7 +42,7 @@ export function buildComparisonData(iatas: string[]) {
       const recommendation = classifyDeal(cpm);
       try {
         const history = getMonthlyPrices(dest);
-        const bestLabels = history.bestMonths.map((i) => history.monthlyPrices[i].monthLabel);
+        const bestLabels = history.bestMonths.map((i) => destinationMonthLabel(history.monthlyPrices[i], lang));
         return { dest, cpm, recommendation, bestLabels };
       } catch {
         // If price history fails, still render destination with empty best labels
@@ -83,8 +84,8 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
   }
 
   const selected = useMemo(
-    () => buildComparisonData([slotA, slotB, slotC].filter(Boolean)),
-    [slotA, slotB, slotC]
+    () => buildComparisonData([slotA, slotB, slotC].filter(Boolean), lang),
+    [slotA, slotB, slotC, lang]
   );
 
   const gridCols =
@@ -128,7 +129,7 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
                 <option value="">—</option>
                 {DESTINATIONS.map((d) => (
                   <option key={d.iata} value={d.iata}>
-                    {d.flag} {d.city}
+                    {d.flag} {destinationCity(d, lang)}
                   </option>
                 ))}
               </select>
@@ -184,7 +185,7 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
                     }}
                   >
                     <div className="text-3xl mb-2">{dest.flag}</div>
-                    <div className="font-black text-fg text-base mb-1">{dest.city}</div>
+                    <div className="font-black text-fg text-base mb-1">{destinationCity(dest, lang)}</div>
                     <div
                       className="text-lg font-black mb-2"
                       style={{ color }}
@@ -226,7 +227,7 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
                           key={dest.iata}
                           className="text-center px-4 py-3 font-black text-fg text-xs"
                         >
-                          {dest.flag} {dest.city}
+                          {dest.flag} {destinationCity(dest, lang)}
                         </th>
                       ))}
                     </tr>

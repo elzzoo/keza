@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { DESTINATIONS, type Destination, type Region } from "@/data/destinations";
 import { trackDestinationClick } from "@/lib/analytics";
 import { useCurrency } from "@/hooks/useCurrency";
+import { destinationCity } from "@/lib/destinationLocale";
 
 interface Props {
   lang: "fr" | "en";
@@ -39,6 +40,7 @@ function DestinationCard({
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const t = L[lang];
   const { formatPrice } = useCurrency();
+  const city = destinationCity(dest, lang);
 
   const [photoLoading, setPhotoLoading] = useState(true);
 
@@ -59,8 +61,8 @@ function DestinationCard({
   return (
     <button
       onClick={() => {
-        trackDestinationClick({ city: dest.city, iata: dest.iata });
-        onSelect(dest.iata, dest.city);
+        trackDestinationClick({ city, iata: dest.iata });
+        onSelect(dest.iata, city);
       }}
       className="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer w-full text-left"
       style={{ backgroundImage: bg, backgroundSize: "cover", backgroundPosition: "center" }}
@@ -74,7 +76,7 @@ function DestinationCard({
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-3">
         <div className="text-sm font-black text-white mb-1.5">
-          {dest.flag} {dest.city}
+          {dest.flag} {city}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold bg-white/20 backdrop-blur-sm text-white rounded-md px-2 py-0.5">

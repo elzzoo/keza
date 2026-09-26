@@ -71,6 +71,15 @@ describe("destinations static generation logic", () => {
     });
   });
 
+  it("uses English city names in EN destination metadata", async () => {
+    const en = await generateEnMetadata({ params: Promise.resolve({ iata: "cai" }) });
+
+    expect(en.title).toContain("Cairo");
+    expect(en.title).not.toContain("Le Caire");
+    expect(en.description).toContain("Cairo");
+    expect(en.description).not.toContain("Le Caire");
+  });
+
   it("includes FR and EN destination pages in the sitemap", () => {
     const urls = sitemap().map((entry) => entry.url);
 
