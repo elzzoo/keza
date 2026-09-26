@@ -1,4 +1,5 @@
-import { optimizeMiles, type OptimizerDecision } from "@/lib/optimizer";
+import { getAwardChartProgramNames } from "@/data/awardCharts";
+import { AIRLINE_TO_PROGRAM, optimizeMiles, type OptimizerDecision } from "@/lib/optimizer";
 
 describe("optimizeMiles", () => {
   describe("Decision tree logic (DIRECT → ALLIANCE → TRANSFER → CASH)", () => {
@@ -95,6 +96,15 @@ describe("optimizeMiles", () => {
   });
 
   describe("Data structure integrity", () => {
+    test("airline flagship programs are backed by award charts", () => {
+      const chartPrograms = new Set(getAwardChartProgramNames());
+      const missingCharts = Object.entries(AIRLINE_TO_PROGRAM)
+        .filter(([, program]) => !chartPrograms.has(program))
+        .map(([airline, program]) => `${airline} → ${program}`);
+
+      expect(missingCharts).toEqual([]);
+    });
+
     test("all DIRECT results have program field", () => {
       const airlines = ["Singapore Airlines", "Air France", "All Nippon Airways"];
       const programs = ["Singapore KrisFlyer", "Flying Blue", "ANA Mileage Club"];

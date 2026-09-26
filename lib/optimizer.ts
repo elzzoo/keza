@@ -4,7 +4,7 @@ import { PROGRAMS_BY_NAME } from "./globalPrograms";
 
 // Airline → flagship program mapping (must stay in sync with costEngine OPERATOR_TO_PROGRAM)
 // Used by the optimizer to match user programs against operating airlines.
-const AIRLINE_TO_PROGRAM: Record<string, string> = {
+export const AIRLINE_TO_PROGRAM: Record<string, string> = {
   // SkyTeam
   "Air France":         "Flying Blue",
   "KLM":                "Flying Blue",

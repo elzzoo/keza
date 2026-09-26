@@ -1450,6 +1450,10 @@ const ZONE_DISTANCE_ESTIMATE_KM: Partial<Record<Zone, Partial<Record<Zone, numbe
   ASIA:         { SOUTH_AMERICA: 12_000 },
 };
 
+export function getAwardChartProgramNames(): string[] {
+  return Object.keys(AWARD_CHARTS);
+}
+
 // Distance-based fallback estimate (miles) — cabin-scaled to prevent economy miles
 // leaking into Business/First calculations for programs without static chart entries.
 function distanceFallback(originZone: Zone, destZone: Zone, cabin: string = "economy"): number {
