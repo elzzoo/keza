@@ -19,7 +19,7 @@ const PROGRAMS_BY_CATEGORY: Record<string, string[]> = {
     "COPA ConnectMiles",
     "Avianca LifeMiles",
     "Thai Royal Orchid Plus",
-    "Asiana Club",
+    "Asiana Airlines Club",
   ],
   "SkyTeam": [
     "Flying Blue",

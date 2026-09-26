@@ -23,8 +23,8 @@ describe("optimizeMiles", () => {
       ["SAS", "SAS EuroBonus"],
       ["Scandinavian Airlines", "SAS EuroBonus"],
       ["Air India", "Air India Flying Returns"],
-      ["EVA Air", "EVA Infinity MileageLands"],
-      ["Asiana Airlines", "Asiana Club"],
+      ["EVA Air", "EVA Air Points"],
+      ["Asiana Airlines", "Asiana Airlines Club"],
     ])("returns DIRECT type for P5 airline %s with %s", (airline, program) => {
       const result = optimizeMiles([airline], [program]);
       expect(result).toEqual({ type: "DIRECT", program });

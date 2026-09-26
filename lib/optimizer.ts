@@ -28,8 +28,8 @@ const AIRLINE_TO_PROGRAM: Record<string, string> = {
   "SAS":                "SAS EuroBonus",
   "Scandinavian Airlines": "SAS EuroBonus",
   "Air India":          "Air India Flying Returns",
-  "EVA Air":            "EVA Infinity MileageLands",
-  "Asiana Airlines":    "Asiana Club",
+  "EVA Air":            "EVA Air Points",
+  "Asiana Airlines":    "Asiana Airlines Club",
   // Oneworld
   "British Airways":    "British Airways Avios",
   "Qatar Airways":      "Qatar Privilege Club",

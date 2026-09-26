@@ -266,7 +266,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 3,
   },
   {
-    name: "Asiana Club",
+    name: "Asiana Airlines Club",
     airlineCode: "OZ",
     airline: "Asiana Airlines",
     alliance: "Star Alliance",
@@ -301,7 +301,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     accessibilityScore: 3,
   },
   {
-    name: "EVA Infinity MileageLands",
+    name: "EVA Air Points",
     airlineCode: "BR",
     airline: "EVA Air",
     alliance: "Star Alliance",

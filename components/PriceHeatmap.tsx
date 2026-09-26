@@ -77,12 +77,14 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
     if (!from || !to || from === to) {
       setMonthData([]);
       setLoading(false);
       return () => {
         cancelled = true;
+        controller.abort();
       };
     }
 
@@ -136,7 +138,10 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
         const results = await Promise.all(
           months.map(async (m) => {
             try {
-              const res = await fetch(`/api/calendar?from=${from}&to=${to}&month=${m}`);
+              const res = await fetch(
+                `/api/calendar?from=${from}&to=${to}&month=${m}`,
+                { signal: controller.signal }
+              );
               if (!res.ok) return null;
               const data = (await res.json()) as { days?: CalendarDay[] };
               const days = data.days ?? [];
@@ -145,6 +150,7 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
               const minPrice = Math.min(...prices);
               return { month: m, minPrice } satisfies MonthData;
             } catch {
+              if (controller.signal.aborted) return null;
               return null;
             }
           })
@@ -165,6 +171,7 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [from, to, cabin, mult]);
 

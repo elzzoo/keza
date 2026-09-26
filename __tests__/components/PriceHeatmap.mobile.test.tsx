@@ -132,4 +132,24 @@ describe("PriceHeatmap Mobile Responsiveness", () => {
     });
     expect(global.fetch).not.toHaveBeenCalled();
   });
+
+  it("passes an AbortSignal to calendar requests and aborts on unmount", async () => {
+    let capturedSignal: AbortSignal | undefined;
+    (global.fetch as jest.Mock).mockImplementation((_url: string, init?: RequestInit) => {
+      capturedSignal = init?.signal ?? undefined;
+      return new Promise(() => undefined);
+    });
+
+    const { unmount } = render(
+      <PriceHeatmap from="SIN" to="LAX" lang="en" />
+    );
+
+    await waitFor(() => {
+      expect(capturedSignal).toBeInstanceOf(AbortSignal);
+    });
+
+    expect(capturedSignal?.aborted).toBe(false);
+    unmount();
+    expect(capturedSignal?.aborted).toBe(true);
+  });
 });

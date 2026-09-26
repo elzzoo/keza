@@ -147,6 +147,17 @@ describe("sanitizeDuffelErrorBody", () => {
     expect(result).not.toContain("plain-secret");
     expect(result).not.toContain("another-secret");
   });
+
+  it("redacts secrets before truncating long provider bodies", () => {
+    const result = sanitizeDuffelErrorBody(
+      `${"x".repeat(170)} {"client_secret":"plain-secret-tail-should-never-log"}`
+    );
+
+    expect(result.length).toBeLessThanOrEqual(200);
+    expect(result).toContain('"client_secret":"***"');
+    expect(result).not.toContain("plain-secret");
+    expect(result).not.toContain("should-never-log");
+  });
 });
 
 // ─── fetchFromDuffel — failure hardening ─────────────────────────────────────

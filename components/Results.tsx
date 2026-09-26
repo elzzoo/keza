@@ -125,6 +125,8 @@ function getPriceQualityMessage(summary: PriceQualitySummary, lang: "fr" | "en")
 export function getFlightResultKey(flight: FlightResult): string {
   const airlines = [...flight.airlines].sort().join("+") || "unknown";
   const returnAirlines = [...(flight.returnAirlines ?? [])].sort().join("+") || "none";
+  // If every identity field below is identical, the rows are indistinguishable
+  // in the UI and should already have been deduped by provider merge logic.
   const bookingOrPrice = flight.bookingLink ?? `price:${flight.totalPrice ?? flight.price}`;
 
   return [
