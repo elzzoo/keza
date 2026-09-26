@@ -20,6 +20,7 @@ interface Props {
   cpm: number;
   recommendation: DealRecommendation;
   history: DestinationPriceHistory;
+  initialLang?: "fr" | "en";
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -71,8 +72,8 @@ export function buildSparklinePoints(history: DestinationPriceHistory) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function DestinationPageClient({ dest, cpm, recommendation, history }: Props) {
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+export function DestinationPageClient({ dest, cpm, recommendation, history, initialLang = "fr" }: Props) {
+  const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const [results, setResults] = useState<FlightResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -104,6 +105,10 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
     () => DESTINATIONS.filter((d) => d.iata !== dest.iata && d.region === dest.region).slice(0, 4),
     [dest.iata, dest.region]
   );
+  const homePath = fr ? "/" : "/en";
+  const mapPath = fr ? "/carte" : "/en/carte";
+  const comparePath = fr ? "/comparer" : "/en/comparer";
+  const destinationPath = (iata: string) => `${fr ? "" : "/en"}/destinations/${iata.toLowerCase()}`;
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
@@ -112,9 +117,9 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
         {/* Breadcrumb */}
         <nav className="pt-4 pb-2 text-xs text-muted">
-          <Link href="/" className="hover:text-fg transition-colors">Xalifly</Link>
+          <Link href={homePath} className="hover:text-fg transition-colors">Xalifly</Link>
           <span className="mx-1.5">/</span>
-          <Link href="/carte" className="hover:text-fg transition-colors">
+          <Link href={mapPath} className="hover:text-fg transition-colors">
             {"Destinations"}
           </Link>
           <span className="mx-1.5">/</span>
@@ -178,7 +183,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
         {/* Compare CTA */}
         <div className="mb-6">
           <Link
-            href={`/comparer?a=${dest.iata}`}
+            href={`${comparePath}?a=${dest.iata}`}
             className="inline-flex items-center gap-2 text-sm text-muted hover:text-fg border border-border hover:border-primary/40 rounded-xl px-4 py-2.5 transition-all hover:bg-primary/5"
           >
             📊 {fr ? "Comparer avec d'autres destinations →" : "Compare with other destinations →"}
@@ -345,7 +350,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history }: Pr
               {related.map((d) => (
                 <Link
                   key={d.iata}
-                  href={`/destinations/${d.iata.toLowerCase()}`}
+                  href={destinationPath(d.iata)}
                   className="bg-surface border border-border rounded-xl px-4 py-3 hover:border-primary/40 hover:bg-primary/5 transition-all group"
                 >
                   <div className="flex items-center gap-2">

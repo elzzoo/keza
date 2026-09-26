@@ -3,20 +3,16 @@ import { notFound } from "next/navigation";
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices, type DestinationPriceHistory } from "@/lib/priceHistory";
-import { DestinationPageClient } from "./DestinationPageClient";
+import { DestinationPageClient } from "@/app/destinations/[iata]/DestinationPageClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logError } from "@/lib/logger";
+import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 
 interface Props {
   params: Promise<{ iata: string }>;
 }
 
-import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
-
-// ─── ISR Revalidation ───────────────────────────────────────────────────────
-// Revalidate every 24 hours — destination data changes less often
 export const revalidate = 86400;
-// Allow rendering unknown routes on-demand (not in generateStaticParams)
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -30,10 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   if (!dest) notFound();
 
-  const title = `Vols Dakar → ${dest.city} — Cash ou Miles ? | Xalifly`;
-  const description = `Vols depuis Dakar (DSS) vers ${dest.city} (${dest.iata}). Xalifly calcule si tes miles valent plus que le prix cash — estimation instantanée + recherche live.`;
-  const url = `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`;
-  const enUrl = `${BASE_URL}/en/destinations/${dest.iata.toLowerCase()}`;
+  const title = `Flights from Dakar to ${dest.city} — Cash or Miles? | Xalifly`;
+  const description = `Flights from Dakar (DSS) to ${dest.city} (${dest.iata}). Xalifly compares cash fares and miles redemptions for this Dakar route.`;
+  const url = `${BASE_URL}/en/destinations/${dest.iata.toLowerCase()}`;
+  const frUrl = `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`;
 
   return {
     title,
@@ -43,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "website",
       url,
+      locale: "en_US",
     },
     twitter: {
       card: "summary_large_image",
@@ -52,15 +49,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: url,
       languages: {
-        fr: url,
-        en: enUrl,
-        "x-default": url,
+        fr: frUrl,
+        en: url,
+        "x-default": frUrl,
       },
     },
   };
 }
 
-export default async function DestinationPage({ params }: Props) {
+export default async function EnDestinationPage({ params }: Props) {
   const { iata } = await params;
   const dest = DESTINATIONS.find(
     (d) => d.iata.toLowerCase() === iata.toLowerCase()
@@ -73,13 +70,13 @@ export default async function DestinationPage({ params }: Props) {
   try {
     history = getMonthlyPrices(dest);
   } catch (err) {
-    logError(`[/destinations/${dest.iata}] getMonthlyPrices failed:`, err);
-    // Flat-price fallback so the page renders without crashing
-    const MONTH_LABELS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+    logError(`[/en/destinations/${dest.iata}] getMonthlyPrices failed:`, err);
+    const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     history = {
       iata: dest.iata,
       monthlyPrices: MONTH_LABELS.map((label, i) => ({
-        month: i, monthLabel: label,
+        month: i,
+        monthLabel: label,
         price: dest.cashEstimateUsd,
         cpm: computeDealRatio(dest.cashEstimateUsd, dest.milesEstimate),
         recommendation,
@@ -88,16 +85,16 @@ export default async function DestinationPage({ params }: Props) {
       worstMonths: [6],
     };
   }
-  const priceEur = Math.round(dest.cashEstimateUsd * 0.92);
+  const priceUsd = Math.round(dest.cashEstimateUsd);
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "TravelAction",
-    name: `Vol Dakar \u2192 ${dest.city} \u2014 Cash ou Miles ?`,
-    description: `Comparer le prix cash (~${priceEur}\u20ac) versus ${dest.milesEstimate.toLocaleString("fr-FR")} miles pour un vol Dakar (DSS) \u2192 ${dest.city} (${dest.iata}).`,
+    name: `Dakar to ${dest.city} flights — Cash or Miles?`,
+    description: `Compare cash fares (~$${priceUsd}) versus ${dest.milesEstimate.toLocaleString("en-US")} miles for a Dakar (DSS) to ${dest.city} (${dest.iata}) flight.`,
     fromLocation: {
       "@type": "Airport",
-      name: "A\u00e9roport International Blaise Diagne",
+      name: "Blaise Diagne International Airport",
       iataCode: "DSS",
     },
     toLocation: {
@@ -107,8 +104,8 @@ export default async function DestinationPage({ params }: Props) {
     },
     offers: {
       "@type": "Offer",
-      price: priceEur,
-      priceCurrency: "EUR",
+      price: priceUsd,
+      priceCurrency: "USD",
     },
   };
 
@@ -118,13 +115,13 @@ export default async function DestinationPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <ErrorBoundary lang="fr">
+      <ErrorBoundary lang="en">
         <DestinationPageClient
           dest={dest}
           cpm={cpm}
           recommendation={recommendation}
           history={history}
-          initialLang="fr"
+          initialLang="en"
         />
       </ErrorBoundary>
     </>

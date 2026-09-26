@@ -1,6 +1,10 @@
 import { DESTINATIONS } from "@/data/destinations";
 import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices } from "@/lib/priceHistory";
+import { generateMetadata as generateFrMetadata } from "@/app/destinations/[iata]/page";
+import { generateMetadata as generateEnMetadata } from "@/app/en/destinations/[iata]/page";
+import sitemap from "@/app/sitemap";
+import { SITE_URL } from "@/lib/siteConfig";
 
 describe("destinations static generation logic", () => {
   it("tous les IATA de DESTINATIONS sont uniques", () => {
@@ -43,5 +47,36 @@ describe("destinations static generation logic", () => {
   it("un iata inconnu ne produit aucune destination", () => {
     const dest = DESTINATIONS.find((d) => d.iata.toLowerCase() === "xxx");
     expect(dest).toBeUndefined();
+  });
+
+  it("exposes bilingual metadata for destination pages", async () => {
+    const fr = await generateFrMetadata({ params: Promise.resolve({ iata: "cdg" }) });
+    const en = await generateEnMetadata({ params: Promise.resolve({ iata: "cdg" }) });
+
+    expect(fr.title).toContain("Vols Dakar");
+    expect(fr.alternates).toMatchObject({
+      canonical: `${SITE_URL}/destinations/cdg`,
+      languages: {
+        fr: `${SITE_URL}/destinations/cdg`,
+        en: `${SITE_URL}/en/destinations/cdg`,
+      },
+    });
+    expect(en.title).toContain("Flights from Dakar");
+    expect(en.alternates).toMatchObject({
+      canonical: `${SITE_URL}/en/destinations/cdg`,
+      languages: {
+        fr: `${SITE_URL}/destinations/cdg`,
+        en: `${SITE_URL}/en/destinations/cdg`,
+      },
+    });
+  });
+
+  it("includes FR and EN destination pages in the sitemap", () => {
+    const urls = sitemap().map((entry) => entry.url);
+
+    expect(urls).toEqual(expect.arrayContaining([
+      `${SITE_URL}/destinations/cdg`,
+      `${SITE_URL}/en/destinations/cdg`,
+    ]));
   });
 });

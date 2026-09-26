@@ -277,11 +277,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Destination pages
   for (const dest of DESTINATIONS) {
+    const frUrl = `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`;
+    const enUrl = `${BASE_URL}/en/destinations/${dest.iata.toLowerCase()}`;
+    const alts = { languages: { fr: frUrl, en: enUrl } };
     pages.push({
-      url: `${BASE_URL}/destinations/${dest.iata.toLowerCase()}`,
+      url: frUrl,
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.8,
+      alternates: alts,
+    });
+    pages.push({
+      url: enUrl,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+      alternates: alts,
     });
   }
 
