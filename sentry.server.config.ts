@@ -4,13 +4,24 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+function parseSampleRate(value: string | undefined, fallback: number) {
+  if (value === undefined) return fallback;
+  const rate = Number(value);
+  if (!Number.isFinite(rate)) return fallback;
+  return Math.min(1, Math.max(0, rate));
+}
+
+const tracesSampleRate = parseSampleRate(
+  process.env.SENTRY_TRACES_SAMPLE_RATE ?? process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
+  0.1
+);
+
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Performance monitoring — increased from 0.1 to 0.5 for better error context
-  // Higher sampling captures more transaction details (slow endpoints, errors)
-  // Cost: ~5× more trace events sent to Sentry (still within free tier)
-  tracesSampleRate: 0.5, // 50% of transactions
+  // Keep trace volume cheap by default. Raise SENTRY_TRACES_SAMPLE_RATE
+  // temporarily during performance investigations or launches.
+  tracesSampleRate,
 
   // Track slow transactions
   maxBreadcrumbs: 50,

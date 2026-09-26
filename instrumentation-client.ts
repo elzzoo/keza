@@ -19,14 +19,17 @@ const replayOnErrorSampleRate = parseSampleRate(
   process.env.NEXT_PUBLIC_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE,
   0.5
 );
+const tracesSampleRate = parseSampleRate(
+  process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
+  0.1
+);
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Capture 50% of transactions for performance monitoring — increased for better observability
-  // Higher sampling helps catch frontend slowdowns (search, calendar, portfolio page loads)
-  // and improves correlation with server-side errors
-  tracesSampleRate: 0.5,
+  // Keep trace volume cheap by default. Raise NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE
+  // temporarily during performance investigations or launches.
+  tracesSampleRate,
 
   // Keep Replay cheap by default. Override with NEXT_PUBLIC_SENTRY_REPLAY_SAMPLE_RATE
   // only during short UX/debugging windows.

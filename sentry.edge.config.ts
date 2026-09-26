@@ -4,11 +4,23 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+function parseSampleRate(value: string | undefined, fallback: number) {
+  if (value === undefined) return fallback;
+  const rate = Number(value);
+  if (!Number.isFinite(rate)) return fallback;
+  return Math.min(1, Math.max(0, rate));
+}
+
+const tracesSampleRate = parseSampleRate(
+  process.env.SENTRY_TRACES_SAMPLE_RATE ?? process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
+  0.1
+);
+
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Low sample rate for edge — keeps quota manageable
-  tracesSampleRate: 0.1,
+  // Low sample rate for edge by default; configurable for short investigations.
+  tracesSampleRate,
 
   debug: false,
 });

@@ -5,28 +5,31 @@
  */
 
 describe("Sentry Trace Sampling", () => {
-  it("server-side trace sampling is configured at 0.5 (50%)", async () => {
+  it("server-side trace sampling is low by default and env configurable", async () => {
     // Check sentry.server.config.ts has sufficient trace sampling
     const fs = await import("fs");
     const path = await import("path");
     const configPath = path.join(process.cwd(), "sentry.server.config.ts");
     const configStr = fs.readFileSync(configPath, "utf-8");
 
-    // Should contain tracesSampleRate: 0.5
-    expect(configStr).toContain("tracesSampleRate: 0.5");
-    expect(configStr).not.toContain("tracesSampleRate: 0.1");
+    expect(configStr).toContain("SENTRY_TRACES_SAMPLE_RATE");
+    expect(configStr).toContain("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE");
+    expect(configStr).toContain("0.1");
+    expect(configStr).toContain("tracesSampleRate");
+    expect(configStr).not.toContain("tracesSampleRate: 0.5");
   });
 
-  it("client-side trace sampling is configured at 0.5 (50%)", async () => {
+  it("client-side trace sampling is low by default and env configurable", async () => {
     // Check instrumentation-client.ts has sufficient trace sampling
     const fs = await import("fs");
     const path = await import("path");
     const configPath = path.join(process.cwd(), "instrumentation-client.ts");
     const configStr = fs.readFileSync(configPath, "utf-8");
 
-    // Should contain tracesSampleRate: 0.5
-    expect(configStr).toContain("tracesSampleRate: 0.5");
-    expect(configStr).not.toContain("tracesSampleRate: 0.1");
+    expect(configStr).toContain("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE");
+    expect(configStr).toContain("0.1");
+    expect(configStr).toContain("tracesSampleRate");
+    expect(configStr).not.toContain("tracesSampleRate: 0.5");
   });
 
   it("client-side has session replay configured", async () => {
@@ -63,13 +66,13 @@ describe("Sentry Trace Sampling", () => {
     expect(configStr).toContain("httpIntegration");
   });
 
-  it("trace sampling provides adequate error context", () => {
-    // With 50% sampling:
-    // - Server: captures 1 in 2 transactions (2000 monthly → 1000 sampled)
-    // - Client: captures 1 in 2 page loads (5000 monthly → 2500 sampled)
-    // - Enough for correlation analysis, still within free tier budget
-    const samplingRate = 0.5;
-    expect(samplingRate).toBeGreaterThanOrEqual(0.5);
+  it("trace sampling keeps default volume manageable", () => {
+    // With 10% sampling:
+    // - Server: captures 1 in 10 transactions by default
+    // - Client: captures 1 in 10 page loads by default
+    // - Sentry quotas stay protected; env vars can raise this during incidents
+    const samplingRate = 0.1;
+    expect(samplingRate).toBeGreaterThanOrEqual(0.05);
     expect(samplingRate).toBeLessThanOrEqual(1.0);
   });
 
@@ -77,14 +80,26 @@ describe("Sentry Trace Sampling", () => {
     const fs = await import("fs");
     const path = await import("path");
 
-    // Check server config has comment explaining increase
+    // Check server config has comment explaining cost-aware default
     let configPath = path.join(process.cwd(), "sentry.server.config.ts");
     let configStr = fs.readFileSync(configPath, "utf-8");
-    expect(configStr).toMatch(/increased|better/i);
+    expect(configStr).toMatch(/cheap|investigations|launches/i);
 
-    // Check client config has comment explaining increase
+    // Check client config has comment explaining cost-aware default
     configPath = path.join(process.cwd(), "instrumentation-client.ts");
     configStr = fs.readFileSync(configPath, "utf-8");
-    expect(configStr).toMatch(/increased|better|observability/i);
+    expect(configStr).toMatch(/cheap|investigations|launches/i);
+  });
+
+  it("edge trace sampling follows the same server-side env controls", async () => {
+    const fs = await import("fs");
+    const path = await import("path");
+    const configPath = path.join(process.cwd(), "sentry.edge.config.ts");
+    const configStr = fs.readFileSync(configPath, "utf-8");
+
+    expect(configStr).toContain("SENTRY_TRACES_SAMPLE_RATE");
+    expect(configStr).toContain("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE");
+    expect(configStr).toContain("0.1");
+    expect(configStr).toContain("tracesSampleRate");
   });
 });
