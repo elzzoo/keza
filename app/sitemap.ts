@@ -74,6 +74,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.8,
+      alternates: { languages: { fr: `${BASE_URL}/pro`, en: `${BASE_URL}/en/pro` } },
+    },
+    {
+      url: `${BASE_URL}/en/pro`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+      alternates: { languages: { fr: `${BASE_URL}/pro`, en: `${BASE_URL}/en/pro` } },
     },
     // ── Bilingual static pages ────────────────────────────────────────────────
     {

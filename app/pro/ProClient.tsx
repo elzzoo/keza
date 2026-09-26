@@ -8,12 +8,120 @@ import Link from "next/link";
 import type { ProAccessStatus } from "@/lib/proAccess";
 import { EMAIL_DOMAIN } from "@/lib/brand";
 
-const FEATURES = [
-  { icon: "🔔", title: "Alertes illimitées", desc: "Surveillez autant de routes que vous voulez, sans limite." },
-  { icon: "📱", title: "Multi-devices", desc: "Notifications push sur tous vos appareils simultanément." },
-  { icon: "📊", title: "Historique 6 mois", desc: "Visualisez l'évolution des prix et choisissez le bon moment." },
-  { icon: "✈️", title: "Alertes multi-passagers", desc: "Prix pour 2, 3 ou 4 passagers directement dans l'alerte." },
-];
+const COPY = {
+  fr: {
+    features: [
+      { icon: "🔔", title: "Alertes illimitées", desc: "Surveillez autant de routes que vous voulez, sans limite." },
+      { icon: "📱", title: "Multi-devices", desc: "Notifications push sur tous vos appareils simultanément." },
+      { icon: "📊", title: "Historique 6 mois", desc: "Visualisez l'évolution des prix et choisissez le bon moment." },
+      { icon: "✈️", title: "Alertes multi-passagers", desc: "Prix pour 2, 3 ou 4 passagers directement dans l'alerte." },
+    ],
+    emailRequired: "Veuillez entrer votre email",
+    emailInvalid: "Veuillez entrer une adresse email valide",
+    waitlistError: "Impossible de rejoindre la liste d'attente.",
+    networkError: "Erreur réseau. Réessaie.",
+    upgradedTitle: "Bienvenue dans Xalifly Pro !",
+    upgradedDesc: "Tes alertes illimitées sont maintenant actives. Crée ta première alerte dès maintenant.",
+    manageAlerts: "Gérer mes alertes →",
+    price: "9$ / mois",
+    heroDesc: "Alertes illimitées, notifications multi-devices et historique des prix — pour les voyageurs sérieux.",
+    waitlistedTitle: "Tu es sur la liste !",
+    waitlistedWithPosition: (position: number) => `Tu es n°${position} sur la liste. On te contactera dès l'ouverture des paiements.`,
+    waitlistedNoPosition: "On te contactera dès l'ouverture des paiements Xalifly Pro.",
+    waitlistedHint: "En attendant, profite des 3 alertes gratuites + parrainage pour en débloquer plus.",
+    createFreeAlert: "Créer une alerte gratuite →",
+    checkoutTitle: "Passer en Pro",
+    waitlistTitle: "Rejoindre la liste d'attente",
+    checkoutDesc: "Sans engagement · Annulable à tout moment · Paiement via Lemon Squeezy",
+    waitlistDesc: "Les paiements ouvriront très bientôt — sois prévenu en premier.",
+    emailPlaceholder: "ton@email.com",
+    upgradeButton: "💎 Passer en Pro — 9$ / mois →",
+    waitlistButton: "Rejoindre la liste →",
+    securePayment: "Paiement sécurisé · Facture email automatique",
+    freeSignup: "Inscription gratuite — aucun engagement.",
+    tableFeature: "Fonctionnalité",
+    tableFree: "Gratuit",
+    tablePro: "Pro 9$/mois",
+    rows: [
+      ["Alertes actives", "3", "Illimitées"],
+      ["Notifications push", "1 device", "Multi-devices"],
+      ["Historique des prix", "—", "6 mois"],
+      ["Multi-passagers", "—", "✓"],
+      ["Digest hebdo", "✓", "✓"],
+    ],
+    proStatusTitle: "Tu as Xalifly Pro",
+    proStatusDesc: "Profite de tes alertes illimitées et de toutes les fonctionnalités Pro.",
+    trialTitle: "Essai gratuit actif",
+    trialWithDays: (days: number) => `Tu as ${days} jour${days > 1 ? "s" : ""} d'essai gratuit restant.`,
+    trialActive: "Ton essai gratuit est actif.",
+    createAlert: "Créer une alerte →",
+    faqTitle: "Questions fréquentes",
+    faqs: [
+      ["Combien coûte Xalifly Pro ?", "Xalifly Pro coûte 9$ par mois. Tu peux commencer par un essai gratuit de 7 jours, sans carte de crédit."],
+      ["Puis-je annuler mon abonnement ?", "Oui, tu peux annuler ton abonnement à tout moment. Tu conserveras l'accès Pro jusqu'à la fin de ta période de facturation actuelle."],
+      ["Qu'est-ce qui est inclus dans Pro ?", "Alertes illimitées, notifications push multi-devices, historique des prix sur 6 mois, et alertes pour plusieurs passagers simultanément."],
+      ["Comment fonctionne l'essai gratuit ?", "Tu as 7 jours d'accès gratuit à toutes les fonctionnalités Pro. Aucune carte de crédit n'est requise. Si tu ne convertis pas à la fin de l'essai, ton compte reviendra à la version gratuite."],
+      ["Est-ce que mes données sont sûres ?", "Oui. Xalifly utilise HTTPS et les meilleures pratiques de sécurité pour protéger tes informations personnelles."],
+    ],
+    question: "Question ?",
+  },
+  en: {
+    features: [
+      { icon: "🔔", title: "Unlimited alerts", desc: "Track as many routes as you want, with no alert cap." },
+      { icon: "📱", title: "Multi-device push", desc: "Receive push notifications across all your devices." },
+      { icon: "📊", title: "6-month history", desc: "See price trends and choose the right booking moment." },
+      { icon: "✈️", title: "Multi-passenger alerts", desc: "Track prices for 2, 3, or 4 passengers in each alert." },
+    ],
+    emailRequired: "Please enter your email",
+    emailInvalid: "Please enter a valid email address",
+    waitlistError: "Could not join the waitlist.",
+    networkError: "Network error. Try again.",
+    upgradedTitle: "Welcome to Xalifly Pro!",
+    upgradedDesc: "Your unlimited alerts are now active. Create your first alert whenever you're ready.",
+    manageAlerts: "Manage my alerts →",
+    price: "$9 / month",
+    heroDesc: "Unlimited alerts, multi-device notifications, and price history for serious travellers.",
+    waitlistedTitle: "You're on the list!",
+    waitlistedWithPosition: (position: number) => `You're #${position} on the list. We'll contact you as soon as payments open.`,
+    waitlistedNoPosition: "We'll contact you as soon as Xalifly Pro payments open.",
+    waitlistedHint: "In the meantime, use your 3 free alerts and referrals to unlock more.",
+    createFreeAlert: "Create a free alert →",
+    checkoutTitle: "Upgrade to Pro",
+    waitlistTitle: "Join the waitlist",
+    checkoutDesc: "No commitment · Cancel anytime · Payment via Lemon Squeezy",
+    waitlistDesc: "Payments will open soon — be first to know.",
+    emailPlaceholder: "you@example.com",
+    upgradeButton: "💎 Upgrade to Pro — $9 / month →",
+    waitlistButton: "Join the waitlist →",
+    securePayment: "Secure payment · Automatic email receipt",
+    freeSignup: "Free signup — no commitment.",
+    tableFeature: "Feature",
+    tableFree: "Free",
+    tablePro: "Pro $9/mo",
+    rows: [
+      ["Active alerts", "3", "Unlimited"],
+      ["Push notifications", "1 device", "Multi-device"],
+      ["Price history", "—", "6 months"],
+      ["Multi-passenger alerts", "—", "✓"],
+      ["Weekly digest", "✓", "✓"],
+    ],
+    proStatusTitle: "You have Xalifly Pro",
+    proStatusDesc: "Enjoy unlimited alerts and all Pro features.",
+    trialTitle: "Free trial active",
+    trialWithDays: (days: number) => `You have ${days} free trial day${days > 1 ? "s" : ""} left.`,
+    trialActive: "Your free trial is active.",
+    createAlert: "Create an alert →",
+    faqTitle: "Frequently asked questions",
+    faqs: [
+      ["How much does Xalifly Pro cost?", "Xalifly Pro costs $9 per month. You can start with a 7-day free trial, no credit card required."],
+      ["Can I cancel my subscription?", "Yes. You can cancel anytime and keep Pro access until the end of your current billing period."],
+      ["What's included in Pro?", "Unlimited alerts, multi-device push notifications, 6-month price history, and alerts for multiple passengers at once."],
+      ["How does the free trial work?", "You get 7 days of free access to every Pro feature. No credit card is required. If you don't convert, your account returns to the free plan."],
+      ["Is my data safe?", "Yes. Xalifly uses HTTPS and security best practices to protect your personal information."],
+    ],
+    question: "Question?",
+  },
+} as const;
 
 type CheckoutStatus = "idle" | "loading" | "waitlisted";
 
@@ -23,6 +131,7 @@ interface ProClientProps {
   proStatus?: ProAccessStatus | null;
   userEmail?: string;
   initialEmail?: string;
+  lang?: "fr" | "en";
 }
 
 // Basic email validation regex
@@ -34,9 +143,12 @@ export function ProClient({
   proStatus,
   userEmail,
   initialEmail,
+  lang = "fr",
 }: ProClientProps) {
   const router = useRouter();
-  const [lang] = useState<"fr" | "en">("fr");
+  const t = COPY[lang];
+  const alertesPath = lang === "en" ? "/en/alertes" : "/alertes";
+  const proPath = lang === "en" ? "/en/pro" : "/pro";
   const [email, setEmail] = useState(userEmail || initialEmail || "");
   const [emailError, setEmailError] = useState("");
   const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
@@ -48,9 +160,9 @@ export function ProClient({
   const handleEmailChange = (value: string) => {
     setEmail(value);
     if (value.trim() === "") {
-      setEmailError("Veuillez entrer votre email");
+      setEmailError(t.emailRequired);
     } else if (!EMAIL_REGEX.test(value.trim())) {
-      setEmailError("Veuillez entrer une adresse email valide");
+      setEmailError(t.emailInvalid);
     } else {
       setEmailError("");
     }
@@ -69,11 +181,11 @@ export function ProClient({
         setCheckoutStatus("waitlisted");
         return true;
       }
-      setCheckoutError(data.error ?? "Impossible de rejoindre la liste d'attente.");
+      setCheckoutError(data.error ?? t.waitlistError);
       setCheckoutStatus("idle");
       return false;
     } catch {
-      setCheckoutError("Erreur réseau. Réessaie.");
+      setCheckoutError(t.networkError);
       setCheckoutStatus("idle");
       return false;
     }
@@ -86,19 +198,19 @@ export function ProClient({
 
     // Validate email before proceeding
     if (!trimmed) {
-      setEmailError("Veuillez entrer votre email");
+      setEmailError(t.emailRequired);
       return;
     }
     if (!EMAIL_REGEX.test(trimmed)) {
-      setEmailError("Veuillez entrer une adresse email valide");
+      setEmailError(t.emailInvalid);
       return;
     }
 
     // If not logged in, redirect to sign in with return URL + email
     if (!isLoggedIn) {
       const callbackUrl = trimmed
-        ? `/pro?email=${encodeURIComponent(trimmed)}`
-        : "/pro";
+        ? `${proPath}?email=${encodeURIComponent(trimmed)}`
+        : proPath;
       router.push(`/connexion?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
     }
@@ -131,10 +243,10 @@ export function ProClient({
         await joinWaitlist(trimmed);
         return;
       }
-      setCheckoutError(data.error ?? "Une erreur est survenue.");
+      setCheckoutError(data.error ?? (lang === "fr" ? "Une erreur est survenue." : "Something went wrong."));
       setCheckoutStatus("idle");
     } catch {
-      setCheckoutError("Erreur réseau. Réessaie.");
+      setCheckoutError(t.networkError);
       setCheckoutStatus("idle");
     }
   }
@@ -146,15 +258,15 @@ export function ProClient({
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <p className="text-5xl mb-4">🎉</p>
-            <h1 className="text-2xl font-black text-fg mb-2">Bienvenue dans Xalifly Pro !</h1>
+            <h1 className="text-2xl font-black text-fg mb-2">{t.upgradedTitle}</h1>
             <p className="text-sm text-muted mb-6">
-              Tes alertes illimitées sont maintenant actives. Crée ta première alerte dès maintenant.
+              {t.upgradedDesc}
             </p>
             <Link
-              href="/alertes"
+              href={alertesPath}
               className="inline-block rounded-lg bg-primary text-white text-sm font-bold px-6 py-3 hover:bg-primary/90 transition-colors"
             >
-              Gérer mes alertes →
+              {t.manageAlerts}
             </Link>
           </div>
         </main>
@@ -171,19 +283,19 @@ export function ProClient({
         <div className="pt-12 pb-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-400 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            9$ / mois
+            {t.price}
           </div>
           <h1 className="text-4xl font-black text-fg mb-3">
             <span className="text-primary">Xalifly</span> Pro
           </h1>
           <p className="text-base text-muted max-w-md mx-auto">
-            Alertes illimitées, notifications multi-devices et historique des prix — pour les voyageurs sérieux.
+            {t.heroDesc}
           </p>
         </div>
 
         {/* Features grid */}
         <div className="grid grid-cols-2 gap-3 mb-10">
-          {FEATURES.map((f) => (
+          {t.features.map((f) => (
             <div key={f.title} className="rounded-xl border border-border bg-surface p-4">
               <span className="text-2xl">{f.icon}</span>
               <p className="mt-2 text-sm font-semibold text-fg">{f.title}</p>
@@ -196,34 +308,34 @@ export function ProClient({
         {checkoutStatus === "waitlisted" ? (
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
             <p className="text-3xl mb-2">✅</p>
-            <p className="font-semibold text-fg mb-1">Tu es sur la liste !</p>
+            <p className="font-semibold text-fg mb-1">{t.waitlistedTitle}</p>
             <p className="text-xs text-muted">
               {waitlistPosition
-                ? `Tu es n°${waitlistPosition} sur la liste. On te contactera dès l'ouverture des paiements.`
-                : "On te contactera dès l'ouverture des paiements Xalifly Pro."}
+                ? t.waitlistedWithPosition(waitlistPosition)
+                : t.waitlistedNoPosition}
             </p>
             <p className="mt-3 text-xs text-muted/60">
-              En attendant, profite des 3 alertes gratuites + parrainage pour en débloquer plus.
+              {t.waitlistedHint}
             </p>
             <Link
-              href="/alertes"
+              href={alertesPath}
               className="mt-4 inline-block rounded-lg bg-primary text-white text-sm font-bold px-5 py-2 hover:bg-primary/90 transition-colors"
             >
-              Créer une alerte gratuite →
+              {t.createFreeAlert}
             </Link>
           </div>
         ) : (
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
             <div className="flex items-center justify-between mb-1">
               <p className="font-semibold text-fg">
-                {paymentsAvailable ? "Passer en Pro" : "Rejoindre la liste d'attente"}
+                {paymentsAvailable ? t.checkoutTitle : t.waitlistTitle}
               </p>
-              <span className="text-lg font-black text-amber-400">9$ <span className="text-xs font-normal text-muted">/ mois</span></span>
+              <span className="text-lg font-black text-amber-400">{t.price}</span>
             </div>
             <p className="text-xs text-muted mb-4">
               {paymentsAvailable
-                ? "Sans engagement · Annulable à tout moment · Paiement via Lemon Squeezy"
-                : "Les paiements ouvriront très bientôt — sois prévenu en premier."}
+                ? t.checkoutDesc
+                : t.waitlistDesc}
             </p>
             <form onSubmit={handleCheckout} className="space-y-2">
               <div>
@@ -231,7 +343,7 @@ export function ProClient({
                   type="email"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="ton@email.com"
+                  placeholder={t.emailPlaceholder}
                   className={`w-full rounded-xl border bg-bg px-4 py-3 text-sm text-fg placeholder:text-muted focus:outline-none transition-all ${
                     emailError
                       ? "border-red-500/50 focus:border-red-500"
@@ -250,8 +362,8 @@ export function ProClient({
                 {checkoutStatus === "loading"
                   ? "…"
                   : paymentsAvailable
-                    ? "💎 Passer en Pro — 9$ / mois →"
-                    : "Rejoindre la liste →"}
+                    ? t.upgradeButton
+                    : t.waitlistButton}
               </button>
             </form>
             {checkoutError && (
@@ -261,8 +373,8 @@ export function ProClient({
               <span>🔒</span>
               <span>
                 {paymentsAvailable
-                  ? "Paiement sécurisé · Facture email automatique"
-                  : "Inscription gratuite — aucun engagement."}
+                  ? t.securePayment
+                  : t.freeSignup}
               </span>
             </div>
           </div>
@@ -273,19 +385,13 @@ export function ProClient({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">Fonctionnalité</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">Gratuit</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-amber-400 uppercase tracking-wider">Pro 9$/mois</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">{t.tableFeature}</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">{t.tableFree}</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-amber-400 uppercase tracking-wider">{t.tablePro}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {[
-                ["Alertes actives", "3", "Illimitées"],
-                ["Notifications push", "1 device", "Multi-devices"],
-                ["Historique des prix", "—", "6 mois"],
-                ["Multi-passagers", "—", "✓"],
-                ["Digest hebdo", "✓", "✓"],
-              ].map(([feature, free, pro]) => (
+              {t.rows.map(([feature, free, pro]) => (
                 <tr key={feature} className="bg-bg">
                   <td className="px-4 py-3 text-fg">{feature}</td>
                   <td className="px-4 py-3 text-center text-muted">{free}</td>
@@ -302,31 +408,31 @@ export function ProClient({
             {proStatus.isPro ? (
               <>
                 <p className="text-3xl mb-2">🎉</p>
-                <p className="font-semibold text-fg mb-1">Tu as Xalifly Pro</p>
+                <p className="font-semibold text-fg mb-1">{t.proStatusTitle}</p>
                 <p className="text-sm text-muted">
-                  Profite de tes alertes illimitées et de toutes les fonctionnalités Pro.
+                  {t.proStatusDesc}
                 </p>
                 <Link
-                  href="/alertes"
+                  href={alertesPath}
                   className="mt-4 inline-block rounded-lg bg-primary text-white text-sm font-bold px-5 py-2 hover:bg-primary/90 transition-colors"
                 >
-                  Gérer mes alertes →
+                  {t.manageAlerts}
                 </Link>
               </>
             ) : proStatus.hasTrial ? (
               <>
                 <p className="text-3xl mb-2">✨</p>
-                <p className="font-semibold text-fg mb-1">Essai gratuit actif</p>
+                <p className="font-semibold text-fg mb-1">{t.trialTitle}</p>
                 <p className="text-sm text-muted">
                   {proStatus.daysLeft && proStatus.daysLeft > 0
-                    ? `Tu as ${proStatus.daysLeft} jour${proStatus.daysLeft > 1 ? "s" : ""} d'essai gratuit restant.`
-                    : "Ton essai gratuit est actif."}
+                    ? t.trialWithDays(proStatus.daysLeft)
+                    : t.trialActive}
                 </p>
                 <Link
-                  href="/alertes"
+                  href={alertesPath}
                   className="mt-4 inline-block rounded-lg bg-primary text-white text-sm font-bold px-5 py-2 hover:bg-primary/90 transition-colors"
                 >
-                  Créer une alerte →
+                  {t.createAlert}
                 </Link>
               </>
             ) : null}
@@ -335,58 +441,22 @@ export function ProClient({
 
         {/* FAQ */}
         <div className="mt-12 pt-8 border-t border-border">
-          <h2 className="text-2xl font-black text-fg mb-6 text-center">Questions fréquentes</h2>
+          <h2 className="text-2xl font-black text-fg mb-6 text-center">{t.faqTitle}</h2>
           <div className="space-y-3">
-            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
-              <summary className="font-semibold text-fg flex items-center justify-between">
-                <span>Combien coûte Xalifly Pro ?</span>
-                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="text-sm text-muted mt-3">
-                Xalifly Pro coûte 9$ par mois. Tu peux commencer par un essai gratuit de 7 jours, sans carte de crédit.
-              </p>
-            </details>
-            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
-              <summary className="font-semibold text-fg flex items-center justify-between">
-                <span>Puis-je annuler mon abonnement ?</span>
-                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="text-sm text-muted mt-3">
-                Oui, tu peux annuler ton abonnement &agrave; tout moment. Tu conserveras l&apos;acc&egrave;s Pro jusqu&apos;&agrave; la fin de ta p&eacute;riode de facturation actuelle.
-              </p>
-            </details>
-            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
-              <summary className="font-semibold text-fg flex items-center justify-between">
-                <span>Qu&apos;est-ce qui inclus dans Pro ?</span>
-                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="text-sm text-muted mt-3">
-                Alertes illimitées, notifications push multi-devices, historique des prix sur 6 mois, et alertes pour plusieurs passagers simultanément.
-              </p>
-            </details>
-            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
-              <summary className="font-semibold text-fg flex items-center justify-between">
-                <span>Comment fonctionne l&apos;essai gratuit ?</span>
-                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="text-sm text-muted mt-3">
-                Tu as 7 jours d&apos;acc&egrave;s gratuit &agrave; toutes les fonctionnalit&eacute;s Pro. Aucune carte de cr&eacute;dit n&apos;est requise. Si tu ne convertis pas &agrave; la fin de l&apos;essai, ton compte reviendra &agrave; la version gratuite.
-              </p>
-            </details>
-            <details className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
-              <summary className="font-semibold text-fg flex items-center justify-between">
-                <span>Est-ce que mes donn&eacute;es sont s&ucirc;res ?</span>
-                <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="text-sm text-muted mt-3">
-                Oui. Xalifly utilise HTTPS, du chiffrement de bout en bout, et les meilleures pratiques de s&eacute;curit&eacute; pour prot&eacute;ger tes informations personnelles.
-              </p>
-            </details>
+            {t.faqs.map(([question, answer]) => (
+              <details key={question} className="rounded-lg bg-surface border border-border p-4 group cursor-pointer">
+                <summary className="font-semibold text-fg flex items-center justify-between">
+                  <span>{question}</span>
+                  <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <p className="text-sm text-muted mt-3">{answer}</p>
+              </details>
+            ))}
           </div>
         </div>
 
         <p className="mt-8 text-center text-xs text-muted/60">
-          Question ?{" "}
+          {t.question}{" "}
           <a href={`mailto:hello@${EMAIL_DOMAIN}`} className="underline hover:text-muted">
             hello@{EMAIL_DOMAIN}
           </a>

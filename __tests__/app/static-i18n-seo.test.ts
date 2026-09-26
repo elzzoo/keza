@@ -4,6 +4,8 @@ import { metadata as legalMetadata } from "@/app/mentions-legales/page";
 import { metadata as enLegalMetadata } from "@/app/en/legal/page";
 import { metadata as privacyMetadata } from "@/app/confidentialite/page";
 import { metadata as enPrivacyMetadata } from "@/app/en/privacy/page";
+import { metadata as proMetadata } from "@/app/pro/page";
+import { metadata as enProMetadata } from "@/app/en/pro/page";
 import sitemap from "@/app/sitemap";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -50,6 +52,23 @@ describe("static i18n SEO metadata", () => {
       `${SITE_URL}/en/legal`,
       `${SITE_URL}/confidentialite`,
       `${SITE_URL}/en/privacy`,
+    ]));
+  });
+
+  it("declares bilingual alternates for Pro conversion pages", () => {
+    const languages = { fr: `${SITE_URL}/pro`, en: `${SITE_URL}/en/pro` };
+
+    expect(proMetadata.alternates).toMatchObject({
+      canonical: `${SITE_URL}/pro`,
+      languages,
+    });
+    expect(enProMetadata.alternates).toMatchObject({
+      canonical: `${SITE_URL}/en/pro`,
+      languages,
+    });
+    expect(sitemap().map((entry) => entry.url)).toEqual(expect.arrayContaining([
+      `${SITE_URL}/pro`,
+      `${SITE_URL}/en/pro`,
     ]));
   });
 });

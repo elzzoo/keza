@@ -157,4 +157,12 @@ describe("Header", () => {
     const profileLink = container.querySelector('a[href="/en/profile"]');
     expect(profileLink).toBeInTheDocument();
   });
+
+  it("links the Pro CTA to the localized Pro page", () => {
+    const { container, rerender } = render(<Header {...defaultProps} />);
+    expect(container.querySelector('a[href="/en/pro"]')).toBeInTheDocument();
+
+    rerender(<Header {...defaultProps} lang="fr" />);
+    expect(container.querySelector('a[href="/pro"]')).toBeInTheDocument();
+  });
 });
