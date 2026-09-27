@@ -44,8 +44,8 @@ const LOYALTY_PROGRAMS = [
 ];
 
 // ── Format helpers ────────────────────────────────────────────────────────
-function fmt(n: number) {
-  return n.toLocaleString("fr-FR");
+function fmt(n: number, lang: "fr" | "en" = "fr") {
+  return n.toLocaleString(lang === "fr" ? "fr-FR" : "en-US");
 }
 function airportLabel(code: string) {
   const a = airportsMap[code];
@@ -125,8 +125,108 @@ function computeAffordable(profile: UserProfile): AffordableRoute[] {
     .slice(0, 12);
 }
 
+const COPY = {
+  fr: {
+    homeHref: "/",
+    routePrefix: "/vol",
+    title: "Mon profil",
+    syncedWith: "Synchronisé avec",
+    totalLabel: "Total miles & points",
+    estimatedUsd: "USD estimés",
+    programs: "Programmes",
+    searches: "recherches",
+    favorites: "favoris",
+    availableRoutes: "routes dispo",
+    tabs: {
+      wallet: "💳 Wallet",
+      recents: "🔍 Récents",
+      favorites: "❤️ Favoris",
+      afford: "🎯 Abordable",
+    },
+    milesPrograms: "Programmes miles",
+    noProgram: "Aucun programme ajouté.",
+    chooseProgram: "Choisir un programme…",
+    delete: "Supprimer",
+    bankPoints: "Points transferts bancaires",
+    bankHint: "Amex MR, Chase UR… transférables vers des compagnies aériennes.",
+    noBank: "Aucun point bancaire ajouté.",
+    activeBonuses: "Bonus de transfert actifs",
+    until: "Jusqu'au",
+    bonus: "bonus",
+    recentSearches: "Recherches récentes",
+    clearAll: "Tout effacer",
+    noSearch: "Aucune recherche enregistrée.",
+    startSearch: "Lancer une recherche →",
+    favoriteRoutes: "Routes favorites",
+    noFavorites: "Aucun favori. Cliquez ❤️ sur un résultat pour sauvegarder une route.",
+    searchFlight: "Chercher un vol →",
+    page: "Page",
+    removeFavorite: "Retirer des favoris",
+    affordTitle: "Ce que tu peux te payer",
+    affordHint: "Routes accessibles avec tes miles actuels.",
+    addMilesHint: "Ajoute tes miles dans l'onglet Wallet pour découvrir tes options.",
+    setupWallet: "Configurer mon wallet →",
+    noAffordable: "Aucune route accessible avec tes miles actuels.",
+    noAffordableHint: "Essaie d'accumuler plus de miles ou des points bancaires.",
+    businessAvailable: "Business dispo ✦",
+    economy: "Éco",
+    availableMiles: "miles dispo",
+    compareFlight: "✈️ Comparer un vol",
+    nonstop: "Direct",
+  },
+  en: {
+    homeHref: "/en",
+    routePrefix: "/en/vol",
+    title: "My profile",
+    syncedWith: "Synced with",
+    totalLabel: "Total miles & points",
+    estimatedUsd: "estimated USD",
+    programs: "Programs",
+    searches: "searches",
+    favorites: "favorites",
+    availableRoutes: "available routes",
+    tabs: {
+      wallet: "💳 Wallet",
+      recents: "🔍 Recent",
+      favorites: "❤️ Favorites",
+      afford: "🎯 Affordable",
+    },
+    milesPrograms: "Miles programs",
+    noProgram: "No program added yet.",
+    chooseProgram: "Choose a program…",
+    delete: "Delete",
+    bankPoints: "Bank transfer points",
+    bankHint: "Amex MR, Chase UR… transferable to airlines.",
+    noBank: "No bank points added yet.",
+    activeBonuses: "Active transfer bonuses",
+    until: "Until",
+    bonus: "bonus",
+    recentSearches: "Recent searches",
+    clearAll: "Clear all",
+    noSearch: "No saved search yet.",
+    startSearch: "Start a search →",
+    favoriteRoutes: "Favorite routes",
+    noFavorites: "No favorite yet. Click ❤️ on a result to save a route.",
+    searchFlight: "Search a flight →",
+    page: "Page",
+    removeFavorite: "Remove from favorites",
+    affordTitle: "What you can afford",
+    affordHint: "Routes reachable with your current miles.",
+    addMilesHint: "Add your miles in the Wallet tab to discover your options.",
+    setupWallet: "Set up my wallet →",
+    noAffordable: "No route reachable with your current miles.",
+    noAffordableHint: "Try collecting more miles or bank points.",
+    businessAvailable: "Business available ✦",
+    economy: "Economy",
+    availableMiles: "miles available",
+    compareFlight: "✈️ Compare a flight",
+    nonstop: "Nonstop",
+  },
+} as const;
+
 // ─────────────────────────────────────────────────────────────────────────
-export function ProfilClient() {
+export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
+  const t = COPY[lang];
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [tab, setTab] = useState<"wallet" | "recents" | "favorites" | "afford">("wallet");
 
@@ -248,11 +348,11 @@ export function ProfilClient() {
     <div className="min-h-screen bg-bg">
       {/* Nav */}
       <nav className="sticky top-0 z-40 bg-bg/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link href="/" className="text-muted hover:text-fg transition-colors text-sm">
+        <Link href={t.homeHref} className="text-muted hover:text-fg transition-colors text-sm">
           ← Xalifly
         </Link>
         <span className="text-border">·</span>
-        <span className="text-sm font-bold text-fg">Mon profil</span>
+        <span className="text-sm font-bold text-fg">{t.title}</span>
       </nav>
 
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
@@ -264,16 +364,16 @@ export function ProfilClient() {
               ✈️
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted">Total miles &amp; points</p>
-              <p className="text-2xl font-black text-primary">{fmt(totalMiles)}</p>
+              <p className="text-xs text-muted">{t.totalLabel}</p>
+              <p className="text-2xl font-black text-primary">{fmt(totalMiles, lang)}</p>
               {totalMiles > 0 && (
                 <p className="text-[11px] text-muted mt-0.5">
-                  ≈ <span className="text-success font-semibold">${fmt(estimatedUsd)}</span> USD estimés
+                  ≈ <span className="text-success font-semibold">${fmt(estimatedUsd, lang)}</span> {t.estimatedUsd}
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted">Programmes</p>
+              <p className="text-xs text-muted">{t.programs}</p>
               <p className="text-lg font-black text-fg">
                 {Object.keys(profile.balances).length + Object.keys(profile.bankPoints).length}
               </p>
@@ -283,7 +383,7 @@ export function ProfilClient() {
           {session?.user && (
             <div className="flex items-center gap-2 text-[11px] text-success mt-2">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              <span>Synchronisé avec {session.user.email}</span>
+              <span>{t.syncedWith} {session.user.email}</span>
             </div>
           )}
 
@@ -291,36 +391,33 @@ export function ProfilClient() {
           <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
             <div className="text-center">
               <p className="text-lg font-black text-fg">{profile.recentSearches.length}</p>
-              <p className="text-[10px] text-muted">recherches</p>
+              <p className="text-[10px] text-muted">{t.searches}</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-black text-fg">{profile.favoriteRoutes.length}</p>
-              <p className="text-[10px] text-muted">favoris</p>
+              <p className="text-[10px] text-muted">{t.favorites}</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-black text-success">{affordable.length}</p>
-              <p className="text-[10px] text-muted">routes dispo</p>
+              <p className="text-[10px] text-muted">{t.availableRoutes}</p>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-surface rounded-xl p-1 border border-border">
-          {(["wallet", "recents", "favorites", "afford"] as const).map(t => (
+          {(["wallet", "recents", "favorites", "afford"] as const).map(tabKey => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabKey}
+              onClick={() => setTab(tabKey)}
               className={[
                 "flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all",
-                tab === t
+                tab === tabKey
                   ? "bg-primary text-white shadow-sm"
                   : "text-muted hover:text-fg",
               ].join(" ")}
             >
-              {t === "wallet" && "💳 Wallet"}
-              {t === "recents" && "🔍 Récents"}
-              {t === "favorites" && "❤️ Favoris"}
-              {t === "afford" && "🎯 Abordable"}
+              {t.tabs[tabKey]}
             </button>
           ))}
         </div>
@@ -330,23 +427,23 @@ export function ProfilClient() {
           <div className="space-y-4">
             {/* Miles programs */}
             <section className="bg-surface rounded-2xl border border-border p-5 space-y-4">
-              <h2 className="text-sm font-black text-fg">Programmes miles</h2>
+              <h2 className="text-sm font-black text-fg">{t.milesPrograms}</h2>
 
               {/* Existing balances */}
               {Object.keys(profile.balances).length === 0 ? (
-                <p className="text-xs text-muted">Aucun programme ajouté.</p>
+                <p className="text-xs text-muted">{t.noProgram}</p>
               ) : (
                 <div className="space-y-2">
                   {Object.entries(profile.balances).map(([prog, pts]) => (
                     <div key={prog} className="flex items-center gap-3 bg-surface-2 rounded-xl px-3 py-2.5">
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-fg truncate">{prog}</p>
-                        <p className="text-[11px] text-primary font-semibold">{fmt(pts)} miles</p>
+                        <p className="text-[11px] text-primary font-semibold">{fmt(pts, lang)} miles</p>
                       </div>
                       <button
                         onClick={() => removeBalance(prog)}
                         className="text-muted hover:text-error transition-colors text-xs px-2"
-                        aria-label="Supprimer"
+                        aria-label={t.delete}
                       >
                         ✕
                       </button>
@@ -362,7 +459,7 @@ export function ProfilClient() {
                   onChange={e => setEditProgram(e.target.value)}
                   className="flex-1 bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-primary/50"
                 >
-                  <option value="">Choisir un programme…</option>
+                  <option value="">{t.chooseProgram}</option>
                   {LOYALTY_PROGRAMS.filter(p => !profile.balances[p]).map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
@@ -387,25 +484,25 @@ export function ProfilClient() {
 
             {/* Bank transfer points */}
             <section className="bg-surface rounded-2xl border border-border p-5 space-y-4">
-              <h2 className="text-sm font-black text-fg">Points transferts bancaires</h2>
+              <h2 className="text-sm font-black text-fg">{t.bankPoints}</h2>
               <p className="text-[11px] text-muted -mt-2">
-                Amex MR, Chase UR… transférables vers des compagnies aériennes.
+                {t.bankHint}
               </p>
 
               {Object.keys(profile.bankPoints).length === 0 ? (
-                <p className="text-xs text-muted">Aucun point bancaire ajouté.</p>
+                <p className="text-xs text-muted">{t.noBank}</p>
               ) : (
                 <div className="space-y-2">
                   {Object.entries(profile.bankPoints).map(([key, pts]) => (
                     <div key={key} className="flex items-center gap-3 bg-surface-2 rounded-xl px-3 py-2.5">
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-fg truncate">{key}</p>
-                        <p className="text-[11px] text-primary font-semibold">{fmt(pts)} pts</p>
+                        <p className="text-[11px] text-primary font-semibold">{fmt(pts, lang)} pts</p>
                       </div>
                       <button
                         onClick={() => removeBankPoints(key)}
                         className="text-muted hover:text-error transition-colors text-xs px-2"
-                        aria-label="Supprimer"
+                        aria-label={t.delete}
                       >
                         ✕
                       </button>
@@ -453,7 +550,7 @@ export function ProfilClient() {
                 <section className="bg-surface rounded-2xl border border-amber-500/30 p-5 space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-base">🎁</span>
-                    <h2 className="text-sm font-black text-fg">Bonus de transfert actifs</h2>
+                    <h2 className="text-sm font-black text-fg">{t.activeBonuses}</h2>
                   </div>
                   <div className="space-y-2">
                     {activePromos.map((b, i) => (
@@ -463,11 +560,11 @@ export function ProfilClient() {
                             {b.from} → {b.to}
                           </p>
                           <p className="text-[11px] text-muted">
-                            Jusqu&apos;au {b.promoValidUntil}
+                            {t.until} {b.promoValidUntil}
                           </p>
                         </div>
                         <span className="text-xs font-black text-amber-500">
-                          +{Math.round((b.promoRatio! - 1) * 100)}% bonus
+                          +{Math.round((b.promoRatio! - 1) * 100)}% {t.bonus}
                         </span>
                       </div>
                     ))}
@@ -482,13 +579,13 @@ export function ProfilClient() {
         {tab === "recents" && (
           <section className="bg-surface rounded-2xl border border-border p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-black text-fg">Recherches récentes</h2>
+              <h2 className="text-sm font-black text-fg">{t.recentSearches}</h2>
               {profile.recentSearches.length > 0 && (
                 <button
                   onClick={clearRecents}
                   className="text-[11px] text-muted hover:text-error transition-colors"
                 >
-                  Tout effacer
+                  {t.clearAll}
                 </button>
               )}
             </div>
@@ -496,9 +593,9 @@ export function ProfilClient() {
             {profile.recentSearches.length === 0 ? (
               <div className="text-center py-8 space-y-2">
                 <p className="text-3xl">🔍</p>
-                <p className="text-xs text-muted">Aucune recherche enregistrée.</p>
-                <Link href="/" className="text-xs text-primary hover:underline">
-                  Lancer une recherche →
+                <p className="text-xs text-muted">{t.noSearch}</p>
+                <Link href={t.homeHref} className="text-xs text-primary hover:underline">
+                  {t.startSearch}
                 </Link>
               </div>
             ) : (
@@ -514,12 +611,12 @@ export function ProfilClient() {
                   return (
                     <Link
                       key={i}
-                      href={`/?${params}`}
+                      href={`${t.homeHref}?${params}`}
                       className="flex items-center gap-3 bg-surface-2 hover:bg-surface-2/80 rounded-xl px-3 py-2.5 transition-colors group"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-fg">
-                          {airportLabel(s.from)} → {airportLabel(s.to)}
+                          {(lang === "fr" ? airportLabel : airportLabelEn)(s.from)} → {(lang === "fr" ? airportLabel : airportLabelEn)(s.to)}
                         </p>
                         <p className="text-[11px] text-muted">
                           {s.date} · {s.cabin}
@@ -543,16 +640,16 @@ export function ProfilClient() {
         {/* ── FAVORITES tab ──────────────────────────────────────────────── */}
         {tab === "favorites" && (
           <section className="bg-surface rounded-2xl border border-border p-5 space-y-3">
-            <h2 className="text-sm font-black text-fg">Routes favorites</h2>
+            <h2 className="text-sm font-black text-fg">{t.favoriteRoutes}</h2>
 
             {profile.favoriteRoutes.length === 0 ? (
               <div className="text-center py-8 space-y-2">
                 <p className="text-3xl">❤️</p>
                 <p className="text-xs text-muted">
-                  Aucun favori. Cliquez ❤️ sur un résultat pour sauvegarder une route.
+                  {t.noFavorites}
                 </p>
-                <Link href="/" className="text-xs text-primary hover:underline">
-                  Chercher un vol →
+                <Link href={t.homeHref} className="text-xs text-primary hover:underline">
+                  {t.searchFlight}
                 </Link>
               </div>
             ) : (
@@ -565,28 +662,28 @@ export function ProfilClient() {
                     <div key={key} className="flex items-center gap-3 bg-surface-2 rounded-xl px-3 py-2.5">
                       <div className="flex-1 min-w-0">
                         <Link
-                          href={`/?${params}`}
+                          href={`${t.homeHref}?${params}`}
                           className="text-xs font-bold text-fg hover:text-primary transition-colors"
                         >
-                          {airportLabel(r.from)} → {airportLabelEn(r.to)}
+                          {(lang === "fr" ? airportLabel : airportLabelEn)(r.from)} → {(lang === "fr" ? airportLabel : airportLabelEn)(r.to)}
                         </Link>
                         {meta && (
                           <p className="text-[11px] text-muted mt-0.5">
-                            Éco: {fmt(meta.milesToEconomy)} miles
-                            {meta.isNonstop && " · Direct"}
+                            {t.economy}: {fmt(meta.milesToEconomy, lang)} miles
+                            {meta.isNonstop && ` · ${t.nonstop}`}
                           </p>
                         )}
                       </div>
                       <Link
-                        href={`/vol/${r.from.toLowerCase()}-${r.to.toLowerCase()}`}
+                        href={`${t.routePrefix}/${r.from.toLowerCase()}-${r.to.toLowerCase()}`}
                         className="text-[10px] text-primary hover:underline px-1"
                       >
-                        Page
+                        {t.page}
                       </Link>
                       <button
                         onClick={() => removeFavorite(r.from, r.to)}
                         className="text-muted hover:text-error transition-colors text-xs px-2"
-                        aria-label="Retirer des favoris"
+                        aria-label={t.removeFavorite}
                       >
                         ✕
                       </button>
@@ -602,9 +699,9 @@ export function ProfilClient() {
         {tab === "afford" && (
           <section className="bg-surface rounded-2xl border border-border p-5 space-y-4">
             <div>
-              <h2 className="text-sm font-black text-fg">Ce que tu peux te payer</h2>
+              <h2 className="text-sm font-black text-fg">{t.affordTitle}</h2>
               <p className="text-[11px] text-muted mt-1">
-                Routes accessibles avec tes miles actuels.
+                {t.affordHint}
               </p>
             </div>
 
@@ -612,21 +709,21 @@ export function ProfilClient() {
               <div className="text-center py-8 space-y-3">
                 <p className="text-3xl">💳</p>
                 <p className="text-xs text-muted">
-                  Ajoute tes miles dans l&apos;onglet Wallet pour découvrir tes options.
+                  {t.addMilesHint}
                 </p>
                 <button
                   onClick={() => setTab("wallet")}
                   className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-colors"
                 >
-                  Configurer mon wallet →
+                  {t.setupWallet}
                 </button>
               </div>
             ) : affordable.length === 0 ? (
               <div className="text-center py-8 space-y-2">
                 <p className="text-3xl">😔</p>
                 <p className="text-xs text-muted">
-                  Aucune route accessible avec tes miles actuels.
-                  <br />Essaie d&apos;accumuler plus de miles ou des points bancaires.
+                  {t.noAffordable}
+                  <br />{t.noAffordableHint}
                 </p>
               </div>
             ) : (
@@ -637,7 +734,7 @@ export function ProfilClient() {
                   return (
                     <Link
                       key={i}
-                      href={`/?${params}`}
+                      href={`${t.homeHref}?${params}`}
                       className="flex items-center gap-3 bg-surface-2 hover:bg-surface-2/80 rounded-xl px-3 py-3 transition-colors group"
                     >
                       {/* Cabin badge */}
@@ -650,21 +747,21 @@ export function ProfilClient() {
 
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-fg">
-                          {airportLabel(r.from)} → {airportLabel(r.to)}
+                          {(lang === "fr" ? airportLabel : airportLabelEn)(r.from)} → {(lang === "fr" ? airportLabel : airportLabelEn)(r.to)}
                         </p>
                         <p className="text-[11px] text-muted">
                           via <span className="font-semibold text-fg/70">{r.program}</span>
                           {" · "}
                           {isBiz
-                            ? <span className="text-amber-500 font-semibold">Business dispo ✦</span>
-                            : <span>Éco: {fmt(r.meta.milesToEconomy)} miles</span>
+                            ? <span className="text-amber-500 font-semibold">{t.businessAvailable}</span>
+                            : <span>{t.economy}: {fmt(r.meta.milesToEconomy, lang)} miles</span>
                           }
                         </p>
                       </div>
 
                       <div className="text-right flex-shrink-0">
-                        <p className="text-[11px] font-bold text-primary">{fmt(r.available)}</p>
-                        <p className="text-[9px] text-muted">miles dispo</p>
+                        <p className="text-[11px] font-bold text-primary">{fmt(r.available, lang)}</p>
+                        <p className="text-[9px] text-muted">{t.availableMiles}</p>
                       </div>
                     </Link>
                   );
@@ -677,10 +774,10 @@ export function ProfilClient() {
         {/* Footer CTA */}
         <div className="text-center pb-4">
           <Link
-            href="/"
+            href={t.homeHref}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors"
           >
-            ✈️ Comparer un vol
+            {t.compareFlight}
           </Link>
         </div>
       </div>
