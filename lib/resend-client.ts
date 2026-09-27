@@ -1,7 +1,10 @@
 import "server-only";
 import { Resend } from "resend";
+import { EMAIL_DOMAIN } from "@/lib/brand";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? `alerts@${EMAIL_DOMAIN}`;
 
 export interface SendMilesAlertEmailParams {
   email: string;
@@ -57,7 +60,7 @@ export async function sendMilesAlertEmail(
 
   try {
     const response = await resend.emails.send({
-      from: "alerts@keza.app",
+      from: FROM_EMAIL,
       to: email,
       subject,
       html,
@@ -268,7 +271,7 @@ function generateMilesAlertEmailHTML({
 
       <!-- CTA Button -->
       <div style="text-align: center;">
-        <a href="https://keza.app/flights?from=${from}&to=${to}" class="cta-button">Search Now</a>
+        <a href="${SITE_URL}/flights?from=${from}&to=${to}" class="cta-button">Search Now</a>
       </div>
 
       <p style="font-size: 14px; color: #999999; text-align: center; margin-top: 20px;">
@@ -280,9 +283,9 @@ function generateMilesAlertEmailHTML({
     <div class="footer">
       <p style="margin: 0 0 10px 0;">Questions? We're here to help.</p>
       <div class="footer-links">
-        <a href="https://keza.app/miles-alerts?email=${encodeURIComponent(email)}">Manage alerts</a>
+        <a href="${SITE_URL}/miles-alerts?email=${encodeURIComponent(email)}">Manage alerts</a>
         <span style="color: #ebebeb;">•</span>
-        <a href="https://keza.app/miles-alerts?email=${encodeURIComponent(email)}&unsubscribe=true">Unsubscribe</a>
+        <a href="${SITE_URL}/miles-alerts?email=${encodeURIComponent(email)}&unsubscribe=true">Unsubscribe</a>
       </div>
       <p style="margin: 15px 0 0 0; color: #bbb;">
         © 2026 <span class="keza-logo">Xalifly</span> • Your miles, optimized.

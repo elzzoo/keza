@@ -63,7 +63,7 @@ describe("Resend Email Client - Miles Alert", () => {
     expect(callArgs.html).toContain("65,000"); // formatted with comma
     expect(callArgs.html).toContain("$50.25");
     expect(callArgs.html).toContain("Search Now");
-    expect(callArgs.html).toContain("https://keza.app/flights?from=SIN&to=LAX");
+    expect(callArgs.html).toContain("https://keza-taupe.vercel.app/flights?from=SIN&to=LAX");
     expect(callArgs.html).toContain("Manage alerts");
     expect(callArgs.html).toContain("user%40example.com");
 

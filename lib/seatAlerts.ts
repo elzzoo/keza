@@ -348,9 +348,11 @@ export async function processAllSeatAlerts(): Promise<{
 import { Resend } from "resend";
 import { airportsMap } from "@/data/airports";
 import { logError } from "@/lib/logger";
+import { EMAIL_DOMAIN } from "@/lib/brand";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const SENDER_EMAIL = process.env.KEZA_EMAIL_SENDER || "alerts@keza.app";
+const SENDER_EMAIL = process.env.KEZA_EMAIL_SENDER || `alerts@${EMAIL_DOMAIN}`;
 
 /**
  * Send seat alert email notification to a subscriber
@@ -380,6 +382,7 @@ export async function sendSeatAlertEmail(
     const savingsPercent = Math.round((savings / subscribedPrice) * 100);
 
     const subject = `🎯 Alert: ${from} → ${to} ${cabinLabel} now $${currentPrice}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || SITE_URL;
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -409,14 +412,14 @@ export async function sendSeatAlertEmail(
     <p>You set your alert at <strong>$${subscribedPrice}</strong> and flights are now available at <strong>$${currentPrice}</strong>.</p>
 
     <center>
-      <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://keza.app"}/flights/${route}" class="cta">
+      <a href="${baseUrl}/flights/${route}" class="cta">
         View Flights →
       </a>
     </center>
 
     <div class="footer">
       <p>This is an automated alert from Xalifly. You received this because you set a price alert for ${from}→${to}.</p>
-      <p><a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://keza.app"}/alertes" style="color: #667eea;">Manage alerts</a></p>
+      <p><a href="${baseUrl}/alertes" style="color: #667eea;">Manage alerts</a></p>
     </div>
   </div>
 </body>
