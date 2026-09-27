@@ -315,14 +315,16 @@ export function PortefeuilleClient() {
         </div>
 
         {/* ── Pro access status ────────────────────────────────────────────── */}
-        {!hasProAccess && <ProUpgradeCard daysLeft={daysLeft} />}
+        {!hasProAccess && <ProUpgradeCard daysLeft={daysLeft} lang={lang} />}
 
         {hasProAccess && (
           <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 mb-6">
             <p className="text-sm text-blue-800">
               {daysLeft !== null && daysLeft > 0
-                ? `Essai gratuit actif: ${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant`
-                : "Xalifly Pro actif"}
+                ? lang === "fr"
+                  ? `Essai gratuit actif: ${daysLeft} jour${daysLeft > 1 ? "s restants" : " restant"}`
+                  : `Free trial active: ${daysLeft} day${daysLeft > 1 ? "s" : ""} left`
+                : lang === "fr" ? "Xalifly Pro actif" : "Xalifly Pro active"}
             </p>
           </div>
         )}
