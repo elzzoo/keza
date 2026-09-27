@@ -152,6 +152,7 @@ export function RoutePageClient({
   const [hasSearched, setHasSearched] = useState(false);
   const { isActive: hasProAccess } = useProAccess();
   const fr = lang === "fr";
+  const proHref = fr ? "/pro" : "/en/pro";
 
   const handleSearchStart = useCallback(() => {
     setResults([]);
@@ -526,7 +527,7 @@ export function RoutePageClient({
                 <p className="text-sm text-muted mb-3">
                   {fr ? "Historique 6 mois disponible en Pro" : "6-month price history available in Pro"}
                 </p>
-                <Link href="/pro" className="inline-block bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors">
+                <Link href={proHref} className="inline-block bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors">
                   {fr ? "Essayer gratuitement" : "Try for free"}
                 </Link>
               </div>
