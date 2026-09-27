@@ -79,7 +79,7 @@ export function UpgradeModal({ lang, onClose, prefillEmail = "" }: Props) {
           <button
             onClick={onClose}
             className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:text-fg hover:bg-surface-2 transition-colors"
-            aria-label="Fermer"
+            aria-label={fr ? "Fermer" : "Close"}
           >
             ✕
           </button>
