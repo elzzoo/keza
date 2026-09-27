@@ -149,6 +149,7 @@ export function ProClient({
   const t = COPY[lang];
   const alertesPath = lang === "en" ? "/en/alertes" : "/alertes";
   const proPath = lang === "en" ? "/en/pro" : "/pro";
+  const connexionPath = lang === "en" ? "/en/connexion" : "/connexion";
   const [email, setEmail] = useState(userEmail || initialEmail || "");
   const [emailError, setEmailError] = useState("");
   const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
@@ -211,7 +212,7 @@ export function ProClient({
       const callbackUrl = trimmed
         ? `${proPath}?email=${encodeURIComponent(trimmed)}`
         : proPath;
-      router.push(`/connexion?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      router.push(`${connexionPath}?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
     }
 
