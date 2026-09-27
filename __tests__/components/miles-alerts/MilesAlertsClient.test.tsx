@@ -53,6 +53,14 @@ describe("MilesAlertsClient", () => {
       expect(searchButton).toBeInTheDocument();
     });
 
+    it("can render with English as the initial language", () => {
+      render(<MilesAlertsClient initialLang="en" />);
+
+      expect(screen.getByRole("heading", { name: "Miles Alerts" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Rechercher" })).not.toBeInTheDocument();
+    });
+
     it("shows error toast when email is empty and submit is clicked", async () => {
       render(<MilesAlertsClient />);
       const searchButton = screen.getByText("Rechercher");

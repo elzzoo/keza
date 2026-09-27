@@ -52,8 +52,12 @@ function createdAtToDate(value: number): Date {
   return new Date(value < 1_000_000_000_000 ? value * 1000 : value);
 }
 
-export function MilesAlertsClient() {
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+type MilesAlertsClientProps = {
+  initialLang?: "fr" | "en";
+};
+
+export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps) {
+  const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const t = L[lang];
   const [email, setEmail] = useState("");
   const [alerts, setAlerts] = useState<MilesAlert[]>([]);
