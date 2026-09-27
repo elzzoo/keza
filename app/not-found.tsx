@@ -1,13 +1,53 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
-  title: "Page introuvable | Xalifly",
-  description: "Cette page n'existe pas. Retournez à Xalifly pour comparer vos vols cash vs miles.",
+  title: "Page introuvable | Page not found | Xalifly",
+  description: "Retournez à Xalifly pour comparer vos vols cash vs miles. Return to Xalifly to compare cash fares vs miles.",
   robots: "noindex",
 };
 
-export default function NotFound() {
+const COPY = {
+  fr: {
+    eyebrow: "Cash ou Miles ?",
+    title: "Page introuvable",
+    description:
+      "Cette page n'existe pas ou a été déplacée. Pas de panique — revenez à l'accueil pour trouver le meilleur tarif pour votre prochain vol.",
+    homeHref: "/",
+    homeCta: "← Retour à l'accueil",
+    dealsHref: "/deals",
+    dealsCta: "Voir les deals du moment",
+    quickLinks: [
+      { href: "/programmes", label: "Programmes miles" },
+      { href: "/carte", label: "Carte destinations" },
+      { href: "/comparer", label: "Comparer" },
+      { href: "/alertes", label: "Mes alertes" },
+    ],
+  },
+  en: {
+    eyebrow: "Cash or Miles?",
+    title: "Page not found",
+    description:
+      "This page does not exist or has moved. Return home to find the best option for your next flight.",
+    homeHref: "/en",
+    homeCta: "Back home",
+    dealsHref: "/en/deals",
+    dealsCta: "See current deals",
+    quickLinks: [
+      { href: "/en/programmes", label: "Miles programs" },
+      { href: "/en/carte", label: "Destination map" },
+      { href: "/en/comparer", label: "Compare" },
+      { href: "/en/alertes", label: "My alerts" },
+    ],
+  },
+};
+
+export default async function NotFound() {
+  const headersList = await headers();
+  const locale = headersList.get("x-locale") === "en" ? "en" : "fr";
+  const copy = COPY[locale];
+
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4 text-center">
       {/* Logo */}
@@ -17,7 +57,7 @@ export default function NotFound() {
           <span className="text-fg">fly</span>
         </span>
         <span className="text-[10px] font-semibold tracking-widest uppercase text-muted">
-          Cash ou Miles ?
+          {copy.eyebrow}
         </span>
       </div>
 
@@ -26,36 +66,30 @@ export default function NotFound() {
         <span className="text-3xl font-black text-primary">404</span>
       </div>
 
-      <h1 className="text-2xl font-black text-fg mb-2">Page introuvable</h1>
+      <h1 className="text-2xl font-black text-fg mb-2">{copy.title}</h1>
       <p className="text-sm text-muted max-w-sm mb-8">
-        Cette page n&apos;existe pas ou a été déplacée. Pas de panique — revenez à l&apos;accueil pour
-        trouver le meilleur tarif pour votre prochain vol.
+        {copy.description}
       </p>
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3">
         <Link
-          href="/"
+          href={copy.homeHref}
           className="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
-          ← Retour à l&apos;accueil
+          {copy.homeCta}
         </Link>
         <Link
-          href="/deals"
+          href={copy.dealsHref}
           className="px-6 py-2.5 rounded-xl bg-surface border border-border text-fg text-sm font-semibold hover:bg-surface-2 transition-colors"
         >
-          Voir les deals du moment
+          {copy.dealsCta}
         </Link>
       </div>
 
       {/* Quick nav */}
       <div className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted">
-        {[
-          { href: "/programmes", label: "Programmes miles" },
-          { href: "/carte", label: "Carte destinations" },
-          { href: "/comparer", label: "Comparer" },
-          { href: "/alertes", label: "Mes alertes" },
-        ].map(({ href, label }) => (
+        {copy.quickLinks.map(({ href, label }) => (
           <Link key={href} href={href} className="hover:text-fg transition-colors">
             {label}
           </Link>
