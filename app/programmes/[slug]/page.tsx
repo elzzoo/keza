@@ -30,13 +30,18 @@ export async function generateMetadata(
 
   return {
     title: `${program.name} - Xalifly`,
-    description: `${program.name} loyalty programme details. ${program.bestUse}`,
+    description: `Détails du programme de fidélité ${program.name}. ${program.bestUseFr}`,
     alternates: {
       canonical: `${SITE_URL}/programmes/${program.id}`,
+      languages: {
+        fr: `${SITE_URL}/programmes/${program.id}`,
+        en: `${SITE_URL}/en/programmes/${program.id}`,
+        "x-default": `${SITE_URL}/programmes/${program.id}`,
+      },
     },
     openGraph: {
       title: `${program.name} - Xalifly`,
-      description: `${program.name} loyalty programme. ${program.bestUse}`,
+      description: `Programme de fidélité ${program.name}. ${program.bestUseFr}`,
       type: 'website',
       url: `${SITE_URL}/programmes/${program.id}`,
     },
@@ -58,9 +63,9 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
   };
 
   const typeLabel = {
-    airline: 'Airline',
-    hotel: 'Hotel',
-    transfer: 'Transfer Card',
+    airline: 'Compagnie aérienne',
+    hotel: 'Hôtel',
+    transfer: 'Carte de transfert',
   };
 
   return (
@@ -71,7 +76,7 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
           href="/programmes"
           className="text-blue-600 hover:text-blue-800 mb-6 inline-block"
         >
-          ← Back to Programmes
+          ← Retour aux programmes
         </Link>
 
         {/* Header */}
@@ -92,7 +97,7 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
 
           {program.alliance && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Alliance</p>
+            <p className="text-sm text-gray-600">Alliance</p>
               <p className="text-lg font-semibold">
                 {allianceLabel[program.alliance]}
               </p>
@@ -100,7 +105,7 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
           )}
 
           <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">Value per Mile/Point</p>
+            <p className="text-sm text-gray-600">Valeur par mile/point</p>
             <p className="text-lg font-semibold">{program.cpmCents}¢</p>
           </div>
 
@@ -112,14 +117,14 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
 
         {/* Best Use */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-2">Best Use</h2>
-          <p className="text-gray-700">{program.bestUse}</p>
+          <h2 className="text-xl font-bold mb-2">Meilleur usage</h2>
+          <p className="text-gray-700">{program.bestUseFr}</p>
         </div>
 
         {/* Transfer Partners */}
         {program.transferPartners.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-2">Transfer Partners</h2>
+            <h2 className="text-xl font-bold mb-2">Partenaires de transfert</h2>
             <ul className="list-disc list-inside text-gray-700 space-y-1">
               {program.transferPartners.map((partner) => (
                 <li key={partner} className="capitalize">
@@ -133,7 +138,7 @@ export default async function ProgrammePage(props: ProgrammePageProps) {
         {/* Regions */}
         {program.regions.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-2">Available Regions</h2>
+            <h2 className="text-xl font-bold mb-2">Régions disponibles</h2>
             <div className="flex flex-wrap gap-2">
               {program.regions.map((region) => (
                 <span
