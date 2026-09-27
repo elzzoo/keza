@@ -20,7 +20,7 @@ describe('ProgramsTable', () => {
 
     // Get the first programme
     const firstProgram = PROGRAMS[0];
-    const expectedHref = `/programmes/${firstProgram.id}`;
+    const expectedHref = `/en/programmes/${firstProgram.id}`;
 
     // Find all links with this href (desktop and mobile)
     const links = container.querySelectorAll(`a[href="${expectedHref}"]`);
@@ -32,7 +32,7 @@ describe('ProgramsTable', () => {
 
     // Test that all programmes have links to their detail pages
     PROGRAMS.forEach((program) => {
-      const expectedHref = `/programmes/${program.id}`;
+      const expectedHref = `/en/programmes/${program.id}`;
       const links = container.querySelectorAll(`a[href="${expectedHref}"]`);
       expect(links.length).toBeGreaterThan(0);
     });
@@ -42,7 +42,7 @@ describe('ProgramsTable', () => {
     const { container } = render(<ProgramsTable lang="en" />);
 
     const firstProgram = PROGRAMS[0];
-    const expectedHref = `/programmes/${firstProgram.id}`;
+    const expectedHref = `/en/programmes/${firstProgram.id}`;
 
     // Get the mobile card link (since desktop uses className="contents")
     const links = container.querySelectorAll(`a[href="${expectedHref}"]`);
@@ -67,7 +67,7 @@ describe('ProgramsTable', () => {
     // Count all links pointing to programme detail pages
     let totalProgrammeLinks = 0;
     PROGRAMS.forEach((program) => {
-      const expectedHref = `/programmes/${program.id}`;
+      const expectedHref = `/en/programmes/${program.id}`;
       const links = container.querySelectorAll(`a[href="${expectedHref}"]`);
       totalProgrammeLinks += links.length;
     });
@@ -80,14 +80,14 @@ describe('ProgramsTable', () => {
     const { container } = render(<ProgramsTable lang="en" />);
 
     // Get all programme links
-    const allLinks = container.querySelectorAll('a[href^="/programmes/"]');
+    const allLinks = container.querySelectorAll('a[href^="/en/programmes/"]');
 
     expect(allLinks.length).toBeGreaterThan(0);
 
     // Verify all links have proper href format
     allLinks.forEach((link) => {
       const href = link.getAttribute('href');
-      expect(href).toMatch(/^\/programmes\/.+/);
+      expect(href).toMatch(/^\/en\/programmes\/.+/);
     });
   });
 
@@ -95,7 +95,7 @@ describe('ProgramsTable', () => {
     const { container } = render(<ProgramsTable lang="en" />);
 
     // Desktop table should have links within td cells
-    const desktopLinks = container.querySelectorAll('table td a[href^="/programmes/"]');
+    const desktopLinks = container.querySelectorAll('table td a[href^="/en/programmes/"]');
     expect(desktopLinks.length).toBeGreaterThan(0);
   });
 
@@ -103,7 +103,7 @@ describe('ProgramsTable', () => {
     const { container } = render(<ProgramsTable lang="en" />);
 
     // Mobile cards should have links with className including "block"
-    const mobileLinks = container.querySelectorAll('a[class*="block"][href^="/programmes/"]');
+    const mobileLinks = container.querySelectorAll('a[class*="block"][href^="/en/programmes/"]');
     expect(mobileLinks.length).toBeGreaterThan(0);
   });
 
@@ -124,9 +124,22 @@ describe('ProgramsTable', () => {
 
     // All programme links should exist
     PROGRAMS.forEach((program) => {
-      const expectedHref = `/programmes/${program.id}`;
+      const expectedHref = `/en/programmes/${program.id}`;
       const links = container.querySelectorAll(`a[href="${expectedHref}"]`);
       expect(links.length).toBeGreaterThan(0);
     });
+  });
+
+  it('keeps French programme detail links on the French table', () => {
+    const { container } = render(<ProgramsTable lang="fr" />);
+    const firstProgram = PROGRAMS[0];
+
+    expect(
+      container.querySelectorAll(`a[href="/programmes/${firstProgram.id}"]`).length
+    ).toBeGreaterThan(0);
+    expect(
+      container.querySelectorAll(`a[href="/en/programmes/${firstProgram.id}"]`)
+        .length
+    ).toBe(0);
   });
 });

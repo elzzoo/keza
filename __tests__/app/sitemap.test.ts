@@ -2,6 +2,7 @@ import sitemap from "@/app/sitemap";
 import { SITE_URL } from "@/lib/siteConfig";
 import { ROUTE_META } from "@/data/routeMeta";
 import { iataToSlug } from "@/lib/routeSlug";
+import { PROGRAMS } from "@/data/programs";
 
 // Regression guard for the /vol vs /flights duplicate-content fix:
 // /vol/[route] now canonicalizes to /flights/{ROUTE} (see app/vol/[route]/page.tsx),
@@ -42,5 +43,12 @@ describe("sitemap", () => {
       seen.add(p.url);
     }
     expect(duplicates).toEqual([]);
+  });
+
+  it("includes canonical FR and EN programme detail pages", () => {
+    for (const program of PROGRAMS) {
+      expect(urls.has(`${SITE_URL}/programmes/${program.id}`)).toBe(true);
+      expect(urls.has(`${SITE_URL}/en/programmes/${program.id}`)).toBe(true);
+    }
   });
 });

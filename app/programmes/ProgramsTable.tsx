@@ -65,6 +65,8 @@ const ALLIANCE_FILTERS: { key: AllianceFilter; label: string }[] = [
 export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
   const router = useRouter();
   const t = L[lang];
+  const getProgramHref = (programId: string) =>
+    lang === "fr" ? `/programmes/${programId}` : `/en/programmes/${programId}`;
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [allianceFilter, setAllianceFilter] = useState<AllianceFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("score");
@@ -178,7 +180,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
                 className="border-b border-border/50 hover:bg-surface-2 transition-colors cursor-pointer"
                 onClick={() => {
                   trackProgramClick({ id: program.id, name: program.name });
-                  router.push(`/programmes/${program.id}`);
+                  router.push(getProgramHref(program.id));
                 }}
               >
                 <td className="px-4 py-3 text-xs font-black text-muted">{index + 1}</td>
@@ -189,7 +191,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
                       {/* Real link keeps rows crawlable + keyboard/middle-click friendly;
                           the row onClick is just a bigger touch target on top. */}
                       <Link
-                        href={`/programmes/${program.id}`}
+                        href={getProgramHref(program.id)}
                         className="font-bold text-fg text-sm hover:text-primary transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -237,7 +239,7 @@ export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {
         {filtered.map((program, index) => (
           <Link
             key={program.id}
-            href={`/programmes/${program.id}`}
+            href={getProgramHref(program.id)}
             className="block bg-surface border border-border rounded-xl p-4 hover:bg-surface-2 transition-colors"
             onClick={() => trackProgramClick({ id: program.id, name: program.name })}
           >

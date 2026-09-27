@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { DESTINATIONS } from "@/data/destinations";
 import { SITE_URL as BASE_URL } from "@/lib/siteConfig";
 import { POPULAR_ROUTES } from "@/data/popularRoutes";
+import { PROGRAMS } from "@/data/programs";
 
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -212,6 +213,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "daily" as const,
       priority: 0.75,
+      alternates: alts,
+    });
+  }
+
+  // Program detail pages
+  for (const program of PROGRAMS) {
+    const frUrl = `${BASE_URL}/programmes/${program.id}`;
+    const enUrl = `${BASE_URL}/en/programmes/${program.id}`;
+    const alts = { languages: { fr: frUrl, en: enUrl } };
+    pages.push({
+      url: frUrl,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+      alternates: alts,
+    });
+    pages.push({
+      url: enUrl,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
       alternates: alts,
     });
   }

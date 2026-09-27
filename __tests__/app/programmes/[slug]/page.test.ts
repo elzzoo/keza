@@ -1,5 +1,10 @@
 import { generateStaticParams } from '@/app/programmes/[slug]/page';
+import {
+  generateMetadata as generateEnMetadata,
+  generateStaticParams as generateEnStaticParams,
+} from '@/app/en/programmes/[slug]/page';
 import { PROGRAMS } from '@/data/programs';
+import { SITE_URL } from '@/lib/siteConfig';
 
 describe('/programmes/[slug]', () => {
   it('generates static params for all programs', () => {
@@ -21,6 +26,26 @@ describe('/programmes/[slug]', () => {
     params.forEach((p) => {
       expect(p.slug).toMatch(/^[a-z0-9\-]+$/);
       expect(p.slug).not.toMatch(/[A-Z]/);
+    });
+  });
+
+  it('generates English static params for all programs', () => {
+    expect(generateEnStaticParams()).toEqual(generateStaticParams());
+  });
+
+  it('uses English canonicals and hreflang on English detail pages', async () => {
+    const program = PROGRAMS[0];
+    const metadata = await generateEnMetadata({
+      params: Promise.resolve({ slug: program.id }),
+    });
+
+    expect(metadata.alternates).toEqual({
+      canonical: `${SITE_URL}/en/programmes/${program.id}`,
+      languages: {
+        fr: `${SITE_URL}/programmes/${program.id}`,
+        en: `${SITE_URL}/en/programmes/${program.id}`,
+        'x-default': `${SITE_URL}/programmes/${program.id}`,
+      },
     });
   });
 });
