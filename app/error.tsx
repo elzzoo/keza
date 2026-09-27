@@ -9,21 +9,48 @@ interface Props {
   reset: () => void;
 }
 
+const COPY = {
+  fr: {
+    eyebrow: "Cash ou Miles ?",
+    title: "Une erreur est survenue",
+    description: "Quelque chose s'est mal passé. Vous pouvez réessayer ou revenir à l'accueil.",
+    reference: "Référence",
+    retry: "↻ Réessayer",
+    homeHref: "/",
+    homeCta: "← Retour à l'accueil",
+  },
+  en: {
+    eyebrow: "Cash or Miles?",
+    title: "Something went wrong",
+    description: "Something went wrong. You can try again or return home.",
+    reference: "Reference",
+    retry: "↻ Try again",
+    homeHref: "/en",
+    homeCta: "← Back home",
+  },
+};
+
+function getInitialLang() {
+  return typeof window !== "undefined" && window.location.pathname.startsWith("/en") ? "en" : "fr";
+}
+
 export default function GlobalError({ error, reset }: Props) {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
+
+  const copy = COPY[getInitialLang()];
 
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4 text-center">
       {/* Logo */}
       <div className="mb-8 flex flex-col items-center gap-1">
         <span className="text-4xl font-black leading-none">
-          <span className="text-primary">KE</span>
-          <span className="text-fg">ZA</span>
+          <span className="text-primary">Xali</span>
+          <span className="text-fg">fly</span>
         </span>
         <span className="text-[10px] font-semibold tracking-widest uppercase text-muted">
-          Cash ou Miles ?
+          {copy.eyebrow}
         </span>
       </div>
 
@@ -32,13 +59,13 @@ export default function GlobalError({ error, reset }: Props) {
         <span className="text-3xl">⚠️</span>
       </div>
 
-      <h1 className="text-2xl font-black text-fg mb-2">Une erreur est survenue</h1>
+      <h1 className="text-2xl font-black text-fg mb-2">{copy.title}</h1>
       <p className="text-sm text-muted max-w-sm mb-2">
-        Quelque chose s&apos;est mal passé. Vous pouvez réessayer ou revenir à l&apos;accueil.
+        {copy.description}
       </p>
       {error.digest && (
         <p className="text-xs text-muted/50 font-mono mb-6">
-          Référence&nbsp;: {error.digest}
+          {copy.reference}: {error.digest}
         </p>
       )}
       {!error.digest && <div className="mb-6" />}
@@ -49,13 +76,13 @@ export default function GlobalError({ error, reset }: Props) {
           onClick={reset}
           className="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
-          ↻ Réessayer
+          {copy.retry}
         </button>
         <Link
-          href="/"
+          href={copy.homeHref}
           className="px-6 py-2.5 rounded-xl bg-surface border border-border text-fg text-sm font-semibold hover:bg-surface-2 transition-colors"
         >
-          ← Retour à l&apos;accueil
+          {copy.homeCta}
         </Link>
       </div>
     </div>
