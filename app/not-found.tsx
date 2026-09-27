@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 
 export const metadata: Metadata = {
-  title: "Page introuvable | Page not found | Xalifly",
-  description: "Retournez à Xalifly pour comparer vos vols cash vs miles. Return to Xalifly to compare cash fares vs miles.",
+  title: "404 | Xalifly",
+  description: "Return to Xalifly to compare cash fares vs miles.",
   robots: "noindex",
 };
 
