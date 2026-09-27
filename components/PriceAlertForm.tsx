@@ -48,6 +48,7 @@ const L = {
 export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
+  const alertsHref = lang === "fr" ? "/alertes" : "/en/alertes";
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "duplicate" | "maxed" | "limitReached">("idle");
   const [frequency, setFrequency] = useState<"instant" | "daily" | "weekly">("instant");
@@ -221,7 +222,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
             {lang === "fr"
               ? "Invitez un ami et gagnez une alerte bonus →"
               : "Invite a friend and earn a bonus alert →"}{" "}
-            <Link href="/alertes" className="text-primary hover:underline">
+            <Link href={alertsHref} className="text-primary hover:underline">
               {lang === "fr" ? "Mon espace alertes" : "My alerts"}
             </Link>
           </p>
@@ -345,7 +346,7 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
             >
               💎 {lang === "fr" ? "Passer en Pro — alertes illimitées →" : "Upgrade to Pro — unlimited alerts →"}
             </button>
-            <Link href="/alertes" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
+            <Link href={alertsHref} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
               🎁 {lang === "fr" ? "Parrainer un ami (+1 alerte gratuite) →" : "Refer a friend (+1 free alert) →"}
             </Link>
           </div>

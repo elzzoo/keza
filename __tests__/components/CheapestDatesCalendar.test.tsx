@@ -36,10 +36,11 @@ describe("CheapestDatesCalendar", () => {
   });
 
   it("renders available future prices", async () => {
+    const date = futureDateInCurrentMonth();
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        days: [{ date: futureDateInCurrentMonth(), price: 420 }],
+        days: [{ date, price: 420 }],
       }),
     });
 
@@ -48,6 +49,10 @@ describe("CheapestDatesCalendar", () => {
     await waitFor(() => {
       expect(screen.getByText("$420")).toBeInTheDocument();
     });
+    expect(screen.getByText("$420").closest("a")).toHaveAttribute(
+      "href",
+      `/en?from=CDG&to=JFK&date=${date}`
+    );
   });
 
   it("shows an empty state when no days are returned", async () => {

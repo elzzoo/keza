@@ -8,11 +8,13 @@ interface Props {
   to: string;
   fromCity: string;
   toCity: string;
+  lang: "fr" | "en";
 }
 
 type Step = "idle" | "loading" | "done" | "error";
 
-export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
+export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
+  const fr = lang === "fr";
   const [email,       setEmail]       = useState("");
   const [targetPrice, setTargetPrice] = useState("");
   const [step,        setStep]        = useState<Step>("idle");
@@ -45,23 +47,23 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
       if (res.ok || res.status === 201) {
         setStep("done");
       } else if (res.status === 409) {
-        setErrorMsg("Une alerte existe déjà pour ce vol.");
+        setErrorMsg(fr ? "Une alerte existe déjà pour ce vol." : "An alert already exists for this flight.");
         setStep("error");
       } else if (res.status === 429) {
         const body = await res.json().catch(() => ({})) as { code?: string };
         if (body.code === "FREE_LIMIT_REACHED") {
           setShowUpgrade(true);
         } else {
-          setErrorMsg("Trop de requêtes — réessaie dans quelques secondes.");
+          setErrorMsg(fr ? "Trop de requêtes — réessaie dans quelques secondes." : "Too many requests — try again in a few seconds.");
           setStep("error");
         }
       } else {
         const body = await res.json().catch(() => ({}));
-        setErrorMsg((body as { error?: string }).error ?? "Erreur — réessaie plus tard.");
+        setErrorMsg((body as { error?: string }).error ?? (fr ? "Erreur — réessaie plus tard." : "Error — try again later."));
         setStep("error");
       }
     } catch {
-      setErrorMsg("Erreur réseau — réessaie plus tard.");
+      setErrorMsg(fr ? "Erreur réseau — réessaie plus tard." : "Network error — try again later.");
       setStep("error");
     }
   }
@@ -70,9 +72,11 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
     return (
       <div className="bg-success/8 rounded-2xl border border-success/20 p-6 text-center space-y-2">
         <div className="text-3xl">✅</div>
-        <p className="font-bold text-fg text-sm">Alerte créée !</p>
+        <p className="font-bold text-fg text-sm">{fr ? "Alerte créée !" : "Alert created!"}</p>
         <p className="text-xs text-muted">
-          Tu recevras un email dès que le prix {fromCity}→{toCity} descend sous ta cible.
+          {fr
+            ? `Tu recevras un email dès que le prix ${fromCity}→${toCity} descend sous ta cible.`
+            : `You'll get an email as soon as ${fromCity}→${toCity} drops below your target.`}
         </p>
       </div>
     );
@@ -85,10 +89,12 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
         <span className="text-2xl flex-shrink-0">🔔</span>
         <div>
           <h2 className="text-sm font-black text-fg">
-            Alerte prix — {fromCity} → {toCity}
+            {fr ? "Alerte prix" : "Price alert"} — {fromCity} → {toCity}
           </h2>
           <p className="text-xs text-muted mt-0.5">
-            Reçois un email dès que le prix passe sous ton budget.
+            {fr
+              ? "Reçois un email dès que le prix passe sous ton budget."
+              : "Get an email as soon as the price drops below your budget."}
           </p>
         </div>
       </div>
@@ -98,7 +104,7 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
           <input
             type="email"
             required
-            placeholder="ton@email.com"
+            placeholder={fr ? "ton@email.com" : "your@email.com"}
             value={email}
             onChange={e => setEmail(e.target.value)}
             className="w-full px-3 py-2 rounded-lg bg-bg border border-border text-sm text-fg placeholder:text-subtle focus:outline-none focus:border-primary/60 transition-colors"
@@ -110,7 +116,7 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
               required
               min={1}
               max={50000}
-              placeholder="Prix cible"
+              placeholder={fr ? "Prix cible" : "Target price"}
               value={targetPrice}
               onChange={e => setTargetPrice(e.target.value)}
               className="w-full pl-7 pr-3 py-2 rounded-lg bg-bg border border-border text-sm text-fg placeholder:text-subtle focus:outline-none focus:border-primary/60 transition-colors"
@@ -127,13 +133,15 @@ export function RouteAlertCta({ from, to, fromCity, toCity }: Props) {
           disabled={step === "loading"}
           className="w-full sm:w-auto px-5 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
-          {step === "loading" ? "Création…" : "Créer l'alerte — gratuit"}
+          {step === "loading"
+            ? fr ? "Création…" : "Creating…"
+            : fr ? "Créer l'alerte — gratuit" : "Create alert — free"}
         </button>
       </form>
     </div>
 
     {showUpgrade && (
-      <UpgradeModal lang="fr" onClose={() => setShowUpgrade(false)} prefillEmail={email} />
+      <UpgradeModal lang={lang} onClose={() => setShowUpgrade(false)} prefillEmail={email} />
     )}
     </>
   );

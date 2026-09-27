@@ -32,6 +32,8 @@ export function UpgradeModal({ lang, onClose, prefillEmail = "" }: Props) {
   const [email, setEmail] = useState(prefillEmail);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [error, setError] = useState("");
+  const proHref = fr ? "/pro" : "/en/pro";
+  const alertsHref = fr ? "/alertes" : "/en/alertes";
 
   async function handleUpgrade(e: React.FormEvent) {
     e.preventDefault();
@@ -54,7 +56,7 @@ export function UpgradeModal({ lang, onClose, prefillEmail = "" }: Props) {
       }
       // 503 = payments not yet live → go to /pro waitlist page
       if (res.status === 503) {
-        window.location.href = "/pro";
+        window.location.href = proHref;
         return;
       }
       setError(data.error ?? (fr ? "Une erreur est survenue." : "Something went wrong."));
@@ -133,7 +135,7 @@ export function UpgradeModal({ lang, onClose, prefillEmail = "" }: Props) {
 
           <div className="flex items-center justify-between text-[11px] text-muted">
             <span>🔒 {fr ? "Paiement sécurisé · Annulable" : "Secure payment · Cancel anytime"}</span>
-            <Link href="/pro" onClick={onClose} className="text-primary hover:underline">
+            <Link href={proHref} onClick={onClose} className="text-primary hover:underline">
               {fr ? "En savoir plus" : "Learn more"}
             </Link>
           </div>
@@ -142,7 +144,7 @@ export function UpgradeModal({ lang, onClose, prefillEmail = "" }: Props) {
           <div className="mt-1 pt-3 border-t border-border text-center">
             <p className="text-[11px] text-muted">
               {fr ? "Pas prêt ? " : "Not ready? "}
-              <Link href="/alertes" onClick={onClose} className="text-primary hover:underline">
+              <Link href={alertsHref} onClick={onClose} className="text-primary hover:underline">
                 🎁 {fr ? "Parraine un ami pour débloquer +1 alerte gratuite" : "Refer a friend to unlock +1 free alert"}
               </Link>
             </p>

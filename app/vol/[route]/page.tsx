@@ -330,7 +330,7 @@ export default async function RoutePage(
         <PriceSparkline from={from} to={to} lang="fr" />
 
         {/* Alert CTA */}
-        <RouteAlertCta from={from} to={to} fromCity={fromCity} toCity={toCity} />
+        <RouteAlertCta from={from} to={to} fromCity={fromCity} toCity={toCity} lang="fr" />
 
         {/* Related routes */}
         {(() => {

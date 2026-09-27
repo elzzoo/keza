@@ -24,6 +24,7 @@ export function CheapestDatesCalendar({ from, to, lang }: Props) {
   const [days, setDays] = useState<CalendarDay[]>([]);
   const [status, setStatus] = useState<"loading" | "ok" | "empty">("loading");
   const fr = lang === "fr";
+  const searchPath = fr ? "/" : "/en";
 
   useEffect(() => {
     let cancelled = false;
@@ -138,7 +139,7 @@ export function CheapestDatesCalendar({ from, to, lang }: Props) {
             return (
               <a
                 key={dateStr}
-                href={price ? `/?from=${from}&to=${to}&date=${dateStr}` : undefined}
+                href={price ? `${searchPath}?from=${from}&to=${to}&date=${dateStr}` : undefined}
                 className={[
                   "relative flex flex-col items-center justify-center rounded-lg py-1.5 text-center transition-all",
                   price && !isPast ? "cursor-pointer hover:scale-105" : "cursor-default",
