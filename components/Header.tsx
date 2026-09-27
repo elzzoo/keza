@@ -34,6 +34,9 @@ const NAV = {
 export function Header({ lang, onLangChange = () => {} }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = NAV[lang];
+  const liveBadgeTitle = lang === "fr"
+    ? "Prix cash : données temps réel (Duffel + Aviasales) · Valeurs miles : estimations de marché basées sur les barèmes publiés"
+    : "Cash prices: live data (Duffel + Aviasales) · Miles values: market estimates based on published award charts";
 
   return (
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-border">
@@ -65,14 +68,16 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
           {/* Live badge — cash prices are live; miles values are market estimates */}
           <span
-            title="Prix cash : données temps réel (Duffel + Aviasales) · Valeurs miles : estimations de marché basées sur les barèmes publiés"
+            title={liveBadgeTitle}
             className="hidden sm:flex flex-col items-start px-2.5 py-1 rounded-full bg-success/10 border border-success/15 cursor-help"
           >
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot flex-shrink-0" />
               <span className="text-[10px] font-semibold text-success leading-none">Cash · Live</span>
             </span>
-            <span className="text-[9px] text-muted/70 leading-none mt-0.5 pl-3">Miles · estimés</span>
+            <span className="text-[9px] text-muted/70 leading-none mt-0.5 pl-3">
+              {lang === "fr" ? "Miles · estimés" : "Miles · estimated"}
+            </span>
           </span>
 
           {/* Pro upgrade CTA — small persistent pill */}

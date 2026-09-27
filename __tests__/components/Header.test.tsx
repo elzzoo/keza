@@ -39,6 +39,17 @@ describe("Header", () => {
     expect(screen.getByText("Cash or Miles?")).toBeInTheDocument();
   });
 
+  it("localizes the live price badge", () => {
+    const { rerender } = render(<Header {...defaultProps} />);
+
+    expect(screen.getByText("Miles · estimated")).toBeInTheDocument();
+    expect(screen.getByTitle(/Cash prices: live data/)).toBeInTheDocument();
+
+    rerender(<Header {...defaultProps} lang="fr" />);
+    expect(screen.getByText("Miles · estimés")).toBeInTheDocument();
+    expect(screen.getByTitle(/Prix cash : données temps réel/)).toBeInTheDocument();
+  });
+
   it("renders all navigation items on desktop", () => {
     render(<Header {...defaultProps} />);
 
