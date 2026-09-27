@@ -9,5 +9,5 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <FlightRouteError error={error} reset={reset} initialLang="fr" />;
+  return <FlightRouteError error={error} reset={reset} initialLang="en" />;
 }
