@@ -9,8 +9,8 @@ describe("Seat Alert Email Template", () => {
       currentPrice: 4200,
       historicalAvg: 5500,
       discount: 23.6,
-      bookingUrl: "https://keza.app/book?route=SIN-LAX&cabin=BUSINESS",
-      unsubscribeUrl: "https://keza.app/alerts/unsubscribe?token=abc123",
+      bookingUrl: "https://keza-taupe.vercel.app/book?route=SIN-LAX&cabin=BUSINESS",
+      unsubscribeUrl: "https://keza-taupe.vercel.app/alerts/unsubscribe?token=abc123",
     };
 
     const html = renderSeatAlertEmail(props);

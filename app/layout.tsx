@@ -78,7 +78,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} className={`${inter.variable}${theme === "dark" ? " dark" : ""}`} data-theme={theme} data-geo-country={country} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://plausible.io" />
-        <link rel="preconnect" href="https://api.keza.app" />
         <link rel="alternate" type="application/rss+xml" title="Xalifly Deals" href="/api/feed" />
 <script
           nonce={nonce}

@@ -1,6 +1,7 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { logError } from "@/lib/logger";
+import { SITE_URL } from "@/lib/siteConfig";
 
 /**
  * Track when a trial user converts to a paying customer
@@ -67,7 +68,7 @@ async function trackPlausibleEvent(
       body: JSON.stringify({
         domain: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN,
         name: eventName,
-        url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://keza.app"}/checkout`,
+        url: `${process.env.NEXT_PUBLIC_BASE_URL || SITE_URL}/checkout`,
         props: props || {},
       }),
     });
@@ -75,4 +76,3 @@ async function trackPlausibleEvent(
     logError("[plausible] Event tracking failed", err);
   }
 }
-

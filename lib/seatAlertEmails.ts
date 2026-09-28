@@ -1,6 +1,8 @@
 import "server-only";
 import { Resend } from "resend";
 import { logError } from "@/lib/logger";
+import { EMAIL_DOMAIN } from "@/lib/brand";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export interface SeatAlertEmailProps {
   subscriberEmail: string;
@@ -73,7 +75,7 @@ export async function sendSeatAlertEmail(
 ): Promise<boolean> {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const unsubscribeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/alerts/seat/unsubscribe?token=${unsubscribeToken}`;
+    const unsubscribeUrl = `${SITE_URL}/alerts/seat/unsubscribe?token=${unsubscribeToken}`;
 
     const html = renderSeatAlertEmail({
       subscriberEmail,
@@ -87,7 +89,7 @@ export async function sendSeatAlertEmail(
     });
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL ?? "Xalifly Alerts <alerts@keza.app>",
+      from: process.env.RESEND_FROM_EMAIL ?? `Xalifly Alerts <alerts@${EMAIL_DOMAIN}>`,
       to: subscriberEmail,
       subject: `Deal Alert: ${cabin} Class on ${route} - Save ${discount.toFixed(1)}%`,
       html,

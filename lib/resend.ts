@@ -1,10 +1,12 @@
 import { Resend } from "resend";
+import { EMAIL_DOMAIN } from "@/lib/brand";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendTrialReminderEmail(email: string): Promise<void> {
   await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "noreply@keza.app",
+    from: process.env.RESEND_FROM_EMAIL || `noreply@${EMAIL_DOMAIN}`,
     to: email,
     subject: "Votre essai gratuit Xalifly Pro expire demain",
     html: `
@@ -16,7 +18,7 @@ export async function sendTrialReminderEmail(email: string): Promise<void> {
         <li>Alertes multi-passagers</li>
         <li>Alertes illimitées</li>
       </ul>
-      <p><a href="https://keza-taupe.vercel.app/pro">Passer à Xalifly Pro</a> maintenant pour continuer.</p>
+      <p><a href="${SITE_URL}/pro">Passer à Xalifly Pro</a> maintenant pour continuer.</p>
     `,
   });
 }
