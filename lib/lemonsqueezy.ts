@@ -7,6 +7,7 @@ import crypto from "crypto";
 import { z } from "zod";
 import { redis } from "@/lib/redis";
 import * as Sentry from "@sentry/nextjs";
+import { SITE_URL } from "@/lib/siteConfig";
 
 // ── Redis keys ────────────────────────────────────────────────────────────────
 const PRO_KEY = (email: string) => `keza:pro:${email.toLowerCase()}`;
@@ -147,8 +148,7 @@ export async function revokeTrial(email: string): Promise<void> {
 
 // ── Checkout ──────────────────────────────────────────────────────────────────
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+const BASE_URL = SITE_URL;
 
 /**
  * Create a hosted checkout URL for Xalifly Pro.

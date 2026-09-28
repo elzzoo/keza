@@ -4,9 +4,10 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail } from "@/lib/validate";
 import { Resend } from "resend";
 import { logError, logWarn } from "@/lib/logger";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const NEWSLETTER_KEY = "keza:newsletter:subscribers";
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+const BASE_URL = SITE_URL;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "Xalifly <onboarding@resend.dev>";
 
 export async function POST(req: NextRequest) {

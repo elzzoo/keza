@@ -12,6 +12,7 @@
 import crypto from "crypto";
 import { redis } from "@/lib/redis";
 import { Resend } from "resend";
+import { SITE_URL } from "@/lib/siteConfig";
 
 // ── Redis keys ────────────────────────────────────────────────────────────────
 const REF_CODE_KEY = (email: string) => `keza:ref:code:${email.toLowerCase()}`;
@@ -21,8 +22,7 @@ const REF_CONVERTS_KEY = (email: string) => `keza:ref:converts:${email.toLowerCa
 // Track which emails have already been counted as referral conversions (avoid double-credit)
 const REF_CONVERTED_KEY = (email: string) => `keza:ref:converted:${email.toLowerCase()}`;
 
-export const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+export const BASE_URL = SITE_URL;
 
 // ── Code generation ───────────────────────────────────────────────────────────
 

@@ -332,9 +332,8 @@ export async function updateAlertAfterCheck(id: string, lastPrice: number, notif
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL ?? "Xalifly Alerts <onboarding@resend.dev>";
 
-// Base URL for links in emails. Vercel sets NEXT_PUBLIC_APP_URL automatically on preview deployments.
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+// Base URL for links in emails. See lib/siteConfig.ts for the domain fallback.
+const BASE_URL = SITE_URL;
 
 function emailOpenPixelUrl(type: string, email: string): string {
   return `${BASE_URL}/api/track/open?type=${encodeURIComponent(type)}&email=${encodeURIComponent(email)}`;

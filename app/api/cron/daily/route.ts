@@ -5,6 +5,7 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import { logError, logWarn } from "@/lib/logger";
 import { cronJobKey, cronLastRunKey, cronRunKey, recordCronState } from "@/lib/cronState";
 import { DAILY_CRON_JOBS } from "@/lib/cronJobs";
+import { SITE_URL } from "@/lib/siteConfig";
 
 // ─── Daily cron orchestrator ──────────────────────────────────────────────────
 // Vercel Hobby allows max 2 crons. This handler consolidates all non-alerts jobs
@@ -75,7 +76,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+    const base = SITE_URL;
     const secret = process.env.CRON_SECRET ?? "";
     const headers = { Authorization: `Bearer ${secret}` };
     const runId = randomUUID();

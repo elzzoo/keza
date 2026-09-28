@@ -19,9 +19,10 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import { trackServerEvent } from "@/lib/analytics";
 import { notifyAlertTriggered, notifyCronSummary } from "@/lib/discord";
 import { recordDailyPrice } from "@/lib/priceHistoryRedis";
+import { SITE_URL } from "@/lib/siteConfig";
 import * as Sentry from "@sentry/nextjs";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app";
+const BASE_URL = SITE_URL;
 
 // GET /api/cron/alerts — check prices and send drop notifications
 export async function GET(req: NextRequest) {
