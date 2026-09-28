@@ -548,7 +548,7 @@ export async function sendDigestEmail(
   <tr><td style="padding:16px 32px;border-top:1px solid #1e293b;">
     <p style="margin:0;font-size:10px;color:#334155;text-align:center;">
       Tu reçois cet email car tu as des alertes actives sur
-      <a href="${homeUrl}" style="color:#475569;text-decoration:none;">keza.app</a>.
+      <a href="${homeUrl}" style="color:#475569;text-decoration:none;">Xalifly</a>.
       &nbsp;·&nbsp;
       <a href="${manageUrl}" style="color:#475569;text-decoration:none;">Se désabonner</a>
     </p>

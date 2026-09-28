@@ -35,7 +35,7 @@ export default async function Image() {
             24 destinations depuis Dakar — miles ou cash ?
           </span>
         </div>
-        {ogBottomBar("keza.app/carte")}
+        {ogBottomBar("Carte destinations · Xalifly")}
       </>
     ),
     { width: OG_WIDTH, height: OG_HEIGHT }

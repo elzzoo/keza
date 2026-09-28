@@ -35,7 +35,7 @@ export default async function Image() {
             24 destinations · quand partir pour payer moins
           </span>
         </div>
-        {ogBottomBar("keza.app/prix")}
+        {ogBottomBar("Prix mois par mois · Xalifly")}
       </>
     ),
     { width: OG_WIDTH, height: OG_HEIGHT }

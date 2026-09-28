@@ -3,6 +3,7 @@
 // IMPORTANT: inline styles only — no Tailwind, no CSS modules (satori requirement).
 
 import React from "react";
+import { BRAND_NAME } from "@/lib/brand";
 
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
@@ -103,7 +104,7 @@ export function ogTopBar(tag: string): React.ReactElement {
   );
 }
 
-/** Bottom bar: left text + keza.app (right) */
+/** Bottom bar: left text + brand mark (right) */
 export function ogBottomBar(leftText: string): React.ReactElement {
   return (
     <div
@@ -115,7 +116,7 @@ export function ogBottomBar(leftText: string): React.ReactElement {
       }}
     >
       <span style={{ color: "#6b7280", fontSize: 13 }}>{leftText}</span>
-      <span style={{ color: "#9ca3af", fontSize: 13 }}>keza.app</span>
+      <span style={{ color: "#9ca3af", fontSize: 13 }}>{BRAND_NAME}</span>
     </div>
   );
 }

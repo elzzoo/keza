@@ -35,7 +35,7 @@ export default async function Image() {
             Miles, cash et meilleure période côte-à-côte
           </span>
         </div>
-        {ogBottomBar("keza.app/comparer")}
+        {ogBottomBar("Comparateur destinations · Xalifly")}
       </>
     ),
     { width: OG_WIDTH, height: OG_HEIGHT }

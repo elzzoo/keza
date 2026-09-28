@@ -69,7 +69,7 @@ export default async function Image({ params }: Props) {
               Cash ou Miles ?
             </span>
           </div>
-          {ogBottomBar("keza.app")}
+          {ogBottomBar("Comparateur cash vs miles")}
         </>
       ),
       { width: OG_WIDTH, height: OG_HEIGHT }
@@ -141,7 +141,7 @@ export default async function Image({ params }: Props) {
         {ogBottomBar(
           bestMonthLabels.length > 0
             ? "Meilleurs mois : " + bestMonthLabels.join(" · ")
-            : "keza.app"
+            : "Comparateur cash vs miles"
         )}
       </>
     ),

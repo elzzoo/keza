@@ -78,7 +78,7 @@ export async function POST(request: Request) {
           </div>
           <div style="padding:24px;">
             <p style="margin:0 0 16px;font-size:15px;color:#e2e8f0;line-height:1.7;">
-              Bonjour ${esc(body.name)}, merci pour votre intérêt pour Xalifly Entreprises. Notre équipe vous répondra sous 24h. En attendant, n'hésitez pas à explorer keza.app.
+              Bonjour ${esc(body.name)}, merci pour votre intérêt pour Xalifly Entreprises. Notre équipe vous répondra sous 24h. En attendant, n'hésitez pas à explorer Xalifly.
             </p>
             <a href="${SITE_URL}"
                style="display:block;text-align:center;background:#3b82f6;color:white;text-decoration:none;padding:14px;border-radius:12px;font-weight:600;font-size:14px;">
