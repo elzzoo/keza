@@ -264,7 +264,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
   // Cabin pill — py-3 ensures 44px minimum touch target on mobile
   const cabinBtn = (active: boolean) => clsx(
-    "flex-1 py-3 rounded-xl font-semibold text-sm border transition-all duration-150",
+    "py-3 px-2 rounded-xl font-semibold text-sm text-center border transition-all duration-150",
     active
       ? "bg-primary/15 border-primary/30 text-blue-400"
       : "bg-surface-2 border-border text-muted hover:border-subtle hover:text-fg"
@@ -444,18 +444,18 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             <p id="keza-cabin-label" className="text-[11px] sm:text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">
               {fr ? "Classe" : "Cabin"}
             </p>
-            <div className="flex gap-1.5 flex-wrap sm:flex-nowrap" role="group" aria-labelledby="keza-cabin-label">
+            <div className="grid grid-cols-2 gap-1.5" role="group" aria-labelledby="keza-cabin-label">
               <button type="button" onClick={() => setCabin("economy")} aria-pressed={cabin === "economy"} className={cabinBtn(cabin === "economy")}>
-                {fr ? "Éco" : "Eco"}
+                {fr ? "Économie" : "Economy"}
               </button>
               <button type="button" onClick={() => setCabin("premium")} aria-pressed={cabin === "premium"} className={cabinBtn(cabin === "premium")}>
-                {fr ? "Prem" : "Prem"}
+                {fr ? "Premium éco" : "Premium"}
               </button>
               <button type="button" onClick={() => setCabin("business")} aria-pressed={cabin === "business"} className={cabinBtn(cabin === "business")}>
-                {fr ? "Bus." : "Bus."}
+                Business
               </button>
               <button type="button" onClick={() => setCabin("first")} aria-pressed={cabin === "first"} className={cabinBtn(cabin === "first")}>
-                {fr ? "1ère" : "1st"}
+                {fr ? "Première" : "First"}
               </button>
             </div>
           </div>

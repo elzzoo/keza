@@ -124,10 +124,10 @@ describe("Onboarding Integration Tests", () => {
 
     // Verify cabin options are rendered
     await waitFor(() => {
-      expect(screen.getByText("Eco")).toBeInTheDocument();
-      expect(screen.getByText("Prem")).toBeInTheDocument();
-      expect(screen.getByText("Bus.")).toBeInTheDocument();
-      expect(screen.getByText("1st")).toBeInTheDocument();
+      expect(screen.getByText("Economy")).toBeInTheDocument();
+      expect(screen.getByText("Premium")).toBeInTheDocument();
+      expect(screen.getByText("Business")).toBeInTheDocument();
+      expect(screen.getByText("First")).toBeInTheDocument();
     });
   });
 
