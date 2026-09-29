@@ -29,7 +29,18 @@ jest.mock("@/components/CardRecommendation", () => ({
 }));
 
 jest.mock("@/components/FlightFilters", () => ({
-  FlightFilters: () => <div data-testid="flight-filters" />,
+  FlightFilters: ({
+    onStopFilter,
+    onSortBy,
+  }: {
+    onStopFilter: (value: "all" | "direct" | "stops") => void;
+    onSortBy: (value: "value" | "price") => void;
+  }) => (
+    <div data-testid="flight-filters">
+      <button type="button" onClick={() => onStopFilter("direct")}>Direct</button>
+      <button type="button" onClick={() => onSortBy("price")}>Price</button>
+    </div>
+  ),
 }));
 
 jest.mock("@/components/PriceAlertForm", () => ({
@@ -172,6 +183,41 @@ describe("Results", () => {
       <Results results={flights} loading={false} lang="en" onBack={noop} />
     );
     expect(screen.getByText(/2 flights found/i)).toBeInTheDocument();
+  });
+
+  it("explains how visible results are sorted", () => {
+    const flights = [
+      makeFlight({ searchId: "s1", totalPrice: 900 }),
+      makeFlight({ searchId: "s2", totalPrice: 700 }),
+    ];
+    render(
+      <Results results={flights} loading={false} lang="en" onBack={noop} />
+    );
+
+    expect(screen.getByText(/2 of 2 flights shown · sorted by best value/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Price"));
+
+    expect(screen.getByText(/2 of 2 flights shown · sorted by lowest price/i)).toBeInTheDocument();
+  });
+
+  it("shows a contextual empty state when filters hide existing results", () => {
+    const flights = [
+      makeFlight({ searchId: "s1", stops: 1 }),
+      makeFlight({ searchId: "s2", stops: 2 }),
+    ];
+    render(
+      <Results results={flights} loading={false} lang="en" onBack={noop} />
+    );
+
+    fireEvent.click(screen.getByText("Direct"));
+
+    expect(screen.getByText(/No nonstop flights in these results/i)).toBeInTheDocument();
+    expect(screen.getByText(/Connecting options are available/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/Reset filters/i));
+
+    expect(screen.getAllByTestId("flight-card")).toHaveLength(2);
   });
 
   it("summarizes price confidence by source", () => {

@@ -57,6 +57,19 @@ const L = {
     qualityCachedOnly: "Prix issus de cache fournisseur. Vérifiez le tarif final avant réservation.",
     qualityEstimatedOnly: "Prix indicatifs. Vérifiez auprès de la compagnie avant de décider.",
     qualityMixedEstimate: "Résultats mêlant cache fournisseur et estimations de route.",
+    showingSorted: (visible: number, total: number, sort: string) =>
+      `${visible} sur ${total} vol${total > 1 ? "s" : ""} affiché${visible > 1 ? "s" : ""} · trié par ${sort}`,
+    sortValue: "meilleure valeur",
+    sortPrice: "prix le plus bas",
+    noDirect: "Aucun vol direct dans ces résultats",
+    noDirectDesc: "Des options avec escale sont disponibles. Réinitialisez le filtre ou consultez « Avec escales ».",
+    noStops: "Aucun vol avec escale dans ces résultats",
+    noStopsDesc: "Les résultats disponibles sont directs. Réinitialisez le filtre pour les revoir.",
+    noMiles: "Aucune option miles dans ce filtre",
+    noMilesDesc: "Les vols affichés sont mieux classés en cash pour l’instant. Essayez « Tous » ou ajustez les escales.",
+    noCash: "Aucun vol en cash trouvé",
+    noCashDesc: "Tous les vols trouvés offrent une meilleure valeur avec les miles. Consultez l’onglet « Utilisez miles ».",
+    resetFilters: "Réinitialiser les filtres",
   },
   en: {
     results: "Results",
@@ -88,6 +101,19 @@ const L = {
     qualityCachedOnly: "Prices come from provider cache. Verify the final fare before booking.",
     qualityEstimatedOnly: "Prices are indicative. Verify with the airline before deciding.",
     qualityMixedEstimate: "Results combine provider cache and route estimates.",
+    showingSorted: (visible: number, total: number, sort: string) =>
+      `${visible} of ${total} flight${total > 1 ? "s" : ""} shown · sorted by ${sort}`,
+    sortValue: "best value",
+    sortPrice: "lowest price",
+    noDirect: "No nonstop flights in these results",
+    noDirectDesc: "Connecting options are available. Reset the filter or use “With stops”.",
+    noStops: "No connecting flights in these results",
+    noStopsDesc: "The available results are nonstop. Reset the filter to see them again.",
+    noMiles: "No miles options in this filter",
+    noMilesDesc: "The visible flights currently rank better as cash fares. Try “All” or adjust the stops filter.",
+    noCash: "No cash options found",
+    noCashDesc: "All flights offer better value with miles. Check the “Use miles” tab.",
+    resetFilters: "Reset filters",
   },
 };
 
@@ -245,6 +271,31 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
     else r.sort((a, b) => b.savings - a.savings);
     return r;
   }, [stopsFiltered, tab, sortBy]);
+
+  const emptyState = useMemo(() => {
+    if (results.length === 0) {
+      return { title: t.empty, desc: t.emptyDesc, tips: t.emptyTips, canReset: false };
+    }
+    if (stopsFiltered.length === 0 && stopFilter === "direct") {
+      return { title: t.noDirect, desc: t.noDirectDesc, tips: [], canReset: true };
+    }
+    if (stopsFiltered.length === 0 && stopFilter === "stops") {
+      return { title: t.noStops, desc: t.noStopsDesc, tips: [], canReset: true };
+    }
+    if (tab === "miles") {
+      return { title: t.noMiles, desc: t.noMilesDesc, tips: [], canReset: true };
+    }
+    if (tab === "cash") {
+      return { title: t.noCash, desc: t.noCashDesc, tips: [], canReset: true };
+    }
+    return { title: t.empty, desc: t.emptyDesc, tips: t.emptyTips, canReset: true };
+  }, [results.length, stopFilter, stopsFiltered.length, tab, t]);
+
+  const resetResultsView = () => {
+    setTab("all");
+    setStopFilter("all");
+    setSortBy("value");
+  };
 
   // Animated progress loader state
   const loadingSteps = lang === "fr"
@@ -517,6 +568,12 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         />
       )}
 
+      {results.length > 0 && (
+        <p className="text-xs text-muted">
+          {t.showingSorted(filtered.length, results.length, sortBy === "price" ? t.sortPrice : t.sortValue)}
+        </p>
+      )}
+
       {/* TP Cache Disclaimer — shown if any results have TP source */}
       {results.length > 0 && results.some(r => r.source === "TP") && (
         <TPCacheDisclaimer lang={lang} />
@@ -532,25 +589,26 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         <div className="bg-surface rounded-2xl border border-border py-12 px-6 flex flex-col items-center gap-3 max-w-md mx-auto">
           <span className="text-5xl animate-float">✈️</span>
           <p className="font-bold text-fg text-center">
-            {tab === "cash" ? (
-              lang === "fr" ? "Aucun vol en cash trouvé" : "No cash options found"
-            ) : (
-              t.empty
-            )}
+            {emptyState.title}
           </p>
           <p className="text-sm text-muted text-center">
-            {tab === "cash" ? (
-              lang === "fr" ? "Tous les vols trouvés offrent une meilleure valeur avec les miles. Consultez l'onglet « Utilisez miles »." : "All flights offer better value with miles. Check the 'Use miles' tab."
-            ) : (
-              t.emptyDesc
-            )}
+            {emptyState.desc}
           </p>
-          {tab !== "cash" && (
+          {emptyState.tips.length > 0 && (
             <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
-              {t.emptyTips.map((tip, i) => (
+              {emptyState.tips.map((tip, i) => (
                 <li key={`empty-tip-${i}`}>{tip}</li>
               ))}
             </ul>
+          )}
+          {emptyState.canReset && (
+            <button
+              type="button"
+              onClick={resetResultsView}
+              className="mt-2 rounded-lg border border-border bg-surface-2 px-4 py-2 text-xs font-bold text-fg transition-colors hover:border-subtle"
+            >
+              {t.resetFilters}
+            </button>
           )}
         </div>
       ) : (
