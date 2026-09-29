@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { SearchForm } from "@/components/SearchForm";
 import { OnboardingProvider } from "@/lib/contexts/onboardingContext";
 import { setVisitedFlag } from "@/lib/storage";
@@ -167,6 +167,26 @@ describe("Onboarding Integration Tests", () => {
     await waitFor(() => {
       expect(screen.getByText(/Optimize my flight/)).toBeInTheDocument();
     });
+  });
+
+  it("explains why search is disabled when origin and destination match", async () => {
+    setVisitedFlag(true);
+
+    render(
+      <OnboardingProvider>
+        <SearchForm
+          onResults={mockOnResults}
+          onLoading={mockOnLoading}
+          lang="en"
+        />
+      </OnboardingProvider>
+    );
+
+    fireEvent.change(screen.getByPlaceholderText("From"), { target: { value: "CDG" } });
+    fireEvent.change(screen.getByPlaceholderText("To"), { target: { value: "CDG" } });
+
+    expect(screen.getByText("Choose two different airports to start the search.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Optimize my flight/i })).toBeDisabled();
   });
 
   it("should handle onboarding state context without errors", async () => {

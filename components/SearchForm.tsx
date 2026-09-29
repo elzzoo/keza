@@ -113,7 +113,8 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onboardingState.favoriteRoutes, from, to]);
 
-  const canGo = !!from && !!to && from !== to;
+  const sameAirport = !!from && !!to && from === to;
+  const canGo = !!from && !!to && !sameAirport;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
 
   // ── Track whether the user has performed at least one search ────────────────
@@ -313,6 +314,14 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
             />
           </div>
         </div>
+
+        {sameAirport && (
+          <div role="alert" className="rounded-xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm font-medium text-warning">
+            {fr
+              ? "Choisissez deux aéroports différents pour lancer la recherche."
+              : "Choose two different airports to start the search."}
+          </div>
+        )}
 
         {/* Dates */}
         <div className={clsx("grid gap-2 sm:gap-3", tripType === "roundtrip" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
