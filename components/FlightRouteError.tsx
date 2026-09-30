@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Button, EmptyState, FieldMessage } from "@/components/ui";
 
 type Lang = "fr" | "en";
 
@@ -23,43 +24,35 @@ export function FlightRouteError({ error, reset, initialLang }: Props) {
       <Header lang={lang} onLangChange={setLang} />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12 flex flex-col items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="inline-block bg-red-500/15 rounded-full p-4">
-            <span className="text-4xl">⚠️</span>
-          </div>
-
-          <h1 className="text-3xl font-black text-fg">
-            {fr ? "Erreur d'accès au vol" : "Flight access error"}
-          </h1>
-
-          <p className="text-muted max-w-md mx-auto">
-            {fr
+        <EmptyState
+          icon={<span className="text-4xl">⚠️</span>}
+          title={fr ? "Erreur d'accès au vol" : "Flight access error"}
+          description={
+            fr
               ? "Désolé, nous ne pouvons pas charger les détails de ce vol. Essayez une nouvelle recherche ou retournez à l'accueil."
               : "Sorry, we couldn't load the flight details. Try searching again or return to the home page."
-            }
-          </p>
-
-          {error.message && (
-            <p className="text-xs text-muted/60 font-mono bg-surface-2 rounded-lg p-3 max-w-md mx-auto break-words">
-              {error.message}
-            </p>
+          }
+          className="w-full"
+          action={(
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Button type="button" onClick={reset}>
+                {fr ? "Réessayer" : "Try again"}
+              </Button>
+              <Link
+                href={homeHref}
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-border bg-surface-2 px-4 py-2 text-sm font-semibold text-fg transition-all duration-150 hover:border-subtle hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                {fr ? "Retour à l'accueil" : "Back home"}
+              </Link>
+            </div>
           )}
-
-          <div className="flex gap-3 justify-center pt-4">
-            <button
-              onClick={reset}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors font-medium text-sm"
-            >
-              {fr ? "Réessayer" : "Try again"}
-            </button>
-            <Link
-              href={homeHref}
-              className="bg-surface-2 border border-border text-fg px-4 py-2 rounded-lg hover:border-primary/40 transition-colors font-medium text-sm"
-            >
-              {fr ? "Retour à l'accueil" : "Back home"}
-            </Link>
-          </div>
-        </div>
+        >
+          {error.message && (
+            <FieldMessage tone="neutral" className="mx-auto mt-4 max-w-md break-words font-mono text-xs text-muted/70">
+              {error.message}
+            </FieldMessage>
+          )}
+        </EmptyState>
       </main>
 
       <Footer lang={lang} />

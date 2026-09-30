@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Card, FieldMessage } from "@/components/ui";
 
 interface Props {
   lang: "fr" | "en";
@@ -40,9 +41,9 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
 
   if (status === "success") {
     return (
-      <div className={variant === "compact"
+      <Card padding={variant === "compact" ? "none" : "md"} className={variant === "compact"
         ? "text-center py-3"
-        : "bg-success/10 border border-success/20 rounded-2xl px-6 py-5 text-center"
+        : "bg-success/10 border-success/20 px-6 py-5 text-center"
       }>
         <p className="text-sm font-semibold text-success">
           ✅ {fr ? "Inscription confirmée !" : "Subscribed!"}
@@ -52,7 +53,7 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
             ? "Regarde ta boîte mail — les deals arrivent dès la semaine prochaine."
             : "Check your inbox — deals start arriving next week."}
         </p>
-      </div>
+      </Card>
     );
   }
 
@@ -67,26 +68,33 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
           required
           className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-surface-2 border border-border text-xs text-fg placeholder:text-muted focus:outline-none focus:border-primary/50 transition-colors"
         />
-        <button
+        <Button
           type="submit"
           disabled={status === "loading"}
-          className="px-3 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+          loading={status === "loading"}
+          size="sm"
+          className="whitespace-nowrap"
         >
           {status === "loading"
             ? "…"
             : fr ? "Recevoir les deals" : "Get deals"}
-        </button>
+        </Button>
         {status === "error" && (
-          <span className="text-xs text-red-400">
+          <FieldMessage tone="danger" className="px-2 py-1 text-xs">
             {fr ? "Erreur" : "Error"}
-          </span>
+          </FieldMessage>
+        )}
+        {status === "duplicate" && (
+          <FieldMessage tone="neutral" className="px-2 py-1 text-xs">
+            {fr ? "Déjà inscrit·e" : "Already subscribed"}
+          </FieldMessage>
         )}
       </form>
     );
   }
 
   return (
-    <div className="bg-gradient-to-br from-primary/8 to-surface rounded-2xl border border-primary/15 px-6 py-7 space-y-4">
+    <Card className="bg-gradient-to-br from-primary/8 to-surface border-primary/15 px-6 py-7 space-y-4">
       <div className="flex items-start gap-3">
         <span className="text-2xl">✉️</span>
         <div>
@@ -112,26 +120,27 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
           required
           className="flex-1 px-4 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-fg placeholder:text-muted focus:outline-none focus:border-primary/50 transition-colors"
         />
-        <button
+        <Button
           type="submit"
           disabled={status === "loading"}
-          className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all disabled:opacity-50 whitespace-nowrap"
+          loading={status === "loading"}
+          className="whitespace-nowrap"
         >
           {status === "loading"
             ? "…"
             : fr ? "Recevoir les deals →" : "Get weekly deals →"}
-        </button>
+        </Button>
       </form>
 
       {status === "error" && (
-        <p className="text-xs text-red-400">
+        <FieldMessage tone="danger" className="px-3 py-2 text-xs">
           {fr ? "Une erreur est survenue, réessaie." : "Something went wrong, try again."}
-        </p>
+        </FieldMessage>
       )}
       {status === "duplicate" && (
-        <p className="text-xs text-muted">
+        <FieldMessage tone="neutral" className="px-3 py-2 text-xs">
           {fr ? "✓ Tu es déjà inscrit·e !" : "✓ You're already subscribed!"}
-        </p>
+        </FieldMessage>
       )}
 
       <p className="text-[10px] text-muted/60">
@@ -139,6 +148,6 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
           ? "Pas de spam. Désinscription en 1 clic."
           : "No spam. Unsubscribe in one click."}
       </p>
-    </div>
+    </Card>
   );
 }
