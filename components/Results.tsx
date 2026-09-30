@@ -9,6 +9,7 @@ import { PriceAlertForm } from "./PriceAlertForm";
 import { PriceTrendBadge } from "./PriceTrendBadge";
 import { TPCacheDisclaimer } from "./TPCacheDisclaimer";
 import PortfolioCheck from "@/components/PortfolioCheck";
+import { Badge, Button, EmptyState } from "@/components/ui";
 import clsx from "clsx";
 import { isBusinessMode } from "@/lib/businessMode";
 import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
@@ -248,9 +249,9 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   })();
   const priceQuality = useMemo(() => getPriceQualitySummary(results), [results]);
   const priceQualityItems = [
-    { key: "live", label: t.qualityLive, count: priceQuality.live, tone: "text-success bg-success/10 border-success/20" },
-    { key: "cached", label: t.qualityCached, count: priceQuality.cached, tone: "text-warning bg-warning/10 border-warning/20" },
-    { key: "estimated", label: t.qualityEstimated, count: priceQuality.estimated, tone: "text-muted bg-surface-2 border-border" },
+    { key: "live", label: t.qualityLive, count: priceQuality.live, tone: "success" as const },
+    { key: "cached", label: t.qualityCached, count: priceQuality.cached, tone: "warning" as const },
+    { key: "estimated", label: t.qualityEstimated, count: priceQuality.estimated, tone: "neutral" as const },
   ].filter(item => item.count > 0);
 
   // Use milesOptions from the best-deal result, fallback to first result
@@ -440,16 +441,14 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
             </div>
             <div className="flex flex-wrap gap-1.5">
               {priceQualityItems.map(item => (
-                <span
+                <Badge
                   key={item.key}
-                  className={clsx(
-                    "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-semibold whitespace-nowrap",
-                    item.tone
-                  )}
+                  tone={item.tone}
+                  className="whitespace-nowrap"
                 >
                   {item.label}
                   <span className="tabular-nums text-fg">{item.count}</span>
-                </span>
+                </Badge>
               ))}
             </div>
           </div>
@@ -586,31 +585,17 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         aria-labelledby={`results-tab-${tab}`}
       >
       {filtered.length === 0 ? (
-        <div className="bg-surface rounded-2xl border border-border py-12 px-6 flex flex-col items-center gap-3 max-w-md mx-auto">
-          <span className="text-5xl animate-float">✈️</span>
-          <p className="font-bold text-fg text-center">
-            {emptyState.title}
-          </p>
-          <p className="text-sm text-muted text-center">
-            {emptyState.desc}
-          </p>
-          {emptyState.tips.length > 0 && (
-            <ul className="text-sm text-muted space-y-1.5 mt-2 list-disc list-inside self-start">
-              {emptyState.tips.map((tip, i) => (
-                <li key={`empty-tip-${i}`}>{tip}</li>
-              ))}
-            </ul>
-          )}
-          {emptyState.canReset && (
-            <button
-              type="button"
-              onClick={resetResultsView}
-              className="mt-2 rounded-lg border border-border bg-surface-2 px-4 py-2 text-xs font-bold text-fg transition-colors hover:border-subtle"
-            >
+        <EmptyState
+          icon={<span className="animate-float">✈️</span>}
+          title={emptyState.title}
+          description={emptyState.desc}
+          tips={emptyState.tips}
+          action={emptyState.canReset ? (
+            <Button type="button" variant="secondary" size="sm" onClick={resetResultsView} className="mt-2">
               {t.resetFilters}
-            </button>
-          )}
-        </div>
+            </Button>
+          ) : undefined}
+        />
       ) : (
         <div className="space-y-3 stagger-children">
           {filtered.map((f, i) => (

@@ -5,6 +5,7 @@ import type { FlightResult } from "@/lib/engine";
 import { AirportPicker } from "./AirportPicker";
 import { ProgramsPicker } from "./ProgramsPicker";
 import { PriceCalendar } from "./PriceCalendar";
+import { Button, FieldMessage } from "@/components/ui";
 import { useOnboarding } from "@/lib/contexts/onboardingContext";
 import { trackSearch } from "@/lib/analytics";
 import { toast } from "sonner";
@@ -316,11 +317,11 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         </div>
 
         {sameAirport && (
-          <div role="alert" className="rounded-xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm font-medium text-warning">
+          <FieldMessage role="alert" tone="warning">
             {fr
               ? "Choisissez deux aéroports différents pour lancer la recherche."
               : "Choose two different airports to start the search."}
-          </div>
+          </FieldMessage>
         )}
 
         {/* Dates */}
@@ -505,30 +506,24 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
 
         {/* Error */}
         {error && (
-          <div role="alert" className="text-white text-sm bg-danger border border-danger/20 rounded-xl px-4 py-3 flex items-center gap-2">
+          <FieldMessage role="alert" tone="danger" className="flex items-center gap-2">
             <span>⚠️</span>{error}
-          </div>
+          </FieldMessage>
         )}
 
         {/* CTA */}
-        <button
+        <Button
           type="submit"
           disabled={busy || !canGo}
-          className={clsx(
-            "w-full py-3 sm:py-3.5 rounded-2xl text-white font-semibold text-base sm:text-sm transition-all duration-150",
-            busy || !canGo
-              ? "opacity-40 cursor-not-allowed bg-primary"
-              : "bg-primary hover:bg-primary-hover active:scale-[0.99] shadow-blue"
-          )}
+          loading={busy}
+          size="lg"
+          className="w-full"
         >
           {busy
-            ? <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                {fr ? "Recherche en cours…" : "Searching…"}
-              </span>
+            ? (fr ? "Recherche en cours…" : "Searching…")
             : `${fr ? "Optimiser mon vol" : "Optimize my flight"} →`
           }
-        </button>
+        </Button>
         </div>
       </form>
     </>
