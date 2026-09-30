@@ -2,6 +2,7 @@
 
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { Button, EmptyState } from "@/components/ui";
 
 interface Props {
   children: ReactNode;
@@ -44,23 +45,20 @@ export class ErrorBoundary extends Component<Props, State> {
 
       const fr = (this.props.lang ?? "fr") === "fr";
       return (
-        <div className="bg-surface rounded-2xl border border-border p-8 flex flex-col items-center gap-4 text-center">
-          <span className="text-4xl">✈️</span>
-          <p className="font-bold text-fg text-base">
-            {fr ? "Oups, quelque chose a mal tourné" : "Oops, something went wrong"}
-          </p>
-          <p className="text-sm text-muted">
-            {fr
+        <EmptyState
+          icon="✈️"
+          title={fr ? "Oups, quelque chose a mal tourné" : "Oops, something went wrong"}
+          description={
+            fr
               ? "Une erreur inattendue s'est produite. Réessayez ou lancez une nouvelle recherche."
-              : "An unexpected error occurred. Try again or start a new search."}
-          </p>
-          <button
-            onClick={this.handleReset}
-            className="mt-2 px-5 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
-          >
-            {fr ? "Réessayer" : "Try again"}
-          </button>
-        </div>
+              : "An unexpected error occurred. Try again or start a new search."
+          }
+          action={
+            <Button type="button" variant="secondary" onClick={this.handleReset} className="mt-2">
+              {fr ? "Réessayer" : "Try again"}
+            </Button>
+          }
+        />
       );
     }
 

@@ -1,7 +1,8 @@
 import clsx from "clsx";
-import type { HTMLAttributes } from "react";
+import type { ElementType, HTMLAttributes } from "react";
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
+  as?: ElementType;
   padding?: "none" | "sm" | "md" | "lg";
   interactive?: boolean;
 };
@@ -13,9 +14,9 @@ const paddingClasses = {
   lg: "p-6",
 };
 
-export function Card({ padding = "md", interactive = false, className, ...props }: CardProps) {
+export function Card({ as: Component = "div", padding = "md", interactive = false, className, ...props }: CardProps) {
   return (
-    <div
+    <Component
       {...props}
       className={clsx(
         "rounded-xl border border-border bg-surface shadow-card",

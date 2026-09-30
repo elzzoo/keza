@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { Button, Card, FieldMessage } from "@/components/ui";
 
 interface Props {
   from: string;
@@ -70,7 +71,7 @@ export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
 
   if (step === "done") {
     return (
-      <div className="bg-success/8 rounded-2xl border border-success/20 p-6 text-center space-y-2">
+      <Card padding="lg" className="text-center space-y-2 border-success/20 bg-success/10">
         <div className="text-3xl">✅</div>
         <p className="font-bold text-fg text-sm">{fr ? "Alerte créée !" : "Alert created!"}</p>
         <p className="text-xs text-muted">
@@ -78,13 +79,13 @@ export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
             ? `Tu recevras un email dès que le prix ${fromCity}→${toCity} descend sous ta cible.`
             : `You'll get an email as soon as ${fromCity}→${toCity} drops below your target.`}
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
     <>
-    <div className="bg-surface rounded-2xl border border-border p-5 space-y-4">
+    <Card className="space-y-4">
       <div className="flex items-start gap-3">
         <span className="text-2xl flex-shrink-0">🔔</span>
         <div>
@@ -125,20 +126,23 @@ export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
         </div>
 
         {step === "error" && errorMsg && (
-          <p className="text-xs text-red-400">{errorMsg}</p>
+          <FieldMessage role="alert" tone="danger" className="py-2 text-xs">
+            {errorMsg}
+          </FieldMessage>
         )}
 
-        <button
+        <Button
           type="submit"
-          disabled={step === "loading"}
-          className="w-full sm:w-auto px-5 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
+          loading={step === "loading"}
+          size="sm"
+          className="w-full sm:w-auto"
         >
           {step === "loading"
             ? fr ? "Création…" : "Creating…"
             : fr ? "Créer l'alerte — gratuit" : "Create alert — free"}
-        </button>
+        </Button>
       </form>
-    </div>
+    </Card>
 
     {showUpgrade && (
       <UpgradeModal lang={lang} onClose={() => setShowUpgrade(false)} prefillEmail={email} />
