@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui";
+
 interface Props { lang: "fr" | "en" }
 
 const ITEMS = {
@@ -19,20 +21,20 @@ export function TrustBar({ lang }: Props) {
   const items = ITEMS[lang];
   return (
     <div className="bg-surface border-b border-border">
-      <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-center gap-0">
+      <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-start sm:justify-center gap-2 overflow-x-auto scrollbar-none">
         {items.map((item, i) => (
-          <div key={i} className="flex items-center">
-            <div className="flex items-center gap-2 px-5 py-1">
+          <div key={item.label} className="flex items-center flex-shrink-0">
+            <Badge tone="neutral" className="gap-2 rounded-full px-3 py-1.5 text-xs">
               <span className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-sm flex-shrink-0" aria-hidden="true">
                 {item.icon}
               </span>
-              <span className="text-sm text-muted">
+              <span className="text-muted">
                 <span className="font-bold text-fg">{item.value} </span>
                 {item.label}
               </span>
-            </div>
+            </Badge>
             {i < items.length - 1 && (
-              <span className="w-px h-4 bg-border flex-shrink-0" />
+              <span className="hidden sm:block w-px h-4 bg-border flex-shrink-0 ml-2" />
             )}
           </div>
         ))}

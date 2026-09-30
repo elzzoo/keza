@@ -7,6 +7,7 @@ import { trackDealClick } from "@/lib/analytics";
 import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
 import { useDeals } from "@/hooks/useDeals";
+import { Badge, Card } from "@/components/ui";
 
 interface Props {
   lang: "fr" | "en";
@@ -54,7 +55,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
       {loading && (
         <div className="flex gap-3 overflow-x-hidden">
           {[1,2,3].map((i) => (
-            <div key={i} className="flex-shrink-0 w-52 h-20 bg-surface rounded-xl animate-pulse" />
+            <Card key={i} padding="none" className="flex-shrink-0 w-52 h-20 animate-pulse" />
           ))}
         </div>
       )}
@@ -65,13 +66,17 @@ export function DealsStrip({ lang, onDealClick }: Props) {
           {deals.map((deal) => {
             const isMilesWin = deal.recommendation === "USE_MILES";
             return (
-              <button
+              <Card
+                as="button"
                 key={`${deal.from}-${deal.to}`}
+                type="button"
                 onClick={() => {
                   trackDealClick({ from: deal.from, to: deal.to, program: deal.program });
                   onDealClick?.(deal.from, deal.to);
                 }}
-                className="flex-shrink-0 flex items-center gap-3 bg-surface hover:bg-surface-2 border border-border hover:border-primary/40 rounded-xl px-3 py-2.5 min-w-[210px] transition-all duration-150 text-left group"
+                padding="none"
+                interactive
+                className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 min-w-[210px] text-left group"
               >
                 {/* Flags */}
                 <span className="text-xl flex-shrink-0">{deal.fromFlag}{deal.toFlag}</span>
@@ -86,18 +91,17 @@ export function DealsStrip({ lang, onDealClick }: Props) {
 
                 {/* Badge */}
                 <div className="flex-shrink-0 text-right">
-                  <div className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
-                    isMilesWin
-                      ? "bg-primary/15 text-blue-400 border border-primary/25"
-                      : "bg-warning/10 text-warning border border-warning/25"
-                  }`}>
+                  <Badge
+                    tone={isMilesWin ? "primary" : "warning"}
+                    className="rounded-md px-2 py-0.5 text-[10px] font-black"
+                  >
                     {isMilesWin ? `✈ ${deal.multiplier}` : "💰"}
-                  </div>
+                  </Badge>
                   <div className="text-[11px] font-bold text-fg mt-0.5">
                     {formatCurrency(convertPrice(deal.cashPrice, "USD", currency, exchangeRates), currency)}
                   </div>
                 </div>
-              </button>
+              </Card>
             );
           })}
         </div>

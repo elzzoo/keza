@@ -1,11 +1,14 @@
 import clsx from "clsx";
-import type { ElementType, HTMLAttributes } from "react";
+import type { ComponentPropsWithoutRef, ElementType } from "react";
 
-type CardProps = HTMLAttributes<HTMLDivElement> & {
-  as?: ElementType;
+type CardOwnProps<T extends ElementType> = {
+  as?: T;
   padding?: "none" | "sm" | "md" | "lg";
   interactive?: boolean;
 };
+
+type CardProps<T extends ElementType> = CardOwnProps<T> &
+  Omit<ComponentPropsWithoutRef<T>, keyof CardOwnProps<T>>;
 
 const paddingClasses = {
   none: "",
@@ -14,7 +17,15 @@ const paddingClasses = {
   lg: "p-6",
 };
 
-export function Card({ as: Component = "div", padding = "md", interactive = false, className, ...props }: CardProps) {
+export function Card<T extends ElementType = "div">({
+  as,
+  padding = "md",
+  interactive = false,
+  className,
+  ...props
+}: CardProps<T>) {
+  const Component = as ?? "div";
+
   return (
     <Component
       {...props}
