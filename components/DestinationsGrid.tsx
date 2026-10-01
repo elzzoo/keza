@@ -28,6 +28,36 @@ const L = {
   en: { title: "Destinations to explore", seeAll: "See all →",   from: "from", pts: "pts" },
 };
 
+const photoCache = new Map<string, string | null>();
+const photoRequests = new Map<string, Promise<string | null>>();
+
+function loadDestinationPhoto(query: string): Promise<string | null> {
+  if (photoCache.has(query)) {
+    return Promise.resolve(photoCache.get(query) ?? null);
+  }
+
+  const existing = photoRequests.get(query);
+  if (existing) return existing;
+
+  const request = fetch(`/api/unsplash?query=${encodeURIComponent(query)}`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data: { url?: string | null } | null) => data?.url ?? null)
+    .catch(() => null)
+    .then((url) => {
+      photoCache.set(query, url);
+      photoRequests.delete(query);
+      return url;
+    });
+
+  photoRequests.set(query, request);
+  return request;
+}
+
+export function __resetDestinationPhotoCacheForTests() {
+  photoCache.clear();
+  photoRequests.clear();
+}
+
 function DestinationCard({
   dest,
   lang,
@@ -37,21 +67,29 @@ function DestinationCard({
   lang: "fr" | "en";
   onSelect: (iata: string, city: string) => void;
 }) {
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(() => photoCache.get(dest.unsplashQuery) ?? null);
   const t = L[lang];
   const { formatPrice } = useCurrency();
   const city = destinationCity(dest, lang);
 
-  const [photoLoading, setPhotoLoading] = useState(true);
+  const [photoLoading, setPhotoLoading] = useState(() => !photoCache.has(dest.unsplashQuery));
 
   useEffect(() => {
-    fetch(`/api/unsplash?query=${encodeURIComponent(dest.unsplashQuery)}`)
-      .then((r) => r.json())
-      .then((data: { url?: string | null }) => {
-        if (data.url) setPhotoUrl(data.url);
+    let active = true;
+    setPhotoUrl(photoCache.get(dest.unsplashQuery) ?? null);
+    setPhotoLoading(!photoCache.has(dest.unsplashQuery));
+
+    loadDestinationPhoto(dest.unsplashQuery)
+      .then((url) => {
+        if (active && url) setPhotoUrl(url);
       })
-      .catch(() => {})
-      .finally(() => setPhotoLoading(false));
+      .finally(() => {
+        if (active) setPhotoLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [dest.unsplashQuery]);
 
   const bg = photoUrl
