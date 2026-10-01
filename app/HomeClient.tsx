@@ -33,6 +33,7 @@ const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").
 const PwaInstallBanner       = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
 const TrendingRoutesWidget   = dynamic(() => import("@/components/TrendingRoutesWidget").then(m => m.TrendingRoutesWidget), { ssr: false });
 import { NewsletterSignup }  from "@/components/NewsletterSignup";
+import { Badge, Card } from "@/components/ui";
 
 interface HomeClientProps {
   defaultLang?: "fr" | "en";
@@ -171,35 +172,66 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
 
         {/* -- Hero ------------------------------------------------- */}
         {!hasSearched && (
-          <div className="pt-10 pb-8 text-center space-y-4 animate-fade-up max-w-2xl mx-auto">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              {lang === "fr" ? "Comparateur cash vs miles · Prix cash en temps réel" : "Cash vs miles comparator · Live cash prices"}
+          <div className="pt-10 pb-8 animate-fade-up grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
+            <div className="text-center lg:text-left space-y-4">
+              <Badge tone="primary" className="mx-auto lg:mx-0 px-4 py-1.5 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                {lang === "fr" ? "Comparateur cash vs miles · Prix cash en temps réel" : "Cash vs miles comparator · Live cash prices"}
+              </Badge>
+
+              <div className="space-y-2">
+                <h1 className="text-4xl sm:text-5xl font-black leading-tight">
+                  <span className="bg-gradient-to-br from-blue-300 via-primary to-blue-500 bg-clip-text text-transparent">
+                    {lang === "fr" ? "Cash ou miles ?" : "Cash or miles?"}
+                  </span>
+                  <br />
+                  <span className="text-fg">
+                    {lang === "fr" ? "Xalifly décide." : "Xalifly decides."}
+                  </span>
+                </h1>
+                <p className="text-base text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                  {lang === "fr"
+                    ? "Xalifly calcule en secondes si payer en cash ou utiliser tes miles est moins cher — taxes, valeur réelle du mile et 33 programmes inclus."
+                    : "Xalifly instantly calculates whether paying cash or redeeming miles is cheaper — taxes, real mile value, and 33 loyalty programs included."}
+                </p>
+                <p className="text-sm text-muted/70 max-w-md mx-auto lg:mx-0">
+                  {lang === "fr"
+                    ? "Saisis ton vol ci-dessous et obtiens une décision claire, pas un tableau à interpréter."
+                    : "Enter your flight below and get a clear decision, not another table to decode."}
+                </p>
+              </div>
             </div>
 
-            {/* Title */}
-            <div className="space-y-1">
-              <h1 className="text-4xl sm:text-5xl font-black leading-tight">
-                <span className="bg-gradient-to-br from-blue-300 via-primary to-blue-500 bg-clip-text text-transparent">
-                  {lang === "fr" ? "Cash ou miles ?" : "Cash or miles?"}
+            <Card className="hidden lg:block space-y-4" padding="lg">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                  {lang === "fr" ? "Exemple de décision" : "Decision example"}
                 </span>
-                <br />
-                <span className="text-fg">
-                  {lang === "fr" ? "Xalifly décide." : "Xalifly decides."}
-                </span>
-              </h1>
-              <p className="text-base text-muted max-w-lg mx-auto leading-relaxed">
-                {lang === "fr"
-                  ? "Xalifly calcule en secondes si payer en cash ou utiliser tes miles est moins cher — en tenant compte des taxes, de la valeur réelle du mile et de 33 programmes de fidélité."
-                  : "Xalifly instantly calculates whether paying cash or redeeming miles is cheaper — factoring in taxes, real mile value, and 33 loyalty programs."}
-              </p>
-              <p className="text-sm text-muted/70 max-w-md mx-auto">
-                {lang === "fr"
-                  ? "Saisis ton vol ci-dessous et Xalifly te dit quelle option choisir."
-                  : "Enter your flight below and Xalifly tells you which option to pick."}
-              </p>
-            </div>
+                <Badge tone="success">{lang === "fr" ? "Instantané" : "Instant"}</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-border bg-surface-2 p-3">
+                  <div className="text-xs text-muted">{lang === "fr" ? "Cash" : "Cash"}</div>
+                  <div className="mt-1 text-2xl font-black text-fg">$642</div>
+                  <div className="mt-1 text-[11px] text-muted">{lang === "fr" ? "prix live" : "live fare"}</div>
+                </div>
+                <div className="rounded-xl border border-primary/25 bg-primary/10 p-3">
+                  <div className="text-xs text-muted">{lang === "fr" ? "Miles" : "Miles"}</div>
+                  <div className="mt-1 text-2xl font-black text-primary">34k</div>
+                  <div className="mt-1 text-[11px] text-muted">{lang === "fr" ? "+ taxes" : "+ taxes"}</div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-success/20 bg-success/10 p-3">
+                <div className="text-xs font-bold text-success">
+                  {lang === "fr" ? "Décision : utiliser les miles" : "Decision: use miles"}
+                </div>
+                <div className="mt-1 text-sm text-muted">
+                  {lang === "fr"
+                    ? "Xalifly compare la valeur réelle, pas seulement le prix affiché."
+                    : "Xalifly compares real value, not only the displayed price."}
+                </div>
+              </div>
+            </Card>
           </div>
         )}
 
@@ -250,10 +282,10 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
                     ["Clear decision", "cash, miles or transfer"],
                   ]
               ).map(([title, detail]) => (
-                <div key={title} className="rounded-xl border border-border bg-surface/60 px-3 py-2">
+                <Card key={title} padding="sm" className="bg-surface/60">
                   <div className="font-bold text-fg">{title}</div>
                   <div>{detail}</div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
