@@ -134,39 +134,6 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
       <OnboardingWizard lang={lang} />
       <Header lang={lang} onLangChange={handleLangChange} />
       <TrustBar lang={lang} />
-      {/* Hide social widgets in results mode — avoids /api/stats + /api/trending fetches */}
-      {!hasSearched && <TrendingRoutesWidget lang={lang} />}
-
-      {/* -- Deal Spotlight + Cheapest Route + Deals strip -- */}
-      {!hasSearched && (
-        <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 space-y-2">
-          <DealSpotlight
-            lang={lang}
-            onDealClick={(from, to) => {
-              setPrefillFrom(from);
-              setPrefillTo(to);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          />
-          <CheapestRouteBanner
-            lang={lang}
-            formatPrice={formatPrice}
-            onDealClick={(from, to) => {
-              setPrefillFrom(from);
-              setPrefillTo(to);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          />
-          <DealsStrip
-            lang={lang}
-            onDealClick={(from, to) => {
-              setPrefillFrom(from);
-              setPrefillTo(to);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          />
-        </div>
-      )}
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pb-12">
 
@@ -290,6 +257,38 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
             </div>
           )}
         </div>
+
+        {/* -- Deal proof and trending routes ---------------------- */}
+        {!hasSearched && (
+          <div className="mt-6 space-y-2 animate-fade-up">
+            <TrendingRoutesWidget lang={lang} />
+            <DealSpotlight
+              lang={lang}
+              onDealClick={(from, to) => {
+                setPrefillFrom(from);
+                setPrefillTo(to);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+            <CheapestRouteBanner
+              lang={lang}
+              formatPrice={formatPrice}
+              onDealClick={(from, to) => {
+                setPrefillFrom(from);
+                setPrefillTo(to);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+            <DealsStrip
+              lang={lang}
+              onDealClick={(from, to) => {
+                setPrefillFrom(from);
+                setPrefillTo(to);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          </div>
+        )}
 
         {/* -- Results ---------------------------------------------- */}
         {(hasSearched || loading) && (
