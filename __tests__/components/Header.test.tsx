@@ -101,6 +101,22 @@ describe("Header", () => {
     }
   });
 
+  it("exposes key tools in the mobile menu", () => {
+    const { container, rerender } = render(<Header {...defaultProps} />);
+    fireEvent.click(screen.getByRole("button", { name: /menu/i }));
+
+    expect(screen.getByText("Tools")).toBeInTheDocument();
+    expect(container.querySelector('a[href="/en/miles-alerts"]')).toHaveTextContent("Miles alerts");
+    expect(container.querySelector('a[href="/en/prix"]')).toHaveTextContent("Monthly prices");
+    expect(screen.getByText("My profile")).toBeInTheDocument();
+
+    rerender(<Header {...defaultProps} lang="fr" />);
+
+    expect(screen.getByText("Outils")).toBeInTheDocument();
+    expect(container.querySelector('a[href="/miles-alerts"]')).toHaveTextContent("Alertes miles");
+    expect(container.querySelector('a[href="/compte"]')).toHaveTextContent("Mon compte");
+  });
+
   it("renders French navigation when lang is 'fr'", () => {
     render(<Header {...defaultProps} lang="fr" />);
 

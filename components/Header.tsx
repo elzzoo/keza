@@ -31,9 +31,26 @@ const NAV = {
   ],
 };
 
+const SECONDARY_NAV = {
+  fr: [
+    { label: "Mon profil", href: "/profil" },
+    { label: "Mon compte", href: "/compte" },
+    { label: "Alertes miles", href: "/miles-alerts" },
+    { label: "Carte", href: "/carte" },
+    { label: "Prix par mois", href: "/prix" },
+  ],
+  en: [
+    { label: "My profile", href: "/en/profile" },
+    { label: "Miles alerts", href: "/en/miles-alerts" },
+    { label: "Destination map", href: "/en/carte" },
+    { label: "Monthly prices", href: "/en/prix" },
+  ],
+};
+
 export function Header({ lang, onLangChange = () => {} }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = NAV[lang];
+  const secondaryNav = SECONDARY_NAV[lang];
   const liveBadgeTitle = lang === "fr"
     ? "Prix cash : données temps réel (Duffel + Aviasales) · Valeurs miles : estimations de marché basées sur les barèmes publiés"
     : "Cash prices: live data (Duffel + Aviasales) · Miles values: market estimates based on published award charts";
@@ -152,17 +169,37 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
 
       {/* Mobile nav */}
       {menuOpen && (
-        <div className="xl:hidden border-t border-border bg-surface px-4 py-2">
-          {nav.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              onClick={() => setMenuOpen(false)}
-              className="block px-3 py-3 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all font-medium"
-            >
-              {item.label}
-            </a>
-          ))}
+        <div className="xl:hidden border-t border-border bg-surface px-4 py-3">
+          <div className="grid gap-1">
+            {nav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="block px-3 py-3 rounded-lg text-sm text-muted hover:text-fg hover:bg-surface-2 transition-all font-medium"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="mt-3 border-t border-border/70 pt-3">
+            <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted/70">
+              {lang === "fr" ? "Outils" : "Tools"}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {secondaryNav.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg border border-border bg-bg px-3 py-2 text-xs font-semibold text-muted hover:border-primary/30 hover:text-fg transition-all"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </header>

@@ -59,10 +59,11 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
 
   // Restore language from profile
   useEffect(() => {
+    if (defaultLang === "en") return;
     if (isLoaded && profile?.lang) {
       setLang(profile.lang);
     }
-  }, [isLoaded, profile?.lang]);
+  }, [defaultLang, isLoaded, profile?.lang]);
 
   // Read URL search params on mount to pre-fill shared search + store referral code
   useEffect(() => {
