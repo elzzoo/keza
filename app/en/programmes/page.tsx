@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProgramListSkeleton } from "@/components/Skeletons";
+import { DataTrustPanel } from "@/components/DataTrustPanel";
 import { SITE_URL } from "@/lib/siteConfig";
 
 // Dynamically import ProgramsTable with ProgramListSkeleton fallback
@@ -69,6 +70,8 @@ export default function EnProgrammesPage() {
             Updated: April 2026 · Sources: ThePointsGuy, NerdWallet, AwardWallet
           </p>
         </div>
+
+        <DataTrustPanel lang="en" className="mb-8" />
 
         {/* Table */}
         <ErrorBoundary lang="en">

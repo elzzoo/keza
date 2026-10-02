@@ -33,6 +33,7 @@ const ProgramsWidget      = dynamic(() => import("@/components/ProgramsWidget").
 const PwaInstallBanner       = dynamic(() => import("@/components/PwaInstallBanner").then(m => m.PwaInstallBanner), { ssr: false });
 const TrendingRoutesWidget   = dynamic(() => import("@/components/TrendingRoutesWidget").then(m => m.TrendingRoutesWidget), { ssr: false });
 import { NewsletterSignup }  from "@/components/NewsletterSignup";
+import { DataTrustPanel } from "@/components/DataTrustPanel";
 import { Badge, Card } from "@/components/ui";
 
 interface HomeClientProps {
@@ -236,25 +237,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
             initialPax={sharedParams?.pax}
           />
           {!hasSearched && (
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-muted">
-              {(lang === "fr"
-                ? [
-                    ["Prix cash live", "Duffel + Aviasales"],
-                    ["Miles estimés", "33 programmes analysés"],
-                    ["Décision claire", "cash, miles ou transfert"],
-                  ]
-                : [
-                    ["Live cash prices", "Duffel + Aviasales"],
-                    ["Estimated miles", "33 programs analyzed"],
-                    ["Clear decision", "cash, miles or transfer"],
-                  ]
-              ).map(([title, detail]) => (
-                <Card key={title} padding="sm" className="bg-surface/60">
-                  <div className="font-bold text-fg">{title}</div>
-                  <div>{detail}</div>
-                </Card>
-              ))}
-            </div>
+            <DataTrustPanel lang={lang} compact className="mt-3 text-muted" />
           )}
         </div>
 

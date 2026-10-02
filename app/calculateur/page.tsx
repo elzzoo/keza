@@ -4,6 +4,7 @@ import { MILES_PRICES } from "@/data/milesPrices";
 import { getForexRate } from "@/lib/autoCalibrate";
 import { CalculateurClient } from "./CalculateurClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DataTrustPanel } from "@/components/DataTrustPanel";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,8 @@ export default async function CalculateurPage() {
         <ErrorBoundary lang="fr">
           <CalculateurClient programs={MILES_PRICES} forexRate={forexRate} />
         </ErrorBoundary>
+
+        <DataTrustPanel lang="fr" className="mt-8" />
 
         <div className="mt-10 bg-surface border border-border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border">

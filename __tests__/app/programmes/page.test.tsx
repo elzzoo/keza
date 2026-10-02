@@ -96,6 +96,7 @@ describe("ProgrammesPage - Dynamic Import", () => {
 
     // Verify description text
     expect(screen.getByText(/33 programmes analysés/)).toBeInTheDocument();
+    expect(screen.getByText("Qualité des données")).toBeInTheDocument();
   });
 
   /**
