@@ -14,6 +14,8 @@ import {
 import { ROUTE_META } from "@/data/routeMeta";
 import { airportsMap } from "@/data/airports";
 import { TRANSFER_BONUSES } from "@/data/transferBonuses";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 // ── Canonical list of miles programs ──────────────────────────────────────
 const LOYALTY_PROGRAMS = [
@@ -345,17 +347,11 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
   const affordable = computeAffordable(profile);
 
   return (
-    <div className="min-h-screen bg-bg">
-      {/* Nav */}
-      <nav className="sticky top-0 z-40 bg-bg/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link href={t.homeHref} className="text-muted hover:text-fg transition-colors text-sm">
-          ← Xalifly
-        </Link>
-        <span className="text-border">·</span>
-        <span className="text-sm font-bold text-fg">{t.title}</span>
-      </nav>
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang={lang} />
 
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
+      <main className="flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-6">
+        <h1 className="sr-only">{t.title}</h1>
 
         {/* Hero stat bar */}
         <div className="bg-surface rounded-2xl border border-border p-5">
@@ -457,7 +453,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
                 <select
                   value={editProgram}
                   onChange={e => setEditProgram(e.target.value)}
-                  className="flex-1 bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-primary/50"
+                  className="flex-1 min-w-0 bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-primary/50"
                 >
                   <option value="">{t.chooseProgram}</option>
                   {LOYALTY_PROGRAMS.filter(p => !profile.balances[p]).map(p => (
@@ -515,7 +511,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
                 <select
                   value={editBank}
                   onChange={e => setEditBank(e.target.value)}
-                  className="flex-1 bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-primary/50"
+                  className="flex-1 min-w-0 bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-fg focus:outline-none focus:border-primary/50"
                 >
                   {BANK_CURRENCIES.map(b => (
                     <option key={b.key} value={b.key}>{b.label}</option>
@@ -780,7 +776,9 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
             {t.compareFlight}
           </Link>
         </div>
-      </div>
+      </main>
+
+      <Footer lang={lang} />
     </div>
   );
 }
