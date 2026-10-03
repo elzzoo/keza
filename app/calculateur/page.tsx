@@ -5,6 +5,8 @@ import { getForexRate } from "@/lib/autoCalibrate";
 import { CalculateurClient } from "./CalculateurClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DataTrustPanel } from "@/components/DataTrustPanel";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
@@ -25,8 +27,9 @@ export const metadata: Metadata = {
 export default async function CalculateurPage() {
   const forexRate = await getForexRate().catch(() => 605);
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="fr" />
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
         <div className="mb-8">
           <Link href="/" className="text-xs text-muted hover:text-fg transition-colors">← Retour</Link>
           <h1 className="text-3xl font-black mt-4 mb-2">
@@ -79,7 +82,8 @@ export default async function CalculateurPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </main>
+      <Footer lang="fr" />
     </div>
   );
 }

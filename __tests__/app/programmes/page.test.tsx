@@ -2,6 +2,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { Suspense } from "react";
 import ProgrammesPage from "@/app/programmes/page";
 
+jest.mock("@/components/Header", () => ({
+  Header: ({ lang }: { lang: "fr" | "en" }) => <header data-testid="header">{lang}</header>,
+}));
+
+jest.mock("@/components/Footer", () => ({
+  Footer: ({ lang }: { lang: "fr" | "en" }) => <footer data-testid="footer">{lang}</footer>,
+}));
+
 /**
  * P0.4 Task 5: Dynamic-Import ProgramList Tests
  * Verify that ProgramsTable is lazily loaded with ProgramListSkeleton fallback

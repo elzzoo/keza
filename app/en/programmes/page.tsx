@@ -6,6 +6,8 @@ import dynamic from "next/dynamic";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProgramListSkeleton } from "@/components/Skeletons";
 import { DataTrustPanel } from "@/components/DataTrustPanel";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { SITE_URL } from "@/lib/siteConfig";
 
 // Dynamically import ProgramsTable with ProgramListSkeleton fallback
@@ -46,8 +48,9 @@ export const metadata: Metadata = {
 
 export default function EnProgrammesPage() {
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="en" />
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10">
 
         {/* Back link */}
         <Link href="/en" className="text-xs text-muted hover:text-fg transition-colors">
@@ -88,7 +91,8 @@ export default function EnProgrammesPage() {
           </p>
         </div>
 
-      </div>
+      </main>
+      <Footer lang="en" />
     </div>
   );
 }
