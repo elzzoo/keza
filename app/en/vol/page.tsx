@@ -4,6 +4,8 @@ import { ROUTE_META } from "@/data/routeMeta";
 import { AIRPORTS } from "@/data/airports";
 import { iataToSlug } from "@/lib/routeSlug";
 import { SITE_URL } from "@/lib/siteConfig";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "All Routes — Cash vs Miles Flights | Xalifly",
@@ -64,19 +66,10 @@ export default function EnVolIndexPage() {
   );
 
   return (
-    <div className="min-h-screen bg-bg">
-      <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/en" className="font-black text-lg">
-            <span className="text-primary">Xali</span><span className="text-fg">fly</span>
-          </Link>
-          <Link href="/en" className="text-xs font-semibold px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
-            Search a flight →
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="en" />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-10 space-y-10">
         <div>
           <h1 className="text-3xl font-black text-fg mb-2">
             All routes <span className="text-primary">Cash vs Miles</span>
@@ -121,10 +114,7 @@ export default function EnVolIndexPage() {
         })}
       </main>
 
-      <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted">
-        <Link href="/en" className="hover:text-fg transition-colors">Xalifly</Link>
-        {" · "}Compare cash vs miles on every flight
-      </footer>
+      <Footer lang="en" />
     </div>
   );
 }

@@ -1,6 +1,21 @@
+/**
+ * @jest-environment jsdom
+ */
+import React from "react";
+import { render, screen } from "@testing-library/react";
 import { metadata as volMetadata } from "@/app/vol/page";
+import VolIndexPage from "@/app/vol/page";
+import EnVolIndexPage from "@/app/en/vol/page";
 import { generateMetadata as generateVolRouteMetadata } from "@/app/vol/[route]/page";
 import { SITE_URL } from "@/lib/siteConfig";
+
+jest.mock("@/components/Header", () => ({
+  Header: ({ lang }: { lang: "fr" | "en" }) => React.createElement("header", { "data-testid": "header" }, lang),
+}));
+
+jest.mock("@/components/Footer", () => ({
+  Footer: ({ lang }: { lang: "fr" | "en" }) => React.createElement("footer", { "data-testid": "footer" }, lang),
+}));
 
 describe("/vol SEO metadata", () => {
   it("declares FR and EN alternates on the FR route index", () => {
@@ -51,5 +66,23 @@ describe("/en/vol SEO metadata", () => {
         en: `${SITE_URL}/en/flights/DSS-CDG`,
       },
     });
+  });
+});
+
+describe("/vol route index layout", () => {
+  it("uses the global FR layout", () => {
+    render(React.createElement(VolIndexPage));
+
+    expect(screen.getByTestId("header").textContent).toBe("fr");
+    expect(screen.getByTestId("footer").textContent).toBe("fr");
+    expect(screen.getByRole("heading", { name: /toutes nos routes/i })).toBeTruthy();
+  });
+
+  it("uses the global EN layout", () => {
+    render(React.createElement(EnVolIndexPage));
+
+    expect(screen.getByTestId("header").textContent).toBe("en");
+    expect(screen.getByTestId("footer").textContent).toBe("en");
+    expect(screen.getByRole("heading", { name: /all routes/i })).toBeTruthy();
   });
 });
