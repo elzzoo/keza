@@ -7,6 +7,8 @@ import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
 import { SITE_URL } from "@/lib/siteConfig";
 import { logError } from "@/lib/logger";
 import { CalendarSkeleton } from "@/components/Skeletons";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 // Dynamically import PriceChart with CalendarSkeleton fallback
 // Lazy loads on-demand to reduce main bundle size
@@ -53,8 +55,9 @@ export default function PrixPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="fr" />
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
 
         {/* Back link */}
         <Link href="/" className="text-xs text-muted hover:text-fg transition-colors">
@@ -112,7 +115,8 @@ export default function PrixPage() {
           </>
         )}
 
-      </div>
+      </main>
+      <Footer lang="fr" />
     </div>
   );
 }

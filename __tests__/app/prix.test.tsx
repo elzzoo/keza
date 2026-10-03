@@ -6,6 +6,14 @@ import { PriceChart } from "@/app/prix/PriceChart";
 import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
 
+jest.mock("@/components/Header", () => ({
+  Header: ({ lang }: { lang: "fr" | "en" }) => <header data-testid="header">{lang}</header>,
+}));
+
+jest.mock("@/components/Footer", () => ({
+  Footer: ({ lang }: { lang: "fr" | "en" }) => <footer data-testid="footer">{lang}</footer>,
+}));
+
 /**
  * P0.4 Task 3: Dynamic-Import PriceHeatmap Tests
  * Verify that PriceChart is lazily loaded with CalendarSkeleton fallback

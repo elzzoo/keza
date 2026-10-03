@@ -1,11 +1,19 @@
 // app/en/prix/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
-import { PriceChart } from "@/app/prix/PriceChart";
 import { SITE_URL } from "@/lib/siteConfig";
 import { logError } from "@/lib/logger";
+import { CalendarSkeleton } from "@/components/Skeletons";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+
+const PriceChart = dynamic(() => import("@/app/prix/PriceChart").then((mod) => ({ default: mod.PriceChart })), {
+  loading: () => <CalendarSkeleton />,
+});
 
 export const metadata: Metadata = {
   title: "Flight Prices — Compare Cash & Miles | Xalifly",
@@ -45,8 +53,9 @@ export default function EnPrixPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="en" />
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
 
         {/* Back link */}
         <Link href="/en" className="text-xs text-muted hover:text-fg transition-colors">
@@ -83,12 +92,14 @@ export default function EnPrixPage() {
           </div>
         ) : (
           <>
-            {/* Interactive chart */}
-            <PriceChart
-              histories={histories}
-              destinations={DESTINATIONS}
-              lang="en"
-            />
+            {/* Interactive chart - lazy loaded with Suspense boundary */}
+            <Suspense fallback={<CalendarSkeleton />}>
+              <PriceChart
+                histories={histories}
+                destinations={DESTINATIONS}
+                lang="en"
+              />
+            </Suspense>
 
             {/* CTA */}
             <div className="mt-8 text-center">
@@ -102,7 +113,8 @@ export default function EnPrixPage() {
           </>
         )}
 
-      </div>
+      </main>
+      <Footer lang="en" />
     </div>
   );
 }
