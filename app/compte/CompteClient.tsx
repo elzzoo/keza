@@ -4,6 +4,8 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface ServerProfile {
   balances:       Record<string, number>;
@@ -56,22 +58,30 @@ export function CompteClient() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-bg flex flex-col">
+        <Header lang="fr" />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        </main>
+        <Footer lang="fr" />
       </div>
     );
   }
 
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-        <div className="text-center space-y-4">
-          <p className="text-3xl">🔒</p>
-          <p className="text-sm text-muted">Tu n&apos;es pas connecté.</p>
-          <Link href="/connexion" className="inline-block px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors">
-            Se connecter →
-          </Link>
-        </div>
+      <div className="min-h-screen bg-bg flex flex-col">
+        <Header lang="fr" />
+        <main className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center space-y-4">
+            <p className="text-3xl">🔒</p>
+            <p className="text-sm text-muted">Tu n&apos;es pas connecté.</p>
+            <Link href="/connexion" className="inline-block px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors">
+              Se connecter →
+            </Link>
+          </div>
+        </main>
+        <Footer lang="fr" />
       </div>
     );
   }
@@ -79,14 +89,11 @@ export function CompteClient() {
   const { user } = session;
 
   return (
-    <div className="min-h-screen bg-bg">
-      <nav className="sticky top-0 z-40 bg-bg/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link href="/" className="text-muted hover:text-fg transition-colors text-sm">← Xalifly</Link>
-        <span className="text-border">·</span>
-        <span className="text-sm font-bold text-fg">Mon compte</span>
-      </nav>
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="fr" />
 
-      <div className="max-w-xl mx-auto px-4 py-6 space-y-5">
+      <main className="flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-5">
+        <h1 className="sr-only">Mon compte</h1>
 
         {/* Identity card */}
         <div className="bg-surface rounded-2xl border border-border p-5 flex items-center gap-4">
@@ -155,7 +162,8 @@ export function CompteClient() {
           </button>
         </div>
 
-      </div>
+      </main>
+      <Footer lang="fr" />
     </div>
   );
 }
