@@ -7,6 +7,8 @@ import type { DestinationWithRec } from "@/app/carte/WorldMap";
 import { WorldMapDynamic } from "@/app/carte/WorldMapDynamic";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Flight Price Map — Find Cheap Destinations | Xalifly",
@@ -53,8 +55,9 @@ const CASH_COUNT = DESTINATIONS_WITH_REC.filter(
 
 export default function EnCartePage() {
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="en" />
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10">
 
         {/* Back link */}
         <Link href="/en" className="text-xs text-muted hover:text-fg transition-colors">
@@ -105,7 +108,8 @@ export default function EnCartePage() {
           </Link>
         </div>
 
-      </div>
+      </main>
+      <Footer lang="en" />
     </div>
   );
 }

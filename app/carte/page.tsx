@@ -7,6 +7,8 @@ import type { DestinationWithRec } from "./WorldMap";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL } from "@/lib/siteConfig";
 import { WorldMapClient } from "./WorldMapClient";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Carte des destinations miles | Xalifly",
@@ -51,8 +53,9 @@ const CASH_COUNT = DESTINATIONS_WITH_REC.filter(
 
 export default function CartePage() {
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="fr" />
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10">
 
         {/* Back link */}
         <Link href="/" className="text-xs text-muted hover:text-fg transition-colors">
@@ -113,7 +116,8 @@ export default function CartePage() {
           </Link>
         </div>
 
-      </div>
+      </main>
+      <Footer lang="fr" />
     </div>
   );
 }
