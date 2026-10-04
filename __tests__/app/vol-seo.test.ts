@@ -6,7 +6,7 @@ import { render, screen } from "@testing-library/react";
 import { metadata as volMetadata } from "@/app/vol/page";
 import VolIndexPage from "@/app/vol/page";
 import EnVolIndexPage from "@/app/en/vol/page";
-import { generateMetadata as generateVolRouteMetadata } from "@/app/vol/[route]/page";
+import VolRoutePage, { generateMetadata as generateVolRouteMetadata } from "@/app/vol/[route]/page";
 import { SITE_URL } from "@/lib/siteConfig";
 
 jest.mock("@/components/Header", () => ({
@@ -15,6 +15,22 @@ jest.mock("@/components/Header", () => ({
 
 jest.mock("@/components/Footer", () => ({
   Footer: ({ lang }: { lang: "fr" | "en" }) => React.createElement("footer", { "data-testid": "footer" }, lang),
+}));
+
+jest.mock("@/components/RouteAlertCta", () => ({
+  RouteAlertCta: ({ lang }: { lang: "fr" | "en" }) => React.createElement("div", { "data-testid": "route-alert" }, lang),
+}));
+
+jest.mock("@/components/PriceSparkline", () => ({
+  PriceSparkline: ({ lang }: { lang: "fr" | "en" }) => React.createElement("div", { "data-testid": "price-sparkline" }, lang),
+}));
+
+jest.mock("@/components/CheapestDatesCalendar", () => ({
+  CheapestDatesCalendar: ({ lang }: { lang: "fr" | "en" }) => React.createElement("div", { "data-testid": "cheapest-dates" }, lang),
+}));
+
+jest.mock("@/components/PriceHeatmap", () => ({
+  PriceHeatmap: ({ lang }: { lang: "fr" | "en" }) => React.createElement("div", { "data-testid": "price-heatmap" }, lang),
 }));
 
 describe("/vol SEO metadata", () => {
@@ -84,5 +100,35 @@ describe("/vol route index layout", () => {
     expect(screen.getByTestId("header").textContent).toBe("en");
     expect(screen.getByTestId("footer").textContent).toBe("en");
     expect(screen.getByRole("heading", { name: /all routes/i })).toBeTruthy();
+  });
+});
+
+describe("/vol route detail layout", () => {
+  it("uses the global FR layout", async () => {
+    render(
+      await VolRoutePage({
+        params: Promise.resolve({ route: "dss-cdg" }),
+      })
+    );
+
+    expect(screen.getByTestId("header").textContent).toBe("fr");
+    expect(screen.getByTestId("footer").textContent).toBe("fr");
+    expect(screen.getByRole("heading", { level: 1, name: /dakar.*paris/i })).toBeTruthy();
+    expect(screen.getByTestId("route-alert").textContent).toBe("fr");
+  });
+
+  it("uses the global EN layout", async () => {
+    const { default: EnVolRoutePage } = await import("@/app/en/vol/[route]/page");
+
+    render(
+      await EnVolRoutePage({
+        params: Promise.resolve({ route: "dss-cdg" }),
+      })
+    );
+
+    expect(screen.getByTestId("header").textContent).toBe("en");
+    expect(screen.getByTestId("footer").textContent).toBe("en");
+    expect(screen.getByRole("heading", { level: 1, name: /dakar.*paris/i })).toBeTruthy();
+    expect(screen.getByTestId("route-alert").textContent).toBe("en");
   });
 });

@@ -10,6 +10,8 @@ import { RouteAlertCta } from "@/components/RouteAlertCta";
 import { PriceSparkline } from "@/components/PriceSparkline";
 import { CheapestDatesCalendar } from "@/components/CheapestDatesCalendar";
 import { PriceHeatmap } from "@/components/PriceHeatmap";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 // ISR: revalidate every 24h — route metadata rarely changes
 export const revalidate = 86400;
@@ -177,27 +179,13 @@ export default async function RoutePage(
   };
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* Inject JSON-LD after hydration */}
       <JsonLd data={structuredData} />
 
-      {/* Header */}
-      <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg">
-            <span className="text-primary">Xali</span>
-            <span className="text-fg">fly</span>
-          </Link>
-          <Link
-            href={searchUrl}
-            className="text-xs font-semibold px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors"
-          >
-            Comparer ce vol →
-          </Link>
-        </div>
-      </header>
+      <Header lang="fr" />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs font-semibold text-muted uppercase tracking-wider">
@@ -394,13 +382,7 @@ export default async function RoutePage(
         </div>
       </main>
 
-      <footer className="border-t border-border mt-12 py-8 text-center text-xs text-muted">
-        <Link href="/" className="hover:text-fg transition-colors">Xalifly</Link>
-        {" · "}Cash ou Miles ?{" · "}
-        <Link href={searchUrl} className="hover:text-fg transition-colors">
-          Rechercher {from}→{to}
-        </Link>
-      </footer>
+      <Footer lang="fr" />
     </div>
   );
 }
