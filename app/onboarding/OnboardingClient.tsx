@@ -7,6 +7,8 @@ import { Footer } from "@/components/Footer";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
+type Lang = "fr" | "en";
+
 const PROGRAMS = [
   { id: "Flying Blue", name: "Flying Blue (Air France/KLM)" },
   { id: "Singapore KrisFlyer", name: "Singapore KrisFlyer" },
@@ -26,17 +28,58 @@ const PROGRAMS = [
   { id: "Malaysian Airlines Enrich", name: "Malaysia Airlines Enrich" },
 ];
 
-export function OnboardingClient() {
+const COPY: Record<Lang, {
+  title: string;
+  description: string;
+  skip: string;
+  continue: string;
+  saving: string;
+  success: string;
+  failure: string;
+  error: string;
+  note: string;
+  homeHref: string;
+}> = {
+  fr: {
+    title: "Configure ton profil",
+    description:
+      "Quels programmes de fidelite utilises-tu ? Nous afficherons les meilleurs deals de redemption.",
+    skip: "Plus tard",
+    continue: "Continuer",
+    saving: "Enregistrement...",
+    success: "Profil configure.",
+    failure: "Impossible d'enregistrer le profil",
+    error: "Erreur pendant l'enregistrement",
+    note: "Tu peux modifier ces choix a tout moment dans ton compte.",
+    homeHref: "/",
+  },
+  en: {
+    title: "Set up your profile",
+    description:
+      "Which loyalty programs do you have? We'll show you the best redemption deals.",
+    skip: "Skip for now",
+    continue: "Continue",
+    saving: "Saving...",
+    success: "Profile set up.",
+    failure: "Failed to save profile",
+    error: "Error saving profile",
+    note: "You can update this anytime in your account's settings.",
+    homeHref: "/en",
+  },
+};
+
+export function OnboardingClient({ lang = "fr" }: { lang?: Lang }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const t = COPY[lang];
 
   useEffect(() => {
     if (!session) {
-      router.push("/");
+      router.push(t.homeHref);
     }
-  }, [session, router]);
+  }, [session, router, t.homeHref]);
 
   async function handleSubmit() {
     if (!session?.user?.email) return;
@@ -51,13 +94,13 @@ export function OnboardingClient() {
         }),
       });
       if (res.ok) {
-        toast.success("Profile set up! 🎉");
-        router.push("/");
+        toast.success(t.success);
+        router.push(t.homeHref);
       } else {
-        toast.error("Failed to save profile");
+        toast.error(t.failure);
       }
     } catch {
-      toast.error("Error saving profile");
+      toast.error(t.error);
     } finally {
       setLoading(false);
     }
@@ -72,14 +115,14 @@ export function OnboardingClient() {
   };
 
   return (
-    <div className="min-h-screen bg-dark flex flex-col">
-      <Header lang="en" />
+    <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang={lang} />
       <main className="flex-1 py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-surface rounded-2xl border border-border p-8">
-            <h1 className="text-3xl font-black mb-2">Set up your profile</h1>
+            <h1 className="text-3xl font-black mb-2">{t.title}</h1>
             <p className="text-muted mb-6">
-              Which loyalty programs do you have? We&apos;ll show you the best redemption deals.
+              {t.description}
             </p>
 
             {/* Program selector */}
@@ -113,28 +156,28 @@ export function OnboardingClient() {
             {/* Action buttons */}
             <div className="flex gap-3 justify-between">
               <button
-                onClick={() => router.push("/")}
+                onClick={() => router.push(t.homeHref)}
                 className="px-4 py-2 rounded-lg border border-border text-muted hover:border-border/80 transition-colors"
               >
-                Skip for now
+                {t.skip}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading || selected.length === 0}
                 className="px-6 py-2 rounded-lg bg-blue-500/20 border border-blue-500/50 text-blue-300 font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors"
               >
-                {loading ? "Saving…" : "Continue"}
+                {loading ? t.saving : t.continue}
               </button>
             </div>
 
             {/* Optional note */}
             <p className="text-xs text-muted mt-6 text-center">
-              You can update this anytime in your account&apos;s settings.
+              {t.note}
             </p>
           </div>
         </div>
       </main>
-      <Footer lang="en" />
+      <Footer lang={lang} />
     </div>
   );
 }

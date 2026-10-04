@@ -6,8 +6,7 @@ import { useSession } from "next-auth/react";
 import { useProfile } from "@/hooks/useProfile";
 
 /**
- * Client-side redirect to /onboarding if user is new (no loyalty programs set).
- * Exempt: /onboarding, /compte, /alertes, API routes
+ * Client-side redirect to localized onboarding if user is new (no loyalty programs set).
  */
 export function OnboardingRedirect() {
   const router = useRouter();
@@ -16,12 +15,19 @@ export function OnboardingRedirect() {
   const { profile, isLoaded } = useProfile();
 
   useEffect(() => {
+    const isEnglishRoute = pathname === "/en" || pathname.startsWith("/en/");
+    const onboardingPath = isEnglishRoute ? "/en/onboarding" : "/onboarding";
+
     // Skip redirect for these paths
     const exemptPaths = [
       "/onboarding",
+      "/en/onboarding",
       "/compte",
+      "/en/profile",
       "/alertes",
+      "/en/alertes",
       "/pro",
+      "/en/pro",
       "/deconnexion",
     ];
     const isExempt =
@@ -37,7 +43,7 @@ export function OnboardingRedirect() {
       profile.programs.length === 0 &&
       !profile.hasOnboarded
     ) {
-      router.push("/onboarding");
+      router.push(onboardingPath);
     }
   }, [session, profile, isLoaded, pathname, router]);
 
