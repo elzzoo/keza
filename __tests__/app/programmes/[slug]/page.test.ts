@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 
+import React from 'react';
 import ProgrammePage, {
   generateMetadata,
   generateStaticParams,
@@ -11,6 +12,18 @@ import {
 import { PROGRAMS } from '@/data/programs';
 import { SITE_URL } from '@/lib/siteConfig';
 import { render, screen } from '@testing-library/react';
+
+jest.mock('@/components/Header', () => ({
+  Header: ({ lang }: { lang: 'fr' | 'en' }) => (
+    React.createElement('header', { 'data-testid': 'header' }, lang)
+  ),
+}));
+
+jest.mock('@/components/Footer', () => ({
+  Footer: ({ lang }: { lang: 'fr' | 'en' }) => (
+    React.createElement('footer', { 'data-testid': 'footer' }, lang)
+  ),
+}));
 
 describe('/programmes/[slug]', () => {
   it('generates static params for all programs', () => {
@@ -84,5 +97,27 @@ describe('/programmes/[slug]', () => {
     expect(screen.getByText('Valeur par mile/point')).toBeTruthy();
     expect(screen.getByText('Meilleur usage')).toBeTruthy();
     expect(screen.getByText(program.bestUseFr)).toBeTruthy();
+    expect(screen.getByTestId('header').textContent).toBe('fr');
+    expect(screen.getByTestId('footer').textContent).toBe('fr');
+  });
+
+  it('renders English labels on the English programme detail page', async () => {
+    const program = PROGRAMS[0];
+    const EnProgrammePage = (
+      await import('@/app/en/programmes/[slug]/page')
+    ).default;
+
+    render(
+      await EnProgrammePage({
+        params: Promise.resolve({ slug: program.id }),
+      })
+    );
+
+    expect(screen.getByText('← Back to Programs')).toBeTruthy();
+    expect(screen.getByText('Value per Mile/Point')).toBeTruthy();
+    expect(screen.getByText('Best Use')).toBeTruthy();
+    expect(screen.getByText(program.bestUse)).toBeTruthy();
+    expect(screen.getByTestId('header').textContent).toBe('en');
+    expect(screen.getByTestId('footer').textContent).toBe('en');
   });
 });
