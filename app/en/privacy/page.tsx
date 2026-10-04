@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_URL } from "@/lib/siteConfig";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Xalifly",
@@ -14,6 +16,8 @@ export const metadata: Metadata = {
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-bg flex flex-col">
+      <Header lang="en" />
+
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
         <Link
           href="/en"
@@ -98,6 +102,8 @@ export default function PrivacyPolicy() {
           </section>
         </div>
       </main>
+
+      <Footer lang="en" />
     </div>
   );
 }
