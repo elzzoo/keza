@@ -7,6 +7,14 @@ jest.mock("next-auth/react", () => ({
   signIn: jest.fn(),
 }));
 
+jest.mock("@/components/Header", () => ({
+  Header: ({ lang }: { lang: "fr" | "en" }) => <header data-testid="header">{lang}</header>,
+}));
+
+jest.mock("@/components/Footer", () => ({
+  Footer: ({ lang }: { lang: "fr" | "en" }) => <footer data-testid="footer">{lang}</footer>,
+}));
+
 describe("ConnexionClient", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -17,6 +25,8 @@ describe("ConnexionClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Continuer avec Google" }));
 
+    expect(screen.getByTestId("header")).toHaveTextContent("fr");
+    expect(screen.getByTestId("footer")).toHaveTextContent("fr");
     expect(signIn).toHaveBeenCalledWith("google", {
       callbackUrl: "/pro?email=test%40example.com",
     });
@@ -38,6 +48,8 @@ describe("ConnexionClient", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
 
     expect(screen.getByText("Privacy policy")).toHaveAttribute("href", "/en/privacy");
+    expect(screen.getByTestId("header")).toHaveTextContent("en");
+    expect(screen.getByTestId("footer")).toHaveTextContent("en");
     expect(signIn).toHaveBeenCalledWith("google", {
       callbackUrl: "/en/profile",
     });
