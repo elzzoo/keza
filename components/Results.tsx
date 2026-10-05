@@ -36,7 +36,7 @@ const L = {
     all: "Tous",
     miles: "Utilisez miles",
     cash: "Payez cash",
-    empty: "⚠️ Données indisponibles sur cette route actuellement",
+    empty: "Données indisponibles sur cette route actuellement",
     emptyDesc: "Nos sources de données couvrent mieux certaines routes. Essayez :",
     emptyTips: [
       "Élargir les dates (±7 jours)",
@@ -44,7 +44,7 @@ const L = {
       "Utiliser DKR (Dakar ville) au lieu de DSS pour les vols long-courriers",
       "Passer par un hub (CDG, IST, DXB) pour l'Afrique ↔ USA",
     ],
-    partial: "⚠️ Résultats partiels affichés — certaines sources indisponibles",
+    partial: "Résultats partiels affichés — certaines sources indisponibles",
     back: "← Nouvelle recherche",
     loading: "Recherche en cours…",
     businessBannerTitle: "Mode Business — comparaison vs prix Business cash",
@@ -80,7 +80,7 @@ const L = {
     all: "All",
     miles: "Use miles",
     cash: "Use cash",
-    empty: "⚠️ Data unavailable for this route at the moment",
+    empty: "Data unavailable for this route at the moment",
     emptyDesc: "Our data sources cover some routes better than others. Try:",
     emptyTips: [
       "Broaden the dates (±7 days)",
@@ -88,7 +88,7 @@ const L = {
       "Use DKR (Dakar city) instead of DSS for long-haul",
       "Route via a hub (CDG, IST, DXB) for Africa ↔ USA",
     ],
-    partial: "⚠️ Partial results shown — some sources unavailable",
+    partial: "Partial results shown — some sources unavailable",
     back: "← New search",
     loading: "Searching…",
     businessBannerTitle: "Business mode — compared against Business cash price",
@@ -117,6 +117,78 @@ const L = {
     resetFilters: "Reset filters",
   },
 };
+
+type ResultIconName = "signal" | "plane" | "calculator" | "rank" | "info" | "warning";
+
+function ResultIcon({ name, className = "h-4 w-4" }: { name: ResultIconName; className?: string }) {
+  const common = {
+    className,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "signal") {
+    return (
+      <svg {...common}>
+        <path d="M6 18h.01" />
+        <path d="M10 14a6 6 0 0 1 8 0" />
+        <path d="M6 10a12 12 0 0 1 16 0" />
+      </svg>
+    );
+  }
+  if (name === "plane") {
+    return (
+      <svg {...common}>
+        <path d="M22 2 11 13" />
+        <path d="m22 2-7 20-4-9-9-4 20-7Z" />
+      </svg>
+    );
+  }
+  if (name === "calculator") {
+    return (
+      <svg {...common}>
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <path d="M8 7h8" />
+        <path d="M8 11h.01" />
+        <path d="M12 11h.01" />
+        <path d="M16 11h.01" />
+        <path d="M8 15h.01" />
+        <path d="M12 15h.01" />
+        <path d="M16 15h.01" />
+      </svg>
+    );
+  }
+  if (name === "rank") {
+    return (
+      <svg {...common}>
+        <path d="M8 21V10" />
+        <path d="M12 21V3" />
+        <path d="M16 21v-7" />
+      </svg>
+    );
+  }
+  if (name === "warning") {
+    return (
+      <svg {...common}>
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </svg>
+  );
+}
 
 type PriceQualitySummary = {
   live: number;
@@ -301,16 +373,16 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   // Animated progress loader state
   const loadingSteps = lang === "fr"
     ? [
-        { icon: "📡", msg: "Connexion aux sources de prix en temps réel…" },
-        { icon: "✈️",  msg: "Données de vol récupérées, analyse en cours…" },
-        { icon: "🧮",  msg: "Calcul des options miles & cash…" },
-        { icon: "🏆",  msg: "Tri des meilleures offres pour vous…" },
+        { icon: "signal" as const, msg: "Connexion aux sources de prix en temps réel…" },
+        { icon: "plane" as const,  msg: "Données de vol récupérées, analyse en cours…" },
+        { icon: "calculator" as const,  msg: "Calcul des options miles & cash…" },
+        { icon: "rank" as const,  msg: "Tri des meilleures offres pour vous…" },
       ]
     : [
-        { icon: "📡", msg: "Connecting to live pricing sources…" },
-        { icon: "✈️",  msg: "Flight data retrieved, analysing…" },
-        { icon: "🧮",  msg: "Computing miles & cash options…" },
-        { icon: "🏆",  msg: "Ranking the best offers for you…" },
+        { icon: "signal" as const, msg: "Connecting to live pricing sources…" },
+        { icon: "plane" as const,  msg: "Flight data retrieved, analysing…" },
+        { icon: "calculator" as const,  msg: "Computing miles & cash options…" },
+        { icon: "rank" as const,  msg: "Ranking the best offers for you…" },
       ];
 
   const [loadStep, setLoadStep] = useState(0);
@@ -342,7 +414,9 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       <div className="space-y-4 animate-fade-up">
         {/* Step message */}
         <div className="flex items-center gap-3">
-          <span className="text-lg leading-none">{step.icon}</span>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+            <ResultIcon name={step.icon} className="h-4 w-4" />
+          </span>
           <span className="text-sm text-muted font-medium flex-1">{step.msg}</span>
         </div>
         {/* Progress bar */}
@@ -463,7 +537,9 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       {/* No direct flights info banner */}
       {allWithStops && (
         <div className="bg-surface rounded-xl border border-border/50 px-4 py-3 flex items-start gap-3">
-          <span className="text-base mt-0.5">ℹ️</span>
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-500/10 text-blue-300">
+            <ResultIcon name="info" className="h-3.5 w-3.5" />
+          </span>
           <div>
             <p className="text-xs font-semibold text-fg">
               {lang === "fr"
@@ -482,7 +558,9 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       {/* Partial results warning */}
       {partial && results.length > 0 && (
         <div className="bg-warning/10 rounded-xl border border-warning/25 px-4 py-3 flex items-center gap-3">
-          <span className="text-base">⚠️</span>
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-warning/25 bg-warning/10 text-warning">
+            <ResultIcon name="warning" className="h-3.5 w-3.5" />
+          </span>
           <p className="text-xs font-semibold text-warning">{t.partial}</p>
         </div>
       )}
@@ -490,7 +568,9 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       {/* Business/First mode contextual banner */}
       {results.length > 0 && searchMeta && isBusinessMode(searchMeta.cabin) && (
         <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 border border-primary/20 rounded-xl">
-          <span className="text-lg flex-shrink-0">✈️</span>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+            <ResultIcon name="plane" className="h-4 w-4" />
+          </span>
           <div>
             <p className="text-xs font-semibold text-blue-300">{t.businessBannerTitle}</p>
             <p className="text-[11px] text-muted mt-0.5">{t.businessBannerDesc}</p>
@@ -586,7 +666,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       >
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<span className="animate-float">✈️</span>}
+          icon={<ResultIcon name="plane" className="h-5 w-5 animate-float" />}
           title={emptyState.title}
           description={emptyState.desc}
           tips={emptyState.tips}

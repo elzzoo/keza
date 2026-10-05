@@ -46,6 +46,79 @@ const TYPE_LABEL = {
 // Programs with dynamic pricing — warn user to verify on airline site
 const DYNAMIC_PRICING_PROGRAMS = new Set(["Delta SkyMiles"]);
 
+type FlightCardIconName =
+  | "award"
+  | "cash"
+  | "heart"
+  | "heartFilled"
+  | "plane"
+  | "warning"
+  | "gift";
+
+function FlightCardIcon({ name, className = "h-4 w-4" }: { name: FlightCardIconName; className?: string }) {
+  const common = {
+    className,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "award") {
+    return (
+      <svg {...common}>
+        <path d="M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2 7.5 14 3 9.6l6.2-.9L12 3Z" />
+      </svg>
+    );
+  }
+  if (name === "cash") {
+    return (
+      <svg {...common}>
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <circle cx="12" cy="12" r="2" />
+        <path d="M7 10v4" />
+        <path d="M17 10v4" />
+      </svg>
+    );
+  }
+  if (name === "heart" || name === "heartFilled") {
+    return (
+      <svg {...common} fill={name === "heartFilled" ? "currentColor" : "none"}>
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+      </svg>
+    );
+  }
+  if (name === "plane") {
+    return (
+      <svg {...common}>
+        <path d="M22 2 11 13" />
+        <path d="m22 2-7 20-4-9-9-4 20-7Z" />
+      </svg>
+    );
+  }
+  if (name === "warning") {
+    return (
+      <svg {...common}>
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7" />
+      <path d="M2 7h20v5H2z" />
+      <path d="M12 22V7" />
+      <path d="M12 7H7.5a2.5 2.5 0 1 1 2.2-3.7L12 7Z" />
+      <path d="M12 7h4.5a2.5 2.5 0 1 0-2.2-3.7L12 7Z" />
+    </svg>
+  );
+}
+
 // Award search deep-links per program — shown when no bookingLink exists but miles are recommended
 const AWARD_SEARCH_URLS: Record<string, string> = {
   "Flying Blue":                "https://wwws.airfrance.us/en/common/searchbooking/request/smiles",
@@ -220,8 +293,9 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         {/* Verdict badge — top-right corner (or next to global best if present) */}
         <div className="absolute top-3 right-3 flex gap-2 items-center">
           {isGlobalBest && (
-            <div className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
-              🥇 {fr ? "Meilleure offre" : "Best deal"}
+            <div className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
+              <FlightCardIcon name="award" className="h-3 w-3" />
+              {fr ? "Meilleure offre" : "Best deal"}
             </div>
           )}
           {flight.verdictLabel && (
@@ -231,9 +305,15 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                 ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
                 : "bg-amber-500/20 text-amber-300 border-amber-500/30"
             )}>
-              {flight.verdictLabel === "MILES_WINS"
-                ? (fr ? "💎 Miles gagnent" : "💎 Miles win")
-                : (fr ? "💵 Cash gagne" : "💵 Cash wins")}
+              <span className="inline-flex items-center gap-1">
+                <FlightCardIcon
+                  name={flight.verdictLabel === "MILES_WINS" ? "award" : "cash"}
+                  className="h-3 w-3"
+                />
+                {flight.verdictLabel === "MILES_WINS"
+                  ? (fr ? "Miles gagnent" : "Miles win")
+                  : (fr ? "Cash gagne" : "Cash wins")}
+              </span>
             </div>
           )}
         </div>
@@ -257,7 +337,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               : "text-muted/40 hover:text-muted"
           )}
         >
-          {isFav ? "❤️" : "🤍"}
+          <FlightCardIcon name={isFav ? "heartFilled" : "heart"} className="h-5 w-5" />
         </button>
 
         {/* Seat alert button — top-right */}
@@ -279,20 +359,20 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
           {isNearParity
             ? (fr ? "≈ Prix équivalent — garde tes miles" : "≈ Equivalent — keep your miles")
             : !bestOption
-              ? (fr ? "💵 Paiement cash uniquement" : "💵 Cash only")
+              ? (fr ? "Paiement cash uniquement" : "Cash only")
               : flight.recommendation === "USE_MILES"
                 ? (fr
-                    ? `🔥 Tu économises ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " avec les miles"}`
-                    : `🔥 You save ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " with miles"}`)
+                    ? `Tu économises ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " avec les miles"}`
+                    : `You save ${fmt(flight.savings)}${isBusinessMode ? " vs Business cash" : " with miles"}`)
                 : flight.recommendation === "IF_HAVE_MILES" && flight.savings > 0
                   ? (fr
-                      ? `✈ Si vous avez des miles — potentiel ${fmt(flight.savings)} d'économie (prix estimé)`
-                      : `✈ If you have miles — potential ${fmt(flight.savings)} saving (estimated price)`)
+                      ? `Si vous avez des miles — potentiel ${fmt(flight.savings)} d'économie (prix estimé)`
+                      : `If you have miles — potential ${fmt(flight.savings)} saving (estimated price)`)
                 : flight.savings < 0
                   ? (fr
-                      ? `💵 Cash moins cher — économise ${fmt(Math.abs(flight.savings))}`
-                      : `💵 Pay cash — save ${fmt(Math.abs(flight.savings))}`)
-                  : (fr ? "💵 Cash légèrement avantageux" : "💵 Cash slightly better")}
+                      ? `Cash moins cher — économise ${fmt(Math.abs(flight.savings))}`
+                      : `Pay cash — save ${fmt(Math.abs(flight.savings))}`)
+                  : (fr ? "Cash légèrement avantageux" : "Cash slightly better")}
         </div>
 
         {/* Program context line */}
@@ -348,19 +428,23 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
       {/* Supplemental airline — price is indicative (not from the airline's own booking system) */}
       {flight.isSupplemental && (
         <div className="bg-sky-500/10 text-sky-400 border-b border-sky-500/20 px-5 py-2 text-[11px] text-center font-medium space-y-0.5">
-          <div>✈️ {fr ? "Vol direct disponible" : "Direct flight available"}</div>
+          <div className="flex items-center justify-center gap-1.5">
+            <FlightCardIcon name="plane" className="h-3.5 w-3.5" />
+            {fr ? "Vol direct disponible" : "Direct flight available"}
+          </div>
           <div className="text-sky-400/70 text-[10px]">
-            {fr ? "💵 Prix indicatif (non temps réel) — vérifier sur le site de la compagnie" : "💵 Indicative price (not real-time) — check airline website"}
+            {fr ? "Prix indicatif (non temps réel) — vérifier sur le site de la compagnie" : "Indicative price (not real-time) — check airline website"}
           </div>
         </div>
       )}
 
       {/* Estimated cabin warning — shown when business/first price is estimated */}
       {flight.cabinPriceEstimated && (
-        <div className="bg-amber-500/10 text-amber-400 border-b border-amber-500/20 px-5 py-1.5 text-[11px] text-center font-medium">
+        <div className="flex items-center justify-center gap-1.5 bg-amber-500/10 text-amber-400 border-b border-amber-500/20 px-5 py-1.5 text-[11px] text-center font-medium">
+          <FlightCardIcon name="warning" className="h-3.5 w-3.5 shrink-0" />
           {fr
-            ? "⚠️ Business/First — prix du marché estimé, pas garanti"
-            : "⚠️ Business/First — market price estimate, not guaranteed"}
+            ? "Business/First — prix du marché estimé, pas garanti"
+            : "Business/First — market price estimate, not guaranteed"}
         </div>
       )}
 
@@ -505,7 +589,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
       {/* Dynamic pricing warning — Delta SkyMiles uses fully dynamic pricing */}
       {bestOption && DYNAMIC_PRICING_PROGRAMS.has(bestOption.program) && (
         <div className="px-5 py-2 border-t border-amber-500/20 bg-amber-500/5 flex items-start gap-2">
-          <span className="text-amber-400 text-xs mt-0.5 flex-shrink-0">⚠️</span>
+          <FlightCardIcon name="warning" className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-400" />
           <p className="text-[10px] text-amber-400/80 leading-relaxed">
             {fr
               ? "Delta SkyMiles utilise une tarification dynamique — les miles affichés sont des valeurs plancher publiées. Le prix réel peut être 2-3× plus élevé. Vérifiez sur delta.com avant de décider."
@@ -585,7 +669,10 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                         <span className="text-subtle shrink-0">via {opt.via}</span>
                       )}
                       {opt.promoApplied && (
-                        <span className="text-[9px] text-success font-bold shrink-0">🎁 bonus</span>
+                        <span className="inline-flex items-center gap-1 text-[9px] text-success font-bold shrink-0">
+                          <FlightCardIcon name="gift" className="h-3 w-3" />
+                          bonus
+                        </span>
                       )}
                     </div>
                     <div className="text-right shrink-0 ml-2 space-y-0.5">

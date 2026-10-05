@@ -45,6 +45,55 @@ const L = {
   },
 };
 
+type AlertIconName = "bell" | "gift" | "lock" | "spark";
+
+function AlertIcon({ name, className = "h-4 w-4" }: { name: AlertIconName; className?: string }) {
+  const common = {
+    className,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "bell") {
+    return (
+      <svg {...common}>
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" />
+        <path d="M10 21h4" />
+      </svg>
+    );
+  }
+  if (name === "gift") {
+    return (
+      <svg {...common}>
+        <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7" />
+        <path d="M2 7h20v5H2z" />
+        <path d="M12 22V7" />
+        <path d="M12 7H7.5a2.5 2.5 0 1 1 2.2-3.7L12 7Z" />
+        <path d="M12 7h4.5a2.5 2.5 0 1 0-2.2-3.7L12 7Z" />
+      </svg>
+    );
+  }
+  if (name === "lock") {
+    return (
+      <svg {...common}>
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z" />
+      <path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" />
+    </svg>
+  );
+}
+
 export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
@@ -187,7 +236,9 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
 
     return (
       <div className="bg-success/10 border border-success/30 rounded-2xl p-4 flex items-start gap-3">
-        <span className="text-xl">🔔</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-success/25 bg-success/10 text-success">
+          <AlertIcon name="bell" className="h-4 w-4" />
+        </span>
         <div className="flex-1">
           <p className="text-sm font-bold text-success">{t.success}</p>
           <p className="text-xs text-muted mt-1">
@@ -212,13 +263,16 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
               disabled={pushState === "loading"}
               className="mt-3 w-full text-xs text-muted border border-border rounded-xl py-2 px-4 hover:border-primary/50 transition-colors disabled:opacity-50"
             >
-              🔔 {pushState === "loading"
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <AlertIcon name="bell" className="h-3.5 w-3.5" />
+                {pushState === "loading"
                 ? lang === "fr" ? "Activation…" : "Enabling…"
                 : lang === "fr" ? "Activer les notifications push" : "Enable push notifications"}
+              </span>
             </button>
           )}
-          <p className="text-xs text-muted mt-3">
-            🎁{" "}
+          <p className="text-xs text-muted mt-3 flex flex-wrap items-center gap-1.5">
+            <AlertIcon name="gift" className="h-3.5 w-3.5 text-primary" />
             {lang === "fr"
               ? "Invitez un ami et gagnez une alerte bonus →"
               : "Invite a friend and earn a bonus alert →"}{" "}
@@ -238,7 +292,9 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       className="bg-gradient-to-br from-primary/5 to-blue-500/5 border border-primary/20 rounded-2xl p-4 space-y-3"
     >
       <div className="flex items-center gap-2">
-        <span className="text-lg">🔔</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+          <AlertIcon name="bell" className="h-4 w-4" />
+        </span>
         <div>
           <p className="text-sm font-bold text-fg">{t.title}</p>
           <p className="text-[11px] text-muted">{t.desc}</p>
@@ -335,8 +391,9 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
       )}
       {status === "limitReached" && (
         <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
-          <p className="text-sm font-semibold text-amber-400">
-            🔒 {lang === "fr" ? "Limite gratuite atteinte — 3 alertes max" : "Free limit reached — 3 alerts max"}
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-amber-400">
+            <AlertIcon name="lock" className="h-4 w-4" />
+            {lang === "fr" ? "Limite gratuite atteinte — 3 alertes max" : "Free limit reached — 3 alerts max"}
           </p>
           <div className="flex flex-col gap-2">
             <button
@@ -344,10 +401,12 @@ export function PriceAlertForm({ from, to, cabin, currentPrice, lang, formatPric
               onClick={() => setShowUpgradeModal(true)}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors"
             >
-              💎 {lang === "fr" ? "Passer en Pro — alertes illimitées →" : "Upgrade to Pro — unlimited alerts →"}
+              <AlertIcon name="spark" className="h-3.5 w-3.5" />
+              {lang === "fr" ? "Passer en Pro — alertes illimitées →" : "Upgrade to Pro — unlimited alerts →"}
             </button>
             <Link href={alertsHref} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-              🎁 {lang === "fr" ? "Parrainer un ami (+1 alerte gratuite) →" : "Refer a friend (+1 free alert) →"}
+              <AlertIcon name="gift" className="h-3.5 w-3.5" />
+              {lang === "fr" ? "Parrainer un ami (+1 alerte gratuite) →" : "Refer a friend (+1 free alert) →"}
             </Link>
           </div>
         </div>
