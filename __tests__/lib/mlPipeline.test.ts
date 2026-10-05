@@ -1,3 +1,10 @@
+const mockSafeGet = jest.fn();
+
+jest.mock("@/lib/redis", () => ({
+  safeGet: (...args: unknown[]) => mockSafeGet(...args),
+  safeSet: jest.fn(),
+}));
+
 import {
   aggregateUserHistory,
   calculateBaselineMetrics,
@@ -6,6 +13,11 @@ import {
 } from "@/lib/mlPipeline";
 
 describe("ML Training Pipeline", () => {
+  beforeEach(() => {
+    mockSafeGet.mockReset();
+    mockSafeGet.mockResolvedValue(null);
+  });
+
   describe("aggregateUserHistory", () => {
     it("aggregates user search history from Redis", async () => {
       const history = await aggregateUserHistory("user@example.com", 90);
@@ -15,6 +27,7 @@ describe("ML Training Pipeline", () => {
       expect(history).toHaveProperty("dates");
       expect(history).toHaveProperty("prices");
       expect(Array.isArray(history.routes)).toBe(true);
+      expect(mockSafeGet).toHaveBeenCalledWith("keza:search:user:user@example.com:history");
     });
 
     it("returns expected structure", async () => {

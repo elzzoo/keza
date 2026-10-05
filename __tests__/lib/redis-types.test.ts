@@ -1,6 +1,19 @@
+const mockZrange = jest.fn();
+
+jest.mock("../../lib/redis", () => ({
+  redis: {
+    zrange: (...args: unknown[]) => mockZrange(...args),
+  },
+}));
+
 import { redis } from "../../lib/redis";
 
 describe("Redis Type Safety", () => {
+  beforeEach(() => {
+    mockZrange.mockReset();
+    mockZrange.mockResolvedValue([]);
+  });
+
   describe("safeZrange", () => {
     it("should accept proper zrange parameters without type casting", async () => {
       // This test ensures that zrange can be called with proper typing
@@ -15,6 +28,7 @@ describe("Redis Type Safety", () => {
 
       // Result should be properly typed as an array
       expect(Array.isArray(result)).toBe(true);
+      expect(mockZrange).toHaveBeenCalledWith(key, start, stop, options);
     });
 
     it("should return empty array on error", async () => {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import EntreprisesPage from "@/app/entreprises/page";
+import { EntreprisesClient } from "@/app/entreprises/EntreprisesClient";
 import { SITE_URL } from "@/lib/siteConfig";
 
 const TITLE = "Xalifly for Business — Optimize Your Corporate Travel Budget";
@@ -31,5 +31,5 @@ export const metadata: Metadata = {
 };
 
 export default function EnglishBusinessPage() {
-  return <EntreprisesPage initialLang="en" />;
+  return <EntreprisesClient initialLang="en" />;
 }
