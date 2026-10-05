@@ -65,6 +65,8 @@ export function ContactForm({ lang }: Props) {
   const t = T[lang];
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [form, setForm] = useState(EMPTY_FORM);
+  const fieldId = (name: keyof typeof EMPTY_FORM) => `business-contact-${lang}-${name}`;
+  const errorId = `business-contact-${lang}-error`;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -109,8 +111,9 @@ export function ContactForm({ lang }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold text-muted mb-1.5">{t.name}</label>
+          <label htmlFor={fieldId("name")} className="block text-xs font-semibold text-muted mb-1.5">{t.name}</label>
           <input
+            id={fieldId("name")}
             type="text"
             name="name"
             required
@@ -121,8 +124,9 @@ export function ContactForm({ lang }: Props) {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-muted mb-1.5">{t.company}</label>
+          <label htmlFor={fieldId("company")} className="block text-xs font-semibold text-muted mb-1.5">{t.company}</label>
           <input
+            id={fieldId("company")}
             type="text"
             name="company"
             required
@@ -136,8 +140,9 @@ export function ContactForm({ lang }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold text-muted mb-1.5">{t.email}</label>
+          <label htmlFor={fieldId("email")} className="block text-xs font-semibold text-muted mb-1.5">{t.email}</label>
           <input
+            id={fieldId("email")}
             type="email"
             name="email"
             required
@@ -148,8 +153,9 @@ export function ContactForm({ lang }: Props) {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-muted mb-1.5">{t.teamSize}</label>
+          <label htmlFor={fieldId("teamSize")} className="block text-xs font-semibold text-muted mb-1.5">{t.teamSize}</label>
           <select
+            id={fieldId("teamSize")}
             name="teamSize"
             required
             value={form.teamSize}
@@ -166,8 +172,9 @@ export function ContactForm({ lang }: Props) {
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-muted mb-1.5">{t.message}</label>
+        <label htmlFor={fieldId("message")} className="block text-xs font-semibold text-muted mb-1.5">{t.message}</label>
         <textarea
+          id={fieldId("message")}
           name="message"
           rows={3}
           value={form.message}
@@ -180,13 +187,14 @@ export function ContactForm({ lang }: Props) {
       <button
         type="submit"
         disabled={status === "sending"}
+        aria-describedby={status === "error" ? errorId : undefined}
         className="w-full py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-sm tracking-wide transition-all duration-150 disabled:opacity-60 shadow-blue-sm hover:shadow-blue press-effect"
       >
         {status === "sending" ? t.submitting : t.submit}
       </button>
 
       {status === "error" && (
-        <p className="text-xs text-red-400 text-center">
+        <p id={errorId} className="text-xs text-red-400 text-center">
           {t.errorMsg}{" "}
           <button
             type="button"
