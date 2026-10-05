@@ -1,5 +1,6 @@
 import { MILES_PRICES } from "@/data/milesPrices";
 import { Badge, Card } from "@/components/ui";
+import { formatLatestMilesReviewShort } from "@/lib/milesReview";
 
 type DataTrustPanelProps = {
   lang?: "fr" | "en";
@@ -7,28 +8,11 @@ type DataTrustPanelProps = {
   className?: string;
 };
 
-function getLatestMilesReviewDate() {
-  return MILES_PRICES.reduce<string | null>((max, record) => {
-    if (!record.lastUpdated) return max;
-    return !max || record.lastUpdated > max ? record.lastUpdated : max;
-  }, null);
-}
-
 const PROGRAM_COUNT = MILES_PRICES.length;
 const HIGH_CONFIDENCE_COUNT = MILES_PRICES.filter((p) => p.confidence === "HIGH").length;
-const LATEST_REVIEW_DATE = getLatestMilesReviewDate();
-
-function formatLatestReview(lang: "fr" | "en") {
-  if (!LATEST_REVIEW_DATE) return "2026";
-  return new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en", {
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${LATEST_REVIEW_DATE}T00:00:00.000Z`));
-}
 
 export function DataTrustPanel({ lang = "fr", compact = false, className }: DataTrustPanelProps) {
-  const latestReview = formatLatestReview(lang);
+  const latestReview = formatLatestMilesReviewShort(lang);
   const copy = lang === "fr"
     ? {
         title: "Qualité des données",

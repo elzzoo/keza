@@ -1,4 +1,6 @@
 import { PROGRAMS } from "@/data/programs";
+import fs from "fs";
+import path from "path";
 
 // Test the data logic behind ProgramsWidget (TOP5 = PROGRAMS.slice(0, 5))
 describe("ProgramsWidget data", () => {
@@ -19,5 +21,16 @@ describe("ProgramsWidget data", () => {
       const href = `/programmes#${p.id}`;
       expect(href).toMatch(/^\/programmes#[a-z0-9-]+$/);
     });
+  });
+
+  it("does not hardcode stale review months in the widget copy", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "components/ProgramsWidget.tsx"),
+      "utf8"
+    );
+
+    expect(source).not.toContain("avr. 2026");
+    expect(source).not.toContain("Apr 2026");
+    expect(source).toContain("formatLatestMilesReviewShort");
   });
 });

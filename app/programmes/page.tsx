@@ -9,6 +9,7 @@ import { DataTrustPanel } from "@/components/DataTrustPanel";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SITE_URL } from "@/lib/siteConfig";
+import { formatLatestMilesReview } from "@/lib/milesReview";
 
 // Dynamically import ProgramsTable with ProgramListSkeleton fallback
 // Lazy loads on-demand to reduce main bundle size
@@ -45,6 +46,8 @@ export const metadata: Metadata = {
 };
 
 export default function ProgrammesPage() {
+  const latestReview = formatLatestMilesReview("fr");
+
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       <Header lang="fr" />
@@ -68,7 +71,7 @@ export default function ProgrammesPage() {
             33 programmes analysés — airlines, hôtels, cartes de transfert. Score Xalifly calculé sur la valeur du mile, les partenaires disponibles et la flexibilité d&apos;utilisation.
           </p>
           <p className="text-xs text-muted/60 mt-1">
-            Mis à jour : avril 2026 · Sources : ThePointsGuy, NerdWallet, AwardWallet
+            Miles revus : {latestReview} · Sources : ThePointsGuy, NerdWallet, AwardWallet
           </p>
         </div>
 

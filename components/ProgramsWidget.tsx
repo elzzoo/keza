@@ -6,20 +6,22 @@ import { PROGRAMS } from "@/data/programs";
 import { trackProgramClick } from "@/lib/analytics";
 import { useProfile } from "@/hooks/useProfile";
 import { BANK_CURRENCIES } from "@/lib/userProfile";
+import { formatLatestMilesReviewShort } from "@/lib/milesReview";
 
 interface Props {
   lang: "fr" | "en";
 }
 
 const L = {
-  fr: { title: "Top programmes", seeAll: "Voir tout →", score: "Score Xalifly", updated: "Mis à jour · avr. 2026", balances: "💳 Mes soldes", miles: "miles", pts: "pts" },
-  en: { title: "Top programs",   seeAll: "See all →",   score: "Xalifly Score", updated: "Updated · Apr 2026", balances: "💳 My balances", miles: "miles", pts: "pts" },
+  fr: { title: "Top programmes", seeAll: "Voir tout →", score: "Score Xalifly", updatedPrefix: "Miles revus", balances: "💳 Mes soldes", miles: "miles", pts: "pts" },
+  en: { title: "Top programs",   seeAll: "See all →",   score: "Xalifly Score", updatedPrefix: "Miles reviewed", balances: "💳 My balances", miles: "miles", pts: "pts" },
 };
 
 const TOP5 = PROGRAMS.slice(0, 5);
 
 export function ProgramsWidget({ lang }: Props) {
   const t = L[lang];
+  const latestReview = formatLatestMilesReviewShort(lang);
   const { profile, setBalances, setBankPoints } = useProfile();
   const programsPath = lang === "fr" ? "/programmes" : "/en/programmes";
 
@@ -74,7 +76,9 @@ export function ProgramsWidget({ lang }: Props) {
       </div>
 
       {/* Footer */}
-      <p className="text-[10px] text-muted mt-3 pt-3 border-t border-border/50">{t.updated}</p>
+      <p className="text-[10px] text-muted mt-3 pt-3 border-t border-border/50">
+        {t.updatedPrefix} · {latestReview}
+      </p>
 
       {/* Mes soldes — balance inputs */}
       {profile && (
