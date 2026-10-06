@@ -3,6 +3,8 @@
  */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import fs from "node:fs";
+import path from "node:path";
 import { RouteAlertCta } from "@/components/RouteAlertCta";
 
 global.fetch = jest.fn();
@@ -53,5 +55,11 @@ describe("RouteAlertCta", () => {
     expect(mockUpgradeModal).toHaveBeenCalledWith(
       expect.objectContaining({ lang: "en", prefillEmail: "user@example.com" })
     );
+  });
+
+  it("keeps route alert CTA free of emoji-led symbols", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "components/RouteAlertCta.tsx"), "utf8");
+
+    expect(source).not.toMatch(/[🔔✅]/u);
   });
 });

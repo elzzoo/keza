@@ -1,6 +1,8 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import fs from "node:fs";
+import path from "node:path";
 import { MilesAlertButton } from "@/components/MilesAlertButton";
 
 // Mock sonner toast
@@ -26,11 +28,11 @@ describe("MilesAlertButton", () => {
     jest.clearAllMocks();
   });
 
-  it("renders button with alert icon and text", () => {
+  it("renders button with alert text", () => {
     render(<MilesAlertButton {...defaultProps} />);
     const button = screen.getByRole("button", { name: /miles alert/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveTextContent("🔔");
+    expect(button).toHaveTextContent("Miles alert");
   });
 
   it("displays French text when lang prop is 'fr'", () => {
@@ -107,5 +109,11 @@ describe("MilesAlertButton", () => {
     render(<MilesAlertButton {...defaultProps} />);
     const button = screen.getByRole("button", { name: /miles alert/i });
     expect(button).toHaveAttribute("title");
+  });
+
+  it("keeps miles alert CTA free of emoji-led symbols", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "components/MilesAlertButton.tsx"), "utf8");
+
+    expect(source).not.toMatch(/[🔔]/u);
   });
 });

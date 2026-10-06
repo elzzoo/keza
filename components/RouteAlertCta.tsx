@@ -14,6 +14,35 @@ interface Props {
 
 type Step = "idle" | "loading" | "done" | "error";
 
+type RouteAlertIconName = "bell" | "check";
+
+function RouteAlertIcon({ name, className = "h-4 w-4" }: { name: RouteAlertIconName; className?: string }) {
+  const common = {
+    className,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "bell") {
+    return (
+      <svg {...common}>
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" />
+        <path d="M10 21h4" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
 export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
   const fr = lang === "fr";
   const [email,       setEmail]       = useState("");
@@ -72,7 +101,9 @@ export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
   if (step === "done") {
     return (
       <Card padding="lg" className="text-center space-y-2 border-success/20 bg-success/10">
-        <div className="text-3xl">✅</div>
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-success/25 bg-success/10 text-success">
+          <RouteAlertIcon name="check" className="h-5 w-5" />
+        </div>
         <p className="font-bold text-fg text-sm">{fr ? "Alerte créée !" : "Alert created!"}</p>
         <p className="text-xs text-muted">
           {fr
@@ -87,7 +118,9 @@ export function RouteAlertCta({ from, to, fromCity, toCity, lang }: Props) {
     <>
     <Card className="space-y-4">
       <div className="flex items-start gap-3">
-        <span className="text-2xl flex-shrink-0">🔔</span>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
+          <RouteAlertIcon name="bell" className="h-4 w-4" />
+        </span>
         <div>
           <h2 className="text-sm font-black text-fg">
             {fr ? "Alerte prix" : "Price alert"} — {fromCity} → {toCity}
