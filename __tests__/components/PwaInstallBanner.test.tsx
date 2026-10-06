@@ -6,6 +6,8 @@ import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PwaInstallBanner } from "@/components/PwaInstallBanner";
+import { readFileSync } from "fs";
+import path from "path";
 
 describe("PwaInstallBanner — Event Listener Cleanup", () => {
   let removeEventListenerSpy: jest.SpyInstance;
@@ -113,5 +115,10 @@ describe("PwaInstallBanner — Event Listener Cleanup", () => {
 
     // Effect has empty dependency array, so no new listeners should be added
     expect(addEventListenerSpy).not.toHaveBeenCalled();
+  });
+
+  it("keeps the install banner free of visible emoji symbols", () => {
+    const source = readFileSync(path.join(process.cwd(), "components/PwaInstallBanner.tsx"), "utf8");
+    expect(source).not.toMatch(/[✈️]/u);
   });
 });

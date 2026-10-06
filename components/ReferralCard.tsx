@@ -40,8 +40,8 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
   function shareWhatsApp() {
     if (!data) return;
     const text = lang === "fr"
-      ? `Utilise Xalifly pour comparer les prix de vols cash vs miles ✈️ ${data.url}`
-      : `Use Xalifly to compare flight prices cash vs miles ✈️ ${data.url}`;
+      ? `Utilise Xalifly pour comparer les prix de vols cash vs miles: ${data.url}`
+      : `Use Xalifly to compare flight prices cash vs miles: ${data.url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   }
 
@@ -64,7 +64,7 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-lg">
-          🎁
+          <GiftIcon />
         </div>
         <div>
           <p className="text-sm font-semibold text-fg">{t.title}</p>
@@ -104,9 +104,28 @@ export function ReferralCard({ email, token, lang = "fr" }: Props) {
         onClick={shareWhatsApp}
         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold hover:bg-green-500/20 transition-colors"
       >
-        <span>📱</span>
+        <PhoneIcon />
         {t.whatsapp}
       </button>
     </div>
+  );
+}
+
+function GiftIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M4 10h16v10H4V10Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M3.5 7h17v3h-17V7ZM12 7v13" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 7S8.7 3.5 6.8 5.4C5 7.2 8.3 8.3 12 7ZM12 7s3.3-3.5 5.2-1.6C19 7.2 15.7 8.3 12 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PhoneIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M8 3.5h8A1.5 1.5 0 0 1 17.5 5v14A1.5 1.5 0 0 1 16 20.5H8A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 8 3.5Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M10.5 17.5h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }

@@ -2,6 +2,8 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MilesAlertModal } from "@/components/MilesAlertModal";
+import { readFileSync } from "fs";
+import path from "path";
 
 // Mock sonner toast
 jest.mock("sonner", () => ({
@@ -266,5 +268,10 @@ describe("MilesAlertModal", () => {
     const buttons = screen.getAllByRole("button");
     const submitButton = buttons[buttons.length - 1] as HTMLButtonElement; // Last button is submit
     expect(submitButton).toBeDisabled();
+  });
+
+  it("keeps the alert modal free of visible emoji symbols", () => {
+    const source = readFileSync(path.join(process.cwd(), "components/MilesAlertModal.tsx"), "utf8");
+    expect(source).not.toMatch(/[🔔✈️]/u);
   });
 });

@@ -17,6 +17,29 @@ interface InnerProps {
   token: string;
 }
 
+function BellIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path
+        d="M18 9.8c0-3.4-2.4-5.8-6-5.8S6 6.4 6 9.8v3.9L4.5 16h15L18 13.7V9.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 19a2.2 2.2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m5 12.5 4.2 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function storageKey(email: string): string {
   return "keza:push:status:" + email.toLowerCase();
 }
@@ -162,8 +185,9 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
   if (state === "subscribed") {
     return (
       <div className="flex items-center gap-3 mt-3">
-        <span className="text-sm text-green-500">
-          ✓ {fr ? "Notifications activées" : "Notifications enabled"}
+        <span className="inline-flex items-center gap-1.5 text-sm text-green-500">
+          <CheckIcon />
+          {fr ? "Notifications activées" : "Notifications enabled"}
         </span>
         <button
           onClick={unsubscribe}
@@ -181,7 +205,7 @@ function PushAlertButtonInner({ lang, email, token }: InnerProps) {
       disabled={state === "loading"}
       className="mt-3 flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-border text-fg hover:bg-surface-hover transition-colors disabled:opacity-50"
     >
-      <span>🔔</span>
+      <BellIcon />
       <span>
         {state === "loading"
           ? fr ? "Activation…" : "Enabling…"

@@ -40,6 +40,36 @@ const L = {
   },
 };
 
+function BellIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path
+        d="M18 9.8c0-3.4-2.4-5.8-6-5.8S6 6.4 6 9.8v3.9L4.5 16h15L18 13.7V9.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 19a2.2 2.2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RouteIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M4 17 20 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="m9 14-3.7-2.2 1.3-1.2 5 1.8M15 10l1 5.2 1.5-1.1-.1-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function MilesAlertModal({
   route,
   program,
@@ -106,7 +136,10 @@ export function MilesAlertModal({
     >
       <div className="bg-surface rounded-2xl p-6 w-full max-w-sm border border-border shadow-2xl">
         <div className="flex items-start justify-between mb-4">
-          <h3 className="text-lg font-bold text-fg">🔔 {t.title}</h3>
+          <h3 className="flex items-center gap-2 text-lg font-bold text-fg">
+            <BellIcon className="h-5 w-5 text-amber-400" />
+            {t.title}
+          </h3>
           <button
             onClick={onClose}
             className="text-muted hover:text-fg text-2xl leading-none"
@@ -118,7 +151,9 @@ export function MilesAlertModal({
 
         {/* Route and program info */}
         <div className="bg-card rounded-xl p-3 mb-4 flex items-center gap-3">
-          <div className="text-2xl">✈</div>
+          <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
+            <RouteIcon />
+          </div>
           <div className="flex-1">
             <div className="text-xs text-muted">{t.routeLabel}</div>
             <div className="font-semibold text-fg">{route}</div>

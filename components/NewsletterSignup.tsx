@@ -45,8 +45,9 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
         ? "text-center py-3"
         : "bg-success/10 border-success/20 px-6 py-5 text-center"
       }>
-        <p className="text-sm font-semibold text-success">
-          ✅ {fr ? "Inscription confirmée !" : "Subscribed!"}
+        <p className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-success">
+          <CheckIcon />
+          {fr ? "Inscription confirmée !" : "Subscribed!"}
         </p>
         <p className="text-xs text-muted mt-1">
           {fr
@@ -96,7 +97,9 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
   return (
     <Card className="bg-gradient-to-br from-primary/8 to-surface border-primary/15 px-6 py-7 space-y-4">
       <div className="flex items-start gap-3">
-        <span className="text-2xl">✉️</span>
+        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <MailIcon />
+        </span>
         <div>
           <h3 className="text-sm font-black text-fg">
             {fr
@@ -149,5 +152,22 @@ export function NewsletterSignup({ lang, variant = "inline" }: Props) {
           : "No spam. Unsubscribe in one click."}
       </p>
     </Card>
+  );
+}
+
+function MailIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M4.5 7.5h15v10h-15v-10Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="m5 8 7 5 7-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m5 12.5 4.2 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

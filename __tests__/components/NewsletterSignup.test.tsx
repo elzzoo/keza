@@ -5,6 +5,8 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { readFileSync } from "fs";
+import path from "path";
 
 describe("NewsletterSignup", () => {
   beforeEach(() => {
@@ -50,5 +52,10 @@ describe("NewsletterSignup", () => {
     await waitFor(() => {
       expect(screen.getByText(/already subscribed/i)).toBeInTheDocument();
     });
+  });
+
+  it("keeps the newsletter card free of visible emoji symbols", () => {
+    const source = readFileSync(path.join(process.cwd(), "components/NewsletterSignup.tsx"), "utf8");
+    expect(source).not.toMatch(/[✅✉️]/u);
   });
 });

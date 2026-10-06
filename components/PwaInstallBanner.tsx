@@ -68,7 +68,7 @@ export function PwaInstallBanner({ lang, searchCount }: Props) {
       <div className="bg-surface border border-primary/30 rounded-2xl shadow-2xl shadow-black/30 p-4 flex items-center gap-3">
         {/* App icon */}
         <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 text-xl">
-          ✈️
+          <AppIcon />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-fg leading-tight">
@@ -97,5 +97,15 @@ export function PwaInstallBanner({ lang, searchCount }: Props) {
         </div>
       </div>
     </div>
+  );
+}
+
+function AppIcon({ className = "h-5 w-5 text-primary" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <rect x="5" y="3.5" width="14" height="17" rx="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M9.5 16.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M8.5 11.5 15.8 7M10.8 10.1 8.6 8.8l.8-.8 3.1.9M13.8 8.7l.7 3.2.9-.7-.1-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

@@ -25,6 +25,39 @@ const CABIN_MAP: Record<string, CabinType> = {
   first: "FIRST",
 };
 
+function BellIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path
+        d="M18 9.8c0-3.4-2.4-5.8-6-5.8S6 6.4 6 9.8v3.9L4.5 16h15L18 13.7V9.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 19a2.2 2.2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className = "mx-auto mb-4 h-12 w-12" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <circle cx="12" cy="12" r="9" className="fill-green-50 stroke-green-500" strokeWidth="1.8" />
+      <path d="m7.8 12.4 2.7 2.7 5.8-6.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600" />
+    </svg>
+  );
+}
+
+function SpinnerIcon({ className = "h-4 w-4 animate-spin" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+      <path d="M20 12a8 8 0 0 0-8-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function SeatAlertButton({ from, to, cabin, currentPrice, lang }: SeatAlertButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -88,7 +121,7 @@ export function SeatAlertButton({ from, to, cabin, currentPrice, lang }: SeatAle
         className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
         title={fr ? "Définir une alerte de prix" : "Set price alert"}
       >
-        <span>🔔</span>
+        <BellIcon />
         {fr ? "Alerte" : "Alert"}
       </button>
 
@@ -109,7 +142,7 @@ export function SeatAlertButton({ from, to, cabin, currentPrice, lang }: SeatAle
 
             {submitted ? (
               <div className="text-center py-8 animate-in fade-in duration-300">
-                <div className="text-5xl mb-4 animate-bounce">✓</div>
+                <CheckIcon />
                 <p className="text-green-600 font-medium">
                   {fr
                     ? "Alerte créée! Vous recevrez un email quand le prix baisse."
@@ -204,7 +237,7 @@ export function SeatAlertButton({ from, to, cabin, currentPrice, lang }: SeatAle
                   >
                     {loading ? (
                       <>
-                        <span className="inline-block animate-spin">⏳</span>
+                        <SpinnerIcon />
                         {fr ? "Création..." : "Creating..."}
                       </>
                     ) : (
