@@ -3,6 +3,8 @@
  */
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import fs from "node:fs";
+import path from "node:path";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
 describe("UpgradeModal", () => {
@@ -20,5 +22,11 @@ describe("UpgradeModal", () => {
     expect(screen.getByRole("button", { name: "Fermer" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /en savoir plus/i })).toHaveAttribute("href", "/pro");
     expect(screen.getByRole("link", { name: /parraine un ami/i })).toHaveAttribute("href", "/alertes");
+  });
+
+  it("keeps conversion copy free of emoji-led symbols", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "components/UpgradeModal.tsx"), "utf8");
+
+    expect(source).not.toMatch(/[🔔📱📊✈️⚡🔒🎁💎]/u);
   });
 });

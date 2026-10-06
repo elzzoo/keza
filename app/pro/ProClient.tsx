@@ -11,10 +11,10 @@ import { EMAIL_DOMAIN } from "@/lib/brand";
 const COPY = {
   fr: {
     features: [
-      { icon: "🔔", title: "Alertes illimitées", desc: "Surveillez autant de routes que vous voulez, sans limite." },
-      { icon: "📱", title: "Multi-devices", desc: "Notifications push sur tous vos appareils simultanément." },
-      { icon: "📊", title: "Historique 6 mois", desc: "Visualisez l'évolution des prix et choisissez le bon moment." },
-      { icon: "✈️", title: "Alertes multi-passagers", desc: "Prix pour 2, 3 ou 4 passagers directement dans l'alerte." },
+      { icon: "bell", title: "Alertes illimitées", desc: "Surveillez autant de routes que vous voulez, sans limite." },
+      { icon: "device", title: "Multi-devices", desc: "Notifications push sur tous vos appareils simultanément." },
+      { icon: "chart", title: "Historique 6 mois", desc: "Visualisez l'évolution des prix et choisissez le bon moment." },
+      { icon: "passengers", title: "Alertes multi-passagers", desc: "Prix pour 2, 3 ou 4 passagers directement dans l'alerte." },
     ],
     emailRequired: "Veuillez entrer votre email",
     emailInvalid: "Veuillez entrer une adresse email valide",
@@ -35,7 +35,7 @@ const COPY = {
     checkoutDesc: "Sans engagement · Annulable à tout moment · Paiement via Lemon Squeezy",
     waitlistDesc: "Les paiements ouvriront très bientôt — sois prévenu en premier.",
     emailPlaceholder: "ton@email.com",
-    upgradeButton: "💎 Passer en Pro — 9$ / mois →",
+    upgradeButton: "Passer en Pro — 9$ / mois →",
     waitlistButton: "Rejoindre la liste →",
     securePayment: "Paiement sécurisé · Facture email automatique",
     freeSignup: "Inscription gratuite — aucun engagement.",
@@ -67,10 +67,10 @@ const COPY = {
   },
   en: {
     features: [
-      { icon: "🔔", title: "Unlimited alerts", desc: "Track as many routes as you want, with no alert cap." },
-      { icon: "📱", title: "Multi-device push", desc: "Receive push notifications across all your devices." },
-      { icon: "📊", title: "6-month history", desc: "See price trends and choose the right booking moment." },
-      { icon: "✈️", title: "Multi-passenger alerts", desc: "Track prices for 2, 3, or 4 passengers in each alert." },
+      { icon: "bell", title: "Unlimited alerts", desc: "Track as many routes as you want, with no alert cap." },
+      { icon: "device", title: "Multi-device push", desc: "Receive push notifications across all your devices." },
+      { icon: "chart", title: "6-month history", desc: "See price trends and choose the right booking moment." },
+      { icon: "passengers", title: "Multi-passenger alerts", desc: "Track prices for 2, 3, or 4 passengers in each alert." },
     ],
     emailRequired: "Please enter your email",
     emailInvalid: "Please enter a valid email address",
@@ -91,7 +91,7 @@ const COPY = {
     checkoutDesc: "No commitment · Cancel anytime · Payment via Lemon Squeezy",
     waitlistDesc: "Payments will open soon — be first to know.",
     emailPlaceholder: "you@example.com",
-    upgradeButton: "💎 Upgrade to Pro — $9 / month →",
+    upgradeButton: "Upgrade to Pro — $9 / month →",
     waitlistButton: "Join the waitlist →",
     securePayment: "Secure payment · Automatic email receipt",
     freeSignup: "Free signup — no commitment.",
@@ -124,6 +124,89 @@ const COPY = {
 } as const;
 
 type CheckoutStatus = "idle" | "loading" | "waitlisted";
+
+type ProIconName = "bell" | "device" | "chart" | "passengers" | "check" | "spark" | "lock" | "party";
+
+function ProIcon({ name, className = "h-4 w-4" }: { name: ProIconName | string; className?: string }) {
+  const common = {
+    className,
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "bell") {
+    return (
+      <svg {...common}>
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" />
+        <path d="M10 21h4" />
+      </svg>
+    );
+  }
+  if (name === "device") {
+    return (
+      <svg {...common}>
+        <rect x="7" y="2" width="10" height="20" rx="2" />
+        <path d="M11 18h2" />
+      </svg>
+    );
+  }
+  if (name === "chart") {
+    return (
+      <svg {...common}>
+        <path d="M4 19V5" />
+        <path d="M4 19h16" />
+        <path d="m7 15 3-4 3 2 4-7" />
+      </svg>
+    );
+  }
+  if (name === "passengers") {
+    return (
+      <svg {...common}>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    );
+  }
+  if (name === "spark") {
+    return (
+      <svg {...common}>
+        <path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z" />
+      </svg>
+    );
+  }
+  if (name === "lock") {
+    return (
+      <svg {...common}>
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+      </svg>
+    );
+  }
+  if (name === "party") {
+    return (
+      <svg {...common}>
+        <path d="M5.8 11.3 2 22l10.7-3.8" />
+        <path d="M4 14.5 9.5 20" />
+        <path d="M13 5a2 2 0 0 0 2 2c1.7 0 3-1.3 3-3" />
+        <path d="M15 14a2 2 0 0 1 2-2c1.7 0 3 1.3 3 3" />
+        <path d="M9 4h.01" />
+        <path d="M20 8h.01" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
 
 interface ProClientProps {
   upgraded?: boolean;
@@ -258,7 +341,9 @@ export function ProClient({
         <Header lang={lang} onLangChange={() => {}} />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
-            <p className="text-5xl mb-4">🎉</p>
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+              <ProIcon name="party" className="h-7 w-7" />
+            </div>
             <h1 className="text-2xl font-black text-fg mb-2">{t.upgradedTitle}</h1>
             <p className="text-sm text-muted mb-6">
               {t.upgradedDesc}
@@ -298,7 +383,9 @@ export function ProClient({
         <div className="grid grid-cols-2 gap-3 mb-10">
           {t.features.map((f) => (
             <div key={f.title} className="rounded-xl border border-border bg-surface p-4">
-              <span className="text-2xl">{f.icon}</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400">
+                <ProIcon name={f.icon} className="h-4 w-4" />
+              </span>
               <p className="mt-2 text-sm font-semibold text-fg">{f.title}</p>
               <p className="mt-1 text-xs text-muted">{f.desc}</p>
             </div>
@@ -308,7 +395,9 @@ export function ProClient({
         {/* Checkout / waitlist form */}
         {checkoutStatus === "waitlisted" ? (
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
-            <p className="text-3xl mb-2">✅</p>
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+              <ProIcon name="check" className="h-5 w-5" />
+            </div>
             <p className="font-semibold text-fg mb-1">{t.waitlistedTitle}</p>
             <p className="text-xs text-muted">
               {waitlistPosition
@@ -371,7 +460,7 @@ export function ProClient({
               <p className="mt-2 text-xs text-amber-400">{checkoutError}</p>
             )}
             <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-muted/60">
-              <span>🔒</span>
+              <ProIcon name="lock" className="h-3.5 w-3.5" />
               <span>
                 {paymentsAvailable
                   ? t.securePayment
@@ -408,7 +497,9 @@ export function ProClient({
           <div className="mt-8 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
             {proStatus.isPro ? (
               <>
-                <p className="text-3xl mb-2">🎉</p>
+                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+                  <ProIcon name="party" className="h-5 w-5" />
+                </div>
                 <p className="font-semibold text-fg mb-1">{t.proStatusTitle}</p>
                 <p className="text-sm text-muted">
                   {t.proStatusDesc}
@@ -422,7 +513,9 @@ export function ProClient({
               </>
             ) : proStatus.hasTrial ? (
               <>
-                <p className="text-3xl mb-2">✨</p>
+                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                  <ProIcon name="spark" className="h-5 w-5" />
+                </div>
                 <p className="font-semibold text-fg mb-1">{t.trialTitle}</p>
                 <p className="text-sm text-muted">
                   {proStatus.daysLeft && proStatus.daysLeft > 0
