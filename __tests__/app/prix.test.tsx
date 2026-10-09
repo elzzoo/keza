@@ -5,6 +5,8 @@ import EnPrixPage from "@/app/en/prix/page";
 import { PriceChart } from "@/app/prix/PriceChart";
 import { DESTINATIONS } from "@/data/destinations";
 import { getAllDestinationPriceHistories } from "@/lib/priceHistory";
+import { readFileSync } from "fs";
+import path from "path";
 
 jest.mock("@/components/Header", () => ({
   Header: ({ lang }: { lang: "fr" | "en" }) => <header data-testid="header">{lang}</header>,
@@ -117,5 +119,20 @@ describe("PriceChart i18n", () => {
     expect(screen.getByText(/your miles are worth/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/price chart for/i)).toBeInTheDocument();
     expect(screen.queryByText(/Maroc|Fév|Aoû|Déc/)).not.toBeInTheDocument();
+  });
+});
+
+describe("Prix polish", () => {
+  it("keeps the price pages free of visible emoji-led UI", () => {
+    const files = [
+      "app/prix/page.tsx",
+      "app/en/prix/page.tsx",
+      "app/prix/PriceChart.tsx",
+    ];
+
+    for (const file of files) {
+      const source = readFileSync(path.join(process.cwd(), file), "utf8");
+      expect(source).not.toMatch(/[⚠️💡✈🌍🌎🌏🕌🇪🇺🇦🇺]/u);
+    }
   });
 });

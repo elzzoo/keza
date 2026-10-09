@@ -17,12 +17,12 @@ type RegionFilter = "all" | Region;
 
 const REGION_FILTERS: { key: RegionFilter; labelFr: string; labelEn: string }[] = [
   { key: "all",          labelFr: "Toutes",       labelEn: "All" },
-  { key: "africa",       labelFr: "🌍 Afrique",   labelEn: "🌍 Africa" },
-  { key: "europe",       labelFr: "🇪🇺 Europe",   labelEn: "🇪🇺 Europe" },
-  { key: "americas",     labelFr: "🌎 Amériques", labelEn: "🌎 Americas" },
-  { key: "asia",         labelFr: "🌏 Asie",      labelEn: "🌏 Asia" },
-  { key: "middle-east",  labelFr: "🕌 M-Orient",  labelEn: "🕌 Mid-East" },
-  { key: "oceania",      labelFr: "🇦🇺 Océanie",  labelEn: "🇦🇺 Oceania" },
+  { key: "africa",       labelFr: "Afrique",      labelEn: "Africa" },
+  { key: "europe",       labelFr: "Europe",       labelEn: "Europe" },
+  { key: "americas",     labelFr: "Amériques",    labelEn: "Americas" },
+  { key: "asia",         labelFr: "Asie",         labelEn: "Asia" },
+  { key: "middle-east",  labelFr: "M-Orient",     labelEn: "Mid-East" },
+  { key: "oceania",      labelFr: "Océanie",      labelEn: "Oceania" },
 ];
 
 const REC_COLORS: Record<DealRecommendation, string> = {
@@ -42,6 +42,30 @@ const REC_LABELS_EN: Record<DealRecommendation, string> = {
   NEUTRAL:   "IF YOU HAVE MILES",
   USE_CASH:  "CASH WINS",
 };
+
+function WarningIcon({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M12 4 3.8 18.5h16.4L12 4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 9v4M12 16.5h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TipIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M9 18h6M10 21h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M8 14.5c-1.3-1.1-2-2.7-2-4.5a6 6 0 1 1 12 0c0 1.8-.8 3.5-2.1 4.6-.7.6-.9 1.1-.9 1.9H9c0-.8-.3-1.4-1-2Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 // SVG viewBox: 0 0 400 80. Points mapped into y ∈ [5, 75].
 function buildSparkline(monthlyPrices: MonthlyPrice[]): {
@@ -85,7 +109,9 @@ export function PriceChart({ histories, destinations, lang }: Props) {
   if (!histories || histories.length === 0 || !destinations || destinations.length === 0) {
     return (
       <div className="bg-surface border border-border rounded-2xl p-8 flex flex-col items-center gap-3 text-center">
-        <span className="text-4xl">⚠️</span>
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400">
+          <WarningIcon />
+        </span>
         <p className="font-bold text-fg">
           {lang === "fr" ? "Données temporairement indisponibles" : "Data temporarily unavailable"}
         </p>
@@ -307,7 +333,7 @@ function PriceChartInner({ histories, destinations, lang }: Props) {
             border: `1px solid ${REC_COLORS[displayMonth.recommendation]}30`,
           }}
         >
-          <span className="mr-1">💡</span>
+          <TipIcon className="mr-1 inline h-4 w-4 align-[-2px]" />
           <span className="font-bold text-muted mr-1">
             {selectedMonthIdx !== null
               ? monthLabel(displayMonth)

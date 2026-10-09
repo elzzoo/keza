@@ -15,6 +15,24 @@ const PriceChart = dynamic(() => import("@/app/prix/PriceChart").then((mod) => (
   loading: () => <CalendarSkeleton />,
 });
 
+function WarningIcon({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M12 4 3.8 18.5h16.4L12 4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 9v4M12 16.5h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SearchFlightIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M4 17 20 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="m9 14-3.7-2.2 1.3-1.2 5 1.8M15 10l1 5.2 1.5-1.1-.1-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export const metadata: Metadata = {
   title: "Flight Prices — Compare Cash & Miles | Xalifly",
   description:
@@ -78,7 +96,9 @@ export default function EnPrixPage() {
         {/* Data unavailable fallback */}
         {dataError || !histories ? (
           <div className="bg-surface border border-border rounded-2xl p-8 flex flex-col items-center gap-3 text-center">
-            <span className="text-4xl">⚠️</span>
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400">
+              <WarningIcon />
+            </span>
             <p className="font-bold text-fg">Data temporarily unavailable</p>
             <p className="text-sm text-muted">
               Price charts will be available in a few moments.
@@ -87,7 +107,8 @@ export default function EnPrixPage() {
               href="/en"
               className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
             >
-              ✈ Search a flight
+              <SearchFlightIcon />
+              Search a flight
             </Link>
           </div>
         ) : (
@@ -107,7 +128,8 @@ export default function EnPrixPage() {
                 href="/en"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
               >
-                ✈ Search a flight
+                <SearchFlightIcon />
+                Search a flight
               </Link>
             </div>
           </>

@@ -17,6 +17,24 @@ const PriceChart = dynamic(() => import("./PriceChart").then((mod) => ({ default
   loading: () => <CalendarSkeleton />,
 });
 
+function WarningIcon({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M12 4 3.8 18.5h16.4L12 4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 9v4M12 16.5h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SearchFlightIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M4 17 20 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="m9 14-3.7-2.2 1.3-1.2 5 1.8M15 10l1 5.2 1.5-1.1-.1-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export const metadata: Metadata = {
   title: "Meilleur moment pour voyager | Xalifly",
   description:
@@ -80,7 +98,9 @@ export default function PrixPage() {
         {/* Data unavailable fallback */}
         {dataError || !histories ? (
           <div className="bg-surface border border-border rounded-2xl p-8 flex flex-col items-center gap-3 text-center">
-            <span className="text-4xl">⚠️</span>
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400">
+              <WarningIcon />
+            </span>
             <p className="font-bold text-fg">Données temporairement indisponibles</p>
             <p className="text-sm text-muted">
               Les graphiques de prix seront disponibles dans quelques instants.
@@ -89,7 +109,8 @@ export default function PrixPage() {
               href="/"
               className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
             >
-              ✈ Rechercher un vol
+              <SearchFlightIcon />
+              Rechercher un vol
             </Link>
           </div>
         ) : (
@@ -109,7 +130,8 @@ export default function PrixPage() {
                 href="/"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
               >
-                ✈ Rechercher un vol
+                <SearchFlightIcon />
+                Rechercher un vol
               </Link>
             </div>
           </>
