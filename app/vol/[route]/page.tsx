@@ -34,6 +34,49 @@ function formatDuration(minutes: number): string {
   return m > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${h}h`;
 }
 
+type RouteStatIconName = "duration" | "nonstop" | "economy" | "business";
+
+function FlightIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M10.5 20.5 13 13l7.5-2.5a1 1 0 0 0 .1-1.86L4.7 2.16a1 1 0 0 0-1.27 1.27l6.48 15.9a1 1 0 0 0 1.86-.1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="m13 13-4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RouteStatIcon({ name, className = "h-5 w-5" }: { name: RouteStatIconName; className?: string }) {
+  if (name === "duration") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "economy" || name === "business") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M6 11h12l-1 8H7l-1-8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M9 21h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return <FlightIcon className={className} />;
+}
+
+function CalendarIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M7 3v3M17 3v3M4 9h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="4" y="5" width="16" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 export async function generateMetadata(
   { params }: { params: Promise<{ route: string }> }
 ): Promise<Metadata> {
@@ -217,20 +260,23 @@ export default async function RoutePage(
             href={searchUrl}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all hover:scale-[1.02] shadow-lg shadow-primary/20"
           >
-            ✈ Comparer cash vs miles maintenant
+            <FlightIcon />
+            Comparer cash vs miles maintenant
           </Link>
         </div>
 
         {/* Route stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Durée vol",       value: formatDuration(meta.durationMin),              icon: "⏱" },
-            { label: "Vol direct",      value: meta.isNonstop ? "Oui ✓" : `Via ${meta.hub ?? "hub"}`, icon: "✈" },
-            { label: "Éco (miles)",     value: meta.milesToEconomy.toLocaleString("fr-FR"),   icon: "💺" },
-            { label: "Business (miles)",value: meta.milesToBusiness.toLocaleString("fr-FR"),  icon: "🛋" },
+            { label: "Durée vol",       value: formatDuration(meta.durationMin),              icon: "duration" as const },
+            { label: "Vol direct",      value: meta.isNonstop ? "Oui" : `Via ${meta.hub ?? "hub"}`, icon: "nonstop" as const },
+            { label: "Éco (miles)",     value: meta.milesToEconomy.toLocaleString("fr-FR"),   icon: "economy" as const },
+            { label: "Business (miles)",value: meta.milesToBusiness.toLocaleString("fr-FR"),  icon: "business" as const },
           ].map(stat => (
             <div key={stat.label} className="bg-surface rounded-xl border border-border p-4 text-center">
-              <div className="text-xl mb-1">{stat.icon}</div>
+              <div className="mb-1 flex justify-center text-primary">
+                <RouteStatIcon name={stat.icon} />
+              </div>
               <div className="text-lg font-black text-fg">{stat.value}</div>
               <div className="text-[11px] text-muted mt-0.5">{stat.label}</div>
             </div>
@@ -246,7 +292,7 @@ export default async function RoutePage(
             <ul className="space-y-2">
               {meta.airlines.map(airline => (
                 <li key={airline} className="flex items-center gap-2 text-sm text-fg font-medium">
-                  <span className="text-primary text-base">✈</span>
+                  <FlightIcon className="h-4 w-4 text-primary" />
                   {airline}
                 </li>
               ))}
@@ -276,7 +322,7 @@ export default async function RoutePage(
 
         {/* Season tip */}
         <div className="bg-primary/8 rounded-2xl border border-primary/15 p-5 flex items-start gap-4">
-          <span className="text-2xl flex-shrink-0 mt-0.5">📅</span>
+          <CalendarIcon className="h-5 w-5 flex-shrink-0 mt-0.5 text-primary" />
           <div>
             <h2 className="text-sm font-bold text-fg mb-1">Meilleure période pour voyager</h2>
             <p className="text-sm text-muted leading-relaxed">{meta.seasonTip.fr}</p>
@@ -290,7 +336,10 @@ export default async function RoutePage(
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted leading-relaxed">
             <div>
-              <p className="font-semibold text-fg mb-1">💺 Classe économique</p>
+              <p className="mb-1 inline-flex items-center gap-1.5 font-semibold text-fg">
+                <RouteStatIcon name="economy" className="h-4 w-4 text-primary" />
+                Classe économique
+              </p>
               <p>
                 Comptez environ{" "}
                 <strong className="text-fg">{meta.milesToEconomy.toLocaleString("fr-FR")} miles</strong>{" "}
@@ -299,7 +348,10 @@ export default async function RoutePage(
               </p>
             </div>
             <div>
-              <p className="font-semibold text-fg mb-1">🛋 Business / Première</p>
+              <p className="mb-1 inline-flex items-center gap-1.5 font-semibold text-fg">
+                <RouteStatIcon name="business" className="h-4 w-4 text-primary" />
+                Business / Première
+              </p>
               <p>
                 À partir de{" "}
                 <strong className="text-fg">{meta.milesToBusiness.toLocaleString("fr-FR")} miles</strong>{" "}
@@ -377,7 +429,8 @@ export default async function RoutePage(
             href={searchUrl}
             className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all hover:scale-[1.02] shadow-lg shadow-primary/20"
           >
-            ✈ Comparer maintenant — gratuit
+            <FlightIcon />
+            Comparer maintenant — gratuit
           </Link>
         </div>
       </main>

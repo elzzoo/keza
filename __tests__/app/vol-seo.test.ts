@@ -131,4 +131,14 @@ describe("/vol route detail layout", () => {
     expect(screen.getByRole("heading", { level: 1, name: /dakar.*paris/i })).toBeTruthy();
     expect(screen.getByTestId("route-alert").textContent).toBe("en");
   });
+
+  it("keeps non-canonical route detail pages free of visible emoji affordances", () => {
+    const fs = require("fs");
+    const path = require("path");
+
+    for (const file of ["app/vol/[route]/page.tsx", "app/en/vol/[route]/page.tsx"]) {
+      const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      expect(source).not.toMatch(/[✈⏱💺🛋📅✓]/u);
+    }
+  });
 });
