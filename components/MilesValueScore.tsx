@@ -27,6 +27,21 @@ function cpmLabel(cpm: number, lang: "fr" | "en"): string {
   return lang === "fr" ? "Faible" : "Low";
 }
 
+function TipIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M9 18h6M10 21h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M8 14.5c-1.3-1.1-2-2.7-2-4.5a6 6 0 1 1 12 0c0 1.8-.8 3.5-2.1 4.6-.7.6-.9 1.1-.9 1.9H9c0-.8-.3-1.4-1-2Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function MilesValueScore({ savedPrograms, lang = "fr" }: Props) {
   // Filter to user's saved programs, or show top 5 if none saved
   const programData = savedPrograms && savedPrograms.length > 0
@@ -105,10 +120,13 @@ export function MilesValueScore({ savedPrograms, lang = "fr" }: Props) {
       </p>
 
       {!savedPrograms?.length && (
-        <p className="text-[10px] text-muted/60">
+        <p className="flex items-start gap-1.5 text-[10px] text-muted/60">
+          <TipIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+          <span>
           {lang === "fr"
-            ? "💡 Sauvegardez vos programmes sur la page d'accueil pour voir uniquement les vôtres."
-            : "💡 Save your programs on the home page to see only yours."}
+            ? "Sauvegardez vos programmes sur la page d'accueil pour voir uniquement les vôtres."
+            : "Save your programs on the home page to see only yours."}
+          </span>
         </p>
       )}
     </div>
