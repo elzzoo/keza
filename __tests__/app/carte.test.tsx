@@ -36,4 +36,14 @@ describe("Carte pages", () => {
     expect(screen.getByTestId("map")).toHaveTextContent("en");
     expect(screen.getByRole("heading", { name: /explore the world with miles/i })).toBeInTheDocument();
   });
+
+  it("keeps map pages free of visible emoji affordances", () => {
+    const fs = require("fs");
+    const path = require("path");
+
+    for (const file of ["app/carte/page.tsx", "app/en/carte/page.tsx"]) {
+      const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      expect(source).not.toMatch(/[🗺️✈]/u);
+    }
+  });
 });

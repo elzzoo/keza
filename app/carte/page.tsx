@@ -10,6 +10,24 @@ import { WorldMapClient } from "./WorldMapClient";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
+function MapIcon({ className = "h-10 w-10" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M9 3v15M15 6v15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SearchFlightIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M10.5 20.5 13 13l7.5-2.5a1 1 0 0 0 .1-1.86L4.7 2.16a1 1 0 0 0-1.27 1.27l6.48 15.9a1 1 0 0 0 1.86-.1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="m13 13-4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export const metadata: Metadata = {
   title: "Carte des destinations miles | Xalifly",
   description:
@@ -78,7 +96,7 @@ export default function CartePage() {
         {/* Map - wrapped in error boundary to catch any rendering errors */}
         <ErrorBoundary lang="fr" fallback={
           <div className="bg-surface rounded-2xl border border-border p-8 flex flex-col items-center gap-4 text-center min-h-96">
-            <span className="text-4xl">🗺️</span>
+            <MapIcon className="h-10 w-10 text-primary" />
             <p className="font-bold text-fg text-base">
               La carte ne peut pas s&apos;afficher
             </p>
@@ -112,7 +130,8 @@ export default function CartePage() {
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 transition-colors"
           >
-            ✈ Rechercher un vol
+            <SearchFlightIcon />
+            Rechercher un vol
           </Link>
         </div>
 

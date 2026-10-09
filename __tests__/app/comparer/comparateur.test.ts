@@ -51,4 +51,15 @@ describe("buildComparisonData", () => {
     expect(result).toHaveLength(1);
     expect(result[0].dest.iata).toBe("CDG");
   });
+
+  it("garde l'interface comparateur sans affordances emoji visibles", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "app/comparer/ComparateurClient.tsx"),
+      "utf8"
+    );
+
+    expect(source).not.toMatch(/[📊🗺️✓✗]/u);
+  });
 });

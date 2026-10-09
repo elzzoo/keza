@@ -20,16 +20,34 @@ const REC_COLORS: Record<DealRecommendation, string> = {
 };
 
 const REC_LABELS_FR: Record<DealRecommendation, string> = {
-  USE_MILES: "MILES ✓",
+  USE_MILES: "MILES",
   NEUTRAL:   "NEUTRE ~",
-  USE_CASH:  "CASH ✗",
+  USE_CASH:  "CASH",
 };
 
 const REC_LABELS_EN: Record<DealRecommendation, string> = {
-  USE_MILES: "MILES ✓",
+  USE_MILES: "MILES",
   NEUTRAL:   "NEUTRAL ~",
-  USE_CASH:  "CASH ✗",
+  USE_CASH:  "CASH",
 };
+
+function CompareIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M5 7h14M5 17h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M8 4v6M16 14v6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MapIcon({ className = "h-7 w-7" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M9 3v15M15 6v15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 // ─── Pure function (exported for tests) ─────────────────────────────────────
 
@@ -104,8 +122,9 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 pb-12">
         {/* Hero */}
         <div className="pt-8 pb-6">
-          <h1 className="text-2xl sm:text-3xl font-black text-fg mb-2">
-            📊 {fr ? "Comparer des destinations" : "Compare destinations"}
+          <h1 className="flex items-center gap-2 text-2xl sm:text-3xl font-black text-fg mb-2">
+            <CompareIcon className="h-6 w-6 text-primary" />
+            <span>{fr ? "Comparer des destinations" : "Compare destinations"}</span>
           </h1>
           <p className="text-sm text-muted">
             {fr
@@ -140,8 +159,8 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
         {/* Empty state */}
         {selected.length === 0 && (
           <div className="flex flex-col items-center gap-5 py-16 animate-fade-up">
-            <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center text-2xl">
-              🗺️
+            <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center text-primary">
+              <MapIcon />
             </div>
             <div className="text-center max-w-xs">
               <p className="font-semibold text-fg">
