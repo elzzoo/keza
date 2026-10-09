@@ -2,6 +2,8 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { AlertesClient } from "@/app/alertes/AlertesClient";
 import type { PriceAlert } from "@/lib/alerts";
+import { readFileSync } from "fs";
+import path from "path";
 
 jest.mock("@/components/Header", () => ({
   Header: ({ lang }: { lang: "fr" | "en" }) => <header>Header {lang}</header>,
@@ -84,5 +86,10 @@ describe("AlertesClient", () => {
       "href",
       "/en/pro"
     );
+  });
+
+  it("keeps the alerts management surface free of visible emoji-led UI", () => {
+    const source = readFileSync(path.join(process.cwd(), "app/alertes/AlertesClient.tsx"), "utf8");
+    expect(source).not.toMatch(/[🔔✅🎉⚡📅📆]/u);
   });
 });

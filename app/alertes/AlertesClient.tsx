@@ -36,10 +36,55 @@ const CABIN_LABELS_EN: Record<string, string> = {
 
 // ─── Frequency badge + selector ───────────────────────────────────────────────
 
+function BellIcon({ className = "h-7 w-7" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path
+        d="M18 9.8c0-3.4-2.4-5.8-6-5.8S6 6.4 6 9.8v3.9L4.5 16h15L18 13.7V9.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 19a2.2 2.2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m5 12.5 4.2 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FrequencyIcon({ freq, className = "h-3.5 w-3.5" }: { freq?: string; className?: string }) {
+  if (freq === "daily" || freq === "weekly") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <rect x="4" y="5.5" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M8 3.5v4M16 3.5v4M4 10h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        {freq === "weekly" && <path d="M8 14h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m13 2-7 12h5l-1 8 8-13h-5l0-7Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function FrequencyBadge({ freq }: { freq?: string }) {
-  if (freq === "daily") return <span title="Daily digest" style={{ color: "#3b82f6" }}>📅</span>;
-  if (freq === "weekly") return <span title="Weekly digest" style={{ color: "#f59e0b" }}>📆</span>;
-  return <span title="Instant" style={{ color: "#10b981" }}>⚡</span>;
+  const title = freq === "daily" ? "Daily digest" : freq === "weekly" ? "Weekly digest" : "Instant";
+  const color = freq === "daily" ? "text-blue-500" : freq === "weekly" ? "text-amber-500" : "text-emerald-500";
+  return (
+    <span title={title} className={color}>
+      <FrequencyIcon freq={freq} />
+    </span>
+  );
 }
 
 function FrequencySelector({
@@ -86,14 +131,13 @@ function FrequencySelector({
           type="button"
           disabled={updating}
           onClick={() => handleChange(f)}
-          className={`px-2 py-0.5 rounded-lg text-[10px] font-medium border transition-colors disabled:opacity-40 ${
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border transition-colors disabled:opacity-40 ${
             current === f
               ? "bg-primary/20 border-primary/50 text-primary"
               : "bg-surface border-border text-subtle hover:border-primary/30"
           }`}
         >
-          {f === "instant" ? "⚡" : f === "daily" ? "📅" : "📆"}
-          {" "}
+          <FrequencyIcon freq={f} />
           {f === "instant" ? "Instant" : f === "daily" ? "Daily" : "Weekly"}
         </button>
       ))}
@@ -212,8 +256,8 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setAlerts(null);
       setNotice(fr
-        ? "✅ Lien envoyé à cet email. Vérifiez vos alertes existantes ou créez-en une nouvelle depuis la recherche."
-        : "✅ Check your email for the management link. Create a new alert from search results.");
+        ? "Lien envoyé à cet email. Vérifiez vos alertes existantes ou créez-en une nouvelle depuis la recherche."
+        : "Check your email for the management link. Create a new alert from search results.");
       localStorage.setItem(EMAIL_STORAGE_KEY, normalizedEmail);
     } catch (err) {
       console.error("[AlertesClient] handleFetch error:", err);
@@ -272,7 +316,9 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
         {/* Hero */}
         <div className="pt-8 pb-6">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">🔔</span>
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <BellIcon />
+            </span>
             <h1 className="text-2xl font-black text-fg">
               {fr ? "Mes alertes prix" : "My price alerts"}
             </h1>
@@ -345,7 +391,10 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
         </form>
 
         {notice && (
-          <p className="text-sm text-success mb-4">{notice}</p>
+          <p className="mb-4 inline-flex items-start gap-2 text-sm text-success">
+            <CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{notice}</span>
+          </p>
         )}
 
         {/* Error */}
@@ -448,7 +497,10 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
                             ${alert.lastPrice}
                           </span>
                           {alert.lastPrice <= alert.targetPrice && (
-                            <span className="ml-1 text-success text-[10px]">{fr ? "🎉 Seuil atteint" : "🎉 Target reached"}</span>
+                            <span className="ml-1 inline-flex items-center gap-1 text-success text-[10px]">
+                              <CheckIcon className="h-3 w-3" />
+                              {fr ? "Seuil atteint" : "Target reached"}
+                            </span>
                           )}
                         </p>
                       )}
