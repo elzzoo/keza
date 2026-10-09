@@ -6,6 +6,16 @@ interface Props {
   lang: "fr" | "en";
 }
 
+function InfoIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 11v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M12 8h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /**
  * Disclaimer shown when Travelpayouts (TP) prices are displayed.
  * Informs users that prices are cached and may be 24-48 hours old.
@@ -22,7 +32,7 @@ export const TPCacheDisclaimer = ({ lang }: Props) => {
         className="w-full text-left flex items-start gap-2 hover:bg-blue-500/5 -mx-5 -my-2.5 px-5 py-2.5 rounded-lg transition-colors"
         aria-expanded={expanded}
       >
-        <span className="text-blue-400 flex-shrink-0 mt-0.5">ℹ️</span>
+        <InfoIcon className="h-4 w-4 text-blue-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="text-sm text-blue-400 font-medium">
             {fr

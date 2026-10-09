@@ -14,6 +14,16 @@ interface Props {
   initialLang: Lang;
 }
 
+function WarningIcon({ className = "h-10 w-10" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M12 8v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M12 17h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M10.29 4.86 2.82 17.8A2.1 2.1 0 0 0 4.64 21h14.72a2.1 2.1 0 0 0 1.82-3.2L13.71 4.86a2.1 2.1 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function FlightRouteError({ error, reset, initialLang }: Props) {
   const [lang, setLang] = useState<Lang>(initialLang);
   const fr = lang === "fr";
@@ -25,7 +35,7 @@ export function FlightRouteError({ error, reset, initialLang }: Props) {
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12 flex flex-col items-center justify-center">
         <EmptyState
-          icon={<span className="text-4xl">⚠️</span>}
+          icon={<WarningIcon />}
           title={fr ? "Erreur d'accès au vol" : "Flight access error"}
           description={
             fr

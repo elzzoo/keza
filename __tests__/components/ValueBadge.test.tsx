@@ -12,7 +12,6 @@ describe("ValueBadge Component", () => {
     it("should render GREAT_DEAL badge in English", () => {
       render(<ValueBadge percentile={10} badge="GREAT_DEAL" lang="en" size="md" />);
       expect(screen.getByText(/Great deal/i)).toBeInTheDocument();
-      expect(screen.getByText("⭐")).toBeInTheDocument();
     });
 
     it("should render FAIR_DEAL badge in English", () => {
@@ -23,7 +22,6 @@ describe("ValueBadge Component", () => {
     it("should render EXPENSIVE badge in English", () => {
       render(<ValueBadge percentile={90} badge="EXPENSIVE" lang="en" size="md" />);
       expect(screen.getByText(/Expensive/i)).toBeInTheDocument();
-      expect(screen.getByText("⚠")).toBeInTheDocument();
     });
 
     it("should render UNKNOWN badge when no percentile data", () => {
@@ -110,7 +108,7 @@ describe("ValueBadge Component", () => {
   describe("ValueBadgeInline variant", () => {
     it("should render without requiring percentile prop", () => {
       render(<ValueBadgeInline badge="GREAT_DEAL" lang="en" />);
-      expect(screen.getByText("⭐")).toBeInTheDocument();
+      expect(screen.getByText(/Excellent/i)).toBeInTheDocument();
     });
 
     it("should use small size by default", () => {
@@ -132,20 +130,31 @@ describe("ValueBadge Component", () => {
   });
 
   describe("Icon rendering", () => {
-    it("should render correct icon for each badge type", () => {
+    it("should render an accessible decorative icon for each badge type", () => {
       const { rerender, container } = render(
         <ValueBadge percentile={10} badge="GREAT_DEAL" lang="en" />
       );
-      expect(container.textContent).toContain("⭐");
+      expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
 
       rerender(<ValueBadge percentile={50} badge="FAIR_DEAL" lang="en" />);
-      expect(container.textContent).toContain("—");
+      expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
 
       rerender(<ValueBadge percentile={90} badge="EXPENSIVE" lang="en" />);
-      expect(container.textContent).toContain("⚠");
+      expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
 
       rerender(<ValueBadge percentile={0} badge="UNKNOWN" lang="en" />);
-      expect(container.textContent).toContain("?");
+      expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
+    });
+  });
+
+  describe("Polish guard", () => {
+    it("keeps value badges free of visible emoji/symbol labels", () => {
+      const source = require("fs").readFileSync(
+        require("path").join(process.cwd(), "components/ValueBadge.tsx"),
+        "utf8"
+      );
+
+      expect(source).not.toMatch(/[⭐⚠]/u);
     });
   });
 });

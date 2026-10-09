@@ -24,6 +24,15 @@ const L = {
   },
 };
 
+function DealTagIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L3 13V4h9l8.59 8.59a2 2 0 0 1 0 2.82Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M7.5 7.5h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function CheapestRouteBanner({ lang, onDealClick, formatPrice }: Props) {
   const t = L[lang];
   const fmt = formatPrice ?? ((usd: number) => `$${Math.round(usd)}`);
@@ -50,7 +59,7 @@ export function CheapestRouteBanner({ lang, onDealClick, formatPrice }: Props) {
       <div className="relative px-4 py-3 flex items-center gap-3">
         {/* Icon + label */}
         <div className="flex-shrink-0 flex flex-col items-center gap-1">
-          <span className="text-base">🏷️</span>
+          <DealTagIcon className="h-4 w-4 text-success" />
         </div>
 
         {/* Route */}
