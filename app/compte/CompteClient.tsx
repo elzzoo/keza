@@ -14,6 +14,33 @@ interface ServerProfile {
   recentSearches: { from: string; to: string; date: string }[];
 }
 
+function LockIcon({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M12 14v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M12 16V4M7 9l5-5 5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m5 12.5 4.2 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function CompteClient() {
   const { data: session, status } = useSession();
   const [serverProfile, setServerProfile] = useState<ServerProfile | null>(null);
@@ -45,7 +72,7 @@ export function CompteClient() {
         body: JSON.stringify(profile),
       });
       if (res.ok) {
-        setSyncMsg("✅ Profil synchronisé !");
+        setSyncMsg("Profil synchronisé !");
         setServerProfile(profile);
       } else {
         setSyncMsg("Erreur lors de la synchronisation.");
@@ -74,7 +101,9 @@ export function CompteClient() {
         <Header lang="fr" />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center space-y-4">
-            <p className="text-3xl">🔒</p>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <LockIcon />
+            </div>
             <p className="text-sm text-muted">Tu n&apos;es pas connecté.</p>
             <Link href="/connexion" className="inline-block px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors">
               Se connecter →
@@ -140,11 +169,17 @@ export function CompteClient() {
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            {syncing ? "Synchronisation…" : "⬆️ Synchroniser depuis cet appareil"}
+            {!syncing && <UploadIcon />}
+            {syncing ? "Synchronisation…" : "Synchroniser depuis cet appareil"}
           </button>
-          {syncMsg && <p className="text-xs text-center text-success">{syncMsg}</p>}
+          {syncMsg && (
+            <p className="inline-flex w-full items-center justify-center gap-1.5 text-xs text-success">
+              {syncMsg === "Profil synchronisé !" && <CheckIcon />}
+              <span>{syncMsg}</span>
+            </p>
+          )}
 
           <Link href="/profil" className="block text-center text-xs text-primary hover:underline">
             Voir mon wallet miles →

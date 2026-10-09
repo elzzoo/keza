@@ -47,6 +47,15 @@ const SECONDARY_NAV = {
   ],
 };
 
+function ProIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="m12 3 7 6-7 12L5 9l7-6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M5 9h14M9 9l3 12 3-12M9 9l3-6 3 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function Header({ lang, onLangChange = () => {} }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const nav = NAV[lang];
@@ -102,7 +111,8 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
             href={lang === "en" ? "/en/pro" : "/pro"}
             className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] font-bold text-amber-400 hover:bg-amber-500/20 transition-colors"
           >
-            💎 Pro
+            <ProIcon />
+            Pro
           </Link>
 
           {/* Currency picker */}

@@ -5,6 +5,8 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Header } from "@/components/Header";
+import { readFileSync } from "fs";
+import path from "path";
 
 // Mock next/link
 jest.mock("next/link", () => {
@@ -191,5 +193,10 @@ describe("Header", () => {
 
     rerender(<Header {...defaultProps} lang="fr" />);
     expect(container.querySelector('a[href="/pro"]')).toBeInTheDocument();
+  });
+
+  it("keeps the persistent Pro CTA free of visible emoji symbols", () => {
+    const source = readFileSync(path.join(process.cwd(), "components/Header.tsx"), "utf8");
+    expect(source).not.toMatch(/[💎]/u);
   });
 });

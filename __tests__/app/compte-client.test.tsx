@@ -1,5 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { CompteClient } from "@/app/compte/CompteClient";
+import { readFileSync } from "fs";
+import path from "path";
 
 const mockUseSession = jest.fn();
 
@@ -52,5 +54,10 @@ describe("CompteClient layout", () => {
     expect(screen.getByRole("heading", { name: /mon compte/i })).toBeInTheDocument();
     expect(screen.getByText("Test User")).toBeInTheDocument();
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/profile"));
+  });
+
+  it("keeps the account surface free of visible emoji-led UI", () => {
+    const source = readFileSync(path.join(process.cwd(), "app/compte/CompteClient.tsx"), "utf8");
+    expect(source).not.toMatch(/[✅⬆️🔒]/u);
   });
 });
