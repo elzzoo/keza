@@ -19,6 +19,24 @@ const L = {
   en: { title: "Live deals",       updated: "updated",           hours: "h ago", all: "See all →", milesWin: "Miles win",   cashWin: "Cash wins"  },
 };
 
+function RecommendationIcon({ isMilesWin, className = "h-3 w-3" }: { isMilesWin: boolean; className?: string }) {
+  if (!isMilesWin) {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <rect x="4" y="7" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M8 12h.01M16 12h.01M12 10.2a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M4 17 20 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="m9 14-3.7-2.2 1.3-1.2 5 1.8M15 10l1 5.2 1.5-1.1-.1-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function DealsStrip({ lang, onDealClick }: Props) {
   const t = L[lang];
   const { currency, exchangeRates } = useProfile();
@@ -93,9 +111,10 @@ export function DealsStrip({ lang, onDealClick }: Props) {
                 <div className="flex-shrink-0 text-right">
                   <Badge
                     tone={isMilesWin ? "primary" : "warning"}
-                    className="rounded-md px-2 py-0.5 text-[10px] font-black"
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-black"
                   >
-                    {isMilesWin ? `✈ ${deal.multiplier}` : "💰"}
+                    <RecommendationIcon isMilesWin={isMilesWin} />
+                    {isMilesWin ? deal.multiplier : t.cashWin}
                   </Badge>
                   <div className="text-[11px] font-bold text-fg mt-0.5">
                     {formatCurrency(convertPrice(deal.cashPrice, "USD", currency, exchangeRates), currency)}

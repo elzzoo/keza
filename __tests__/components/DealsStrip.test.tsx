@@ -6,6 +6,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { DealsStrip } from "@/components/DealsStrip";
 import { __resetDealsCacheForTests } from "@/hooks/useDeals";
+import { readFileSync } from "fs";
+import path from "path";
 
 // Mock useProfile
 jest.mock("@/hooks/useProfile", () => ({
@@ -163,5 +165,10 @@ describe("DealsStrip", () => {
     // Should show animated skeleton loaders
     const skeletons = document.querySelectorAll(".animate-pulse");
     expect(skeletons.length).toBeGreaterThan(0);
+  });
+
+  it("keeps deal recommendation badges free of visible emoji symbols", () => {
+    const source = readFileSync(path.join(process.cwd(), "components/DealsStrip.tsx"), "utf8");
+    expect(source).not.toMatch(/[💰✈]/u);
   });
 });
