@@ -61,6 +61,115 @@ function routeKey(from: string, to: string) {
   return [from, to].sort().join("-");
 }
 
+type ProfileIconName =
+  | "plane"
+  | "wallet"
+  | "search"
+  | "favorite"
+  | "target"
+  | "gift"
+  | "card"
+  | "empty"
+  | "business"
+  | "economy";
+
+function ProfileIcon({
+  name,
+  className = "h-5 w-5",
+}: {
+  name: ProfileIconName;
+  className?: string;
+}) {
+  const common = {
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  if (name === "wallet" || name === "card") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M4 7.5h16v11H4z" {...common} />
+        <path d="M4 10.5h16" {...common} />
+        <path d="M16 15h2" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "search") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <circle cx="11" cy="11" r="6" {...common} />
+        <path d="M16 16l4 4" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "favorite") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "target") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <circle cx="12" cy="12" r="8" {...common} />
+        <circle cx="12" cy="12" r="3" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "gift") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M4 10h16v10H4z" {...common} />
+        <path d="M4 10h16v-3H4zM12 7v13" {...common} />
+        <path d="M12 7c-2.2 0-4-.8-4-2.1C8 3.8 8.9 3 10 3c1.6 0 2 2.2 2 4ZM12 7c2.2 0 4-.8 4-2.1C16 3.8 15.1 3 14 3c-1.6 0-2 2.2-2 4Z" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "business") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M7 5h10v8H7z" {...common} />
+        <path d="M6 13h12l-1 6H7l-1-6Z" {...common} />
+        <path d="M9 9h6" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "economy") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M8 5h8v8H8z" {...common} />
+        <path d="M7 13h10v6H7z" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "empty") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M6 8h12v10H6z" {...common} />
+        <path d="M9 8a3 3 0 0 1 6 0" {...common} />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M3 12h18" {...common} />
+      <path d="M13 4l5 8-5 8" {...common} />
+      <path d="M6 7l3 5-3 5" {...common} />
+    </svg>
+  );
+}
+
 // ── Affordability widget data ─────────────────────────────────────────────
 interface AffordableRoute {
   from: string;
@@ -140,10 +249,10 @@ const COPY = {
     favorites: "favoris",
     availableRoutes: "routes dispo",
     tabs: {
-      wallet: "💳 Wallet",
-      recents: "🔍 Récents",
-      favorites: "❤️ Favoris",
-      afford: "🎯 Abordable",
+      wallet: "Wallet",
+      recents: "Récents",
+      favorites: "Favoris",
+      afford: "Abordable",
     },
     milesPrograms: "Programmes miles",
     noProgram: "Aucun programme ajouté.",
@@ -160,7 +269,7 @@ const COPY = {
     noSearch: "Aucune recherche enregistrée.",
     startSearch: "Lancer une recherche →",
     favoriteRoutes: "Routes favorites",
-    noFavorites: "Aucun favori. Cliquez ❤️ sur un résultat pour sauvegarder une route.",
+    noFavorites: "Aucun favori. Sauvegardez une route depuis les résultats pour la retrouver ici.",
     searchFlight: "Chercher un vol →",
     page: "Page",
     removeFavorite: "Retirer des favoris",
@@ -173,7 +282,7 @@ const COPY = {
     businessAvailable: "Business dispo ✦",
     economy: "Éco",
     availableMiles: "miles dispo",
-    compareFlight: "✈️ Comparer un vol",
+    compareFlight: "Comparer un vol",
     nonstop: "Direct",
   },
   en: {
@@ -188,10 +297,10 @@ const COPY = {
     favorites: "favorites",
     availableRoutes: "available routes",
     tabs: {
-      wallet: "💳 Wallet",
-      recents: "🔍 Recent",
-      favorites: "❤️ Favorites",
-      afford: "🎯 Affordable",
+      wallet: "Wallet",
+      recents: "Recent",
+      favorites: "Favorites",
+      afford: "Affordable",
     },
     milesPrograms: "Miles programs",
     noProgram: "No program added yet.",
@@ -208,7 +317,7 @@ const COPY = {
     noSearch: "No saved search yet.",
     startSearch: "Start a search →",
     favoriteRoutes: "Favorite routes",
-    noFavorites: "No favorite yet. Click ❤️ on a result to save a route.",
+    noFavorites: "No favorite yet. Save a route from results to find it here.",
     searchFlight: "Search a flight →",
     page: "Page",
     removeFavorite: "Remove from favorites",
@@ -221,7 +330,7 @@ const COPY = {
     businessAvailable: "Business available ✦",
     economy: "Economy",
     availableMiles: "miles available",
-    compareFlight: "✈️ Compare a flight",
+    compareFlight: "Compare a flight",
     nonstop: "Nonstop",
   },
 } as const;
@@ -357,7 +466,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
         <div className="bg-surface rounded-2xl border border-border p-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl flex-shrink-0">
-              ✈️
+              <ProfileIcon name="plane" className="h-7 w-7 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-muted">{t.totalLabel}</p>
@@ -545,7 +654,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
               return (
                 <section className="bg-surface rounded-2xl border border-amber-500/30 p-5 space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">🎁</span>
+                    <ProfileIcon name="gift" className="h-4 w-4 text-amber-500" />
                     <h2 className="text-sm font-black text-fg">{t.activeBonuses}</h2>
                   </div>
                   <div className="space-y-2">
@@ -588,7 +697,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
 
             {profile.recentSearches.length === 0 ? (
               <div className="text-center py-8 space-y-2">
-                <p className="text-3xl">🔍</p>
+                <ProfileIcon name="search" className="mx-auto h-9 w-9 text-muted" />
                 <p className="text-xs text-muted">{t.noSearch}</p>
                 <Link href={t.homeHref} className="text-xs text-primary hover:underline">
                   {t.startSearch}
@@ -640,7 +749,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
 
             {profile.favoriteRoutes.length === 0 ? (
               <div className="text-center py-8 space-y-2">
-                <p className="text-3xl">❤️</p>
+                <ProfileIcon name="favorite" className="mx-auto h-9 w-9 text-muted" />
                 <p className="text-xs text-muted">
                   {t.noFavorites}
                 </p>
@@ -703,7 +812,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
 
             {Object.keys(profile.balances).length === 0 && Object.keys(profile.bankPoints).length === 0 ? (
               <div className="text-center py-8 space-y-3">
-                <p className="text-3xl">💳</p>
+                <ProfileIcon name="card" className="mx-auto h-9 w-9 text-muted" />
                 <p className="text-xs text-muted">
                   {t.addMilesHint}
                 </p>
@@ -716,7 +825,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
               </div>
             ) : affordable.length === 0 ? (
               <div className="text-center py-8 space-y-2">
-                <p className="text-3xl">😔</p>
+                <ProfileIcon name="empty" className="mx-auto h-9 w-9 text-muted" />
                 <p className="text-xs text-muted">
                   {t.noAffordable}
                   <br />{t.noAffordableHint}
@@ -738,7 +847,10 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
                         "w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0",
                         isBiz ? "bg-amber-400/10 border border-amber-400/30" : "bg-primary/10 border border-primary/20",
                       ].join(" ")}>
-                        {isBiz ? "💺" : "🪑"}
+                        <ProfileIcon
+                          name={isBiz ? "business" : "economy"}
+                          className={isBiz ? "h-4 w-4 text-amber-500" : "h-4 w-4 text-primary"}
+                        />
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -773,6 +885,7 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
             href={t.homeHref}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors"
           >
+            <ProfileIcon name="plane" className="h-4 w-4" />
             {t.compareFlight}
           </Link>
         </div>

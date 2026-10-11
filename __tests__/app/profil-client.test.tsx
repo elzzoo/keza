@@ -40,4 +40,15 @@ describe("ProfilClient layout", () => {
     expect(screen.getByTestId("footer")).toHaveTextContent("en");
     expect(screen.getByRole("heading", { name: /my profile/i })).toBeInTheDocument();
   });
+
+  it("keeps profile UI labels free of visible emoji markers", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "app/profil/ProfilClient.tsx"),
+      "utf8"
+    );
+
+    expect(source).not.toMatch(/[🔍❤️✈️🎁💳😔💺🪑🎯]/u);
+  });
 });
