@@ -36,6 +36,16 @@ interface Props {
 type TripType = "oneway" | "roundtrip";
 type Cabin    = "economy" | "premium" | "business" | "first";
 
+function WarningIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M12 8v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M12 17h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M10.29 4.86 2.82 17.8A2.1 2.1 0 0 0 4.64 21h14.72a2.1 2.1 0 0 0 1.82-3.2L13.71 4.86a2.1 2.1 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 const today   = new Date().toISOString().split("T")[0]!;
 const addDays = (base: string, n: number) => {
   const d = new Date(base + "T12:00:00"); d.setDate(d.getDate() + n);
@@ -217,8 +227,8 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
       if (isAbort) {
         if (!partialReceived) {
           const msg = lang === "fr"
-            ? "⚠️ Résultats partiels affichés — certaines sources indisponibles"
-            : "⚠️ Partial results — some sources unavailable";
+            ? "Résultats partiels affichés — certaines sources indisponibles"
+            : "Partial results — some sources unavailable";
           toast.warning(msg, { duration: 6000 });
         }
         // If partial was received, we already showed results — just stop quietly
@@ -507,7 +517,8 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         {/* Error */}
         {error && (
           <FieldMessage role="alert" tone="danger" className="flex items-center gap-2">
-            <span>⚠️</span>{error}
+            <WarningIcon className="h-4 w-4 flex-shrink-0" />
+            <span>{error}</span>
           </FieldMessage>
         )}
 
