@@ -96,4 +96,15 @@ describe("buildSparklinePoints", () => {
       "Dec",
     ]);
   });
+
+  it("keeps destination page decision helpers free of visible emoji markers", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "app/destinations/[iata]/DestinationPageClient.tsx"),
+      "utf8"
+    );
+
+    expect(source).not.toMatch(/[📊💡✓✕]/u);
+  });
 });
