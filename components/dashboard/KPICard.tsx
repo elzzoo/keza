@@ -1,14 +1,15 @@
 "use client";
 
 import clsx from "clsx";
+import type { ReactNode } from "react";
 
 interface KPICardProps {
   /** Title of the KPI metric */
   title: string;
   /** The numeric value to display */
   value: number;
-  /** Optional icon to display (emoji or character) */
-  icon?: string;
+  /** Optional icon to display */
+  icon?: ReactNode;
   /** Optional trend value (positive or negative percentage) */
   trend?: number;
   /** Format for displaying the value: "number" | "currency" | "percentage" */
@@ -81,7 +82,7 @@ export function KPICard({
         <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
           {title}
         </h3>
-        {icon && <span className="text-xl">{icon}</span>}
+        {icon && <span className="flex h-8 w-8 items-center justify-center text-gray-500 dark:text-gray-300">{icon}</span>}
       </div>
 
       {/* Main value */}

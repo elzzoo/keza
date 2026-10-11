@@ -41,6 +41,95 @@ interface ChartDataPoint {
   searches: number;
 }
 
+type DashboardIconName =
+  | "searches"
+  | "conversions"
+  | "alerts"
+  | "revenue"
+  | "users"
+  | "conversionRate"
+  | "cache"
+  | "duration";
+
+function DashboardIcon({ name }: { name: DashboardIconName }) {
+  const common = {
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  if (name === "searches") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M5 19V9" {...common} />
+        <path d="M12 19V5" {...common} />
+        <path d="M19 19v-7" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "conversions") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M5 13l4 4L19 7" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "alerts") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9Z" {...common} />
+        <path d="M10 21h4" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "revenue") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M12 3v18" {...common} />
+        <path d="M17 7.5C15.8 6.5 14.2 6 12.5 6 9.5 6 8 7.1 8 9s1.4 2.7 4.5 3.2C15.7 12.7 17 13.8 17 15.8S15.2 19 12.3 19c-2 0-3.7-.6-5.1-1.8" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "users") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M16 11a4 4 0 1 0-8 0" {...common} />
+        <path d="M4 21a8 8 0 0 1 16 0" {...common} />
+        <path d="M18 8a3 3 0 0 1 2 5" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "conversionRate") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M4 17l5-5 4 4 7-9" {...common} />
+        <path d="M15 7h5v5" {...common} />
+      </svg>
+    );
+  }
+
+  if (name === "cache") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+        <path d="M13 2L4 14h7l-1 8 10-13h-7l1-7Z" {...common} />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none">
+      <circle cx="12" cy="12" r="8" {...common} />
+      <path d="M12 7v5l3 3" {...common} />
+    </svg>
+  );
+}
+
 export default function DashboardPage() {
   const [kpis, setKpis] = useState<KPIMetrics | null>(null);
   const [routes, setRoutes] = useState<RouteMetric[]>([]);
@@ -159,7 +248,7 @@ export default function DashboardPage() {
             <KPICard
               title="Total Searches"
               value={kpis.totalSearches}
-              icon="📊"
+              icon={<DashboardIcon name="searches" />}
               format="number"
             />
 
@@ -167,7 +256,7 @@ export default function DashboardPage() {
             <KPICard
               title="Conversions"
               value={kpis.totalConversions}
-              icon="✅"
+              icon={<DashboardIcon name="conversions" />}
               format="number"
             />
 
@@ -175,7 +264,7 @@ export default function DashboardPage() {
             <KPICard
               title="Alerts Fired"
               value={kpis.totalAlerts}
-              icon="🔔"
+              icon={<DashboardIcon name="alerts" />}
               format="number"
             />
 
@@ -183,7 +272,7 @@ export default function DashboardPage() {
             <KPICard
               title="Revenue"
               value={kpis.totalRevenue}
-              icon="💰"
+              icon={<DashboardIcon name="revenue" />}
               format="currency"
               unit="USD"
             />
@@ -192,7 +281,7 @@ export default function DashboardPage() {
             <KPICard
               title="Unique Users"
               value={kpis.uniqueUsers}
-              icon="👥"
+              icon={<DashboardIcon name="users" />}
               format="number"
             />
 
@@ -200,7 +289,7 @@ export default function DashboardPage() {
             <KPICard
               title="Conversion Rate"
               value={kpis.conversionRate}
-              icon="📈"
+              icon={<DashboardIcon name="conversionRate" />}
               format="percentage"
             />
 
@@ -208,7 +297,7 @@ export default function DashboardPage() {
             <KPICard
               title="Cache Hit Rate"
               value={kpis.cacheHitRate}
-              icon="⚡"
+              icon={<DashboardIcon name="cache" />}
               format="percentage"
             />
 
@@ -216,7 +305,7 @@ export default function DashboardPage() {
             <KPICard
               title="Avg Search Duration"
               value={kpis.avgSearchDuration}
-              icon="⏱️"
+              icon={<DashboardIcon name="duration" />}
               format="number"
               unit="ms"
             />

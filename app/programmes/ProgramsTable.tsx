@@ -15,9 +15,9 @@ type AllianceFilter = "all" | Alliance;
 const L = {
   fr: {
     filterAll: "Tous",
-    filterAirline: "✈ Airline",
-    filterHotel: "🏨 Hôtel",
-    filterTransfer: "💳 Transfert",
+    filterAirline: "Airline",
+    filterHotel: "Hôtel",
+    filterTransfer: "Transfert",
     alliances: "Alliance",
     colRank: "#",
     colProgram: "Programme",
@@ -31,9 +31,9 @@ const L = {
   },
   en: {
     filterAll: "All",
-    filterAirline: "✈ Airline",
-    filterHotel: "🏨 Hotel",
-    filterTransfer: "💳 Transfer",
+    filterAirline: "Airline",
+    filterHotel: "Hotel",
+    filterTransfer: "Transfer",
     alliances: "Alliance",
     colRank: "#",
     colProgram: "Program",
@@ -57,9 +57,9 @@ const PARTNER_LABELS: Record<string, string> = {
 
 const ALLIANCE_FILTERS: { key: AllianceFilter; label: string }[] = [
   { key: "all",      label: "Toutes" },
-  { key: "star",     label: "⭐ Star Alliance" },
-  { key: "oneworld", label: "🌐 Oneworld" },
-  { key: "skyteam",  label: "🌀 SkyTeam" },
+  { key: "star",     label: "Star Alliance" },
+  { key: "oneworld", label: "Oneworld" },
+  { key: "skyteam",  label: "SkyTeam" },
 ];
 
 export function ProgramsTable({ lang }: { lang: "fr" | "en" }) {

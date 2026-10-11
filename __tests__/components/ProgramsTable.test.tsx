@@ -142,4 +142,15 @@ describe('ProgramsTable', () => {
         .length
     ).toBe(0);
   });
+
+  it('keeps programme filters free of visible emoji markers', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'app/programmes/ProgramsTable.tsx'),
+      'utf8'
+    );
+
+    expect(source).not.toMatch(/[✈🏨💳⭐🌐🌀]/u);
+  });
 });

@@ -14,12 +14,12 @@ describe("KPICard Component", () => {
         <KPICard
           title="Total Searches"
           value={1500}
-          icon="📊"
+          icon={<span data-testid="metric-icon" />}
         />
       );
       expect(screen.getByText("Total Searches")).toBeInTheDocument();
       expect(screen.getByText("1,500")).toBeInTheDocument();
-      expect(screen.getByText("📊")).toBeInTheDocument();
+      expect(screen.getByTestId("metric-icon")).toBeInTheDocument();
     });
 
     it("should render without icon when not provided", () => {
@@ -192,5 +192,13 @@ describe("KPICard Component", () => {
       expect(screen.getByText("100")).toBeInTheDocument();
       expect(screen.getByText("km")).toBeInTheDocument();
     });
+  });
+
+  it("keeps dashboard KPI usage free of visible emoji markers", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const source = fs.readFileSync(path.join(process.cwd(), "app/dashboard/page.tsx"), "utf8");
+
+    expect(source).not.toMatch(/[📊✅🔔💰👥📈⚡⏱️]/u);
   });
 });
