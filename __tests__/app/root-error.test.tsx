@@ -41,4 +41,15 @@ describe("root error boundary", () => {
     expect(screen.getByRole("heading", { name: "Something went wrong" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "← Back home" })).toHaveAttribute("href", "/en");
   });
+
+  it("keeps root error screens free of visible emoji markers", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const files = ["app/error.tsx", "app/global-error.tsx", "components/ErrorBoundary.tsx"];
+
+    for (const file of files) {
+      const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      expect(source).not.toMatch(/[⚠️✈️]/u);
+    }
+  });
 });

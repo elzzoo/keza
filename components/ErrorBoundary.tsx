@@ -15,6 +15,16 @@ interface State {
   errorMessage?: string;
 }
 
+function RecoveryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-12 w-12 text-primary" fill="none">
+      <path d="M12 3l8 16H4L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 9v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M12 17h.01" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -46,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
       const fr = (this.props.lang ?? "fr") === "fr";
       return (
         <EmptyState
-          icon="✈️"
+          icon={<RecoveryIcon />}
           title={fr ? "Oups, quelque chose a mal tourné" : "Oops, something went wrong"}
           description={
             fr

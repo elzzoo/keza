@@ -34,6 +34,16 @@ function getInitialLang() {
   return typeof window !== "undefined" && window.location.pathname.startsWith("/en") ? "en" : "fr";
 }
 
+function ErrorMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-10 w-10 text-amber-400" fill="none">
+      <path d="M12 3l8 16H4L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M12 9v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M12 17h.01" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function GlobalError({ error, reset }: Props) {
   useEffect(() => {
     Sentry.captureException(error);
@@ -56,7 +66,7 @@ export default function GlobalError({ error, reset }: Props) {
 
       {/* Error badge */}
       <div className="w-20 h-20 rounded-2xl bg-surface border border-amber-500/30 flex items-center justify-center mb-6">
-        <span className="text-3xl">⚠️</span>
+        <ErrorMark />
       </div>
 
       <h1 className="text-2xl font-black text-fg mb-2">{copy.title}</h1>
