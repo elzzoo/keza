@@ -12,4 +12,13 @@ describe("RoutePageClient localized links", () => {
     expect(source).toContain("href={proHref}");
     expect(source).not.toContain('href="/pro"');
   });
+
+  it("keeps route analysis affordances free of visible emoji markers", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "app/flights/[route]/RoutePageClient.tsx"),
+      "utf8"
+    );
+
+    expect(source).not.toMatch(/[⚠️✈🏢⭐📅]/u);
+  });
 });

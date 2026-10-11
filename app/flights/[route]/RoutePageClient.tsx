@@ -139,6 +139,59 @@ function formatMiles(miles: number): string {
   return "~" + miles.toLocaleString("fr-FR");
 }
 
+type RouteInsightIconName = "flight" | "airlines" | "programs" | "calendar" | "warning";
+
+function RouteInsightIcon({
+  name,
+  className = "h-4 w-4",
+}: {
+  name: RouteInsightIconName;
+  className?: string;
+}) {
+  if (name === "warning") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M12 8v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M12 17h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M10.29 4.86 2.82 17.8A2.1 2.1 0 0 0 4.64 21h14.72a2.1 2.1 0 0 0 1.82-3.2L13.71 4.86a2.1 2.1 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "airlines") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M4 20V8l8-4 8 4v12" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M9 20v-6h6v6M8 9h.01M12 9h.01M16 9h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "programs") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="m12 3 2.7 5.47 6.04.88-4.37 4.26 1.03 6.01L12 16.78l-5.4 2.84 1.03-6.01-4.37-4.26 6.04-.88L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "calendar") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+        <path d="M7 3v3M17 3v3M4 9h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <rect x="4" y="5" width="16" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+      <path d="M10.5 20.5 13 13l7.5-2.5a1 1 0 0 0 .1-1.86L4.7 2.16a1 1 0 0 0-1.27 1.27l6.48 15.9a1 1 0 0 0 1.86-.1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="m13 13-4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RoutePageClient({
@@ -247,10 +300,11 @@ export function RoutePageClient({
                   {priceCount} {fr ? "dates analysées" : "dates analyzed"}
                 </p>
                 {priceCount < 10 && priceCount > 0 && (
-                  <p className="text-xs text-amber-500/80 mt-0.5">
+                  <p className="mt-0.5 inline-flex items-center justify-end gap-1 text-xs text-amber-500/80">
+                    <RouteInsightIcon name="warning" className="h-3.5 w-3.5" />
                     {fr
-                      ? "⚠️ Couverture partielle — plus de dates à venir"
-                      : "⚠️ Partial coverage — more dates coming"}
+                      ? "Couverture partielle — plus de dates à venir"
+                      : "Partial coverage — more dates coming"}
                   </p>
                 )}
               </div>
@@ -309,7 +363,7 @@ export function RoutePageClient({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Duration */}
                   <div className="flex items-start gap-3 rounded-xl bg-surface-2 border border-border px-4 py-3">
-                    <span className="text-lg mt-0.5">✈</span>
+                    <RouteInsightIcon name="flight" className="mt-0.5 h-4 w-4 text-primary" />
                     <div>
                       <p className="text-xs text-muted uppercase tracking-wider mb-0.5">
                         {fr ? "Durée" : "Duration"}
@@ -327,7 +381,7 @@ export function RoutePageClient({
 
                   {/* Airlines */}
                   <div className="flex items-start gap-3 rounded-xl bg-surface-2 border border-border px-4 py-3">
-                    <span className="text-lg mt-0.5">🏢</span>
+                    <RouteInsightIcon name="airlines" className="mt-0.5 h-4 w-4 text-primary" />
                     <div>
                       <p className="text-xs text-muted uppercase tracking-wider mb-0.5">
                         {fr ? "Compagnies" : "Airlines"}
@@ -340,7 +394,7 @@ export function RoutePageClient({
 
                   {/* Best programs */}
                   <div className="flex items-start gap-3 rounded-xl bg-surface-2 border border-border px-4 py-3">
-                    <span className="text-lg mt-0.5">⭐</span>
+                    <RouteInsightIcon name="programs" className="mt-0.5 h-4 w-4 text-primary" />
                     <div>
                       <p className="text-xs text-muted uppercase tracking-wider mb-0.5">
                         {fr ? "Meilleurs programmes" : "Best programs"}
@@ -353,7 +407,7 @@ export function RoutePageClient({
 
                   {/* Season tip */}
                   <div className="flex items-start gap-3 rounded-xl bg-surface-2 border border-border px-4 py-3">
-                    <span className="text-lg mt-0.5">📅</span>
+                    <RouteInsightIcon name="calendar" className="mt-0.5 h-4 w-4 text-primary" />
                     <div>
                       <p className="text-xs text-muted uppercase tracking-wider mb-0.5">
                         {fr ? "Meilleure période" : "Best season"}
