@@ -186,12 +186,8 @@ interface AffordableRoute {
   cabinUnlocked: "economy" | "business" | "both";
 }
 
-function computeAffordable(profile: UserProfile): AffordableRoute[] {
-  const allBalances: Record<string, number> = {
-    ...profile.balances,
-    ...profile.bankPoints,
-  };
-  if (Object.keys(allBalances).length === 0) return [];
+export function computeAffordable(profile: UserProfile): AffordableRoute[] {
+  if (Object.keys(profile.balances).length === 0) return [];
 
   const results: AffordableRoute[] = [];
 
@@ -199,7 +195,7 @@ function computeAffordable(profile: UserProfile): AffordableRoute[] {
     const [from, to] = key.split("-");
     if (!from || !to) continue;
 
-    for (const [program, pts] of Object.entries(allBalances)) {
+    for (const [program, pts] of Object.entries(profile.balances)) {
       if (pts <= 0) continue;
 
       const canEco = pts >= meta.milesToEconomy;
@@ -207,13 +203,14 @@ function computeAffordable(profile: UserProfile): AffordableRoute[] {
       if (!canEco) continue;
 
       // Only include if this program is relevant to the route
+      const programName = program === "British Airways Executive Club" ? "Avios" : program;
       const relevant =
         meta.bestPrograms.some(p =>
-          p.toLowerCase().includes(program.toLowerCase()) ||
-          program.toLowerCase().includes(p.toLowerCase())
-        ) || canBiz; // always show business if they can afford it
+          p.toLowerCase().includes(programName.toLowerCase()) ||
+          programName.toLowerCase().includes(p.toLowerCase())
+        );
 
-      if (!relevant && !canEco) continue;
+      if (!relevant) continue;
 
       results.push({
         from,
@@ -273,13 +270,14 @@ const COPY = {
     searchFlight: "Chercher un vol →",
     page: "Page",
     removeFavorite: "Retirer des favoris",
-    affordTitle: "Ce que tu peux te payer",
-    affordHint: "Routes accessibles avec tes miles actuels.",
+    affordTitle: "Routes estimées avec tes miles",
+    affordHint: "Estimation selon tes soldes et nos programmes référencés. Disponibilité à vérifier.",
     addMilesHint: "Ajoute tes miles dans l'onglet Wallet pour découvrir tes options.",
     setupWallet: "Configurer mon wallet →",
-    noAffordable: "Aucune route accessible avec tes miles actuels.",
-    noAffordableHint: "Essaie d'accumuler plus de miles ou des points bancaires.",
-    businessAvailable: "Business dispo ✦",
+    noAffordable: "Aucune route correspondante dans notre sélection.",
+    noAffordableHint: "Vérifie le programme ou accumule plus de miles.",
+    bankPointsHint: "Tes points bancaires ne sont pas encore des miles. Transfère-les vers un programme partenaire avant de comparer les routes.",
+    businessAvailable: "Business possible (est.)",
     economy: "Éco",
     availableMiles: "miles dispo",
     compareFlight: "Comparer un vol",
@@ -321,13 +319,14 @@ const COPY = {
     searchFlight: "Search a flight →",
     page: "Page",
     removeFavorite: "Remove from favorites",
-    affordTitle: "What you can afford",
-    affordHint: "Routes reachable with your current miles.",
+    affordTitle: "Routes estimated from your miles",
+    affordHint: "Estimates from your balances and listed programs. Check award availability before booking.",
     addMilesHint: "Add your miles in the Wallet tab to discover your options.",
     setupWallet: "Set up my wallet →",
-    noAffordable: "No route reachable with your current miles.",
-    noAffordableHint: "Try collecting more miles or bank points.",
-    businessAvailable: "Business available ✦",
+    noAffordable: "No matching route in our selection.",
+    noAffordableHint: "Check the program or collect more miles.",
+    bankPointsHint: "Bank points are not airline miles yet. Transfer them to a partner program before comparing routes.",
+    businessAvailable: "Business possible (est.)",
     economy: "Economy",
     availableMiles: "miles available",
     compareFlight: "Compare a flight",
@@ -827,8 +826,9 @@ export function ProfilClient({ lang = "fr" }: { lang?: "fr" | "en" }) {
               <div className="text-center py-8 space-y-2">
                 <ProfileIcon name="empty" className="mx-auto h-9 w-9 text-muted" />
                 <p className="text-xs text-muted">
-                  {t.noAffordable}
-                  <br />{t.noAffordableHint}
+                  {Object.keys(profile.balances).length === 0
+                    ? t.bankPointsHint
+                    : <>{t.noAffordable}<br />{t.noAffordableHint}</>}
                 </p>
               </div>
             ) : (

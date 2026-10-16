@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { ProfilClient } from "@/app/profil/ProfilClient";
+import { computeAffordable, ProfilClient } from "@/app/profil/ProfilClient";
+import type { UserProfile } from "@/lib/userProfile";
 
 jest.mock("next-auth/react", () => ({
   useSession: () => ({ data: null }),
@@ -23,6 +24,31 @@ jest.mock("@/lib/userProfile", () => ({
   }),
   saveProfile: jest.fn(),
 }));
+
+jest.mock("@/data/routeMeta", () => ({
+  ROUTE_META: new Map([
+    ["AAA-BBB", { milesToEconomy: 20000, milesToBusiness: 60000, bestPrograms: ["Flying Blue"], airlines: [], isNonstop: false }],
+    ["CCC-DDD", { milesToEconomy: 15000, milesToBusiness: 40000, bestPrograms: ["Avios"], airlines: [], isNonstop: false }],
+  ]),
+}));
+
+function profileWith(
+  balances: Record<string, number>,
+  bankPoints: Record<string, number> = {}
+): UserProfile {
+  return {
+    programs: [],
+    currency: "USD",
+    lang: "fr",
+    cabin: "economy",
+    recentSearches: [],
+    favoriteRoutes: [],
+    createdAt: "2026-10-16T00:00:00.000Z",
+    lastActiveAt: "2026-10-16T00:00:00.000Z",
+    balances,
+    bankPoints,
+  };
+}
 
 describe("ProfilClient layout", () => {
   it("uses the global FR layout", async () => {
@@ -50,5 +76,23 @@ describe("ProfilClient layout", () => {
     );
 
     expect(source).not.toMatch(/[🔍❤️✈️🎁💳😔💺🪑🎯]/u);
+  });
+
+  it("does not suggest routes for unrelated miles even when the balance is high", () => {
+    const profile = profileWith({ "Flying Blue": 100000 });
+
+    expect(computeAffordable(profile).map((route) => `${route.from}-${route.to}`)).toEqual(["AAA-BBB"]);
+  });
+
+  it("recognizes British Airways Executive Club as Avios", () => {
+    const profile = profileWith({ "British Airways Executive Club": 100000 });
+
+    expect(computeAffordable(profile).map((route) => `${route.from}-${route.to}`)).toEqual(["CCC-DDD"]);
+  });
+
+  it("does not treat untransferred bank points as airline miles", () => {
+    const profile = profileWith({}, { "Amex MR": 100000 });
+
+    expect(computeAffordable(profile)).toEqual([]);
   });
 });
