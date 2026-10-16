@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { KPICard } from "@/components/dashboard/KPICard";
 
 // recharts was previously imported statically here, making this route (and
@@ -26,6 +25,7 @@ interface KPIMetrics {
   avgSearchDuration: number;
   cacheHitRate: number;
   conversionRate: number;
+  dailySearches: ChartDataPoint[];
 }
 
 interface RouteMetric {
@@ -155,8 +155,8 @@ export default function DashboardPage() {
         if (!routesRes.ok) {
           throw new Error(`Failed to fetch routes: ${routesRes.statusText}`);
         }
-        const routesData = await routesRes.json();
-        setRoutes(routesData.routes || []);
+        const routesData: RouteMetric[] = await routesRes.json();
+        setRoutes(routesData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
         setKpis(null);
@@ -169,26 +169,14 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  // Mock data for search volume trend
-  const searchVolumeTrendData: ChartDataPoint[] = [
-    { date: "Jan 1", searches: 2400 },
-    { date: "Jan 2", searches: 1398 },
-    { date: "Jan 3", searches: 9800 },
-    { date: "Jan 4", searches: 3908 },
-    { date: "Jan 5", searches: 4800 },
-    { date: "Jan 6", searches: 3800 },
-    { date: "Jan 7", searches: 4300 },
-  ];
-
   // Transform route data for bar chart
   const routeChartData = routes.map((route) => ({
     route: route.route,
-    conversions: route.conversionCount,
+    searches: route.searchCount,
   }));
 
   if (loading) {
     return (
-      <DashboardLayout>
         <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-slate-950">
           <div className="text-center">
             <p className="text-lg font-medium text-gray-900 dark:text-white">
@@ -196,13 +184,11 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout>
         <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-slate-950">
           <div className="text-center">
             <p className="text-lg font-medium text-red-600 dark:text-red-400">
@@ -210,13 +196,11 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   if (!kpis) {
     return (
-      <DashboardLayout>
         <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-slate-950">
           <div className="text-center">
             <p className="text-lg font-medium text-gray-900 dark:text-white">
@@ -224,12 +208,10 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
       <div className="bg-gray-50 dark:bg-slate-950 min-h-screen p-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
@@ -315,24 +297,30 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Search Volume Trend Chart */}
             <div className="bg-white dark:bg-slate-900 rounded-lg shadow-md p-6 border border-gray-200 dark:border-slate-700">
-              <LineChartComponent
-                title="Search Volume Trend"
-                data={searchVolumeTrendData}
-                dataKey="searches"
-                xKey="date"
-                stroke="#3b82f6"
-                height={300}
-              />
+              {kpis.dailySearches.some((day) => day.searches > 0) ? (
+                <LineChartComponent
+                  title="Search Volume Trend"
+                  data={kpis.dailySearches}
+                  dataKey="searches"
+                  xKey="date"
+                  stroke="#3b82f6"
+                  height={300}
+                />
+              ) : (
+                <div className="flex h-[300px] items-center justify-center text-gray-600 dark:text-gray-400">
+                  No search data available
+                </div>
+              )}
             </div>
 
             {/* Top Routes Chart */}
             <div className="bg-white dark:bg-slate-900 rounded-lg shadow-md p-6 border border-gray-200 dark:border-slate-700">
               {routeChartData.length > 0 ? (
                 <BarChartComponent
-                  title="Top 5 Routes by Conversions"
+                  title="Top 5 Routes by Searches"
                   data={routeChartData}
                   xKey="route"
-                  yKey="conversions"
+                  yKey="searches"
                   fill="#10b981"
                   height={300}
                 />
@@ -347,6 +335,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

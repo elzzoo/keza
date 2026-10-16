@@ -8,10 +8,14 @@ import { PriceCalendar } from "@/components/PriceCalendar";
 
 global.fetch = jest.fn();
 
+const futureDay = new Date();
+futureDay.setUTCDate(futureDay.getUTCDate() + 7);
+const futureDate = futureDay.toISOString().slice(0, 10);
+
 const baseProps = {
   from: "CDG",
   to: "JFK",
-  selectedDate: "2026-10-15",
+  selectedDate: futureDate,
   onSelectDate: jest.fn(),
   lang: "en" as const,
   cabin: "economy",
@@ -33,7 +37,7 @@ describe("PriceCalendar", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        "/api/calendar?from=CDG&to=JFK&month=2026-10",
+        `/api/calendar?from=CDG&to=JFK&month=${futureDate.slice(0, 7)}`,
         expect.objectContaining({ signal: expect.any(AbortSignal) })
       );
     });
@@ -44,7 +48,7 @@ describe("PriceCalendar", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        days: [{ date: "2026-10-15", price: 420, stops: 0 }],
+        days: [{ date: futureDate, price: 420, stops: 0 }],
       }),
     });
 
@@ -54,9 +58,9 @@ describe("PriceCalendar", () => {
       expect(screen.getAllByText("$420")).toHaveLength(2);
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /15 \$420/i }));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(`${futureDay.getUTCDate()} \\$420`, "i") }));
 
-    expect(onSelectDate).toHaveBeenCalledWith("2026-10-15");
+    expect(onSelectDate).toHaveBeenCalledWith(futureDate);
   });
 
   it("shows a load error when the calendar endpoint fails", async () => {

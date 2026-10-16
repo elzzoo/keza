@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { AnalyticsDailyMetrics } from "@prisma/client";
+import { Prisma, type AnalyticsDailyMetrics } from "@prisma/client";
 
 /**
  * Dashboard Metrics Service
@@ -30,6 +30,11 @@ export interface RouteMetric {
 }
 
 export type RouteMetrics = RouteMetric[];
+
+export interface DailySearchVolume {
+  date: string;
+  searches: number;
+}
 
 export interface DailyUserMetric {
   date: string;
@@ -71,7 +76,7 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
     conversionStats,
     alertStats,
     userStats,
-    cacheStats,
+    cacheHits,
   ] = await Promise.all([
     // Total searches and average duration
     prisma.analyticsSearch.aggregate({
@@ -106,11 +111,11 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
         userId: { not: null },
       },
     }),
-    // Cache hit rate
-    prisma.analyticsSearch.aggregate({
-      _count: { _all: true, cacheHit: true },
+    // Cache hits, not merely rows where the non-null cacheHit column exists
+    prisma.analyticsSearch.count({
       where: {
         timestamp: { gte: startDate },
+        cacheHit: true,
       },
     }),
   ]);
@@ -124,10 +129,8 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
   const avgSearchDuration = searchStats._avg.duration ?? 0;
 
   // Calculate cache hit rate
-  const totalSearchesForCache = cacheStats._count._all || 1;
-  const cacheHits = cacheStats._count.cacheHit || 0;
-  const cacheHitRate = totalSearchesForCache > 0
-    ? (cacheHits / totalSearchesForCache) * 100
+  const cacheHitRate = totalSearches > 0
+    ? (cacheHits / totalSearches) * 100
     : 0;
 
   // Calculate conversion rate
@@ -145,6 +148,29 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
     cacheHitRate: Math.round(cacheHitRate * 100) / 100,
     conversionRate: Math.round(conversionRate * 100) / 100,
   };
+}
+
+export async function getDailySearchVolumes(days: number): Promise<DailySearchVolume[]> {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const startDate = new Date(today);
+  startDate.setUTCDate(startDate.getUTCDate() - days + 1);
+
+  const rows = await prisma.$queryRaw<Array<{ date: string; searches: number }>>(Prisma.sql`
+    SELECT to_char("timestamp", 'YYYY-MM-DD') AS date, COUNT(*)::int AS searches
+    FROM "AnalyticsSearch"
+    WHERE "timestamp" >= ${startDate}
+    GROUP BY 1
+    ORDER BY 1
+  `);
+  const counts = new Map(rows.map((row) => [row.date, row.searches]));
+
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(startDate);
+    date.setUTCDate(date.getUTCDate() + index);
+    const dateKey = date.toISOString().slice(0, 10);
+    return { date: dateKey, searches: counts.get(dateKey) ?? 0 };
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

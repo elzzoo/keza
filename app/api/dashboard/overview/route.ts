@@ -1,6 +1,6 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
-import { getKPIMetrics } from "@/lib/dashboard/metricsService";
+import { getDailySearchVolumes, getKPIMetrics } from "@/lib/dashboard/metricsService";
 import { hasAdminSession } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/ratelimit";
 
@@ -15,7 +15,7 @@ export const maxDuration = 30;
  * Query parameters:
  * - days: Number of days to look back (default: 30, range: 1-365)
  *
- * Response: KPIMetrics object with aggregated metrics
+ * Response: KPIMetrics plus dailySearches for the chart
  */
 export async function GET(request: NextRequest) {
   const limited = await rateLimitResponse(request, {
@@ -43,9 +43,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch KPI metrics from the service
-    const kpis = await getKPIMetrics(days);
+    const [kpis, dailySearches] = await Promise.all([
+      getKPIMetrics(days),
+      getDailySearchVolumes(days),
+    ]);
 
-    return NextResponse.json(kpis);
+    return NextResponse.json({ ...kpis, dailySearches });
   } catch (error) {
     console.error("Error fetching KPI metrics:", error);
     return NextResponse.json(
