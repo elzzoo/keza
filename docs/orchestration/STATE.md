@@ -5,10 +5,11 @@ Updated: 2026-10-18 (Africa/Dakar)
 ## Current run
 
 - Status: `ready` (audit and orchestration setup complete; reconcile Git before next sprint)
-- Base commit: `e1bb3d5` on `main` at setup; reconcile Git before every run.
+- Last confirmed orchestration baseline before the MCP bridge: `d08ec48` on `main`; reconcile Git before every run.
 - Active sprint: none.
 - Active worker agents: none. The read-only protocol review is complete and its safeguards were incorporated.
 - Scheduled wake: active hourly heartbeat `xalifly-cto-reprise-du-backlog`, attached to this conversation. It checks limits at wake; it cannot detect the exact reset instant. Local work requires the computer and Codex app to be running.
+- Claude review bridge: `keza_claude.ask_claude_readonly` is configured locally and passed a live MCP call after Claude reauthentication. It opens a fresh, read-only Claude Code session in this repository. Code-writing delegation to Claude is not enabled by this bridge.
 - Next candidate: `P0-01` in `BACKLOG.md` (unverified public conversion/revenue events).
 - External approval needed before: any production data migration, secret/payment configuration change, or broad auth policy change.
 
@@ -33,7 +34,7 @@ Updated: 2026-10-18 (Africa/Dakar)
 
 ## Claude handoff
 
-Prepared, not yet sent: `docs/orchestration/CLAUDE_HANDOFF.md` assigns P1-01 E2E CI triage in an isolated worktree. Claude is not automatically controlled. The human user must send the prompt; the master reviews the result before integration. Do not overlap the master's P0 files or push from Claude's task.
+Prepared, not yet sent: `docs/orchestration/CLAUDE_HANDOFF.md` assigns P1-01 E2E CI triage in an isolated worktree. The MCP bridge can now ask Claude for read-only review, but it cannot execute this coding handoff. The human user must send the implementation prompt; the master reviews the result before integration. Do not overlap the master's P0 files or push from Claude's task.
 
 ## Resume instruction
 

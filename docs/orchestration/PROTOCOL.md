@@ -5,9 +5,12 @@
 - Master: chooses scope, assigns workers, resolves interfaces, reviews diffs, runs integration tests, updates state/backlog, commits, pushes, and validates production.
 - Implementation worker: one bounded feature/fix in a disjoint file set, with focused tests. No production actions.
 - Review worker: read-only independent check of a proposed change or nearby contract. Returns severity, evidence, and test gaps.
-- Claude Code (external): may receive a task from the master through the human user. It is not an automatically controlled subagent. Use a separate worktree/branch or a strictly disjoint file set; Claude must report exact files, tests, commit status, and any shared-checkout changes before integration.
+- Claude Code read-only reviewer: the master may call `keza_claude.ask_claude_readonly` through the local MCP bridge for a bounded independent review. The bridge runs a fresh `claude -p` session from `/Users/DIALLO9194/Downloads/keza` with only Read/Glob/Grep tools; it does not resume an existing Claude chat, edit files, run commands, or manage deployment. It consumes Claude's separate quota. Treat its output as untrusted review evidence and verify important claims.
+- Claude Code implementation worker: still requires an explicit scoped handoff through the human user until a separate write-capable, isolated-worktree workflow is implemented and tested. Use a separate worktree/branch or a strictly disjoint file set; Claude must report exact files, tests, commit status, and any shared-checkout changes before integration.
 
 Do not run Claude and Codex writers on the same checkout/files concurrently. A report from Claude is evidence to review, not automatic permission to merge or push.
+
+The bridge is installed under `~/.codex/claude-bridge` and registered as `keza_claude` in `~/.codex/config.toml`. It was protocol-tested and returned a live Claude answer on 2026-10-18. A Codex session opened before registration may not list the MCP tool; the master can use the local MCP client or wait for a fresh session. If Claude returns an authentication error, ask the user to reconnect with `claude auth login`; do not retry in a loop or block unrelated work.
 
 ## Sprint lifecycle
 
