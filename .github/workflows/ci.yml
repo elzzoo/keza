@@ -72,10 +72,52 @@ jobs:
       - name: Run Jest offline suite
         run: npm test -- --passWithNoTests
 
-  # ── E2E tests (Playwright) ───────────────────────────────────────────────────
-  # DISABLED: E2E tests are environment-sensitive and currently flaky (7/106 failing)
-  # Unit tests + bundle checks provide sufficient code quality gates
-  # TODO: Fix alerts API test environment, re-enable E2E in CI
+  # ── Bounded local E2E smoke ──────────────────────────────────────────────────
+  e2e-smoke:
+    name: E2E smoke
+    runs-on: ubuntu-latest
+    needs: unit
+    env:
+      UPSTASH_REDIS_REST_URL: "https://fake-redis.upstash.io"
+      UPSTASH_REDIS_REST_TOKEN: "fake-token"
+      RESEND_API_KEY: "re_fake"
+      CRON_SECRET: "fake-cron-secret"
+      ADMIN_SECRET: "fake-admin-secret-32chars-minimum"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: "fake-vapid-key"
+      JWT_SECRET: "fake-jwt-secret-32-chars-minimum"
+      HMAC_SECRET: "fake-hmac-secret"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run local smoke tests
+        run: npx playwright test e2e/ci-smoke.spec.ts --project=chromium --workers=1
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-report
+          path: playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # The broader environment-sensitive E2E suite remains disabled (7/106 failing).
+  # Re-enable it only after its provider and alert fixtures are isolated.
   # e2e:
   #   name: E2E tests
   #   runs-on: ubuntu-latest

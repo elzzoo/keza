@@ -4,10 +4,10 @@ Updated: 2026-10-18 (Africa/Dakar)
 
 ## Current run
 
-- Status: `ready` (P1-01 E2E smoke delegation failed without changes; bridge diagnostics improved, no coding task active).
+- Status: `ready` (P1-01 local E2E smoke implemented and verified; broader E2E coverage remains queued).
 - Reconcile Git before every run; the authoritative commit is `git log -1`.
-- Active sprint: none. P1-01 phase 1 remains queued; no E2E files were changed.
-- Active worker agents: none. Claude MCP task `1794c1d8-018d-42c1-9206-cef8d6faa788` exited 1 after roughly four minutes with no structured output or file changes; its clean worktree was removed. A tiny read-only Claude probe succeeded afterward. The bridge now records exit signal and bounded stdout/stderr diagnostics on future failures. Do not retry the same broad prompt blindly.
+- Active sprint: none. P1-01 phase 1 is complete locally; P1-01 as a whole remains open.
+- Active worker agents: none. Claude MCP task `6a295f0d-91ef-4d01-b157-e1359f203187` completed the bounded smoke spec in an isolated worktree; master reviewed and integrated it, correcting the EN title assertion. The earlier broad task `1794c1d8-018d-42c1-9206-cef8d6faa788` failed without changes.
 - Scheduled wake: active hourly heartbeat `xalifly-cto-reprise-du-backlog`, attached to this conversation. It checks limits at wake; it cannot detect the exact reset instant. Local work requires the computer and Codex app to be running.
 - Claude bridge: `keza_claude` supports read-only review and asynchronous coding tasks in isolated worktrees. Its source is versioned in `tools/claude-bridge`; local configuration and job/worktree state remain under `~/.codex`. Smoke tests and P1-07 implementation completed. The master reviewed P1-07 and ran focused tests (63 passed), bridge tests (5 passed), TypeScript, lint, and a production build (existing Sentry/OpenTelemetry bundling warnings only). No Claude coding task is active. At resume, call `list_claude_code_tasks` before starting a new Claude assignment and inspect any unfinished worktree.
 - Next candidate: `P0-01` in `BACKLOG.md` (unverified public conversion/revenue events).
@@ -33,11 +33,11 @@ Updated: 2026-10-18 (Africa/Dakar)
 | P0-04 personalized search cache | queued | Unassigned | none | Not started | Wait for P0-03 sprint checkpoint |
 | P0-05 live price truth | queued | Unassigned | none | Not started | Verify supplier coverage and product claims |
 | P1-07 roundtrip return date | verified | Claude MCP + Master | See Git history | 63 focused tests, TypeScript, lint, build passed; full pre-push gate on release | Verify deployed SHA and close worktree |
-| P1-01 E2E smoke phase | queued | Claude MCP + Master | none | First broad Claude task failed with no edits; Playwright/CI not run | Split into smaller smoke-spec-only task after quota reset, then master tests |
+| P1-01 E2E smoke phase | verified locally, release pending | Claude MCP + Master | pending | 5/5 Chromium smoke tests passed with fake CI env; TypeScript, lint, YAML syntax passed | Push bounded CI gate, observe GitHub Actions; then add isolated tests for search/results, alerts, sign-in, checkout |
 
 ## Claude handoff
 
-`docs/orchestration/CLAUDE_HANDOFF.md` remains a prepared P1-01 handoff. The first MCP attempt to combine spec + CI setup was too broad and failed without edits. Next attempt should assign only `e2e/ci-smoke.spec.ts`, then separately configure CI after the master proves the spec locally. Do not overlap the master's P0 files or push from Claude's worktree.
+`docs/orchestration/CLAUDE_HANDOFF.md` documents the original P1-01 assignment. The smaller MCP assignment succeeded. The new smoke gate tests FR/EN home title, FR search entry, and FR/EN alert links only; it does not claim alert creation, sign-in, checkout, or supplier search coverage. Clicking through to the alert page with fake Redis did not render its heading in a local exploratory run; the exact cause is not yet isolated. Keep this as an E2E fixture/workflow follow-up, not a green alert-page claim. Claude must not overlap the master's P0 files or push from its worktree.
 
 ## Resume instruction
 
