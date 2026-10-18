@@ -1,6 +1,6 @@
 # Claude Code handoff - P1-01 E2E CI
 
-This is a prepared handoff, not an automatic assignment. The user must give it to Claude Code when Claude is available.
+This is a prepared handoff, not an active assignment. The master can dispatch a bounded version through `keza_claude.start_claude_code_task` with `ownedPaths` set to `e2e`, `playwright.config.ts`, and `.github/workflows/ci.yml`. In bridge mode Claude cannot run shell commands, so the master must run Playwright and the CI-equivalent checks. The manual prompt below remains a fallback for a full interactive Claude session.
 
 ## Prompt to send
 
