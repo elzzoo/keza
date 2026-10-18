@@ -40,9 +40,9 @@ for (const [stream, label] of [[child.stdout, 'stdout'], [child.stderr, 'stderr'
   });
 }
 
-const exitCode = await new Promise((resolve) => {
-  child.on('error', (error) => { stderr += error.message; resolve(-1); });
-  child.on('close', resolve);
+const outcome = await new Promise((resolve) => {
+  child.on('error', (error) => { stderr += error.message; resolve({ code: -1, signal: null }); });
+  child.on('close', (code, signal) => resolve({ code, signal }));
 });
 clearTimeout(timer);
 let response;
@@ -50,13 +50,17 @@ try { response = JSON.parse(stdout); } catch { response = null; }
 const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=all'], {
   cwd: job.worktree, encoding: 'utf8', timeout: 30_000,
 });
-job.status = exitCode === 0 && !response?.is_error && !timedOut && bytes <= MAX_BYTES ? 'complete' : 'failed';
+job.status = outcome.code === 0 && !response?.is_error && !timedOut && bytes <= MAX_BYTES ? 'complete' : 'failed';
 job.finishedAt = new Date().toISOString();
-job.exitCode = exitCode;
+job.exitCode = outcome.code;
+job.signal = outcome.signal;
 job.summary = String(response?.result ?? '').slice(0, 20_000);
 job.error = job.status === 'failed'
-  ? (response?.api_error_status === 401 ? 'Claude authentication expired (401)' : timedOut ? 'Claude task timed out' : bytes > MAX_BYTES ? 'Claude output exceeded size limit' : String(response?.result ?? stderr).slice(0, 2000))
+  ? (response?.api_error_status === 401 ? 'Claude authentication expired (401)' : timedOut ? 'Claude task timed out' : bytes > MAX_BYTES ? 'Claude output exceeded size limit' : String(response?.result || stderr || stdout.slice(-1000) || `Claude exited with code ${outcome.code}, signal ${outcome.signal ?? 'none'}, without diagnostics`).slice(0, 2000))
   : null;
+if (job.status === 'failed') {
+  job.diagnostics = { stdoutTail: stdout.slice(-1000), stderrTail: stderr.slice(-1000) };
+}
 job.changedPaths = status.status === 0 ? parsePorcelainStatus(status.stdout) : [];
 job.outsideScope = job.changedPaths.filter((file) => !job.ownedPaths.some((owned) => file === owned || file.startsWith(`${owned}/`)));
 if (job.outsideScope.length) job.status = 'needs_review';

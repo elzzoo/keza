@@ -52,7 +52,7 @@ export function writeJob(job) {
   mkdirSync(JOBS, { recursive: true });
   const target = jobPath(job.id);
   const temp = `${target}.${process.pid}.tmp`;
-  writeFileSync(temp, JSON.stringify(job, null, 2));
+  writeFileSync(temp, JSON.stringify(job, null, 2), { mode: 0o600 });
   renameSync(temp, target);
 }
 
