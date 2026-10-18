@@ -1,5 +1,7 @@
 # KEZA — Claude Code Context
 
+> Coordination note (2026-10-18): everything below is a historical snapshot, not operational instructions. In particular, its `v21` cache version, provider list, timeout, and synthetic-flight behavior are obsolete. Read `AGENTS.md`, `BACKLOG.md`, and `docs/orchestration/STATE.md` first; current code and tests override all snapshots below. Do not edit or push the master's files concurrently.
+
 ## What This App Does
 
 KEZA is a bilingual (FR/EN) flight price comparator built for diaspora travelers (Africa ↔ Europe/Americas focus). For every flight result, it computes whether paying in cash or burning frequent-flyer miles is cheaper, using real-time prices from Duffel and cached fares from Travelpayouts/Aviasales. The UI is Next.js 15 App Router, hosted on Vercel.

@@ -1,5 +1,61 @@
 # Backlog Xalifly (KEZA)
 
+## Backlog courant - 2026-10-18
+
+Base `e1bb3d5` sur `main`. Audit et preuves: [audit 360](docs/audits/2026-10-18-audit-360.md). Les sections sous "Archives" ci-dessous sont des notes historiques du 2026-09-16, **pas** le backlog actif.
+
+### Livrés depuis les anciens audits
+
+- Next.js 15, routes FR/EN et SEO multilingue sur les pages principales.
+- Moteur multi-fournisseur (Travelpayouts, Duffel, Amadeus), tests d'enrichissement et streaming.
+- Alertes avec tokens de gestion, limitation de debit, lecture Postgres prioritaire et repli Redis quand le flag est actif.
+- Dashboard admin protege et metriques de recherche issues de Postgres.
+- CI lint, TypeScript, Jest et budget bundle. Production `e1bb3d5`, `/api/health` Redis OK le 2026-10-18.
+
+### P0 - Verite, securite et revenus
+
+| ID | Action | Critere de fin | Taille |
+| --- | --- | --- | --- |
+| P0-01 | Fermer ou authentifier `/api/analytics/conversion`; ne comptabiliser du revenu qu'apres paiement/reservation verifie. | Un anonyme ne peut plus ecrire `conversionValue`; dashboard distingue ventes confirmees et clics; tests d'abus. | M |
+| P0-02 | Rendre l'essai Pro unique et atomique; retirer son attribution du rendu global et de la session repetee. | Aucune reattribution apres expiration, meme sous concurrence; test de non-regression. | M |
+| P0-03 | Fiabiliser le dispatch du cron quotidien (attente ou file durable, retry, etat final). | Aucun job annonce declenche avant confirmation; incidents observables et rejouables. | M |
+| P0-04 | Isoler `userPrograms` du cache de recherche classic/stream. | Deux profils miles differents ne recuperent pas la meme `optimization`; tests du cache et fallback. | M |
+| P0-05 | Qualifier les prix/deals "live" par source, fraicheur et disponibilite reservable. | Zero estimation/cache presente comme tarif live garanti; validation sur 3 corridors. | L |
+
+### P1 - Exploitation et contrats
+
+| ID | Action | Critere de fin | Taille |
+| --- | --- | --- | --- |
+| P1-01 | Reactiver les E2E critiques dans la CI. | Recherche, alerte, connexion, checkout et navigation FR/EN passent sur `main`. | M |
+| P1-02 | Etendre health/alerting a Postgres, fournisseurs et livraison de jobs/emails. | Incident simule remonte au tableau admin et a une alerte; runbook. | M |
+| P1-03 | Verifier l'email avant activation d'alerte; aligner quota API avec essai Pro. | Un tiers ne peut pas saturer le quota d'une autre adresse; tests d'abus. | M |
+| P1-04 | Reconciler analytics Redis/Postgres et origine des evenements; corriger l'en-tete Amadeus. | Metriques attribuables aux parcours reels, sources exactes. | M |
+| P1-05 | Supprimer les emails bruts des URLs de pixels/gestion; verifier retention et privacy. | Identifiants opaques et politique coherente avec les logs. | M |
+| P1-06 | Verifier sauvegarde/restauration et parite Postgres alertes en prod; actualiser le runbook. | Bascule et rollback testes, preview isolee. | M |
+| P1-07 | Exiger `returnDate` pour `roundtrip`. | 400 sur aller-retour incomplet; aucune reponse aller-simple mal etiquetee. | S |
+
+### P2 - Experience et croissance
+
+| ID | Action | Critere de fin | Taille |
+| --- | --- | --- | --- |
+| P2-01 | Refaire le parcours mobile recherche -> preuve -> decision -> alerte. | 5 tests utilisateurs et mesure d'abandon/conversion avant/apres. | L |
+| P2-02 | Rafraichir et documenter les valeurs miles (home: revue affichee mai 2026). | Date, source, methode et seuil de peremption par programme. | M |
+| P2-03 | Clarifier "100% gratuit" face a l'offre Pro payante. | Promesse coherente entre home, alertes, Pro et checkout. | S |
+| P2-04 | Completer l'audit i18n/SEO secondaire. | Hreflang, canonicals, traductions et liens EN verifies par tests. | M |
+| P2-05 | Mesurer CWV/latence et cout de `RootLayout` avant optimisation. | Baseline mobile/desktop, budgets par route, gains mesures. | M |
+
+### P3 - Architecture et marches
+
+| ID | Action | Critere de fin | Taille |
+| --- | --- | --- | --- |
+| P3-01 | Decouper `lib/alerts.ts` et les gros modules UI/data par responsabilite. | Contrats stables, tests verts, collaboration IA plus sure. | L |
+| P3-02 | Classer les features placeholder/experimentales (balance sync, multi-leg, ML). | Statut `live/experimental/off` documente, promesses non livrees retirees. | M |
+| P3-03 | Choisir les marches selon une matrice corridors x sources x devises x programmes. | Seuil minimal de resultats fiables par marche avant expansion. | M |
+
+Regle: un sprint = un resultat utilisateur mesure + ses tests. Codex integre les changements transversaux; Claude peut prendre des taches bornees sans chevauchement de fichiers, avec rapport avant integration.
+
+## Archives - constat du 2026-09-16 (non a jour)
+
 > Document vivant. État au 2026-09-16. Items marqués **[Claude — analyse]** viennent de cette session (analyse/proposition uniquement, rien commité). Items marqués **[Codex]** viennent des sprints prod en cours ce soir sur `main`.
 
 ## Derniers sprints livrés
