@@ -944,6 +944,140 @@ describe("POST /api/search/stream", () => {
       expect(mockSearchEngineStream).not.toHaveBeenCalled();
     });
 
+    it("should reject roundtrip with missing returnDate, engine not called", async () => {
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should reject roundtrip with empty returnDate, engine not called", async () => {
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+          returnDate: "",
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should reject roundtrip with malformed returnDate, engine not called", async () => {
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+          returnDate: "not-a-date",
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should reject roundtrip with past returnDate, engine not called", async () => {
+      const pastDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+          returnDate: pastDate,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should reject roundtrip with returnDate more than 1 year away, engine not called", async () => {
+      const tooFar = new Date(Date.now() + 400 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+          returnDate: tooFar,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngineStream).not.toHaveBeenCalled();
+    });
+
+    it("should accept valid roundtrip with returnDate after departure, engine called", async () => {
+      mockSearchEngineStream.mockResolvedValue([MOCK_FLIGHT]);
+      const returnDate = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+
+      const request = new Request("http://localhost:3000/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({
+          from: "SIN",
+          to: "LAX",
+          date: FUTURE_DATE,
+          tripType: "roundtrip",
+          returnDate,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      expect(mockSearchEngineStream).toHaveBeenCalledWith(
+        expect.objectContaining({ tripType: "roundtrip", returnDate }),
+        expect.any(Function),
+        expect.any(String)
+      );
+    });
+
     it("should default to oneway tripType when invalid", async () => {
       mockSearchEngineStream.mockResolvedValue([]);
 

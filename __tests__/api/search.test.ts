@@ -186,6 +186,48 @@ describe("POST /api/search", () => {
       expect(body.error).toBe("Return date must be after departure date");
     });
 
+    it("returns 400 for roundtrip with missing returnDate, engine not called", async () => {
+      const res = await POST(makeRequest({ ...VALID_BODY, tripType: "roundtrip" }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngine).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 for roundtrip with empty returnDate, engine not called", async () => {
+      const res = await POST(makeRequest({ ...VALID_BODY, tripType: "roundtrip", returnDate: "" }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngine).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 for roundtrip with malformed returnDate, engine not called", async () => {
+      const res = await POST(makeRequest({ ...VALID_BODY, tripType: "roundtrip", returnDate: "not-a-date" }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngine).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 for roundtrip with past returnDate, engine not called", async () => {
+      const pastDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const res = await POST(makeRequest({ ...VALID_BODY, tripType: "roundtrip", returnDate: pastDate }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngine).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 for roundtrip with returnDate more than 1 year away, engine not called", async () => {
+      const tooFar = new Date(Date.now() + 400 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const res = await POST(makeRequest({ ...VALID_BODY, tripType: "roundtrip", returnDate: tooFar }));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Return date is required for roundtrip searches");
+      expect(mockSearchEngine).not.toHaveBeenCalled();
+    });
+
     it("allows roundtrip when returnDate is after departure date", async () => {
       mockSearchEngine.mockResolvedValue([FLIGHT_RESULT]);
       const departureDate = FUTURE_DATE;

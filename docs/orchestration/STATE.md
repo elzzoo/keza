@@ -4,12 +4,12 @@ Updated: 2026-10-18 (Africa/Dakar)
 
 ## Current run
 
-- Status: `ready` (audit and orchestration setup complete; reconcile Git before next sprint)
-- Last confirmed orchestration baseline before the MCP bridge: `d08ec48` on `main`; reconcile Git before every run.
-- Active sprint: none.
-- Active worker agents: none. The read-only protocol review is complete and its safeguards were incorporated.
+- Status: `ready` (P1-07 implementation verified; reconcile commit and deployment SHA before the next sprint).
+- Reconcile Git before every run; the authoritative commit is `git log -1`.
+- Active sprint: none. P1-07 is verified locally; Git and `/api/version` are authoritative for release status.
+- Active worker agents: none. Claude MCP task `a147cc7e-6dfb-49fa-86b7-cb7244b4b985` completed in a detached worktree, and the master reviewed its diff and applied it to `main`. Remove that worktree only after release verification; it contains no untracked files.
 - Scheduled wake: active hourly heartbeat `xalifly-cto-reprise-du-backlog`, attached to this conversation. It checks limits at wake; it cannot detect the exact reset instant. Local work requires the computer and Codex app to be running.
-- Claude review bridge: `keza_claude.ask_claude_readonly` is configured locally and passed a live MCP call after Claude reauthentication. It opens a fresh, read-only Claude Code session in this repository. Code-writing delegation to Claude is not enabled by this bridge.
+- Claude bridge: `keza_claude` supports read-only review and asynchronous coding tasks in isolated worktrees. Its source is versioned in `tools/claude-bridge`; local configuration and job/worktree state remain under `~/.codex`. Smoke tests and P1-07 implementation completed. The master reviewed P1-07 and ran focused tests (63 passed), bridge tests (5 passed), TypeScript, lint, and a production build (existing Sentry/OpenTelemetry bundling warnings only). No Claude coding task is active. At resume, call `list_claude_code_tasks` before starting a new Claude assignment and inspect any unfinished worktree.
 - Next candidate: `P0-01` in `BACKLOG.md` (unverified public conversion/revenue events).
 - External approval needed before: any production data migration, secret/payment configuration change, or broad auth policy change.
 
@@ -31,10 +31,11 @@ Updated: 2026-10-18 (Africa/Dakar)
 | P0-03 daily cron dispatch | queued | Unassigned | none | Not started | Wait for P0-02 sprint checkpoint |
 | P0-04 personalized search cache | queued | Unassigned | none | Not started | Wait for P0-03 sprint checkpoint |
 | P0-05 live price truth | queued | Unassigned | none | Not started | Verify supplier coverage and product claims |
+| P1-07 roundtrip return date | verified | Claude MCP + Master | See Git history | 63 focused tests, TypeScript, lint, build passed; full pre-push gate on release | Verify deployed SHA and close worktree |
 
 ## Claude handoff
 
-Prepared, not yet sent: `docs/orchestration/CLAUDE_HANDOFF.md` assigns P1-01 E2E CI triage in an isolated worktree. The MCP bridge can now ask Claude for read-only review, but it cannot execute this coding handoff. The human user must send the implementation prompt; the master reviews the result before integration. Do not overlap the master's P0 files or push from Claude's task.
+Prepared, not yet dispatched: `docs/orchestration/CLAUDE_HANDOFF.md` assigns P1-01 E2E CI triage. The master may now dispatch a bounded version through `start_claude_code_task` with exact owned paths, then run tests and review all changes. Do not overlap the master's P0 files or push from Claude's worktree.
 
 ## Resume instruction
 

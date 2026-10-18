@@ -59,6 +59,10 @@ export function parseSearchParams(body: Partial<SearchParams>): SearchInputResul
   const tripType = body.tripType === "roundtrip" ? "roundtrip" : "oneway";
   const returnDate = isValidFutureDate(body.returnDate) ? body.returnDate : undefined;
 
+  if (tripType === "roundtrip" && !returnDate) {
+    return { ok: false, error: "Return date is required for roundtrip searches" };
+  }
+
   if (tripType === "roundtrip" && returnDate && returnDate <= date) {
     return { ok: false, error: "Return date must be after departure date" };
   }

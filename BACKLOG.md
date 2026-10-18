@@ -32,7 +32,7 @@ Base `e1bb3d5` sur `main`. Audit et preuves: [audit 360](docs/audits/2026-10-18-
 | P1-04 | Reconciler analytics Redis/Postgres et origine des evenements; corriger l'en-tete Amadeus. | Metriques attribuables aux parcours reels, sources exactes. | M |
 | P1-05 | Supprimer les emails bruts des URLs de pixels/gestion; verifier retention et privacy. | Identifiants opaques et politique coherente avec les logs. | M |
 | P1-06 | Verifier sauvegarde/restauration et parite Postgres alertes en prod; actualiser le runbook. | Bascule et rollback testes, preview isolee. | M |
-| P1-07 | Exiger `returnDate` pour `roundtrip`. | 400 sur aller-retour incomplet; aucune reponse aller-simple mal etiquetee. | S |
+| P1-07 (fait 2026-10-18) | Exiger `returnDate` pour `roundtrip`. | 400 sur aller-retour incomplet; aucune reponse aller-simple mal etiquetee. | S |
 
 ### P2 - Experience et croissance
 
