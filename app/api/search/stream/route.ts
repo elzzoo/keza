@@ -26,7 +26,7 @@ export const maxDuration = 10;
  * Performance tracking:
  * - Measures cache hit time, Duffel time, TP time, and total time
  * - Logs results to Sentry for performance monitoring
- * - Falls back to v27, v26 caches if search fails
+ * - Falls back only to profile-aware caches if search fails
  */
 export async function POST(request: Request) {
   const requestId = randomUUID();
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       } catch (err) {
         logError("[api/search/stream]", err, { requestId });
 
-        // Fallback chain: try v27, then v26 caches
+        // Older unscoped caches cannot safely serve personalized results.
         if (!partialSent) {
           const keyParams = {
             from, to, date,
@@ -139,6 +139,7 @@ export async function POST(request: Request) {
             stops: searchParams.stops!,
             cabin: searchParams.cabin!,
             passengers,
+            userPrograms: searchParams.userPrograms,
           };
           const versions = [CACHE_VERSION, ...CACHE_VERSION_FALLBACKS];
           let fallbackResults: FlightResult[] = [];

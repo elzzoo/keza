@@ -29,7 +29,7 @@ jest.mock("@/lib/engine/stream", () => ({
 
 jest.mock("@/lib/engine", () => ({
   CACHE_VERSION: "v29",
-  CACHE_VERSION_FALLBACKS: ["v28", "v27", "v26"],
+  CACHE_VERSION_FALLBACKS: [],
 }));
 
 jest.mock("@/lib/autoCalibrate", () => ({
@@ -393,6 +393,24 @@ describe("POST /api/search/stream", () => {
       const errorEvent = events.find((e) => e.type === "error");
       expect(errorEvent).toBeDefined();
       expect(errorEvent?.message).toContain("no cached results");
+    });
+
+    it("uses a distinct fallback cache key for each loyalty profile", async () => {
+      mockSearchEngineStream.mockRejectedValue(new Error("Search failed"));
+      mockRedisGet.mockResolvedValue(null);
+
+      for (const userPrograms of [["Flying Blue"], ["Avios"]]) {
+        const request = new Request("http://localhost:3000/api/search/stream", {
+          method: "POST",
+          body: JSON.stringify({ from: "SIN", to: "LAX", date: FUTURE_DATE, userPrograms }),
+          headers: { "Content-Type": "application/json" },
+        });
+        await consumeResponse(await POST(request));
+      }
+
+      const keys = mockRedisGet.mock.calls.map(([key]) => key);
+      expect(keys).toHaveLength(2);
+      expect(keys[0]).not.toBe(keys[1]);
     });
 
     it("should set partialSent flag correctly in fallback logic", async () => {

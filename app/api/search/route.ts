@@ -74,8 +74,7 @@ export async function POST(request: Request) {
     let fromCache = false;
 
     if (timedOut || engineResult === null) {
-      // Try current version first, then fall back through older versions.
-      // This prevents empty results when the cache was just bumped (cold v19).
+      // Only profile-aware cache versions are eligible for timeout recovery.
       const keyParams = {
         from, to, date,
         tripType: searchParams.tripType!,
@@ -83,6 +82,7 @@ export async function POST(request: Request) {
         stops: searchParams.stops!,
         cabin: searchParams.cabin!,
         passengers,
+        userPrograms: searchParams.userPrograms,
       };
       const versions = [CACHE_VERSION, ...CACHE_VERSION_FALLBACKS];
       results = [];

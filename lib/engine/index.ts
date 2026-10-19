@@ -27,12 +27,10 @@ import { mergeProviderFlights, prependDirectTravelpayoutsFallback } from "./prov
 //  2. A post-processing fix is deployed that must invalidate stale results
 //  3. New field added to miles options or cost comparison
 // See keza-project skill for full rules.
-export const CACHE_VERSION = "v30"; // bumped: P5.2 scoring engine integration
+export const CACHE_VERSION = "v31"; // profile-aware keys must never read v30 results
 
-// Fallback cache versions — checked in order on timeout/cache miss
-// Allows graceful degradation when current version is bumped (cold cache)
-// by falling back to previous versions' cached results
-export const CACHE_VERSION_FALLBACKS = ["v29", "v28", "v27", "v26"] as const;
+// Older caches have no profile identity and can contain another user's optimization.
+export const CACHE_VERSION_FALLBACKS: readonly string[] = [];
 
 /**
  * Main flight search orchestrator. Fetches flights from Duffel (real-time) + Travelpayouts (fallback),
@@ -88,6 +86,7 @@ export async function searchEngine(
     stops,
     cabin,
     passengers,
+    userPrograms,
   });
 
   // 1. Cache check + effectivePrices in parallel

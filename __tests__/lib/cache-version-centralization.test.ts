@@ -44,12 +44,10 @@ describe("Cache Version Centralization", () => {
     }
   });
 
-  it("starts fallbacks from the immediately previous cache version", async () => {
+  it("does not fall back to caches created without profile identity", async () => {
     const engineModule = await import("@/lib/engine");
-    const currentNumber = parseInt(engineModule.CACHE_VERSION.slice(1), 10);
-    const firstFallbackNumber = parseInt(engineModule.CACHE_VERSION_FALLBACKS[0].slice(1), 10);
-
-    expect(firstFallbackNumber).toBe(currentNumber - 1);
+    expect(engineModule.CACHE_VERSION).toBe("v31");
+    expect(engineModule.CACHE_VERSION_FALLBACKS).toEqual([]);
   });
 
   it("search route imports fallbacks from engine", async () => {
@@ -64,11 +62,6 @@ describe("Cache Version Centralization", () => {
     const streamRouteContent = await import("@/app/api/search/stream/route");
     // If import succeeds, the route compiled correctly with centralized import
     expect(streamRouteContent).toBeDefined();
-  });
-
-  it("provides at least 3 fallback versions", async () => {
-    const engineModule = await import("@/lib/engine");
-    expect(engineModule.CACHE_VERSION_FALLBACKS.length).toBeGreaterThanOrEqual(3);
   });
 
   it("cache version format is consistent (vNN)", async () => {

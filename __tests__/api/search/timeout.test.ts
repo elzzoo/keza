@@ -15,7 +15,7 @@ const mockLogWarn = jest.fn();
 jest.mock("@/lib/engine", () => ({
   searchEngine: (...args: unknown[]) => mockSearchEngine(...args),
   CACHE_VERSION: "vTEST",
-  CACHE_VERSION_FALLBACKS: ["v27", "v26"],
+  CACHE_VERSION_FALLBACKS: [],
 }));
 
 jest.mock("@/lib/autoCalibrate", () => ({
@@ -189,6 +189,18 @@ describe("POST /api/search — timeout capture", () => {
         partialResultCount: 0,
       })
     );
+  });
+
+  it("isolates timeout fallback results by loyalty profile", async () => {
+    mockSearchEngine.mockResolvedValue(null);
+    mockRedisGet.mockResolvedValue(null);
+
+    await POST(makeRequest({ ...VALID_BODY, userPrograms: ["Flying Blue"] }));
+    await POST(makeRequest({ ...VALID_BODY, userPrograms: ["Avios"] }));
+
+    const keys = mockRedisGet.mock.calls.map(([key]) => key);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).not.toBe(keys[1]);
   });
 
   it("does not log timeout when search completes successfully", async () => {

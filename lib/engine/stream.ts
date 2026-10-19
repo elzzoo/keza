@@ -115,6 +115,7 @@ export async function searchEngineStream(
       stops,
       cabin,
       passengers,
+      userPrograms,
     });
 
     // Load cache + prices + promotions all in parallel (before any provider call)

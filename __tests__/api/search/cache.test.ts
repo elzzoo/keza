@@ -16,7 +16,7 @@ const mockSentryCaptureMessage = jest.fn();
 jest.mock("@/lib/engine", () => ({
   searchEngine: (...args: unknown[]) => mockSearchEngine(...args),
   CACHE_VERSION: "vTEST",
-  CACHE_VERSION_FALLBACKS: ["v27", "v26"],
+  CACHE_VERSION_FALLBACKS: [],
 }));
 
 jest.mock("@/lib/autoCalibrate", () => ({
@@ -171,20 +171,14 @@ describe("POST /api/search — cache hit/miss tracking", () => {
     );
   });
 
-  it("logs cache hit with version when falling back to older cache version", async () => {
+  it("never reads a legacy cache after a current-version miss", async () => {
     mockSearchEngine.mockResolvedValue(null);
-    // First call (vTEST): returns null
-    // Second call (v20): returns results
     mockRedisGet.mockResolvedValueOnce(null).mockResolvedValueOnce([FLIGHT_RESULT]);
 
     const res = await POST(makeRequest(VALID_BODY));
     expect(res.status).toBe(200);
-
-    // Should log cache hit with the version that had results
-    expect(mockSentryCaptureMessage).toHaveBeenCalledWith(
-      expect.stringContaining("Cache hit: CDG→DSS from"),
-      "debug"
-    );
+    expect((await res.json()).fromCache).toBe(false);
+    expect(mockRedisGet).toHaveBeenCalledTimes(1);
   });
 
   it("does not log cache hit when search completes successfully (normal path)", async () => {

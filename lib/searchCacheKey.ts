@@ -1,3 +1,4 @@
+import { hash } from "fast-sha256";
 import type { Cabin, Stops, TripType } from "@/lib/engine/types";
 
 export interface SearchCacheKeyParams {
@@ -9,9 +10,14 @@ export interface SearchCacheKeyParams {
   stops: Stops | string;
   cabin: Cabin | string;
   passengers: number;
+  userPrograms: readonly string[];
 }
 
 export function buildSearchCacheKey(version: string, params: SearchCacheKeyParams): string {
+  const profileHash = Array.from(
+    hash(new TextEncoder().encode(JSON.stringify(params.userPrograms))),
+    (byte) => byte.toString(16).padStart(2, "0"),
+  ).join("");
   return [
     "keza",
     version,
@@ -23,5 +29,6 @@ export function buildSearchCacheKey(version: string, params: SearchCacheKeyParam
     params.stops,
     params.cabin,
     params.passengers,
+    profileHash,
   ].join(":");
 }

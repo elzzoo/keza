@@ -117,4 +117,26 @@ describe("searchEngineStream P5.2 scoring", () => {
       expect.objectContaining({ ex: 3600, nx: true }),
     );
   });
+
+  it("uses separate read and write cache keys for loyalty profiles", async () => {
+    const params = {
+      from: "CDG",
+      to: "JFK",
+      date: "2026-10-01",
+      cabin: "economy" as const,
+      passengers: 1,
+      tripType: "oneway" as const,
+      stops: "any" as const,
+    };
+
+    await searchEngineStream({ ...params, userPrograms: ["Flying Blue"] }, jest.fn());
+    await searchEngineStream({ ...params, userPrograms: ["Avios"] }, jest.fn());
+
+    const readKeys = mockRedisGet.mock.calls.map(([key]) => key);
+    const writeKeys = mockRedisSet.mock.calls.map(([key]) => key);
+    expect(readKeys).toHaveLength(2);
+    expect(writeKeys).toHaveLength(2);
+    expect(readKeys[0]).not.toBe(readKeys[1]);
+    expect(writeKeys).toEqual(readKeys);
+  });
 });
