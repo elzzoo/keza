@@ -240,6 +240,72 @@ describe("Results", () => {
     expect(screen.getByText("Cache")).toBeInTheDocument();
     expect(screen.getByText("Estimated")).toBeInTheDocument();
     expect(screen.getByText(/Live prices are available for part/i)).toBeInTheDocument();
+    expect(screen.queryByText("(indicative)")).not.toBeInTheDocument();
+  });
+
+  it("does not claim a live fare when the source is missing or unverified", () => {
+    render(
+      <Results
+        results={[makeFlight({ priceConfidence: "HIGH" })]}
+        loading={false}
+        lang="en"
+        onBack={noop}
+      />
+    );
+
+    expect(screen.getByText("Unverified")).toBeInTheDocument();
+    expect(screen.getByText(/Price source is unverified/i)).toBeInTheDocument();
+    expect(screen.queryByText("Live")).not.toBeInTheDocument();
+    expect(screen.getByText("(indicative)")).toBeInTheDocument();
+  });
+
+  it("keeps estimated cabin prices out of the live category", () => {
+    render(
+      <Results
+        results={[makeFlight({ source: "DUFFEL", priceConfidence: "HIGH", cabinPriceEstimated: true })]}
+        loading={false}
+        lang="fr"
+        onBack={noop}
+      />
+    );
+
+    expect(screen.getByText("Estimé")).toBeInTheDocument();
+    expect(screen.getByText(/Prix indicatifs/i)).toBeInTheDocument();
+    expect(screen.queryByText("Live")).not.toBeInTheDocument();
+    expect(screen.getByText("(indicatif)")).toBeInTheDocument();
+  });
+
+  it("does not relabel provider-cache prices as live when confidence conflicts", () => {
+    render(
+      <Results
+        results={[makeFlight({ source: "TP", priceConfidence: "HIGH" })]}
+        loading={false}
+        lang="en"
+        onBack={noop}
+      />
+    );
+
+    expect(screen.getByText("Cache")).toBeInTheDocument();
+    expect(screen.getByText(/Prices come from provider cache/i)).toBeInTheDocument();
+    expect(screen.queryByText("Live")).not.toBeInTheDocument();
+  });
+
+  it("distinguishes mixed live and unverified results", () => {
+    render(
+      <Results
+        results={[
+          makeFlight({ searchId: "live", source: "AMADEUS", priceConfidence: "HIGH" }),
+          makeFlight({ searchId: "unknown", source: "DUFFEL", priceConfidence: "LOW" }),
+        ]}
+        loading={false}
+        lang="en"
+        onBack={noop}
+      />
+    );
+
+    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText("Unverified")).toBeInTheDocument();
+    expect(screen.getByText(/Live prices are available for part/i)).toBeInTheDocument();
   });
 
   it("shows loading text in French when lang=fr", () => {

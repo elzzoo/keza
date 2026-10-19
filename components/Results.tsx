@@ -53,11 +53,14 @@ const L = {
     qualityLive: "Live",
     qualityCached: "Cache",
     qualityEstimated: "Estimé",
+    qualityUnknown: "Non vérifié",
     qualityAllLive: "Prix temps réel disponibles sur tous les résultats affichés.",
-    qualitySomeLive: "Prix temps réel disponibles sur une partie des résultats.",
+    qualitySomeLive: "Prix temps réel disponibles sur une partie des résultats. Vérifiez les autres tarifs avant réservation.",
     qualityCachedOnly: "Prix issus de cache fournisseur. Vérifiez le tarif final avant réservation.",
     qualityEstimatedOnly: "Prix indicatifs. Vérifiez auprès de la compagnie avant de décider.",
     qualityMixedEstimate: "Résultats mêlant cache fournisseur et estimations de route.",
+    qualityUnknownOnly: "Source de prix non vérifiée. Confirmez le tarif final avant réservation.",
+    qualityMixedUnknown: "Certains prix ont une source non vérifiée. Confirmez les tarifs avant réservation.",
     showingSorted: (visible: number, total: number, sort: string) =>
       `${visible} sur ${total} vol${total > 1 ? "s" : ""} affiché${visible > 1 ? "s" : ""} · trié par ${sort}`,
     sortValue: "meilleure valeur",
@@ -97,11 +100,14 @@ const L = {
     qualityLive: "Live",
     qualityCached: "Cache",
     qualityEstimated: "Estimated",
+    qualityUnknown: "Unverified",
     qualityAllLive: "Live prices are available for every displayed result.",
-    qualitySomeLive: "Live prices are available for part of these results.",
+    qualitySomeLive: "Live prices are available for part of these results. Verify other fares before booking.",
     qualityCachedOnly: "Prices come from provider cache. Verify the final fare before booking.",
     qualityEstimatedOnly: "Prices are indicative. Verify with the airline before deciding.",
     qualityMixedEstimate: "Results combine provider cache and route estimates.",
+    qualityUnknownOnly: "Price source is unverified. Confirm the final fare before booking.",
+    qualityMixedUnknown: "Some price sources are unverified. Confirm fares before booking.",
     showingSorted: (visible: number, total: number, sort: string) =>
       `${visible} of ${total} flight${total > 1 ? "s" : ""} shown · sorted by ${sort}`,
     sortValue: "best value",
@@ -194,28 +200,34 @@ type PriceQualitySummary = {
   live: number;
   cached: number;
   estimated: number;
+  unknown: number;
 };
+
+function getPriceQuality(result: FlightResult): keyof PriceQualitySummary {
+  if (result.isSupplemental || result.source === "SYNTHETIC" || result.priceConfidence === "ESTIMATED" || result.priceIsEstimate || result.cabinPriceEstimated) {
+    return "estimated";
+  }
+  if (result.source === "TP") return "cached";
+  if ((result.source === "DUFFEL" || result.source === "AMADEUS") && result.priceConfidence === "HIGH") return "live";
+  return "unknown";
+}
 
 function getPriceQualitySummary(results: FlightResult[]): PriceQualitySummary {
   return results.reduce<PriceQualitySummary>(
     (summary, result) => {
-      if (result.isSupplemental || result.source === "SYNTHETIC" || result.priceConfidence === "ESTIMATED") {
-        summary.estimated += 1;
-      } else if (result.source === "TP" || result.priceConfidence === "LOW") {
-        summary.cached += 1;
-      } else {
-        summary.live += 1;
-      }
+      summary[getPriceQuality(result)] += 1;
       return summary;
     },
-    { live: 0, cached: 0, estimated: 0 }
+    { live: 0, cached: 0, estimated: 0, unknown: 0 }
   );
 }
 
 function getPriceQualityMessage(summary: PriceQualitySummary, lang: "fr" | "en") {
   const t = L[lang];
-  if (summary.live > 0 && summary.cached === 0 && summary.estimated === 0) return t.qualityAllLive;
+  if (summary.live > 0 && summary.cached === 0 && summary.estimated === 0 && summary.unknown === 0) return t.qualityAllLive;
   if (summary.live > 0) return t.qualitySomeLive;
+  if (summary.unknown > 0 && summary.cached === 0 && summary.estimated === 0) return t.qualityUnknownOnly;
+  if (summary.unknown > 0) return t.qualityMixedUnknown;
   if (summary.estimated > 0 && summary.cached > 0) return t.qualityMixedEstimate;
   if (summary.estimated > 0) return t.qualityEstimatedOnly;
   return t.qualityCachedOnly;
@@ -312,18 +324,18 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
-  // Track whether the best savings figure comes from a non-HIGH confidence source
-  const maxSavingsIsEstimate = results.length > 0 && (() => {
+  const maxSavingsIsIndicative = results.length > 0 && (() => {
     const bestSavingsResult = results.reduce<typeof results[0] | null>(
       (best, r) => r.savings > (best?.savings ?? 0) ? r : best, null
     );
-    return bestSavingsResult?.priceConfidence !== "HIGH";
+    return bestSavingsResult !== null && getPriceQuality(bestSavingsResult) !== "live";
   })();
   const priceQuality = useMemo(() => getPriceQualitySummary(results), [results]);
   const priceQualityItems = [
     { key: "live", label: t.qualityLive, count: priceQuality.live, tone: "success" as const },
     { key: "cached", label: t.qualityCached, count: priceQuality.cached, tone: "warning" as const },
     { key: "estimated", label: t.qualityEstimated, count: priceQuality.estimated, tone: "neutral" as const },
+    { key: "unknown", label: t.qualityUnknown, count: priceQuality.unknown, tone: "neutral" as const },
   ].filter(item => item.count > 0);
 
   // Use milesOptions from the best-deal result, fallback to first result
@@ -494,8 +506,10 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
             <p className={`font-black text-success ${fmt(maxSavings).length > 10 ? "text-sm" : "text-xl"}`}>
               +{fmt(maxSavings)}
-              {maxSavings > 0 && maxSavingsIsEstimate && (
-                <span className="text-[9px] font-medium text-muted/70 ml-1 align-middle">(est.)</span>
+              {maxSavings > 0 && maxSavingsIsIndicative && (
+                <span className="text-[9px] font-medium text-muted/70 ml-1 align-middle">
+                  {lang === "fr" ? "(indicatif)" : "(indicative)"}
+                </span>
               )}
             </p>
             <p className="text-[11px] text-muted mt-0.5">{t.savings}</p>
