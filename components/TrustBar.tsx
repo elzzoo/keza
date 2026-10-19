@@ -50,16 +50,16 @@ function TrustIcon({ name }: { name: TrustIconName }) {
 
 const ITEMS = {
   fr: [
+    { icon: "free" as const, value: "Recherche", label: "gratuite" },
     { icon: "airport" as const, value: "7 900+", label: "aéroports" },
     { icon: "program" as const, value: "33", label: "programmes miles" },
     { icon: "airline" as const, value: "120+", label: "compagnies" },
-    { icon: "free" as const, value: "100%", label: "gratuit" },
   ],
   en: [
+    { icon: "free" as const, value: "Free", label: "search" },
     { icon: "airport" as const, value: "7,900+", label: "airports" },
     { icon: "program" as const, value: "33", label: "miles programs" },
     { icon: "airline" as const, value: "120+", label: "airlines" },
-    { icon: "free" as const, value: "100%", label: "free" },
   ],
 };
 

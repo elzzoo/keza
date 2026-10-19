@@ -20,10 +20,13 @@ describe("homepage trust copy", () => {
     const { rerender } = render(<TrustBar lang="fr" />);
     expect(screen.getByText("7 900+")).toBeInTheDocument();
     expect(screen.getByText("programmes miles")).toBeInTheDocument();
+    expect(screen.getByText("Recherche").parentElement).toHaveTextContent("Recherche gratuite");
+    expect(screen.queryByText("100%")).not.toBeInTheDocument();
 
     rerender(<TrustBar lang="en" />);
     expect(screen.getByText("7,900+")).toBeInTheDocument();
     expect(screen.getByText("miles programs")).toBeInTheDocument();
+    expect(screen.getByText("Free").parentElement).toHaveTextContent("Free search");
   });
 
   it("explains the workflow without internal verdict jargon", () => {
@@ -43,5 +46,17 @@ describe("homepage trust copy", () => {
 
     expect(read("components/TrustBar.tsx")).not.toMatch(noisyEmoji);
     expect(read("components/HowItWorks.tsx")).not.toMatch(noisyEmoji);
+  });
+
+  it("labels the static decision as illustrative instead of a live fare", () => {
+    const home = read("app/HomeClient.tsx");
+    const destination = read("app/destinations/[iata]/DestinationPageClient.tsx");
+
+    expect(home).toContain('"montant illustratif"');
+    expect(home).toContain('"illustrative amount"');
+    expect(home).not.toMatch(/prix live|live fare|Prix cash en temps réel|Live cash prices/);
+    expect(destination).toContain('"Entre tes dates pour comparer les prix disponibles :"');
+    expect(destination).toContain('"Enter your dates to compare available prices:"');
+    expect(destination).not.toMatch(/Prix live|Live prices — enter your dates/);
   });
 });

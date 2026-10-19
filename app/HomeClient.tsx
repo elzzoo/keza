@@ -145,7 +145,7 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
             <div className="text-center lg:text-left space-y-4">
               <Badge tone="primary" className="mx-auto lg:mx-0 px-4 py-1.5 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                {lang === "fr" ? "Comparateur cash vs miles · Prix cash en temps réel" : "Cash vs miles comparator · Live cash prices"}
+                {lang === "fr" ? "Comparateur cash vs miles" : "Cash vs miles comparison"}
               </Badge>
 
               <div className="space-y-2">
@@ -176,13 +176,13 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
                 <span className="text-xs font-bold uppercase tracking-wider text-muted">
                   {lang === "fr" ? "Exemple de décision" : "Decision example"}
                 </span>
-                <Badge tone="success">{lang === "fr" ? "Instantané" : "Instant"}</Badge>
+                <Badge tone="neutral">Illustration</Badge>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border bg-surface-2 p-3">
                   <div className="text-xs text-muted">{lang === "fr" ? "Cash" : "Cash"}</div>
                   <div className="mt-1 text-2xl font-black text-fg">$642</div>
-                  <div className="mt-1 text-[11px] text-muted">{lang === "fr" ? "prix live" : "live fare"}</div>
+                  <div className="mt-1 text-[11px] text-muted">{lang === "fr" ? "montant illustratif" : "illustrative amount"}</div>
                 </div>
                 <div className="rounded-xl border border-primary/25 bg-primary/10 p-3">
                   <div className="text-xs text-muted">{lang === "fr" ? "Miles" : "Miles"}</div>

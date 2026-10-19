@@ -353,8 +353,8 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
         <div className="mb-2">
           <p className="text-xs text-muted mb-3">
             {fr
-              ? "Prix live — entre tes dates pour une comparaison exacte :"
-              : "Live prices — enter your dates for an exact comparison:"
+              ? "Entre tes dates pour comparer les prix disponibles :"
+              : "Enter your dates to compare available prices:"
             }
           </p>
           <SearchForm
