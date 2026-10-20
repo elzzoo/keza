@@ -37,8 +37,8 @@ const SECURITY_HEADERS = [
 ];
 
 // City-name slug → IATA redirects.
-// These URLs appear in the sitemap for long-tail SEO but the [route] page
-// expects 3-char IATA codes. 301 redirects preserve link equity.
+// Inbound city-name URLs redirect because [route] expects 3-char IATA codes.
+// The sitemap lists only the canonical IATA destinations.
 const CITY_SLUG_REDIRECTS = [
   { source: "/flights/paris-dakar",         destination: "/flights/CDG-DSS", permanent: true },
   { source: "/flights/dakar-paris",         destination: "/flights/DSS-CDG", permanent: true },

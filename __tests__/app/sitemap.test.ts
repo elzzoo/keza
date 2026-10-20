@@ -35,6 +35,19 @@ describe("sitemap", () => {
     }
   });
 
+  it("submits only canonical IATA flight routes, not redirecting city slugs", () => {
+    const flightUrls = pages
+      .map((entry) => entry.url)
+      .filter((url) => url.includes("/flights/"));
+
+    expect(flightUrls.length).toBeGreaterThan(0);
+    for (const url of flightUrls) {
+      expect(url).toMatch(/^https:\/\/[^/]+\/(?:en\/)?flights\/[A-Z]{3}-[A-Z]{3}$/);
+    }
+    expect(urls.has(`${SITE_URL}/flights/paris-dakar`)).toBe(false);
+    expect(urls.has(`${SITE_URL}/flights/CDG-DSS`)).toBe(true);
+  });
+
   it("has no duplicate URLs", () => {
     const seen = new Set<string>();
     const duplicates: string[] = [];

@@ -238,34 +238,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  // City-slug SEO URLs for long-tail search traffic
-  const CITY_SLUG_ROUTES = [
-    ["paris", "dakar"],
-    ["dakar", "paris"],
-    ["london", "lagos"],
-    ["paris", "abidjan"],
-    ["paris", "casablanca"],
-    ["london", "nairobi"],
-    ["london", "johannesburg"],
-    ["paris", "new-york"],
-    ["new-york", "london"],
-    ["dubai", "london"],
-    ["istanbul", "london"],
-    ["paris", "tokyo"],
-    ["london", "dubai"],
-    ["london", "singapore"],
-    ["new-york", "paris"],
-  ];
-
-  for (const [from, to] of CITY_SLUG_ROUTES) {
-    pages.push({
-      url: `${BASE_URL}/flights/${from}-${to}`,
-      lastModified: now,
-      changeFrequency: "daily" as const,
-      priority: 0.75,
-    });
-  }
-
   // ── /vol index (FR + EN) ─────────────────────────────────────────────────
   // Only the index/listing page is submitted here. The per-route /vol/[route]
   // pages are NOT listed: they now declare /flights/{ROUTE} as their
