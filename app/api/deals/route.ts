@@ -25,10 +25,13 @@ export async function GET(request: Request) {
   try {
     const cached = await redis.get<LiveDeal[]>(DEALS_KEY);
     if (cached && Array.isArray(cached) && cached.length > 0) {
-      return NextResponse.json({ deals: cached, source: "live" });
+      return NextResponse.json({ deals: cached, source: "cache" });
     }
   } catch (err) {
     logError("[api/deals]", err);
   }
-  return NextResponse.json({ deals: FALLBACK_DEALS, source: "fallback" });
+  return NextResponse.json({
+    deals: FALLBACK_DEALS.map((deal) => ({ ...deal, cashSource: "static-example" as const })),
+    source: "fallback",
+  });
 }

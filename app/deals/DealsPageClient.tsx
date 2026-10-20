@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import type { LiveDeal, DealRecommendation } from "@/lib/dealsEngine";
+import { dealPriceContext, type LiveDeal, type DealRecommendation } from "@/lib/dealsEngine";
 import { trackDealsFilter, trackDealShare } from "@/lib/analytics";
 import { SITE_URL } from "@/lib/siteConfig";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
@@ -206,6 +206,8 @@ function DealCard({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | "en" })
           <p className="text-lg font-black text-fg">{deal.milesRequired.toLocaleString(lang === "en" ? "en-US" : "fr-FR")}</p>
         </div>
       </div>
+
+      <p className="text-[11px] text-muted">{dealPriceContext(deal, lang)}</p>
 
       {/* CPM ratio */}
       <div className="flex items-center justify-between text-xs text-subtle">

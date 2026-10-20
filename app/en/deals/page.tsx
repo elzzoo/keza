@@ -58,7 +58,7 @@ async function getDeals(): Promise<LiveDeal[]> {
   } catch (e) {
     logWarn("[deals/en] Redis unavailable, using fallback", undefined, { error: String(e) });
   }
-  return sortDeals(FALLBACK_DEALS);
+  return sortDeals(FALLBACK_DEALS.map((deal) => ({ ...deal, cashSource: "static-example" as const })));
 }
 
 export default async function EnDealsPage() {

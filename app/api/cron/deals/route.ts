@@ -8,7 +8,7 @@ import { rateLimitResponse } from "@/lib/ratelimit";
 import * as Sentry from "@sentry/nextjs";
 import { logError } from "@/lib/logger";
 
-const DEALS_TTL = 7 * 60 * 60; // 7h (cron tourne toutes les 6h, safety window)
+const DEALS_TTL = 25 * 60 * 60; // The daily dispatcher runs once per day.
 const LAST_CRON_KEY = "keza:admin:last_cron_at";
 
 // Routes populaires mondiales avec miles estimés (economy, aller simple)
@@ -25,21 +25,27 @@ const ROUTES_TO_CHECK: RawDeal[] = [
   { from: "SIN", to: "LHR", fromFlag: "🇸🇬", toFlag: "🇬🇧", cashPrice: 0, milesRequired: 48000, program: "KrisFlyer" },
 ];
 
-async function fetchBestPrice(from: string, to: string, token: string): Promise<number | null> {
+async function fetchBestPrice(
+  from: string,
+  to: string,
+  token: string,
+): Promise<{ price: number; month: string; checkedAt: string } | null> {
   try {
     // Date flexible : 4 semaines à partir d'aujourd'hui
     const depart = new Date(Date.now() + 28 * 24 * 60 * 60 * 1000)
       .toISOString().split("T")[0];
 
-    const url = `https://api.travelpayouts.com/v2/prices/month-matrix?currency=usd&origin=${from}&destination=${to}&show_to_affiliates=true&month=${depart.slice(0,7)}`;
+    const month = depart.slice(0, 7);
+    const url = `https://api.travelpayouts.com/v2/prices/month-matrix?currency=usd&origin=${from}&destination=${to}&show_to_affiliates=true&month=${month}`;
     const res = await fetch(url, {
       next: { revalidate: 0 },
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
     const data = await res.json() as { data?: { price: number }[] };
-    if (!data.data?.length) return null;
-    return Math.min(...data.data.map((d) => d.price));
+    const prices = data.data?.map((d) => d.price).filter((price) => Number.isFinite(price) && price > 50) ?? [];
+    if (prices.length === 0) return null;
+    return { price: Math.min(...prices), month, checkedAt: new Date().toISOString() };
   } catch {
     return null;
   }
@@ -67,9 +73,15 @@ export async function GET(request: Request) {
       const enriched: RawDeal[] = [];
 
       for (const route of ROUTES_TO_CHECK) {
-        const price = await fetchBestPrice(route.from, route.to, token);
-        if (price && price > 50) {
-          enriched.push({ ...route, cashPrice: price });
+        const result = await fetchBestPrice(route.from, route.to, token);
+        if (result) {
+          enriched.push({
+            ...route,
+            cashPrice: result.price,
+            cashSource: "travelpayouts-month-matrix",
+            cashCheckedAt: result.checkedAt,
+            cashSearchMonth: result.month,
+          });
         }
       }
 

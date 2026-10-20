@@ -3,6 +3,7 @@ import {
   computeDealRatio,
   classifyDeal,
   sortDeals,
+  dealPriceContext,
   type RawDeal,
 } from "@/lib/dealsEngine";
 
@@ -43,5 +44,42 @@ describe("sortDeals", () => {
     expect(sorted[0].from).toBe("JFK"); // highest ratio USE_MILES first
     expect(sorted[1].from).toBe("DSS");
     expect(sorted[2].from).toBe("CDG"); // NEUTRAL last
+  });
+
+  it("preserves supplier provenance through enrichment", () => {
+    const [deal] = sortDeals([{
+      from: "DSS", to: "CDG", fromFlag: "", toFlag: "", program: "Flying Blue",
+      cashPrice: 680, milesRequired: 35000,
+      cashSource: "travelpayouts-month-matrix",
+      cashSearchMonth: "2026-11",
+      cashCheckedAt: "2026-10-20T07:00:00.000Z",
+    }]);
+    expect(deal.cashSource).toBe("travelpayouts-month-matrix");
+    expect(deal.cashSearchMonth).toBe("2026-11");
+    expect(dealPriceContext(deal, "fr")).toContain("consulté le 2026-10-20 UTC");
+    expect(dealPriceContext(deal, "en")).toContain("monthly minimum (2026-11)");
+  });
+
+  it("distinguishes examples from legacy cache entries with missing provenance", () => {
+    const base: RawDeal = {
+      from: "DSS", to: "CDG", fromFlag: "", toFlag: "", program: "Flying Blue",
+      cashPrice: 680, milesRequired: 35000,
+    };
+    const [legacy] = sortDeals([base]);
+    const [example] = sortDeals([{ ...base, cashSource: "static-example" }]);
+    expect(dealPriceContext(legacy, "fr")).toContain("Source ou date inconnue");
+    expect(dealPriceContext(example, "fr")).toContain("Exemple illustratif");
+    expect(dealPriceContext(example, "en")).toContain("Illustrative example");
+  });
+
+  it("does not claim freshness when supplier metadata is malformed", () => {
+    const [deal] = sortDeals([{
+      from: "DSS", to: "CDG", fromFlag: "", toFlag: "", program: "Flying Blue",
+      cashPrice: 680, milesRequired: 35000,
+      cashSource: "travelpayouts-month-matrix",
+      cashSearchMonth: "2026-13",
+      cashCheckedAt: "not-a-date",
+    }]);
+    expect(dealPriceContext(deal, "en")).toContain("Source or date unavailable");
   });
 });

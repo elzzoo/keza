@@ -4,6 +4,7 @@
 import { roundPrice } from "./roundPrice";
 
 export type DealRecommendation = "USE_MILES" | "USE_CASH" | "NEUTRAL";
+export type DealCashSource = "travelpayouts-month-matrix" | "static-example";
 
 export interface RawDeal {
   from: string;         // IATA code
@@ -13,6 +14,9 @@ export interface RawDeal {
   program: string;      // "Flying Blue"
   fromFlag: string;     // "🇸🇳"
   toFlag: string;
+  cashSource?: DealCashSource;
+  cashCheckedAt?: string; // UTC time when Xalifly fetched the supplier's monthly minimum
+  cashSearchMonth?: string; // YYYY-MM; not a bookable departure date
 }
 
 export interface LiveDeal extends RawDeal {
@@ -45,6 +49,32 @@ export function enrichDeal(raw: RawDeal): LiveDeal {
   const recommendation = classifyDeal(ratio);
   const multiplier     = `×${ratio.toFixed(1)}`;
   return { ...raw, ratio, recommendation, multiplier };
+}
+
+export function dealPriceContext(deal: LiveDeal, lang: "fr" | "en"): string {
+  if (deal.cashSource === "static-example") {
+    return lang === "fr"
+      ? "Exemple illustratif, pas un tarif actuel. Vérifiez les prix pour vos dates."
+      : "Illustrative example, not a current fare. Check prices for your dates.";
+  }
+
+  if (
+    deal.cashSource === "travelpayouts-month-matrix" &&
+    typeof deal.cashSearchMonth === "string" &&
+    /^\d{4}-(0[1-9]|1[0-2])$/.test(deal.cashSearchMonth) &&
+    typeof deal.cashCheckedAt === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(deal.cashCheckedAt) &&
+    !Number.isNaN(Date.parse(deal.cashCheckedAt))
+  ) {
+    const checked = deal.cashCheckedAt.slice(0, 10);
+    return lang === "fr"
+      ? `Minimum mensuel Travelpayouts (${deal.cashSearchMonth}), consulté le ${checked} UTC. Disponibilité à vérifier.`
+      : `Travelpayouts monthly minimum (${deal.cashSearchMonth}), checked ${checked} UTC. Check availability.`;
+  }
+
+  return lang === "fr"
+    ? "Source ou date inconnue. Vérifiez les prix pour vos dates."
+    : "Source or date unavailable. Check prices for your dates.";
 }
 
 /** Sort: USE_MILES first, then by ratio descending */
