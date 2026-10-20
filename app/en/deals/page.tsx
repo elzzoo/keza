@@ -17,18 +17,18 @@ export const revalidate = 0;
 export const metadata: Metadata = {
   title: "Flight Deals — Best Cash & Miles Offers | Xalifly",
   description:
-    "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
+    "Compare indicative cash fares with estimated miles. Check availability for your dates before booking.",
   openGraph: {
     title: "Flight Deals — Best Cash & Miles Offers | Xalifly",
     description:
-      "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
+      "Compare indicative cash fares with estimated miles. Check availability for your dates before booking.",
     images: [{ url: "/deals/opengraph-image" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Flight Deals — Best Cash & Miles Offers | Xalifly",
     description:
-      "Discover the best flight deals: cheap cash fares and high-value miles redemptions updated daily.",
+      "Compare indicative cash fares with estimated miles. Check availability for your dates before booking.",
   },
   alternates: {
     canonical: `${SITE_URL}/en/deals`,
@@ -68,7 +68,7 @@ export default async function EnDealsPage() {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Best flight deals — cash & miles",
-    description: "The best flight deals — cash or miles — updated continuously.",
+    description: "Indicative cash and miles comparisons to check for your dates.",
     url: `${SITE_URL}/en/deals`,
     numberOfItems: Math.min(deals.length, 10),
     itemListElement: deals.slice(0, 10).map((deal, i) => ({
@@ -89,16 +89,13 @@ export default async function EnDealsPage() {
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
         <div className="mb-8 animate-fade-up">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-bold text-muted uppercase tracking-wider">Live</span>
-          </div>
+          <p className="mb-2 text-xs font-bold text-muted uppercase tracking-wider">Indicative comparisons</p>
           <h1 className="text-2xl sm:text-3xl font-black text-fg mb-2">
             Best flight deals — cash &amp; miles
           </h1>
           <p className="text-sm text-subtle max-w-xl">
-            Xalifly calculates in real time the value of your miles on each route.
-            Pay the best price — cash or miles.
+            Indicative cash fares and estimated miles, without guaranteed availability.
+            Check the fare for your dates before booking.
           </p>
         </div>
 

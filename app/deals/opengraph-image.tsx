@@ -38,7 +38,7 @@ export default function OGImage() {
           Deals cash vs miles du moment
         </div>
         <div style={{ fontSize: 22, color: "#94a3b8", textAlign: "center", maxWidth: 600 }}>
-          Payez au meilleur prix — cash ou miles — sur chaque vol
+          Comparez des prix cash indicatifs et des miles estimés
         </div>
         <div
           style={{
@@ -52,9 +52,8 @@ export default function OGImage() {
             padding: "10px 24px",
           }}
         >
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ef4444" }} />
           <span style={{ color: "#94a3b8", fontSize: 18, fontWeight: 600 }}>
-            Mis à jour en temps réel
+            Vérifiez les tarifs pour vos dates avant de réserver
           </span>
         </div>
       </div>

@@ -198,11 +198,11 @@ function DealCard({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | "en" })
       {/* Prices */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-[#0a0a0f] rounded-xl p-3">
-          <p className="text-[10px] text-subtle uppercase tracking-wider mb-1">Cash</p>
+          <p className="text-[10px] text-subtle uppercase tracking-wider mb-1">{lang === "en" ? "Cash estimate" : "Cash indicatif"}</p>
           <p className="text-lg font-black text-fg">${deal.cashPrice}</p>
         </div>
         <div className="bg-[#0a0a0f] rounded-xl p-3">
-          <p className="text-[10px] text-subtle uppercase tracking-wider mb-1">Miles</p>
+          <p className="text-[10px] text-subtle uppercase tracking-wider mb-1">{lang === "en" ? "Miles estimate" : "Miles estimés"}</p>
           <p className="text-lg font-black text-fg">{deal.milesRequired.toLocaleString(lang === "en" ? "en-US" : "fr-FR")}</p>
         </div>
       </div>

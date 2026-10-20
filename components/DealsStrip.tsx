@@ -16,7 +16,7 @@ interface Props {
 
 const L = {
   fr: { title: "Deals du moment", updated: "mis à jour il y a", hours: "h", all: "Voir tous →", milesWin: "Miles gagnent", cashWin: "Cash gagne" },
-  en: { title: "Live deals",       updated: "updated",           hours: "h ago", all: "See all →", milesWin: "Miles win",   cashWin: "Cash wins"  },
+  en: { title: "Deals to check",   updated: "updated",           hours: "h ago", all: "See all →", milesWin: "Miles win",   cashWin: "Cash wins"  },
 };
 
 function RecommendationIcon({ isMilesWin, className = "h-3 w-3" }: { isMilesWin: boolean; className?: string }) {
@@ -59,7 +59,6 @@ export function DealsStrip({ lang, onDealClick }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-2 px-0">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           <span className="text-xs font-bold text-muted uppercase tracking-wider">
             {t.title}
           </span>

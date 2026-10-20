@@ -58,7 +58,7 @@ describe("DealsStrip", () => {
     render(<DealsStrip lang="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Live deals")).toBeInTheDocument();
+      expect(screen.getByText("Deals to check")).toBeInTheDocument();
     });
     expect(screen.getByRole("link", { name: "See all →" })).toHaveAttribute("href", "/en/deals");
   });
