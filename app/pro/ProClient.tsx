@@ -338,7 +338,7 @@ export function ProClient({
   if (upgraded) {
     return (
       <div className="min-h-screen bg-bg flex flex-col">
-        <Header lang={lang} onLangChange={() => {}} />
+        <Header lang={lang} />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center max-w-md">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
@@ -363,7 +363,7 @@ export function ProClient({
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={() => {}} />
+      <Header lang={lang} />
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-16">
         {/* Hero */}
         <div className="pt-12 pb-8 text-center">

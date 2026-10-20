@@ -8,6 +8,12 @@ import { Header } from "@/components/Header";
 import { readFileSync } from "fs";
 import path from "path";
 
+const mockPush = jest.fn();
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
 // Mock next/link
 jest.mock("next/link", () => {
   // eslint-disable-next-line @next/next/no-html-link-for-pages,react/display-name
@@ -30,6 +36,11 @@ jest.mock("@/components/AuthButton", () => ({
 }));
 
 describe("Header", () => {
+  beforeEach(() => {
+    mockPush.mockClear();
+    window.history.replaceState({}, "", "/en");
+  });
+
   const defaultProps = {
     lang: "en" as const,
   };
@@ -168,6 +179,24 @@ describe("Header", () => {
     fireEvent.click(frButton);
 
     expect(onLangChange).toHaveBeenCalledWith("fr");
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("navigates from a static EN page to its FR counterpart", () => {
+    window.history.replaceState({}, "", "/en/legal?source=footer#contact");
+    render(<Header lang="en" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "fr" }));
+
+    expect(mockPush).toHaveBeenCalledWith("/mentions-legales?source=footer#contact");
+  });
+
+  it("does not navigate when the current language is clicked", () => {
+    render(<Header lang="en" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "en" }));
+
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("renders currency picker always", () => {

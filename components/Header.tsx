@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { CurrencyPicker } from "./CurrencyPicker";
 import { ThemeToggle } from "./ThemeToggle";
 import { AuthButton } from "@/components/AuthButton";
+import { localizedPath } from "@/lib/localizedPath";
 
 interface Props {
   lang: "fr" | "en";
@@ -56,8 +58,9 @@ function ProIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   );
 }
 
-export function Header({ lang, onLangChange = () => {} }: Props) {
+export function Header({ lang, onLangChange }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
   const nav = NAV[lang];
   const secondaryNav = SECONDARY_NAV[lang];
   const liveBadgeTitle = lang === "fr"
@@ -143,11 +146,14 @@ export function Header({ lang, onLangChange = () => {} }: Props) {
               <button
                 key={l}
                 onClick={() => {
-                  // Keep <html lang> in sync — it's server-set on load and this
-                  // client-side toggle doesn't navigate, so without this it stays
-                  // stale (wrong language for screen readers / lang-aware tooling).
-                  document.documentElement.lang = l;
-                  onLangChange(l);
+                  if (l === lang) return;
+                  if (onLangChange) {
+                    document.documentElement.lang = l;
+                    onLangChange(l);
+                    return;
+                  }
+                  const target = localizedPath(window.location.pathname, l);
+                  router.push(`${target}${window.location.search}${window.location.hash}`);
                 }}
                 className={clsx(
                   "px-2.5 py-1 rounded-md text-xs font-bold uppercase transition-all duration-150",
