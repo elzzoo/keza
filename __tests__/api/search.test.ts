@@ -248,6 +248,21 @@ describe("POST /api/search", () => {
   });
 
   describe("successful search", () => {
+    it.each([
+      ["DUFFEL", "duffel"],
+      ["AMADEUS", "amadeus"],
+      ["TP", "travelpayouts"],
+      ["SYNTHETIC", "synthetic"],
+      [undefined, "unknown"],
+    ])("reports primary source %s as %s", async (source, expected) => {
+      mockSearchEngine.mockResolvedValue([{ ...FLIGHT_RESULT, source }]);
+
+      const res = await POST(makeRequest(VALID_BODY));
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("x-provider-source")).toBe(expected);
+    });
+
     it("returns results with forexRate and count", async () => {
       mockSearchEngine.mockResolvedValue([FLIGHT_RESULT]);
       const res = await POST(makeRequest(VALID_BODY));
@@ -266,6 +281,7 @@ describe("POST /api/search", () => {
       const body = await res.json();
       expect(body.results).toHaveLength(0);
       expect(body.count).toBe(0);
+      expect(res.headers.get("x-provider-source")).toBe("none");
     });
 
     it("includes X-Response-Time header with duration in milliseconds", async () => {

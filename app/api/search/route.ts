@@ -170,9 +170,15 @@ export async function POST(request: Request) {
     response.headers.set("x-from-cache", fromCache ? "true" : "false");
     response.headers.set("x-partial", partial ? "true" : "false");
     // Provider source indicator: where primary results came from
-    const providerSource = results.length > 0
-      ? results[0]?.source === "DUFFEL" ? "duffel" : "travelpayouts"
-      : "none";
+    const providerNames: Record<string, string> = {
+      DUFFEL: "duffel",
+      AMADEUS: "amadeus",
+      TP: "travelpayouts",
+      SYNTHETIC: "synthetic",
+    };
+    const providerSource = results.length === 0
+      ? "none"
+      : providerNames[results[0]?.source ?? ""] ?? "unknown";
     response.headers.set("x-provider-source", providerSource);
     // S1-2: HTTP Cache Headers (14x CDN speedup on cache hits)
     const cacheControl = "public, max-age=120, s-maxage=3600";
