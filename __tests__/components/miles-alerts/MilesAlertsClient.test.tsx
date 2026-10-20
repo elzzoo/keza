@@ -36,12 +36,38 @@ describe("MilesAlertsClient", () => {
     (toast.error as jest.Mock).mockClear();
     (toast.success as jest.Mock).mockClear();
     localStorage.clear();
+    window.history.replaceState({}, "", "/miles-alerts");
     // The client now requires a manage token (proof of ownership) stored
     // locally before it will fetch/delete alerts for an email — see
     // app/api/miles-alerts/route.ts and components/MilesAlertModal.tsx.
     // Seeded here so existing tests keep exercising search/delete behavior
     // rather than the "no token" empty-state path.
     localStorage.setItem(`keza:miles-alerts:token:${TEST_EMAIL}`, TEST_TOKEN);
+  });
+
+  it("removes email and token from a manage-link URL while loading alerts", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/miles-alerts?email=Test%40Example.com&token=fresh-token&source=email#alerts"
+    );
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ alerts: [] }),
+    });
+
+    render(<MilesAlertsClient />);
+
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
+      "/miles-alerts?source=email#alerts"
+    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/miles-alerts?email=test%40example.com",
+        { headers: { Authorization: "Bearer fresh-token" } }
+      );
+    });
+    expect(localStorage.getItem("keza:miles-alerts:token:test@example.com")).toBe("fresh-token");
   });
 
   describe("Search form", () => {

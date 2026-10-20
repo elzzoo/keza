@@ -56,6 +56,7 @@ const makeAlert = (id: string, from: string, to: string): PriceAlert => ({
 describe("AlertesClient", () => {
   beforeEach(() => {
     localStorage.clear();
+    window.history.replaceState({}, "", "/alertes");
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
@@ -66,6 +67,26 @@ describe("AlertesClient", () => {
           makeAlert("a3", "DSS", "DXB"),
         ],
       }),
+    });
+  });
+
+  it("removes management credentials from the URL after reading a link", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/alertes?email=Solo%40Example.com&token=manage-token&renew=a1#alerts"
+    );
+
+    render(<AlertesClient />);
+
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
+      "/alertes?renew=a1#alerts"
+    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/alerts?email=solo%40example.com",
+        { headers: { Authorization: "Bearer manage-token" } }
+      );
     });
   });
 

@@ -98,10 +98,11 @@ export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps
       .catch(() => toast.error(t.errorLoading))
       .finally(() => setLoading(false));
 
+    params.delete("email");
     params.delete("token");
     const nextQuery = params.toString();
-    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
-    window.history.replaceState(null, "", nextUrl);
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

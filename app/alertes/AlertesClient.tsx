@@ -225,6 +225,14 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
     const urlToken = params.get("token");
     if (urlEmail && urlToken) {
       const normalizedEmail = urlEmail.trim().toLowerCase();
+      params.delete("email");
+      params.delete("token");
+      const nextQuery = params.toString();
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`
+      );
       setEmail(normalizedEmail);
       setManageToken(urlToken);
       fetchAlerts(normalizedEmail, urlToken);
