@@ -57,6 +57,45 @@ test.describe("CI smoke", () => {
       ).toBeVisible({ timeout: 10_000 });
       expect(intercepted).toBe(true);
     });
+
+    test("FR search result creates a price alert at a 10% lower target", async ({ page }) => {
+      await page.addInitScript(() => {
+        localStorage.setItem("keza:visited", "true");
+        localStorage.setItem("keza_profile", JSON.stringify({ hasOnboarded: true }));
+      });
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const result = {
+        from: "CDG", to: "JFK", price: 650, totalPrice: 650, cashCost: 650,
+        airlines: [], stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+        milesCost: 700, savings: -50, recommendation: "USE_CASH",
+        bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+        disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+      };
+      await page.route("**/api/search/stream", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: ${JSON.stringify({ type: "final", results: [result], partial: false, forexRate: 1 })}\n\n`,
+      }));
+      let alertBody: Record<string, unknown> | undefined;
+      await page.route("**/api/alerts", async (route) => {
+        alertBody = route.request().postDataJSON();
+        await route.fulfill({ status: 201, contentType: "application/json", body: '{"alert":{"id":"test-alert"}}' });
+      });
+
+      await page.goto(`/?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      const search = page.getByRole("button", { name: /optimiser mon vol/i });
+      await expect(search).toBeEnabled();
+      await search.click();
+      await expect(page.getByText("Alerte prix", { exact: true })).toBeVisible();
+      await page.getByPlaceholder("Votre email").fill("alex@example.com");
+      await page.getByRole("button", { name: "Créer l'alerte" }).click();
+
+      await expect(page.getByRole("main").getByText(/Alerte créée !/)).toBeVisible();
+      expect(alertBody).toMatchObject({
+        email: "alex@example.com", from: "CDG", to: "JFK", cabin: "economy",
+        currentPrice: 650, targetPrice: 585, notifFrequency: "instant",
+      });
+    });
   });
 
   test("FR home exposes the price-alert entry point", async ({ page }) => {
