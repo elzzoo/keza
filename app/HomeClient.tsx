@@ -8,6 +8,7 @@ import { Footer }        from "@/components/Footer";
 import { TrustBar }      from "@/components/TrustBar";
 import { SearchForm }    from "@/components/SearchForm";
 import { SearchSkeleton } from "@/components/SearchSkeleton";
+import { Results }       from "@/components/Results";
 
 // Below-the-fold homepage components — lazy loaded
 const OnboardingWizard     = dynamic(() => import("@/components/OnboardingWizard").then(m => m.OnboardingWizard), { ssr: false });
@@ -15,8 +16,6 @@ const DealSpotlight        = dynamic(() => import("@/components/DealSpotlight").
 const CheapestRouteBanner  = dynamic(() => import("@/components/CheapestRouteBanner").then(m => m.CheapestRouteBanner), { ssr: false });
 const DealsStrip           = dynamic(() => import("@/components/DealsStrip").then(m => m.DealsStrip), { ssr: false });
 const DestinationsGrid = dynamic(() => import("@/components/DestinationsGrid").then(m => m.DestinationsGrid), { ssr: false });
-// Results path — only rendered after a search; lazy-load to keep initial JS small
-const Results          = dynamic(() => import("@/components/Results").then(m => m.Results), { ssr: false });
 const RecentSearches   = dynamic(() => import("@/components/RecentSearches").then(m => m.RecentSearches), { ssr: false });
 const ShareButton      = dynamic(() => import("@/components/ShareButton").then(m => m.ShareButton), { ssr: false });
 import { ErrorBoundary } from "@/components/ErrorBoundary";
