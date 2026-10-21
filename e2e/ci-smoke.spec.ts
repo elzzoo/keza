@@ -166,4 +166,22 @@ test.describe("CI smoke", () => {
     await expect(page).toHaveURL(/\/confidentialite$/);
     await expect(page.getByRole("heading", { name: "Politique de confidentialité" })).toBeVisible();
   });
+
+  test("FR sign-in page shows Google entry and accurate privacy link", async ({ page }) => {
+    await page.goto("/connexion?callbackUrl=%2Fprofil");
+
+    await expect(page).toHaveTitle(/Connexion/);
+    await expect(page.getByRole("button", { name: "Continuer avec Google" })).toBeVisible();
+    await expect(page.getByText("Tes données ne sont jamais vendues ou louées.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Politique de confidentialité" })).toHaveAttribute("href", "/confidentialite");
+  });
+
+  test("EN sign-in page shows Google entry and accurate privacy link", async ({ page }) => {
+    await page.goto("/en/connexion?callbackUrl=%2Fen%2Fprofile");
+
+    await expect(page).toHaveTitle(/Sign in/);
+    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+    await expect(page.getByText("We do not sell or rent your data.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Privacy policy" })).toHaveAttribute("href", "/en/privacy");
+  });
 });

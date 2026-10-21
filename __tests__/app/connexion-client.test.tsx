@@ -25,6 +25,8 @@ describe("ConnexionClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Continuer avec Google" }));
 
+    expect(screen.getByText("Tes données ne sont jamais vendues ou louées.")).toBeInTheDocument();
+    expect(screen.getByText("Politique de confidentialité")).toHaveAttribute("href", "/confidentialite");
     expect(screen.getByTestId("header")).toHaveTextContent("fr");
     expect(screen.getByTestId("footer")).toHaveTextContent("fr");
     expect(signIn).toHaveBeenCalledWith("google", {
@@ -47,6 +49,7 @@ describe("ConnexionClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
 
+    expect(screen.getByText("We do not sell or rent your data.")).toBeInTheDocument();
     expect(screen.getByText("Privacy policy")).toHaveAttribute("href", "/en/privacy");
     expect(screen.getByTestId("header")).toHaveTextContent("en");
     expect(screen.getByTestId("footer")).toHaveTextContent("en");
