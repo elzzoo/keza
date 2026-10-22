@@ -1,11 +1,8 @@
 "use client";
 
 import clsx from "clsx";
-import Image from "next/image";
-import { useState, useEffect, useCallback, memo, useRef } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import type { FlightResult } from "@/lib/engine";
-import type { SeatMapData } from "@/lib/seatMapsIntegration";
-import { querySeatAvailability } from "@/lib/seatMapsIntegration-server";
 import { AIRPORTS as airportsMap } from "@/data/airports";
 import { trackBookClick } from "@/lib/analytics";
 import { getOrAssignVariant, CTA_COPY } from "@/lib/abtest";
@@ -191,56 +188,10 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   });
 
   const [variant, setVariant] = useState<"A" | "B">("A");
-  const [seatMap, setSeatMap] = useState<SeatMapData | null>(null);
-  const [seatMapLoading, setSeatMapLoading] = useState(false);
-  const seatMapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setVariant(getOrAssignVariant());
   }, []);
-
-  // S1-1: SeatMaps LCP Optimization
-  // Load seat maps only when card becomes visible (Intersection Observer).
-  // This prevents blocking initial page render (LCP) — seat maps are low-priority.
-  // Prefetch happens server-side via /api/search response for faster load.
-  useEffect(() => {
-    if (!seatMapRef.current || !flight.airlines || flight.airlines.length === 0) return;
-    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
-
-    const observer = new IntersectionObserver(
-      async (entries) => {
-        if (!entries[0]?.isIntersecting) return;
-
-        // Card is visible — fetch seat map in background
-        setSeatMapLoading(true);
-        try {
-          const data = await querySeatAvailability(
-            flight.airlines[0],
-            "B787", // Default aircraft — ideally from flight data
-            flight.from,
-            flight.to,
-            flight.cabin,
-          );
-          setSeatMap(data);
-        } catch (error) {
-          console.warn("[FlightCard] Seat map fetch error:", error);
-        } finally {
-          setSeatMapLoading(false);
-        }
-
-        // Unobserve after first intersection
-        observer.unobserve(seatMapRef.current!);
-      },
-      { rootMargin: "100px" } // Start loading 100px before card enters viewport
-    );
-
-    const currentRef = seatMapRef.current;
-    observer.observe(currentRef);
-
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-    };
-  }, [flight.airlines, flight.from, flight.to, flight.cabin]);
 
   const cashCost   = flight.cashCost;
   const milesCost  = flight.milesCost;
@@ -277,7 +228,6 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
 
   return (
     <div
-      ref={seatMapRef}
       className={clsx(
         "bg-surface rounded-2xl border overflow-hidden hover-lift",
         "transition-all duration-200 hover:shadow-card-hover",
@@ -695,112 +645,6 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               {a}
             </span>
           ))}
-        </div>
-      )}
-
-      {/* SEAT MAP PREVIEW — shown when data is available */}
-      {seatMap && (
-        <div className="border-t border-border">
-          <div className="px-5 py-3.5 space-y-2">
-            {/* Header */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] font-bold text-fg uppercase tracking-widest">
-                {fr ? "Plan de cabine" : "Seat map"}
-              </div>
-              <a
-                href={seatMap.mapUrl || `https://www.seatguru.com/airlines/${seatMap.airline}/aircraft/${seatMap.aircraft}/seating-chart.php`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-primary hover:text-primary-hover transition-colors font-medium"
-              >
-                {fr ? "Voir tous les sièges" : "View all seats"} →
-              </a>
-            </div>
-
-            {/* Seat availability bar + stats */}
-            <div className="space-y-1.5">
-              {/* Progress bar */}
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-surface-2 rounded-full overflow-hidden">
-                  <div
-                    className={clsx(
-                      "h-full transition-all",
-                      seatMap.status === "good"
-                        ? "bg-success"
-                        : seatMap.status === "warning"
-                          ? "bg-warning"
-                          : "bg-error"
-                    )}
-                    style={{ width: `${seatMap.percentAvailable}%` }}
-                  />
-                </div>
-                <span className={clsx(
-                  "text-[10px] font-bold min-w-[2.5rem] text-right",
-                  seatMap.status === "good"
-                    ? "text-success"
-                    : seatMap.status === "warning"
-                      ? "text-warning"
-                      : "text-error"
-                )}>
-                  {seatMap.percentAvailable.toFixed(0)}%
-                </span>
-              </div>
-
-              {/* Seat breakdown */}
-              <div className="flex items-center justify-between text-[10px] text-muted">
-                <div className="flex gap-3">
-                  <span>
-                    <span className="text-success font-bold">{seatMap.available}</span> {fr ? "libres" : "available"}
-                  </span>
-                  <span>
-                    <span className="text-muted/60 font-bold">{seatMap.occupied}</span> {fr ? "occupés" : "occupied"}
-                  </span>
-                  {seatMap.blocked > 0 && (
-                    <span>
-                      <span className="text-muted/40 font-bold">{seatMap.blocked}</span> {fr ? "bloqués" : "blocked"}
-                    </span>
-                  )}
-                </div>
-                <span className="text-muted/50">
-                  {seatMap.total} {fr ? "places" : "seats"}
-                </span>
-              </div>
-
-              {/* Status indicator — fallback warning */}
-              {seatMap.isFallback && (
-                <div className="text-[9px] text-muted/60 italic">
-                  {fr ? "Données estimées basées sur des moyennes" : "Estimated data based on averages"}
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail link (if available) */}
-            {seatMap.thumbnailUrl && (
-              <a
-                href={seatMap.mapUrl || `https://www.seatguru.com/airlines/${seatMap.airline}/aircraft/${seatMap.aircraft}/seating-chart.php`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-2 hover:border-primary/50 transition-colors"
-              >
-                <Image
-                  src={seatMap.thumbnailUrl}
-                  alt={`${seatMap.airline} ${seatMap.aircraft} seat map`}
-                  width={200}
-                  height={128}
-                  className="w-full h-auto max-h-32 object-cover"
-                />
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Seat map loading state */}
-      {seatMapLoading && (
-        <div className="border-t border-border px-5 py-3">
-          <div className="text-[10px] text-muted/60 text-center">
-            {fr ? "Chargement du plan de cabine..." : "Loading seat map..."}
-          </div>
         </div>
       )}
 

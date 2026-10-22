@@ -78,6 +78,12 @@ const baseFlight: FlightResult = {
 };
 
 describe("FlightCard", () => {
+  it.each(["en", "fr"] as const)("does not display unverifiable seat counts in %s", (lang) => {
+    render(<FlightCard flight={baseFlight} lang={lang} />);
+    expect(screen.queryByText(lang === "fr" ? "Plan de cabine" : "Seat map")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? /places/ : /seats/)).not.toBeInTheDocument();
+  });
+
   it("renders airline name", () => {
     render(<FlightCard flight={baseFlight} lang="en" />);
     // Airline rendered in the chips area
