@@ -184,4 +184,29 @@ test.describe("CI smoke", () => {
     await expect(page.getByText("We do not sell or rent your data.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Privacy policy" })).toHaveAttribute("href", "/en/privacy");
   });
+
+  test.describe("Pro pre-checkout", () => {
+    test.use({ serviceWorkers: "block" });
+
+    for (const variant of [
+      { pagePath: "/pro", signInPath: "/connexion", emailPlaceholder: "ton@email.com", button: /Passer en Pro — 9\$ \/ mois/, signInButton: "Continuer avec Google" },
+      { pagePath: "/en/pro", signInPath: "/en/connexion", emailPlaceholder: "you@example.com", button: /Upgrade to Pro — \$9 \/ month/, signInButton: "Continue with Google" },
+    ]) {
+      test(`${variant.pagePath} requires sign-in before checkout`, async ({ page }) => {
+        let checkoutCalls = 0;
+        await page.route("**/api/pro/checkout", (route) => {
+          checkoutCalls += 1;
+          return route.abort();
+        });
+
+        await page.goto(variant.pagePath);
+        await page.getByPlaceholder(variant.emailPlaceholder).fill("alex@example.com");
+        await page.getByRole("button", { name: variant.button }).click();
+
+        await expect(page).toHaveURL(new RegExp(`${variant.signInPath}\\?callbackUrl=`));
+        await expect(page.getByRole("button", { name: variant.signInButton })).toBeVisible();
+        expect(checkoutCalls).toBe(0);
+      });
+    }
+  });
 });
