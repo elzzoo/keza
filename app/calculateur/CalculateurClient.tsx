@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from "react";
 import type { MilesPriceRecord } from "@/data/milesPrices";
+import { isMilesReviewStale } from "@/lib/milesFreshness";
 
-export function CalculateurClient({ programs, lang = "fr" }: { programs: MilesPriceRecord[]; forexRate?: number; lang?: "fr" | "en" }) {
+export function CalculateurClient({ programs, lang = "fr", asOfDate }: { programs: MilesPriceRecord[]; forexRate?: number; lang?: "fr" | "en"; asOfDate?: string }) {
   const [miles, setMiles] = useState(50000);
   const [idx, setIdx]     = useState(0);
   const program           = programs[idx];
@@ -54,6 +55,12 @@ export function CalculateurClient({ programs, lang = "fr" }: { programs: MilesPr
           ))}
         </div>
         <p className="text-xs text-muted mt-3">{lang === "en" ? `Based on ${program.valueCents.toFixed(1)}¢ / mile · Confidence: ${program.confidence}` : `Basé sur ${program.valueCents.toFixed(1)}¢ / mile · Confiance : ${program.confidence}`}</p>
+        <p className="text-xs text-muted mt-1">
+          {lang === "en" ? "Value dated" : "Valeur datée du"} {program.lastUpdated}
+          {isMilesReviewStale(program.lastUpdated, asOfDate) && (
+            <span className="ml-2 font-semibold text-warning">{lang === "en" ? "Older estimate" : "Estimation ancienne"}</span>
+          )}
+        </p>
       </div>
     </div>
   );

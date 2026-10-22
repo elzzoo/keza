@@ -9,6 +9,7 @@ import { DataTrustPanel } from "@/components/DataTrustPanel";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SITE_URL } from "@/lib/siteConfig";
+import { isMilesReviewStale } from "@/lib/milesFreshness";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export const metadata: Metadata = {
 
 export default async function EnCalculateurPage() {
   const forexRate = await getForexRate().catch(() => 605);
+  const asOfDate = new Date().toISOString().slice(0, 10);
   return (
     <div className="min-h-screen bg-bg flex flex-col">
       <Header lang="en" />
@@ -55,7 +57,7 @@ export default async function EnCalculateurPage() {
         </div>
 
         <ErrorBoundary lang="en">
-          <CalculateurClient programs={MILES_PRICES} forexRate={forexRate} lang="en" />
+          <CalculateurClient programs={MILES_PRICES} forexRate={forexRate} lang="en" asOfDate={asOfDate} />
         </ErrorBoundary>
 
         <DataTrustPanel lang="en" className="mt-8" />
@@ -80,7 +82,13 @@ export default async function EnCalculateurPage() {
             <tbody>
               {MILES_PRICES.map((p) => (
                 <tr key={p.program} className="border-b border-border/50 hover:bg-surface-2 transition-colors">
-                  <td className="px-5 py-3 font-medium text-fg">{p.program}</td>
+                  <td className="px-5 py-3 font-medium text-fg">
+                    {p.program}
+                    <span className="block text-xs font-normal text-muted">
+                      Value dated {p.lastUpdated}
+                      {isMilesReviewStale(p.lastUpdated, asOfDate) && <span className="font-semibold text-warning"> · Older</span>}
+                    </span>
+                  </td>
                   <td className="px-5 py-3 text-right font-bold text-primary">{p.valueCents.toFixed(1)}¢</td>
                   <td className="px-5 py-3 text-right">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
