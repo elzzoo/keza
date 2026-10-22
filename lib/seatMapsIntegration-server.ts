@@ -9,15 +9,9 @@ const SEATGURU_API_BASE = "https://www.seatguru.com/api";
 const SEATMAPS_API_BASE = "https://api.seatmaps.com";
 
 const CACHE_TTL = 24 * 3600; // 24 hours in seconds
-const FALLBACK_PERCENTAGES: Record<string, number> = {
-  "good": 65,
-  "warning": 35,
-  "critical": 15,
-};
 
 /**
- * Query real-time seat availability from SeatGuru
- * Falls back to estimated seat map if API is unavailable
+ * Query supplier seat availability without inventing data when it is unavailable.
  */
 export async function querySeatAvailability(
   airline: string,
@@ -36,7 +30,7 @@ export async function querySeatAvailability(
 
     // Try cache first
     const cached = await safeGet<SeatMapData>(cacheKey);
-    if (cached) return cached;
+    if (cached && !cached.isFallback) return cached;
 
     // Try SeatGuru API first
     let seatData: SeatMapData | null = null;
@@ -69,10 +63,7 @@ export async function querySeatAvailability(
       }
     }
 
-    // Final fallback: generate estimated seat map
-    if (!seatData) {
-      seatData = generateFallbackSeatMap(airlineCode, aircraft, from, to, cabin);
-    }
+    if (!seatData) return null;
 
     // Cache the result
     await safeSet(cacheKey, seatData, { ex: CACHE_TTL });
@@ -195,59 +186,6 @@ async function fetchFromSeatMaps(
   }
 }
 
-/**
- * Generate a fallback seat map when API is unavailable
- * Uses statistical estimates based on cabin type
- */
-function generateFallbackSeatMap(
-  airlineCode: string,
-  aircraft: string,
-  from: string,
-  to: string,
-  cabin: string,
-): SeatMapData {
-  // Typical seat counts per cabin
-  const typicalSeats: Record<string, { economy: number; premium: number; business: number; first: number }> = {
-    "B787": { economy: 242, premium: 26, business: 21, first: 8 },
-    "A350": { economy: 236, premium: 28, business: 20, first: 8 },
-    "A380": { economy: 399, premium: 80, business: 76, first: 16 },
-    "B777": { economy: 300, premium: 52, business: 42, first: 8 },
-    "A330": { economy: 255, premium: 42, business: 30, first: 0 },
-    "B767": { economy: 218, premium: 28, business: 18, first: 0 },
-    "A320": { economy: 150, premium: 12, business: 0, first: 0 },
-    "B737": { economy: 162, premium: 12, business: 0, first: 0 },
-  };
-
-  const cabinConfig = typicalSeats[aircraft] || {
-    economy: 250,
-    premium: 40,
-    business: 30,
-    first: 0,
-  };
-
-  const totalSeats = cabinConfig[cabin as keyof typeof cabinConfig] || 50;
-  const percentAvailable = FALLBACK_PERCENTAGES[Math.random() > 0.5 ? "good" : "warning"] || 50;
-  const available = Math.round(totalSeats * (percentAvailable / 100));
-  const occupied = Math.round(totalSeats * 0.6);
-  const blocked = totalSeats - available - occupied;
-
-  return {
-    aircraft,
-    airline: airlineCode,
-    route: { from, to },
-    cabin: cabin as "economy" | "premium" | "business" | "first",
-    available,
-    occupied,
-    blocked,
-    total: totalSeats,
-    percentAvailable,
-    status: determineStatus(percentAvailable),
-    mapUrl: `https://www.seatguru.com/airlines/${airlineCode}/aircraft/${aircraft}/seating-chart.php`,
-    updatedAt: Date.now(),
-    isFallback: true,
-  };
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 /**
@@ -300,6 +238,19 @@ function determineStatus(percentAvailable: number): "good" | "warning" | "critic
   return "critical";
 }
 
+function parseSeatCounts(value: unknown): { available: number; occupied: number; blocked: number; total: number } | null {
+  if (!value || typeof value !== "object") return null;
+  const counts = value as Record<string, unknown>;
+  const { available, occupied } = counts;
+  const blocked = counts.blocked ?? 0;
+  if (![available, occupied, blocked].every((count) =>
+    typeof count === "number" && Number.isSafeInteger(count) && count >= 0
+  )) return null;
+  const total = (available as number) + (occupied as number) + (blocked as number);
+  if (!Number.isSafeInteger(total) || total === 0) return null;
+  return { available: available as number, occupied: occupied as number, blocked: blocked as number, total };
+}
+
 /**
  * Extract cabin-specific seat data from SeatGuru response
  */
@@ -315,14 +266,11 @@ function extractSeatGuruCabinData(
     const cabinData = cabins[cabin] as Record<string, unknown> | undefined;
     if (!cabinData) return null;
 
-    const seats = cabinData.seats as { available: number; occupied: number; blocked: number } | undefined;
-    if (!seats) return null;
+    const counts = parseSeatCounts(cabinData.seats);
+    if (!counts) return null;
 
     return {
-      available: seats.available || 0,
-      occupied: seats.occupied || 0,
-      blocked: seats.blocked || 0,
-      total: (seats.available || 0) + (seats.occupied || 0) + (seats.blocked || 0),
+      ...counts,
       thumbnailUrl: (cabinData.thumbnailUrl as string) || undefined,
       mapUrl: (cabinData.mapUrl as string) || undefined,
     };
@@ -349,15 +297,11 @@ function extractSeatMapsCabinData(
     const cabinData = cabins[cabin] as Record<string, unknown> | undefined;
     if (!cabinData) return null;
 
-    const available = (cabinData.available as number) || 0;
-    const occupied = (cabinData.occupied as number) || 0;
-    const blocked = (cabinData.blocked as number) || 0;
+    const counts = parseSeatCounts(cabinData);
+    if (!counts) return null;
 
     return {
-      available,
-      occupied,
-      blocked,
-      total: available + occupied + blocked,
+      ...counts,
       thumbnailUrl: (cabinData.image as string) || undefined,
       mapUrl: (cabinData.url as string) || undefined,
     };

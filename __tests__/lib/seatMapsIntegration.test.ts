@@ -1,6 +1,6 @@
 /**
  * Tests for seat map integration
- * Coverage: API querying, caching, fallbacks, batch queries
+ * Coverage: API querying, caching, unavailable data, batch queries
  */
 
 import {
@@ -121,7 +121,7 @@ describe("seatMapsIntegration", () => {
       expect(mockSafeSet).toHaveBeenCalled();
     });
 
-    it("should return fallback seat map when APIs fail", async () => {
+    it("should return no data when both APIs fail", async () => {
       mockSafeGet.mockResolvedValue(null);
       mockFetch.mockRejectedValue(new Error("API unavailable"));
 
@@ -133,9 +133,28 @@ describe("seatMapsIntegration", () => {
         "economy",
       );
 
-      expect(result).not.toBeNull();
-      expect(result?.isFallback).toBe(true);
-      expect(result?.airline).toBe("SQ");
+      expect(result).toBeNull();
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockSafeSet).not.toHaveBeenCalled();
+    });
+
+    it("ignores a legacy estimated cache entry and replaces it with supplier data", async () => {
+      mockSafeGet.mockResolvedValue({
+        aircraft: "B787", airline: "SQ", route: { from: "LAX", to: "JFK" }, cabin: "economy",
+        available: 150, occupied: 80, blocked: 12, total: 242,
+        percentAvailable: 62, status: "good", updatedAt: Date.now(), isFallback: true,
+      } as SeatMapData);
+      mockFetch.mockResolvedValue({
+        ok: true, status: 200,
+        json: async () => ({ cabins: { economy: { seats: { available: 4, occupied: 6, blocked: 0 } } } }),
+      } as Response);
+
+      const result = await querySeatAvailability("SQ", "B787", "LAX", "JFK", "economy");
+
+      expect(result?.available).toBe(4);
+      expect(result?.isFallback).toBeUndefined();
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockSafeSet).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -152,9 +171,9 @@ describe("seatMapsIntegration", () => {
         "economy",
       );
 
-      // Should return fallback since API fails
-      expect(result).not.toBeNull();
-      expect(result?.airline).toBe("SQ");
+      expect(result).toBeNull();
+      expect(mockSafeGet).toHaveBeenCalledWith(expect.stringContaining("seatmaps:v1:SQ:B787"));
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining("/airline/SQ/aircraft/B787"), expect.any(Object));
     });
 
     it("should map common airline names to IATA codes", async () => {
@@ -177,7 +196,9 @@ describe("seatMapsIntegration", () => {
           "economy",
         );
 
-        expect(result?.airline).toBe(code);
+        expect(result).toBeNull();
+        expect(mockSafeGet).toHaveBeenCalledWith(expect.stringContaining(`seatmaps:v1:${code}:B787`));
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(`/airline/${code}/aircraft/B787`), expect.any(Object));
       }
     });
   });
@@ -272,7 +293,7 @@ describe("seatMapsIntegration", () => {
   });
 
   describe("querySeatAvailabilityBatch", () => {
-    it("should query multiple flights in parallel", async () => {
+    it("should omit unavailable flights from the batch", async () => {
       mockSafeGet.mockResolvedValue(null);
       mockFetch.mockRejectedValue(new Error("Not found"));
 
@@ -295,7 +316,8 @@ describe("seatMapsIntegration", () => {
 
       const results = await querySeatAvailabilityBatch(flights);
 
-      expect(results.size).toBe(2);
+      expect(results.size).toBe(0);
+      expect(mockSafeSet).not.toHaveBeenCalled();
     });
 
     it("should handle multiple successful queries", async () => {
@@ -359,8 +381,8 @@ describe("seatMapsIntegration", () => {
         "economy",
       );
 
-      expect(result).not.toBeNull();
-      expect(result?.isFallback).toBe(true);
+      expect(result).toBeNull();
+      expect(mockSafeSet).not.toHaveBeenCalled();
     });
 
     it("should handle malformed API responses", async () => {
@@ -379,8 +401,8 @@ describe("seatMapsIntegration", () => {
         "economy",
       );
 
-      expect(result).not.toBeNull();
-      expect(result?.isFallback).toBe(true);
+      expect(result).toBeNull();
+      expect(mockSafeSet).not.toHaveBeenCalled();
     });
 
     it("should mark critical status for very low availability", async () => {
@@ -415,10 +437,15 @@ describe("seatMapsIntegration", () => {
     });
   });
 
-  describe("Fallback seat map generation", () => {
-    it("should generate reasonable estimates for common aircraft", async () => {
+  describe("supplier fallback without invented availability", () => {
+    it("uses SeatMaps data when SeatGuru has no matching aircraft", async () => {
       mockSafeGet.mockResolvedValue(null);
-      mockFetch.mockRejectedValue(new Error("API unavailable"));
+      mockFetch
+        .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ layout: { cabins: { economy: { available: 8, occupied: 12, blocked: 0 } } } }),
+        } as Response);
 
       const result = await querySeatAvailability(
         "Singapore Airlines",
@@ -428,14 +455,12 @@ describe("seatMapsIntegration", () => {
         "economy",
       );
 
-      expect(result).not.toBeNull();
-      expect(result?.aircraft).toBe("B787");
-      expect(result?.total).toBeGreaterThan(0);
-      expect(result?.available).toBeGreaterThan(0);
-      expect(result?.available).toBeLessThanOrEqual(result?.total || 0);
+      expect(result).toMatchObject({ available: 8, occupied: 12, total: 20, percentAvailable: 40 });
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockSafeSet).toHaveBeenCalledTimes(1);
     });
 
-    it("should use defaults for unknown aircraft", async () => {
+    it("does not invent a seat count for an unknown aircraft", async () => {
       mockSafeGet.mockResolvedValue(null);
       mockFetch.mockRejectedValue(new Error("API unavailable"));
 
@@ -447,9 +472,8 @@ describe("seatMapsIntegration", () => {
         "economy",
       );
 
-      expect(result).not.toBeNull();
-      // Should use default economy seat count (250) since aircraft is unknown
-      expect(result?.total).toBe(250);
+      expect(result).toBeNull();
+      expect(mockSafeSet).not.toHaveBeenCalled();
     });
   });
 });
