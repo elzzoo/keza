@@ -1,6 +1,7 @@
 import { MILES_PRICES } from "@/data/milesPrices";
 import { Badge, Card } from "@/components/ui";
-import { formatLatestMilesReviewShort } from "@/lib/milesReview";
+import { formatLatestMilesReviewShort, getLatestMilesReviewDate } from "@/lib/milesReview";
+import { isMilesReviewStale } from "@/lib/milesFreshness";
 
 type DataTrustPanelProps = {
   lang?: "fr" | "en";
@@ -13,6 +14,8 @@ const HIGH_CONFIDENCE_COUNT = MILES_PRICES.filter((p) => p.confidence === "HIGH"
 
 export function DataTrustPanel({ lang = "fr", compact = false, className }: DataTrustPanelProps) {
   const latestReview = formatLatestMilesReviewShort(lang);
+  const latestReviewDate = getLatestMilesReviewDate();
+  const valuationsStale = !latestReviewDate || isMilesReviewStale(latestReviewDate);
   const copy = lang === "fr"
     ? {
         title: "Qualité des données",
@@ -20,11 +23,13 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
         liveTitle: "Prix cash live",
         liveBody: "Fares issus de Duffel et Aviasales, puis rafraîchis pendant la recherche.",
         valuesTitle: `${PROGRAM_COUNT} valeurs miles/points`,
-        valuesBody: `Valorisations de marché revues jusqu'à ${latestReview}.`,
+        valuesBody: valuationsStale
+          ? `Dernière date du référentiel : ${latestReview}. Estimations anciennes à revalider.`
+          : `Dernière date du référentiel : ${latestReview}.`,
         confidenceTitle: "Confiance affichée",
         confidenceBody: `${HIGH_CONFIDENCE_COUNT} programmes en confiance élevée, avec taxes et estimations signalées.`,
         source: "Sources : Duffel, Aviasales, ThePointsGuy, NerdWallet, AwardWallet",
-        reviewed: "Miles revus",
+        reviewed: valuationsStale ? "Estimations anciennes" : "Référence miles",
       }
     : {
         title: "Data quality",
@@ -32,16 +37,18 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
         liveTitle: "Live cash fares",
         liveBody: "Fares come from Duffel and Aviasales, then refresh during search.",
         valuesTitle: `${PROGRAM_COUNT} miles & points values`,
-        valuesBody: `Market valuations reviewed through ${latestReview}.`,
+        valuesBody: valuationsStale
+          ? `Latest reference date: ${latestReview}. Older estimates need review.`
+          : `Latest reference date: ${latestReview}.`,
         confidenceTitle: "Visible confidence",
         confidenceBody: `${HIGH_CONFIDENCE_COUNT} programs are high confidence, with taxes and estimates called out.`,
         source: "Sources: Duffel, Aviasales, ThePointsGuy, NerdWallet, AwardWallet",
-        reviewed: "Miles reviewed",
+        reviewed: valuationsStale ? "Older estimates" : "Miles reference",
       };
 
   const items = [
     { title: copy.liveTitle, body: copy.liveBody, tone: "success" as const, badge: lang === "fr" ? "live" : "live" },
-    { title: copy.valuesTitle, body: copy.valuesBody, tone: "primary" as const, badge: copy.reviewed },
+    { title: copy.valuesTitle, body: copy.valuesBody, tone: valuationsStale ? "warning" as const : "primary" as const, badge: copy.reviewed },
     { title: copy.confidenceTitle, body: copy.confidenceBody, tone: "warning" as const, badge: "HIGH / MED / LOW" },
   ];
 
@@ -70,7 +77,7 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
           <h2 className="text-sm font-bold text-fg">{copy.title}</h2>
           <p className="mt-1 text-xs text-muted">{copy.subtitle}</p>
         </div>
-        <Badge tone="primary">{copy.reviewed} · {latestReview}</Badge>
+        <Badge tone={valuationsStale ? "warning" : "primary"}>{copy.reviewed} · {latestReview}</Badge>
       </div>
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
