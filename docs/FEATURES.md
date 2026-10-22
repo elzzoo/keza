@@ -62,48 +62,23 @@ Interactive calendar showing price trends across 6 months for flexible travel.
 
 ## F3 — Portefeuille (Miles Portfolio)
 
-User's airline miles portfolio — balance entry, recommendation engine, deal alerts.
+User-entered airline miles and bank-points portfolio. Automatic airline-account retrieval and ML deal recommendations are not live.
 
-**Location:** `/app/portefeuille/`, `lib/portfolio.ts`
+**Location:** `app/portefeuille/PortefeuilleClient.tsx`, `app/api/profile/route.ts`
 
 ### Components
 
 - **Balance Entry** — Form to input airline + current miles balance
-- **Current Holdings** — Table showing program, balance, balance value (in USD at effective rate)
-- **Recommendations** — ML-powered deals from `/api/recommendations` (run daily by cron)
-- **Deal Scoring** — Each result scored 0-1 based on price deviation from 90-day history
+- **Current Holdings** — Entered balances and indicative value by program
+- **Cross-device profile** — Authenticated profile storage is available through `/api/profile`; the manual-entry flow remains distinct from airline-account sync
 
 ### Data Storage
 
-**Current Implementation:** Placeholder (localStorage in client)
+The client uses `useProfile` for entered balances; authenticated profile persistence exists through `/api/profile`. Automatic airline balance sync is disabled in the wallet UI and returns 501 from `/api/balance/sync` unless explicitly enabled. Its credential lookup currently returns no credentials, so it must not be presented as operational.
 
-**TODO:** Implement real persistence:
-- Save balances to user profile (Redis/Postgres)
-- Run daily `/api/cron/balance-sync` to check balance changes
-- Trigger alerts when balance changes by >5%
+### Not Yet Live
 
-### Recommendations Algorithm
-
-1. **Collect** — Past 90 days of search results + their prices
-2. **Train** — Linear regression on (date, price) → price trend
-3. **Score** — New flight: `deviation = (price - predicted) / predicted`
-4. **Rank** — Score > 0.2 (20% below trend) → alert user
-
-### Mile Value Calibration
-
-Each program's `effectiveMileValue` stored in Redis and updated daily:
-
-```
-key: keza:pro:effective-miles:{email}:{program}
-value: {cents_per_mile}  // e.g., 1.5 = 1.5¢ per mile
-```
-
-Updated by auto-calibrate engine based on user searches (private learning).
-
-### Pro Feature
-
-- Free users: View heuristic recommendations only
-- Pro users: Full portfolio + ML recommendations + alerts
+`/api/recommendations/deals` reads cached recommendations, but its producer has placeholder users and prices and is not scheduled in `vercel.json`. Do not promise personalized ML deals or automatic balance-change alerts as a Pro benefit. See [feature readiness audit](audits/2026-10-22-feature-readiness.md) for the evidence and release conditions.
 
 ---
 
@@ -118,13 +93,13 @@ Monitor availability on specific flights; alert when seats open up in user's pre
 ### P2 — Balance Sync
 Auto-check airline loyalty balances daily (via partner APIs or scraping).
 
-**Status:** Designed
+**Status:** Off in the wallet UI; server integration incomplete
 **Location:** `lib/balanceSync.ts`
 
 ### P3 — Multi-Leg Optimization
 Find best 2-4 leg routes using Dijkstra's algorithm on flight graph.
 
-**Status:** Designed, graph builder + shortest-path algorithm ready
+**Status:** Experimental and off by default; itinerary inputs contain assumed times and placeholder identifiers
 **Location:** `lib/multiLeg.ts`, `lib/graphBuilder.ts`, `lib/shortestPath.ts`
 
 ### P4 — Transfer Partner Analytics
