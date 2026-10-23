@@ -15,10 +15,10 @@
     "prepare": "node scripts/install-hook.mjs",
     "analyze": "ANALYZE=true npm run build",
     "bundle:check": "next build && node scripts/check-bundle-size.mjs",
-    "lighthouse:baseline": "ts-node scripts/run-lighthouse.ts baseline",
-    "lighthouse:compare": "ts-node scripts/run-lighthouse.ts compare",
-    "lighthouse:audit": "ts-node scripts/run-lighthouse.ts audit",
-    "lighthouse:clean": "ts-node scripts/run-lighthouse.ts clean",
+    "lighthouse:baseline": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/run-lighthouse.ts baseline",
+    "lighthouse:compare": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/run-lighthouse.ts compare",
+    "lighthouse:audit": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/run-lighthouse.ts audit",
+    "lighthouse:clean": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/run-lighthouse.ts clean",
     "test:live": "RUN_LIVE_TESTS=1 jest __tests__/integration __tests__/api/cron __tests__/lib/alertsEngine.test.ts __tests__/lib/p1-4-cache-race-condition.test.ts"
   },
   "dependencies": {
