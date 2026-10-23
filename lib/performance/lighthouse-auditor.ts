@@ -36,6 +36,11 @@ export interface LighthouseReport {
 export interface BaselineReport {
   timestamp: string;
   description?: string;
+  provenance?: {
+    source: 'measured';
+    targetOrigin: string;
+    generator: 'LighthouseAuditor';
+  };
   reports: Record<string, LighthouseReport>;
 }
 
@@ -360,6 +365,11 @@ export class LighthouseAuditor {
     const baseline: BaselineReport = {
       timestamp: new Date().toISOString(),
       description: 'Baseline performance metrics',
+      provenance: {
+        source: 'measured',
+        targetOrigin: new URL(this.baseUrl).origin,
+        generator: 'LighthouseAuditor',
+      },
       reports,
     };
 
