@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { prisma } from "../db";
+import { getPrismaClient } from "../db";
 
 /**
  * Analytics Event Service
@@ -62,7 +62,7 @@ export async function recordSearchEvent(data: SearchEventData): Promise<string> 
     const searchId = randomUUID();
 
     // Create the search event
-    await prisma.analyticsSearch.create({
+    await getPrismaClient().analyticsSearch.create({
       data: {
         searchId,
         userId: data.userId,
@@ -83,7 +83,7 @@ export async function recordSearchEvent(data: SearchEventData): Promise<string> 
 
     // Update user metrics if userId is provided
     if (data.userId) {
-      await prisma.analyticsUser.upsert({
+      await getPrismaClient().analyticsUser.upsert({
         where: { userId: data.userId },
         update: {
           searchCount: { increment: 1 },
@@ -115,7 +115,7 @@ export async function recordAlertEvent(data: AlertEventData): Promise<string> {
     const alertId = randomUUID();
 
     // Create the alert event
-    await prisma.analyticsAlert.upsert({
+    await getPrismaClient().analyticsAlert.upsert({
       where: { userId: data.userId },
       update: {
         alertId,
@@ -140,7 +140,7 @@ export async function recordAlertEvent(data: AlertEventData): Promise<string> {
     });
 
     // Update user metrics
-    await prisma.analyticsUser.upsert({
+    await getPrismaClient().analyticsUser.upsert({
       where: { userId: data.userId },
       update: {
         alertCount: { increment: 1 },
@@ -172,7 +172,7 @@ export async function recordConversionEvent(
     const conversionId = randomUUID();
 
     // Create the conversion event
-    await prisma.analyticsConversion.create({
+    await getPrismaClient().analyticsConversion.create({
       data: {
         conversionId,
         userId: data.userId,
@@ -190,7 +190,7 @@ export async function recordConversionEvent(
     });
 
     // Update user metrics
-    await prisma.analyticsUser.upsert({
+    await getPrismaClient().analyticsUser.upsert({
       where: { userId: data.userId },
       update: {
         conversions: { increment: 1 },

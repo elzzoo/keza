@@ -47,6 +47,11 @@ function createPrismaOptions(databaseUrl: string): ConstructorParameters<typeof 
 export function getPrismaClient(): PrismaClient {
   if (_prisma) return _prisma;
 
+  if (globalForPrisma.prisma) {
+    _prisma = globalForPrisma.prisma;
+    return _prisma;
+  }
+
   const databaseUrl = getRuntimeDatabaseUrl();
   if (!databaseUrl) {
     throw new Error("DATABASE_URL or POSTGRES_PRISMA_URL is required to initialize Prisma.");
@@ -60,5 +65,3 @@ export function getPrismaClient(): PrismaClient {
 
   return _prisma;
 }
-
-export const prisma = globalForPrisma.prisma ?? getPrismaClient();

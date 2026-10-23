@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getPrismaClient } from "@/lib/db";
 import { Prisma, type AnalyticsDailyMetrics } from "@prisma/client";
 
 /**
@@ -79,7 +79,7 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
     cacheHits,
   ] = await Promise.all([
     // Total searches and average duration
-    prisma.analyticsSearch.aggregate({
+    getPrismaClient().analyticsSearch.aggregate({
       _count: true,
       _avg: { duration: true },
       where: {
@@ -87,7 +87,7 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
       },
     }),
     // Total conversions and revenue
-    prisma.analyticsConversion.aggregate({
+    getPrismaClient().analyticsConversion.aggregate({
       _count: true,
       _sum: { conversionValue: true },
       where: {
@@ -95,7 +95,7 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
       },
     }),
     // Total alerts fired
-    prisma.analyticsAlert.aggregate({
+    getPrismaClient().analyticsAlert.aggregate({
       _count: true,
       _sum: { conversionValue: true },
       where: {
@@ -103,7 +103,7 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
       },
     }),
     // Unique users
-    prisma.analyticsSearch.findMany({
+    getPrismaClient().analyticsSearch.findMany({
       distinct: ["userId"],
       select: { userId: true },
       where: {
@@ -112,7 +112,7 @@ export async function getKPIMetrics(days: number): Promise<KPIMetrics> {
       },
     }),
     // Cache hits, not merely rows where the non-null cacheHit column exists
-    prisma.analyticsSearch.count({
+    getPrismaClient().analyticsSearch.count({
       where: {
         timestamp: { gte: startDate },
         cacheHit: true,
@@ -156,7 +156,7 @@ export async function getDailySearchVolumes(days: number): Promise<DailySearchVo
   const startDate = new Date(today);
   startDate.setUTCDate(startDate.getUTCDate() - days + 1);
 
-  const rows = await prisma.$queryRaw<Array<{ date: string; searches: number }>>(Prisma.sql`
+  const rows = await getPrismaClient().$queryRaw<Array<{ date: string; searches: number }>>(Prisma.sql`
     SELECT to_char("timestamp", 'YYYY-MM-DD') AS date, COUNT(*)::int AS searches
     FROM "AnalyticsSearch"
     WHERE "timestamp" >= ${startDate}
@@ -191,7 +191,7 @@ export async function getRouteMetrics(
   startDate.setDate(startDate.getDate() - days);
 
   // Get routes with search counts
-  const routeSearches = await prisma.analyticsSearch.groupBy({
+  const routeSearches = await getPrismaClient().analyticsSearch.groupBy({
     by: ["route"],
     _count: true,
     where: {
@@ -212,7 +212,7 @@ export async function getRouteMetrics(
     routeSearches.map(async (rs: typeof routeSearches[0]) => {
       const [conversions, topProgramData] = await Promise.all([
         // Get conversion metrics for this route
-        prisma.analyticsConversion.aggregate({
+        getPrismaClient().analyticsConversion.aggregate({
           _count: true,
           _sum: { conversionValue: true },
           where: {
@@ -221,7 +221,7 @@ export async function getRouteMetrics(
           },
         }),
         // Get top program for this route
-        prisma.analyticsSearch.groupBy({
+        getPrismaClient().analyticsSearch.groupBy({
           by: ["program"],
           _count: true,
           where: {
@@ -272,7 +272,7 @@ export async function getUserMetrics(days: number = 30): Promise<UserMetrics> {
   }
 
   // Get daily aggregated metrics if available
-  const dailyMetricsDb = await prisma.analyticsDailyMetrics.findMany({
+  const dailyMetricsDb = await getPrismaClient().analyticsDailyMetrics.findMany({
     where: {
       date: {
         gte: startDate,
@@ -312,20 +312,20 @@ export async function getUserMetrics(days: number = 30): Promise<UserMetrics> {
 
       // Otherwise, compute from raw data
       const [searches, conversions, activeUsers, newUsers] = await Promise.all([
-        prisma.analyticsSearch.aggregate({
+        getPrismaClient().analyticsSearch.aggregate({
           _count: true,
           where: {
             timestamp: { gte: dayStart, lt: dayEnd },
           },
         }),
-        prisma.analyticsConversion.aggregate({
+        getPrismaClient().analyticsConversion.aggregate({
           _count: true,
           _sum: { conversionValue: true },
           where: {
             timestamp: { gte: dayStart, lt: dayEnd },
           },
         }),
-        prisma.analyticsSearch.findMany({
+        getPrismaClient().analyticsSearch.findMany({
           distinct: ["userId"],
           select: { userId: true },
           where: {
@@ -333,7 +333,7 @@ export async function getUserMetrics(days: number = 30): Promise<UserMetrics> {
             userId: { not: null },
           },
         }),
-        prisma.analyticsUser.findMany({
+        getPrismaClient().analyticsUser.findMany({
           select: { userId: true },
           where: {
             firstSeen: { gte: dayStart, lt: dayEnd },
@@ -379,25 +379,25 @@ export async function getAlertMetrics(days: number): Promise<AlertMetrics> {
     topProgramData,
   ] = await Promise.all([
     // Total alerts all-time
-    prisma.analyticsAlert.aggregate({
+    getPrismaClient().analyticsAlert.aggregate({
       _count: true,
     }),
     // Alerts fired in period
-    prisma.analyticsAlert.aggregate({
+    getPrismaClient().analyticsAlert.aggregate({
       _count: true,
       where: {
         firedAt: { gte: startDate },
       },
     }),
     // Active alerts (status = 'active')
-    prisma.analyticsAlert.aggregate({
+    getPrismaClient().analyticsAlert.aggregate({
       _count: true,
       where: {
         status: "active",
       },
     }),
     // Alert conversions (alerts with conversionValue set)
-    prisma.analyticsAlert.aggregate({
+    getPrismaClient().analyticsAlert.aggregate({
       _count: true,
       where: {
         firedAt: { gte: startDate },
@@ -405,7 +405,7 @@ export async function getAlertMetrics(days: number): Promise<AlertMetrics> {
       },
     }),
     // Top route for alerts
-    prisma.analyticsAlert.groupBy({
+    getPrismaClient().analyticsAlert.groupBy({
       by: ["route"],
       _count: true,
       where: {
@@ -417,7 +417,7 @@ export async function getAlertMetrics(days: number): Promise<AlertMetrics> {
       take: 1,
     }),
     // Top program for alerts
-    prisma.analyticsAlert.groupBy({
+    getPrismaClient().analyticsAlert.groupBy({
       by: ["program"],
       _count: true,
       where: {

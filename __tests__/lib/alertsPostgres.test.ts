@@ -5,13 +5,13 @@ const mockLogWarn = jest.fn();
 const mockBuildCriticalRedisBackup = jest.fn();
 
 jest.mock("@/lib/db", () => ({
-  prisma: {
+  getPrismaClient: () => ({
     priceAlertRecord: {
       upsert: (...args: unknown[]) => mockUpsert(...args),
       findMany: (...args: unknown[]) => mockFindMany(...args),
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
     },
-  },
+  }),
 }));
 
 jest.mock("@/lib/logger", () => ({

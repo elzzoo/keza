@@ -9,7 +9,7 @@ const mockPrisma = {
   $queryRaw: jest.fn(),
 };
 
-jest.mock("@/lib/db", () => ({ prisma: mockPrisma }));
+jest.mock("@/lib/db", () => ({ getPrismaClient: () => mockPrisma }));
 
 import { getDailySearchVolumes, getKPIMetrics } from "@/lib/dashboard/metricsService";
 

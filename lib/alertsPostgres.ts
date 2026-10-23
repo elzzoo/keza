@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import { getPrismaClient } from "@/lib/db";
 import { logWarn } from "@/lib/logger";
 import { buildCriticalRedisBackup } from "@/lib/redisBackup";
 import type { PriceAlert } from "@/lib/alerts";
@@ -101,12 +101,12 @@ function recordToPriceAlert(record: {
 }
 
 export async function getPriceAlertByIdFromPostgres(id: string): Promise<PriceAlert | null> {
-  const record = await prisma.priceAlertRecord.findUnique({ where: { id } });
+  const record = await getPrismaClient().priceAlertRecord.findUnique({ where: { id } });
   return record ? recordToPriceAlert(record) : null;
 }
 
 export async function getActivePriceAlertsByEmailFromPostgres(email: string): Promise<PriceAlert[]> {
-  const records = await prisma.priceAlertRecord.findMany({
+  const records = await getPrismaClient().priceAlertRecord.findMany({
     where: {
       email: email.toLowerCase(),
       active: true,
@@ -120,7 +120,7 @@ export async function getActivePriceAlertsByRouteFromPostgres(
   from: string,
   to: string
 ): Promise<PriceAlert[]> {
-  const records = await prisma.priceAlertRecord.findMany({
+  const records = await getPrismaClient().priceAlertRecord.findMany({
     where: {
       routeFrom: from.toUpperCase(),
       routeTo: to.toUpperCase(),
@@ -132,7 +132,7 @@ export async function getActivePriceAlertsByRouteFromPostgres(
 }
 
 export async function getAllActivePriceAlertRoutesFromPostgres(): Promise<string[]> {
-  const records = await prisma.priceAlertRecord.findMany({
+  const records = await getPrismaClient().priceAlertRecord.findMany({
     where: { active: true },
     distinct: ["routeFrom", "routeTo"],
     select: {
@@ -148,7 +148,7 @@ export async function getAllActivePriceAlertRoutesFromPostgres(): Promise<string
 }
 
 export async function getAllActivePriceAlertsByEmailFromPostgres(): Promise<Map<string, PriceAlert[]>> {
-  const records = await prisma.priceAlertRecord.findMany({
+  const records = await getPrismaClient().priceAlertRecord.findMany({
     where: { active: true },
     orderBy: [
       { email: "asc" },
@@ -167,7 +167,7 @@ export async function getAllActivePriceAlertsByEmailFromPostgres(): Promise<Map<
 export async function upsertPriceAlertRecord(alert: PriceAlert): Promise<boolean> {
   try {
     const data = priceAlertToRecordData(alert);
-    await prisma.priceAlertRecord.upsert({
+    await getPrismaClient().priceAlertRecord.upsert({
       where: { id: alert.id },
       update: data,
       create: data,
@@ -217,7 +217,7 @@ export async function getPriceAlertsStoreParity(): Promise<PriceAlertsStoreParit
     .filter(isPriceAlertRecord);
   const redisById = new Map(redisAlerts.map((alert) => [alert.id, alert]));
 
-  const postgresAlerts = await prisma.priceAlertRecord.findMany({
+  const postgresAlerts = await getPrismaClient().priceAlertRecord.findMany({
     select: {
       id: true,
       active: true,
