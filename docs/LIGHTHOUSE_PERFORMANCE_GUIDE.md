@@ -37,6 +37,8 @@ This will:
 - Save results to `reports/lighthouse/baseline.json`
 - Display performance summary in console
 
+The version of `baseline.json` currently tracked in Git is an illustrative example, not a verified historical measurement. Generate a fresh baseline against the intended target before using `lighthouse:compare`; the command rejects unverified baselines and baselines from another origin before starting new audits. Keep the generated file out of a commit unless its target and measurement conditions are documented. Use the same `TEST_BASE_URL` for baseline and comparison.
+
 **Output example:**
 ```
 Page Metrics Summary:
