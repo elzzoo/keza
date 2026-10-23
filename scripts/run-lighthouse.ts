@@ -10,6 +10,7 @@
  */
 
 import { LighthouseAuditor } from '../lib/performance/lighthouse-auditor';
+import { assertComparableBaseline } from '../lib/performance/baseline-validation';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -74,9 +75,10 @@ async function runComparison(auditor: LighthouseAuditor, outputDir: string) {
 
   console.log('Loading baseline...');
   const baseline = JSON.parse(fs.readFileSync(baselineFile, 'utf-8'));
+  const pages = ['/', '/prix', '/carte', '/programmes'];
+  assertComparableBaseline(baseline, process.env.TEST_BASE_URL || 'http://localhost:3000', pages);
 
   console.log('Running current audits...');
-  const pages = ['/', '/prix', '/carte', '/programmes'];
   const currentReports: Record<string, any> = {};
 
   for (const page of pages) {
