@@ -40,7 +40,7 @@ interface HomeClientProps {
 }
 
 export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
-  const { profile, isLoaded, setLang: saveLang, recordSearch } = useProfile();
+  const { profile, setLang: saveLang, recordSearch } = useProfile();
   const { formatPrice } = useCurrency();
 
   const [lang,            setLang]           = useState<"fr" | "en">(defaultLang);
@@ -56,13 +56,9 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
   const [sharedParams, setSharedParams] = useState<{date?:string;cabin?:"economy"|"premium"|"business"|"first";tripType?:"oneway"|"roundtrip";pax?:number} | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Restore language from profile
   useEffect(() => {
-    if (defaultLang === "en") return;
-    if (isLoaded && profile?.lang) {
-      setLang(profile.lang);
-    }
-  }, [defaultLang, isLoaded, profile?.lang]);
+    setLang(defaultLang);
+  }, [defaultLang]);
 
   // Read URL search params on mount to pre-fill shared search + store referral code
   useEffect(() => {

@@ -11,6 +11,30 @@ test.describe("CI smoke", () => {
     await expect(page).toHaveTitle(/Cash vs Miles/i);
   });
 
+  test("home URL stays authoritative over a stored language preference", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("keza:visited", "true");
+      localStorage.setItem("keza_profile", JSON.stringify({ lang: "en", hasOnboarded: true }));
+    });
+    await page.route("**/api/portfolio", (route) => route.fulfill({ status: 401, body: "null" }));
+
+    const profileLoaded = page.waitForResponse((response) => response.url().endsWith("/api/portfolio"));
+    await page.goto("/");
+    await profileLoaded;
+
+    await expect(page.getByRole("heading", { name: /Cash ou miles \? Xalifly décide\./i })).toBeVisible();
+    await expect(page).toHaveTitle(/Cash ou Miles/i);
+    expect(await page.locator("html").getAttribute("lang")).toBe("fr");
+
+    await page.evaluate(() => {
+      localStorage.setItem("keza_profile", JSON.stringify({ lang: "fr", hasOnboarded: true }));
+    });
+    await page.goto("/en");
+    await expect(page.getByRole("heading", { name: /Cash or miles\? Xalifly decides\./i })).toBeVisible();
+    await expect(page).toHaveTitle(/Cash vs Miles/i);
+    expect(await page.locator("html").getAttribute("lang")).toBe("en");
+  });
+
   test("FR home exposes the search departure picker", async ({ page }) => {
     await page.goto("/");
     await expect(
