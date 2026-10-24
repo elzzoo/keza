@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { HomeClient } from "./HomeClient";
 import { SITE_URL } from "@/lib/siteConfig";
+import { HOME_METADATA } from "@/lib/homeMetadata";
 
-const TITLE = "Xalifly — Cash ou Miles ?";
-const DESCRIPTION =
-  "Comparez le vrai coût de chaque vol : cash, miles ou transfert. Xalifly vous dit quelle option choisir en tenant compte des taxes et de la valeur réelle des miles.";
+const TITLE = HOME_METADATA.fr.title;
+const DESCRIPTION = HOME_METADATA.fr.description;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     url: SITE_URL,
     siteName: "Xalifly",
-    locale: "fr_FR",
+    locale: HOME_METADATA.fr.ogLocale,
     type: "website",
     images: [{ url: `${SITE_URL}/api/og?lang=fr`, width: 1200, height: 630, alt: TITLE }],
   },

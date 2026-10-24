@@ -35,6 +35,38 @@ test.describe("CI smoke", () => {
     expect(await page.locator("html").getAttribute("lang")).toBe("en");
   });
 
+  test("home language switch updates the URL and metadata without losing a search draft", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+    await page.goto("/");
+    const date = new Date(Date.now() + 65 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const departure = page.locator("#keza-dep-date");
+    await departure.fill(date);
+
+    await page.getByRole("button", { name: "en", exact: true }).click();
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(page.getByRole("heading", { name: /Cash or miles\? Xalifly decides\./i })).toBeVisible();
+    await expect(page).toHaveTitle(/Cash vs Miles/i);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/en$/);
+    await expect(departure).toHaveValue(date);
+
+    await page.getByRole("button", { name: "fr", exact: true }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveTitle(/Cash ou Miles/i);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /vercel\.app$/);
+    await expect(departure).toHaveValue(date);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("button", { name: "en", exact: true }).click();
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(departure).toHaveValue(date);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { name: /Cash ou miles \? Xalifly décide\./i })).toBeVisible();
+    await expect(page).toHaveTitle(/Cash ou Miles/i);
+    await expect(departure).toHaveValue(date);
+  });
+
   test("FR home exposes the search departure picker", async ({ page }) => {
     await page.goto("/");
     await expect(
@@ -80,6 +112,11 @@ test.describe("CI smoke", () => {
         page.getByText("Données indisponibles sur cette route actuellement")
       ).toBeVisible({ timeout: 10_000 });
       expect(intercepted).toBe(true);
+
+      await page.getByRole("button", { name: "en", exact: true }).click();
+      await expect(page).toHaveURL(/\/en\?from=CDG&to=JFK/);
+      await expect(page.getByText("Data unavailable for this route at the moment")).toBeVisible();
+      await expect(page.locator("#keza-dep-date")).toHaveValue(date);
     });
 
     test("FR search result creates a price alert at a 10% lower target", async ({ page }) => {

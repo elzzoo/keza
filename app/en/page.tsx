@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { HomeClient } from "@/app/HomeClient";
 import { SITE_URL } from "@/lib/siteConfig";
+import { HOME_METADATA } from "@/lib/homeMetadata";
 
 export const metadata: Metadata = {
-  title: "Xalifly — Compare Flight Prices: Cash vs Miles",
-  description:
-    "Compare cash prices and miles redemptions for flights. Find the best value — pay with cash or points.",
+  title: HOME_METADATA.en.title,
+  description: HOME_METADATA.en.description,
   alternates: {
     canonical: `${SITE_URL}/en`,
     languages: {
@@ -15,11 +15,10 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Xalifly — Compare Flight Prices: Cash vs Miles",
-    description:
-      "Compare cash prices and miles redemptions for flights. Find the best value — pay with cash or points.",
+    title: HOME_METADATA.en.title,
+    description: HOME_METADATA.en.description,
     url: `${SITE_URL}/en`,
-    locale: "en_US",
+    locale: HOME_METADATA.en.ogLocale,
   },
 };
 
