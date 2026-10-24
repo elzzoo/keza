@@ -22,8 +22,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProfile }    from "@/hooks/useProfile";
 import { useCurrency }   from "@/hooks/useCurrency";
 import { trackRecentSearch } from "@/lib/analytics";
-import { SITE_URL } from "@/lib/siteConfig";
-import { HOME_METADATA } from "@/lib/homeMetadata";
 
 // Below-the-fold — lazy loaded to reduce initial JS bundle
 const MultiDateCompare    = dynamic(() => import("@/components/MultiDateCompare").then(m => m.MultiDateCompare), { ssr: false });
@@ -62,39 +60,6 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
     setLang(defaultLang);
   }, [defaultLang]);
 
-  useEffect(() => {
-    const syncLanguageFromUrl = () => {
-      const urlLang = window.location.pathname === "/en" ? "en" : "fr";
-      document.documentElement.lang = urlLang;
-      setLang(urlLang);
-      saveLang(urlLang);
-    };
-    window.addEventListener("popstate", syncLanguageFromUrl);
-    return () => window.removeEventListener("popstate", syncLanguageFromUrl);
-  }, [saveLang]);
-
-  useEffect(() => {
-    // Next reconciles the original route metadata after pushState; update it afterward.
-    const timer = window.setTimeout(() => {
-      const { title, description, ogLocale } = HOME_METADATA[lang];
-      const canonical = lang === "en" ? `${SITE_URL}/en` : SITE_URL;
-      document.title = title;
-      const canonicalLink = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-      if (canonicalLink) canonicalLink.href = canonical;
-      for (const [selector, content] of [
-        ['meta[name="description"]', description],
-        ['meta[property="og:title"]', title],
-        ['meta[property="og:description"]', description],
-        ['meta[property="og:url"]', canonical],
-        ['meta[property="og:locale"]', ogLocale],
-      ]) {
-        const meta = document.querySelector<HTMLMetaElement>(selector);
-        if (meta) meta.content = content;
-      }
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [lang]);
-
   // Read URL search params on mount to pre-fill shared search + store referral code
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -127,8 +92,6 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
   }, []);
 
   const handleLangChange = useCallback((newLang: "fr" | "en") => {
-    const path = newLang === "en" ? "/en" : "/";
-    window.history.pushState(null, "", `${path}${window.location.search}${window.location.hash}`);
     setLang(newLang);
     saveLang(newLang);
   }, [saveLang]);
