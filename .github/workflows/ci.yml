@@ -78,8 +78,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: unit
     env:
-      UPSTASH_REDIS_REST_URL: "https://fake-redis.upstash.io"
-      UPSTASH_REDIS_REST_TOKEN: "fake-token"
       RESEND_API_KEY: "re_fake"
       CRON_SECRET: "fake-cron-secret"
       ADMIN_SECRET: "fake-admin-secret-32chars-minimum"
