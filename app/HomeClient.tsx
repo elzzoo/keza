@@ -2,11 +2,12 @@
 
 import { useState, useCallback, useRef, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import type { FlightResult } from "@/lib/engine";
 import { Header }        from "@/components/Header";
 import { Footer }        from "@/components/Footer";
 import { TrustBar }      from "@/components/TrustBar";
-import { SearchForm }    from "@/components/SearchForm";
+import { SearchForm, type SearchFormHandle } from "@/components/SearchForm";
 import { SearchSkeleton } from "@/components/SearchSkeleton";
 import { Results }       from "@/components/Results";
 
@@ -22,6 +23,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProfile }    from "@/hooks/useProfile";
 import { useCurrency }   from "@/hooks/useCurrency";
 import { trackRecentSearch } from "@/lib/analytics";
+import { clearHomeLocaleHandoff, readHomeLocaleHandoff, saveHomeLocaleHandoff } from "@/lib/homeLocaleHandoff";
 
 // Below-the-fold — lazy loaded to reduce initial JS bundle
 const MultiDateCompare    = dynamic(() => import("@/components/MultiDateCompare").then(m => m.MultiDateCompare), { ssr: false });
@@ -40,28 +42,34 @@ interface HomeClientProps {
 }
 
 export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
+  const router = useRouter();
+  const [handoff] = useState(() => readHomeLocaleHandoff(defaultLang));
   const { profile, setLang: saveLang, recordSearch } = useProfile();
   const { formatPrice } = useCurrency();
 
   const [lang,            setLang]           = useState<"fr" | "en">(defaultLang);
-  const [results,         setResults]        = useState<FlightResult[]>([]);
-  const [partial,         setPartial]        = useState(false);
+  const [results,         setResults]        = useState<FlightResult[]>(handoff?.results ?? []);
+  const [partial,         setPartial]        = useState(handoff?.partial ?? false);
   const [loading,         setLoading]        = useState(false);
   const [liveRefreshing,  setLiveRefreshing] = useState(false);
-  const [hasSearched,     setHasSearched]    = useState(false);
+  const [hasSearched,     setHasSearched]    = useState(handoff?.hasSearched ?? false);
   const [searchCount,     setSearchCount]    = useState(0);
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo,   setPrefillTo]   = useState<string | undefined>();
-  const [lastSearch, setLastSearch]   = useState<{from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"} | null>(null);
+  const [lastSearch, setLastSearch]   = useState<{from:string;to:string;date:string;cabin:string;tripType:"oneway"|"roundtrip"} | null>(handoff?.lastSearch ?? null);
   const [sharedParams, setSharedParams] = useState<{date?:string;cabin?:"economy"|"premium"|"business"|"first";tripType?:"oneway"|"roundtrip";pax?:number} | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const searchFormRef = useRef<SearchFormHandle>(null);
 
   useEffect(() => {
     setLang(defaultLang);
+    document.documentElement.lang = defaultLang;
+    clearHomeLocaleHandoff();
   }, [defaultLang]);
 
   // Read URL search params on mount to pre-fill shared search + store referral code
   useEffect(() => {
+    if (handoff) return;
     const params = new URLSearchParams(window.location.search);
     const urlFrom = params.get("from");
     const urlTo = params.get("to");
@@ -89,12 +97,27 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
         pax: urlPax ? parseInt(urlPax, 10) : undefined,
       });
     }
-  }, []);
+  }, [handoff]);
+
+  const captureHandoff = useCallback((newLang: "fr" | "en") => {
+    const draft = searchFormRef.current?.getDraft();
+    if (draft) {
+      saveHomeLocaleHandoff(newLang, {
+        draft,
+        results,
+        partial: partial || loading || liveRefreshing,
+        hasSearched: hasSearched && results.length > 0,
+        lastSearch,
+      });
+    }
+  }, [hasSearched, lastSearch, liveRefreshing, loading, partial, results]);
 
   const handleLangChange = useCallback((newLang: "fr" | "en") => {
-    setLang(newLang);
+    captureHandoff(newLang);
     saveLang(newLang);
-  }, [saveLang]);
+    const target = newLang === "en" ? "/en" : "/";
+    router.replace(`${target}${window.location.search}${window.location.hash}`);
+  }, [captureHandoff, router, saveLang]);
 
   const handleResults = useCallback((r: FlightResult[], isPartial?: boolean) => {
     setResults(r);
@@ -217,6 +240,9 @@ export function HomeClient({ defaultLang = "fr" }: HomeClientProps) {
         {/* -- Search form ------------------------------------------ */}
         <div className="animate-fade-up max-w-2xl mx-auto">
           <SearchForm
+            ref={searchFormRef}
+            initialDraft={handoff?.draft}
+            initialHasSearched={handoff?.hasSearched}
             onResults={handleResults}
             onLoading={setLoading}
             onSearchStart={handleSearchStart}

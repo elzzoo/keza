@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import type { FlightResult } from "@/lib/engine";
+import type { SearchDraft } from "@/lib/homeLocaleHandoff";
 import { AirportPicker } from "./AirportPicker";
 import { ProgramsPicker } from "./ProgramsPicker";
 import { PriceCalendar } from "./PriceCalendar";
@@ -31,6 +32,12 @@ interface Props {
   initialPax?: number;
   /** Called with true while streaming partial results, false when final results arrive */
   onLiveRefreshing?: (v: boolean) => void;
+  initialDraft?: SearchDraft;
+  initialHasSearched?: boolean;
+}
+
+export interface SearchFormHandle {
+  getDraft: () => SearchDraft;
 }
 
 type TripType = "oneway" | "roundtrip";
@@ -59,77 +66,92 @@ const addDays = (base: string, n: number) => {
  *
  * @param Props - SearchForm props including initial values, callbacks, and formatting function
  */
-export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax, onLiveRefreshing }: Props) {
-  const [from,       setFrom]       = useState(initialFrom ?? "");
-  const [to,         setTo]         = useState(initialTo ?? "");
-  const [tripType,   setTripType]   = useState<TripType>(initialTripType ?? "roundtrip");
-  const [depDate,    setDepDate]    = useState(initialDate ?? addDays(today, 30));
-  const [retDate,    setRetDate]    = useState(initialDate ? addDays(initialDate, 7) : addDays(today, 37));
-  const [cabin,      setCabin]      = useState<Cabin>("economy");
-  const [passengers, setPassengers] = useState(initialPax ?? 1);
-  const [programs,   setPrograms]   = useState("");
+export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchForm({ onResults, onLoading, onSearchStart, lang, initialFrom, initialTo, savedPrograms, savedCabin, initialCabin, formatPrice, initialDate, initialTripType, initialPax, onLiveRefreshing, initialDraft, initialHasSearched }: Props, ref) {
+  const [from,       setFrom]       = useState(initialDraft?.from ?? initialFrom ?? "");
+  const [to,         setTo]         = useState(initialDraft?.to ?? initialTo ?? "");
+  const [tripType,   setTripType]   = useState<TripType>(initialDraft?.tripType ?? initialTripType ?? "roundtrip");
+  const [depDate,    setDepDate]    = useState(initialDraft?.depDate ?? initialDate ?? addDays(today, 30));
+  const [retDate,    setRetDate]    = useState(initialDraft?.retDate ?? (initialDate ? addDays(initialDate, 7) : addDays(today, 37)));
+  const [cabin,      setCabin]      = useState<Cabin>(initialDraft?.cabin ?? "economy");
+  const [passengers, setPassengers] = useState(initialDraft?.passengers ?? initialPax ?? 1);
+  const [programs,   setPrograms]   = useState(initialDraft?.programs ?? "");
   const [error,      setError]      = useState<string | null>(null);
   const [busy,       setBusy]       = useState(false);
   const [showCalendar, setShowCalendar] = useState<"dep" | "ret" | null>(null);
   const { state: onboardingState } = useOnboarding();
 
+  useImperativeHandle(ref, () => ({
+    getDraft: () => ({ from, to, tripType, depDate, retDate, cabin, passengers, programs }),
+  }), [from, to, tripType, depDate, retDate, cabin, passengers, programs]);
+
   // React to external route selection (popular routes / URL params)
   useEffect(() => { if (initialFrom) setFrom(initialFrom); }, [initialFrom]);
-  useEffect(() => { if (initialTo)   setTo(initialTo);     }, [initialTo]);
+  useEffect(() => { if (initialTo) setTo(initialTo); }, [initialTo]);
 
   // URL param prefill — date, tripType, pax.
   // These only run once (guard prevents overwriting user changes).
   const [urlParamApplied, setUrlParamApplied] = useState(false);
   useEffect(() => {
-    if (urlParamApplied) return;
+    if (urlParamApplied || initialDraft) return;
     let applied = false;
     if (initialDate)    { setDepDate(initialDate); setRetDate(addDays(initialDate, 7)); applied = true; }
     if (initialTripType){ setTripType(initialTripType); applied = true; }
     if (initialPax)     { setPassengers(initialPax); applied = true; }
     if (applied) setUrlParamApplied(true);
-  }, [initialDate, initialTripType, initialPax, urlParamApplied]);
+  }, [initialDate, initialTripType, initialPax, urlParamApplied, initialDraft]);
 
   // URL cabin param — always beats profile cabin.
   const [urlCabinApplied, setUrlCabinApplied] = useState(false);
   useEffect(() => {
-    if (urlCabinApplied || !initialCabin) return;
+    if (urlCabinApplied || !initialCabin || initialDraft) return;
     setCabin(initialCabin);
     setUrlCabinApplied(true);
-  }, [initialCabin, urlCabinApplied]);
+  }, [initialCabin, urlCabinApplied, initialDraft]);
 
   // Restore saved programs & cabin from profile (once on mount, only if no URL cabin).
   const [profileLoaded, setProfileLoaded] = useState(false);
   useEffect(() => {
-    if (profileLoaded) return;
+    if (profileLoaded || initialDraft) return;
     if (savedPrograms?.length) { setPrograms(savedPrograms.join(", ")); setProfileLoaded(true); }
     // Profile cabin only applies if URL didn't supply one
     if (savedCabin && !initialCabin) { setCabin(savedCabin); setProfileLoaded(true); }
-  }, [savedPrograms, savedCabin, initialCabin, profileLoaded]);
+  }, [savedPrograms, savedCabin, initialCabin, profileLoaded, initialDraft]);
 
   // Pre-fill programs from onboarding state
   useEffect(() => {
-    if (onboardingState.selectedPrograms.length > 0 && !programs) {
+    if (!initialDraft && onboardingState.selectedPrograms.length > 0 && !programs) {
       setPrograms(onboardingState.selectedPrograms.join(", "));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onboardingState.selectedPrograms, programs]);
+  }, [onboardingState.selectedPrograms, programs, initialDraft]);
 
   // Pre-fill routes from onboarding state
   useEffect(() => {
-    if (onboardingState.favoriteRoutes.length > 0 && !from && !to) {
+    if (!initialDraft && onboardingState.favoriteRoutes.length > 0 && !from && !to) {
       const [fromAirport, toAirport] = onboardingState.favoriteRoutes[0];
       setFrom(fromAirport);
       setTo(toAirport);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onboardingState.favoriteRoutes, from, to]);
+  }, [onboardingState.favoriteRoutes, from, to, initialDraft]);
 
   const sameAirport = !!from && !!to && from === to;
   const canGo = !!from && !!to && !sameAirport;
   const onDep = (v: string) => { setDepDate(v); if (retDate <= v) setRetDate(addDays(v, 7)); };
 
   // ── Track whether the user has performed at least one search ────────────────
-  const hasSearchedRef = useRef(false);
+  const hasSearchedRef = useRef(initialHasSearched ?? false);
+  const activeControllersRef = useRef(new Set<AbortController>());
+  const unmountingRef = useRef(false);
+
+  useEffect(() => {
+    const controllers = activeControllersRef.current;
+    unmountingRef.current = false;
+    return () => {
+      unmountingRef.current = true;
+      controllers.forEach(controller => controller.abort());
+    };
+  }, []);
 
   // ── Core fetch logic — takes explicit cabin so it works from both submit
   //    handler and the cabin-change auto-refire effect ─────────────────────────
@@ -142,6 +164,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     // Hard abort after 14s — ensures UI never hangs even if stream stalls
     const CLIENT_TIMEOUT_MS = 14_000;
     const controller = new AbortController();
+    activeControllersRef.current.add(controller);
     const clientTimer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
 
     const requestBody = JSON.stringify({
@@ -223,6 +246,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
     } catch (err) {
       clearTimeout(clientTimer);
       onLiveRefreshing?.(false);
+      if (unmountingRef.current) return;
       const isAbort = (err as Error).name === "AbortError";
       if (isAbort) {
         if (!partialReceived) {
@@ -238,6 +262,7 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
         toast.error(msg);
       }
     } finally {
+      activeControllersRef.current.delete(controller);
       setBusy(false);
       onLoading(false);
     }
@@ -539,4 +564,4 @@ export function SearchForm({ onResults, onLoading, onSearchStart, lang, initialF
       </form>
     </>
   );
-}
+});

@@ -35,6 +35,42 @@ test.describe("CI smoke", () => {
     expect(await page.locator("html").getAttribute("lang")).toBe("en");
   });
 
+  test("home language switch preserves the edited search draft and canonical URL", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+    const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://keza-taupe.vercel.app").replace(/\/$/, "");
+    const initialDate = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const editedDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const returnDate = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    await page.goto("/mentions-legales");
+    await page.goto(`/?from=CDG&to=JFK&date=${initialDate}`);
+    await expect(page.locator("#keza-dep-date")).toHaveValue(initialDate);
+    await page.locator("#keza-dep-date").fill(editedDate);
+    await page.locator("#keza-ret-date").fill(returnDate);
+    await page.getByRole("button", { name: "Business", exact: true }).click();
+    await page.getByRole("button", { name: "Plus de passagers" }).click();
+
+    await page.getByRole("button", { name: "en", exact: true }).click();
+    await expect(page).toHaveURL(/\/en\?from=CDG&to=JFK/);
+    await expect(page).toHaveTitle(/Cash vs Miles/i);
+    await expect(page.locator(`link[rel="canonical"][href="${siteUrl}/en"]`).first()).toBeAttached();
+    if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.locator("#keza-dep-date")).toHaveValue(editedDate);
+    await expect(page.locator("#keza-ret-date")).toHaveValue(returnDate);
+    await expect(page.getByRole("button", { name: "Business", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByText("2 pax")).toBeVisible();
+
+    await page.getByRole("button", { name: "fr", exact: true }).click();
+    await expect(page).toHaveURL(/\/\?from=CDG&to=JFK/);
+    await expect(page.locator(`link[rel="canonical"][href="${siteUrl}"]`).first()).toBeAttached();
+    if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.locator("#keza-dep-date")).toHaveValue(editedDate);
+    await page.reload();
+    await expect(page).toHaveTitle(/Cash ou Miles/i);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await page.goBack();
+    await expect(page).toHaveURL(/\/mentions-legales$/);
+  });
+
   test("FR home exposes the search departure picker", async ({ page }) => {
     await page.goto("/");
     await expect(
@@ -44,6 +80,62 @@ test.describe("CI smoke", () => {
 
   test.describe("mocked search", () => {
     test.use({ serviceWorkers: "block" });
+
+    test("home language switch keeps displayed search results without another supplier request", async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      let searchRequests = 0;
+      const requestCabins: string[] = [];
+      await page.route("**/api/search/stream", async (route) => {
+        searchRequests += 1;
+        requestCabins.push(route.request().postDataJSON().cabin);
+        await route.fulfill({
+          status: 200,
+          contentType: "text/event-stream",
+          body: `data: ${JSON.stringify({ type: "final", results: [{
+            from: "CDG", to: "JFK", price: 650, totalPrice: 650, cashCost: 650,
+            airlines: [], stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+            milesCost: 700, savings: -50, recommendation: "USE_CASH",
+            bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+            disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+          }], partial: false, forexRate: 1 })}\n\n`,
+        });
+      });
+      await page.goto(`/?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      const submit = page.getByRole("button", { name: /optimiser mon vol/i });
+      await expect(submit).toBeEnabled();
+      await submit.click();
+      await expect(page.getByText("1 vol trouvé")).toBeVisible();
+      await page.getByRole("button", { name: "en", exact: true }).click();
+      await expect(page).toHaveURL(/\/en\?/);
+      await expect(page.getByText("1 flight found")).toBeVisible();
+      expect(searchRequests).toBe(1);
+      await page.getByRole("button", { name: "Business", exact: true }).click();
+      await expect.poll(() => searchRequests).toBe(2);
+      expect(requestCabins).toEqual(["economy", "business"]);
+    });
+
+    test("switching language during partial streaming keeps the result marked partial", async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      await page.route("**/api/search/stream", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: ${JSON.stringify({ type: "partial", results: [{
+          from: "CDG", to: "JFK", price: 650, totalPrice: 650, cashCost: 650,
+          airlines: [], stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+          milesCost: 700, savings: -50, recommendation: "USE_CASH",
+          bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+          disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+        }] })}\n\n`,
+      }));
+      await page.goto(`/?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+      await expect(page.getByText("1 vol trouvé")).toBeVisible();
+      await page.getByRole("button", { name: "en", exact: true }).click();
+      await expect(page.getByText("1 flight found")).toBeVisible();
+      await expect(page.getByText("Partial results shown — some sources unavailable")).toBeVisible();
+    });
 
     test("FR search submits the selected route and shows an empty result", async ({ page }) => {
       await page.addInitScript(() => {
