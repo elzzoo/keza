@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { SearchForm } from "@/components/SearchForm";
+import { SearchForm, type SearchFormHandle } from "@/components/SearchForm";
 import { Results } from "@/components/Results";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
 
@@ -15,6 +16,12 @@ const PriceHistoryChartLazy = dynamic(() => import("@/components/PriceHistoryCha
 import type { FlightResult } from "@/lib/engine";
 import { airportsMap } from "@/data/airports";
 import { useProAccess } from "@/hooks/useProAccess";
+import { localizedPath } from "@/lib/localizedPath";
+import {
+  clearFlightRouteLocaleHandoff,
+  readFlightRouteLocaleHandoff,
+  saveFlightRouteLocaleHandoff,
+} from "@/lib/flightRouteLocaleHandoff";
 
 // ─── RouteMeta interface (sourced from @/data/routeMeta when available) ──────
 
@@ -199,10 +206,34 @@ export function RoutePageClient({
   fromFlag, toFlag, cheapestPrice, cheapestDate, priceCount,
   relatedRoutes, routeMeta, defaultLang,
 }: Props) {
-  const [lang, setLang] = useState<"fr" | "en">(defaultLang ?? "fr");
-  const [results, setResults] = useState<FlightResult[]>([]);
+  const router = useRouter();
+  const routeId = `${from}-${to}`;
+  const routeLang = defaultLang ?? "fr";
+  const [handoff] = useState(() => readFlightRouteLocaleHandoff(routeLang, routeId));
+  const searchFormRef = useRef<SearchFormHandle>(null);
+  const [lang, setLang] = useState<"fr" | "en">(routeLang);
+  const [results, setResults] = useState<FlightResult[]>(handoff?.results ?? []);
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(handoff?.hasSearched ?? false);
+
+  useEffect(() => {
+    setLang(routeLang);
+    document.documentElement.lang = routeLang;
+    clearFlightRouteLocaleHandoff();
+  }, [routeLang]);
+
+  const handleLangChange = (target: "fr" | "en") => {
+    const draft = searchFormRef.current?.getDraft();
+    if (draft) {
+      saveFlightRouteLocaleHandoff(target, routeId, {
+        draft,
+        results,
+        hasSearched: hasSearched && results.length > 0,
+      });
+    }
+    const path = localizedPath(window.location.pathname, target);
+    router.replace(`${path}${window.location.search}${window.location.hash}`, { scroll: false });
+  };
   const { isActive: hasProAccess } = useProAccess();
   const fr = lang === "fr";
   const proHref = fr ? "/pro" : "/en/pro";
@@ -232,7 +263,7 @@ export function RoutePageClient({
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={setLang} />
+      <Header lang={lang} onLangChange={handleLangChange} />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
         {/* Breadcrumb */}
@@ -315,6 +346,9 @@ export function RoutePageClient({
         {/* Search form (pre-filled) */}
         <div className="mb-6">
           <SearchForm
+            ref={searchFormRef}
+            initialDraft={handoff?.draft}
+            initialHasSearched={handoff?.hasSearched}
             onResults={handleResults}
             onLoading={setLoading}
             onSearchStart={handleSearchStart}

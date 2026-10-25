@@ -145,6 +145,53 @@ test.describe("CI smoke", () => {
   test.describe("mocked search", () => {
     test.use({ serviceWorkers: "block" });
 
+    test("flight route language switch keeps the search draft and displayed result", async ({ page }) => {
+      const departureDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const returnDate = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      let searchRequests = 0;
+      await page.route("**/api/calendar**", (route) => route.fulfill({ json: { days: [] } }));
+      await page.route("**/api/search/stream", async (route) => {
+        searchRequests += 1;
+        await route.fulfill({
+          status: 200,
+          contentType: "text/event-stream",
+          body: `data: ${JSON.stringify({ type: "final", results: [{
+            from: "DSS", to: "CDG", price: 680, totalPrice: 680, cashCost: 680,
+            airlines: [], stops: 0, cabin: "economy", tripType: "roundtrip", passengers: 1,
+            milesCost: 750, savings: -70, recommendation: "USE_CASH",
+            bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+            disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+          }] })}\n\n`,
+        });
+      });
+
+      await page.goto("/flights/DSS-CDG?campaign=smoke#search");
+      await expect(page.getByRole("heading", { name: "Vols Dakar → Paris" })).toBeVisible();
+      await page.locator("#keza-dep-date").fill(departureDate);
+      await page.locator("#keza-ret-date").fill(returnDate);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+      await expect(page.getByText("1 vol trouvé")).toBeVisible();
+
+      await page.getByRole("button", { name: "en", exact: true }).click();
+      await expect(page).toHaveURL(/\/en\/flights\/DSS-CDG\?campaign=smoke#search$/);
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      await expect(page.getByRole("heading", { name: "Flights Dakar → Paris" })).toBeVisible();
+      await expect(page.locator('link[rel="canonical"][href$="/en/flights/DSS-CDG"]').first()).toBeAttached();
+      if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+      await expect(page.locator("#keza-dep-date")).toHaveValue(departureDate);
+      await expect(page.locator("#keza-ret-date")).toHaveValue(returnDate);
+      await expect(page.getByText("1 flight found")).toBeVisible();
+      expect(searchRequests).toBe(1);
+
+      await page.getByRole("button", { name: "fr", exact: true }).click();
+      await expect(page).toHaveURL(/\/flights\/DSS-CDG\?campaign=smoke#search$/);
+      await expect(page.getByText("1 vol trouvé")).toBeVisible();
+      expect(searchRequests).toBe(1);
+      await page.reload();
+      await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+      await expect(page.getByRole("heading", { name: "Vols Dakar → Paris" })).toBeVisible();
+    });
+
     test("destination language switch keeps the search draft and displayed result", async ({ page }) => {
       const departureDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       const returnDate = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
