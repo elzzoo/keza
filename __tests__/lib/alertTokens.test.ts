@@ -50,4 +50,18 @@ describe("alert tokens", () => {
     expect(verifyManageAlertsToken("user@example.com", `${legacyPayload}.${signature}`)).toBe(false);
     expect(verifyManageAlertsToken("user@example.com", createManageAlertsToken("user@example.com"))).toBe(true);
   });
+
+  it("keeps previously issued unsubscribe links valid", () => {
+    const payload = Buffer.from(JSON.stringify({
+      sub: "alt_123",
+      action: "unsubscribe",
+      exp: Math.floor(Date.now() / 1000) + 3_600,
+    })).toString("base64url");
+    const signature = createHmac("sha256", "test-alert-secret")
+      .update(payload)
+      .digest("base64url");
+
+    expect(verifyUnsubscribeAlertToken("alt_123", `${payload}.${signature}`)).toBe(true);
+    expect(verifyUnsubscribeAlertToken("alt_456", `${payload}.${signature}`)).toBe(false);
+  });
 });

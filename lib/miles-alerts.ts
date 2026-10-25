@@ -1,5 +1,5 @@
 import "server-only";
-import { redis } from "./redis";
+import { redis, safeSet } from "./redis";
 
 export interface MilesAlert {
   email: string;
@@ -34,7 +34,11 @@ export async function createMilesAlert(
     createdAt: now,
   };
 
-  await redis.set(key, storableAlert, { ex: MILES_ALERT_TTL });
+  // Anonymous creation must not replace an existing threshold or reset its cooldown.
+  const result = await safeSet(key, storableAlert, { ex: MILES_ALERT_TTL, nx: true });
+  if (result === "ERROR") {
+    throw new Error("Unable to create miles alert");
+  }
 }
 
 /**

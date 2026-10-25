@@ -4,6 +4,7 @@ const mockDel = jest.fn();
 const mockKeys = jest.fn();
 
 jest.mock("@/lib/redis", () => ({
+  safeSet: mockSet,
   redis: {
     get: mockGet,
     set: mockSet,
@@ -57,7 +58,34 @@ describe("miles-alerts", () => {
       expect(value.createdAt).toBeLessThanOrEqual(afterCreate);
 
       // Verify TTL (1 year = 365 days in seconds)
-      expect(options).toEqual({ ex: 365 * 24 * 60 * 60 });
+      expect(options).toEqual({ ex: 365 * 24 * 60 * 60, nx: true });
+    });
+
+    it("does not overwrite an existing alert when Redis rejects SET NX", async () => {
+      mockSet.mockResolvedValueOnce(null);
+      const alert = {
+        email: "user@example.com",
+        route: "SIN-LAX",
+        program: "Singapore KrisFlyer",
+        thresholdCpp: 9,
+      };
+
+      await expect(createMilesAlert(alert)).resolves.toBeUndefined();
+      expect(mockSet).toHaveBeenCalledWith(
+        "keza:miles-alert:user@example.com:SIN-LAX:Singapore KrisFlyer",
+        expect.objectContaining({ thresholdCpp: 9 }),
+        { ex: 365 * 24 * 60 * 60, nx: true }
+      );
+    });
+
+    it("does not report success when Redis fails", async () => {
+      mockSet.mockResolvedValueOnce("ERROR");
+      await expect(createMilesAlert({
+        email: "user@example.com",
+        route: "SIN-LAX",
+        program: "Singapore KrisFlyer",
+        thresholdCpp: 0.8,
+      })).rejects.toThrow("Unable to create miles alert");
     });
 
     it("stores lastFiredAt as undefined when not provided", async () => {
