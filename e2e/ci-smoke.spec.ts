@@ -145,6 +145,52 @@ test.describe("CI smoke", () => {
   test.describe("mocked search", () => {
     test.use({ serviceWorkers: "block" });
 
+    test("destination language switch keeps the search draft and displayed result", async ({ page }) => {
+      const departureDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const returnDate = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      let searchRequests = 0;
+      await page.route("**/api/search/stream", async (route) => {
+        searchRequests += 1;
+        await route.fulfill({
+          status: 200,
+          contentType: "text/event-stream",
+          body: `data: ${JSON.stringify({ type: "final", results: [{
+            from: "DSS", to: "DXB", price: 490, totalPrice: 490, cashCost: 490,
+            airlines: [], stops: 0, cabin: "economy", tripType: "roundtrip", passengers: 1,
+            milesCost: 600, savings: -110, recommendation: "USE_CASH",
+            bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+            disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+          }] })}\n\n`,
+        });
+      });
+
+      await page.goto("/destinations/dxb?campaign=smoke#search");
+      await expect(page.getByRole("heading", { name: "Dubaï", exact: true })).toBeVisible();
+      await page.locator("#keza-dep-date").fill(departureDate);
+      await page.locator("#keza-ret-date").fill(returnDate);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+      await expect(page.getByText("1 vol trouvé")).toBeVisible();
+
+      await page.getByRole("button", { name: "en", exact: true }).click();
+      await expect(page).toHaveURL(/\/en\/destinations\/dxb\?campaign=smoke#search$/);
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      await expect(page.getByRole("heading", { name: "Dubai", exact: true })).toBeVisible();
+      await expect(page.locator('link[rel="canonical"][href$="/en/destinations/dxb"]').first()).toBeAttached();
+      if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+      await expect(page.locator("#keza-dep-date")).toHaveValue(departureDate);
+      await expect(page.locator("#keza-ret-date")).toHaveValue(returnDate);
+      await expect(page.getByText("1 flight found")).toBeVisible();
+      expect(searchRequests).toBe(1);
+
+      await page.getByRole("button", { name: "fr", exact: true }).click();
+      await expect(page).toHaveURL(/\/destinations\/dxb\?campaign=smoke#search$/);
+      await expect(page.getByText("1 vol trouvé")).toBeVisible();
+      expect(searchRequests).toBe(1);
+      await page.reload();
+      await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+      await expect(page.getByRole("heading", { name: "Dubaï", exact: true })).toBeVisible();
+    });
+
     test("home language switch keeps displayed search results without another supplier request", async ({ page }) => {
       await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
       const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

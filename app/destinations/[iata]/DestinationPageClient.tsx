@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { SearchForm } from "@/components/SearchForm";
+import { SearchForm, type SearchFormHandle } from "@/components/SearchForm";
 import { Results } from "@/components/Results";
 import type { Destination } from "@/data/destinations";
 import { DESTINATIONS } from "@/data/destinations";
@@ -13,6 +14,12 @@ import type { DestinationPriceHistory } from "@/lib/priceHistory";
 import type { FlightResult } from "@/lib/engine";
 import { PriceAlertForm } from "@/components/PriceAlertForm";
 import { destinationCity, destinationCountry, destinationMonthLabel, type SupportedLang } from "@/lib/destinationLocale";
+import { localizedPath } from "@/lib/localizedPath";
+import {
+  clearDestinationLocaleHandoff,
+  readDestinationLocaleHandoff,
+  saveDestinationLocaleHandoff,
+} from "@/lib/destinationLocaleHandoff";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -116,10 +123,32 @@ export function buildSparklinePoints(history: DestinationPriceHistory, lang: Sup
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function DestinationPageClient({ dest, cpm, recommendation, history, initialLang = "fr" }: Props) {
+  const router = useRouter();
+  const [handoff] = useState(() => readDestinationLocaleHandoff(initialLang, dest.iata));
+  const searchFormRef = useRef<SearchFormHandle>(null);
   const [lang, setLang] = useState<"fr" | "en">(initialLang);
-  const [results, setResults] = useState<FlightResult[]>([]);
+  const [results, setResults] = useState<FlightResult[]>(handoff?.results ?? []);
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(handoff?.hasSearched ?? false);
+
+  useEffect(() => {
+    setLang(initialLang);
+    document.documentElement.lang = initialLang;
+    clearDestinationLocaleHandoff();
+  }, [initialLang]);
+
+  const handleLangChange = (target: "fr" | "en") => {
+    const draft = searchFormRef.current?.getDraft();
+    if (draft) {
+      saveDestinationLocaleHandoff(target, dest.iata, {
+        draft,
+        results,
+        hasSearched: hasSearched && results.length > 0,
+      });
+    }
+    const path = localizedPath(window.location.pathname, target);
+    router.replace(`${path}${window.location.search}${window.location.hash}`, { scroll: false });
+  };
   const fr = lang === "fr";
   const city = destinationCity(dest, lang);
   const country = destinationCountry(dest, lang);
@@ -157,7 +186,7 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={setLang} />
+      <Header lang={lang} onLangChange={handleLangChange} />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-12">
         {/* Breadcrumb */}
@@ -358,6 +387,9 @@ export function DestinationPageClient({ dest, cpm, recommendation, history, init
             }
           </p>
           <SearchForm
+            ref={searchFormRef}
+            initialDraft={handoff?.draft}
+            initialHasSearched={handoff?.hasSearched}
             onResults={(r) => { setResults(r); setHasSearched(true); }}
             onLoading={setLoading}
             lang={lang}
