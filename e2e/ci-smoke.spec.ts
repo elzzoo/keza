@@ -145,6 +145,60 @@ test.describe("CI smoke", () => {
   test.describe("mocked search", () => {
     test.use({ serviceWorkers: "block" });
 
+    test("changing cabin keeps the newer result when the first search finishes late", async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      let releaseFirst!: () => void;
+      const firstGate = new Promise<void>((resolve) => { releaseFirst = resolve; });
+      let firstSeen!: () => void;
+      const firstRequest = new Promise<void>((resolve) => { firstSeen = resolve; });
+      let finishFirst!: () => void;
+      const firstFinished = new Promise<void>((resolve) => { finishFirst = resolve; });
+      const cabins: string[] = [];
+
+      await page.route("**/api/search/stream", async (route) => {
+        const cabin = route.request().postDataJSON().cabin as string;
+        cabins.push(cabin);
+        if (cabin === "economy") {
+          firstSeen();
+          await firstGate;
+        }
+        const result = {
+          from: "CDG", to: "JFK", price: cabin === "economy" ? 500 : 900,
+          totalPrice: cabin === "economy" ? 500 : 900,
+          cashCost: cabin === "economy" ? 500 : 900,
+          airlines: [cabin === "economy" ? "Old Airline" : "New Airline"],
+          stops: 0, cabin, tripType: "oneway", passengers: 1,
+          milesCost: 1000, savings: -100, recommendation: "USE_CASH",
+          bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+          disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+        };
+        try {
+          await route.fulfill({
+            status: 200,
+            contentType: "text/event-stream",
+            body: `data: ${JSON.stringify({ type: "final", results: [result] })}\n\n`,
+          });
+        } catch {
+          // A superseded request may already have been cancelled by the browser.
+        } finally {
+          if (cabin === "economy") finishFirst();
+        }
+      });
+
+      await page.goto(`/?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+      await firstRequest;
+      await page.getByRole("button", { name: "Business", exact: true }).click();
+      await expect(page.getByText("New Airline")).toBeVisible();
+      releaseFirst();
+      await firstFinished;
+      await page.waitForTimeout(300);
+      await expect(page.getByText("Old Airline")).toHaveCount(0);
+      await expect(page.getByText("New Airline")).toBeVisible();
+      expect(cabins).toEqual(["economy", "business"]);
+    });
+
     test("flight route language switch keeps the search draft and displayed result", async ({ page }) => {
       const departureDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       const returnDate = new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

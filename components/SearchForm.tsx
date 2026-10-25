@@ -141,30 +141,34 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
 
   // ── Track whether the user has performed at least one search ────────────────
   const hasSearchedRef = useRef(initialHasSearched ?? false);
-  const activeControllersRef = useRef(new Set<AbortController>());
+  const activeControllerRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
   const unmountingRef = useRef(false);
 
   useEffect(() => {
-    const controllers = activeControllersRef.current;
     unmountingRef.current = false;
     return () => {
       unmountingRef.current = true;
-      controllers.forEach(controller => controller.abort());
+      activeControllerRef.current?.abort();
     };
   }, []);
 
   // ── Core fetch logic — takes explicit cabin so it works from both submit
   //    handler and the cabin-change auto-refire effect ─────────────────────────
   const fetchResults = useCallback(async (searchCabin: Cabin) => {
-    setError(null); setBusy(true); onLoading(true);
+    const requestId = ++requestIdRef.current;
+    activeControllerRef.current?.abort();
+    const controller = new AbortController();
+    activeControllerRef.current = controller;
+    const isCurrent = () => !unmountingRef.current && requestId === requestIdRef.current && !controller.signal.aborted;
+
+    setError(null); setBusy(true); onLoading(true); onLiveRefreshing?.(false);
     setShowCalendar(null);
     onSearchStart?.({ from, to, date: depDate, cabin: searchCabin, tripType });
     trackSearch({ from, to, cabin: searchCabin, tripType, pax: passengers });
 
     // Hard abort after 14s — ensures UI never hangs even if stream stalls
     const CLIENT_TIMEOUT_MS = 14_000;
-    const controller = new AbortController();
-    activeControllersRef.current.add(controller);
     const clientTimer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
 
     const requestBody = JSON.stringify({
@@ -183,6 +187,7 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
         body: requestBody,
         signal: controller.signal,
       });
+      if (!isCurrent()) return;
 
       if (!res.ok || !res.body) {
         // Non-200 or no body — fall through to JSON error handling
@@ -197,6 +202,7 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
 
       while (true) {
         const { done, value } = await reader.read();
+        if (!isCurrent()) return;
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -206,6 +212,7 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
         buffer = chunks.pop() ?? ""; // keep incomplete trailing chunk
 
         for (const chunk of chunks) {
+          if (!isCurrent()) return;
           if (!chunk.startsWith("data: ")) continue;
           let event: { type: string; results?: FlightResult[]; forexRate?: number; message?: string };
           try { event = JSON.parse(chunk.slice(6)); } catch { continue; }
@@ -244,9 +251,9 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
       }
 
     } catch (err) {
-      clearTimeout(clientTimer);
-      onLiveRefreshing?.(false);
+      if (!isCurrent() && requestId !== requestIdRef.current) return;
       if (unmountingRef.current) return;
+      onLiveRefreshing?.(false);
       const isAbort = (err as Error).name === "AbortError";
       if (isAbort) {
         if (!partialReceived) {
@@ -262,9 +269,12 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
         toast.error(msg);
       }
     } finally {
-      activeControllersRef.current.delete(controller);
-      setBusy(false);
-      onLoading(false);
+      clearTimeout(clientTimer);
+      if (requestId === requestIdRef.current && !unmountingRef.current) {
+        activeControllerRef.current = null;
+        setBusy(false);
+        onLoading(false);
+      }
     }
   }, [from, to, depDate, retDate, tripType, passengers, programs, onResults, onLoading, onSearchStart, onLiveRefreshing, lang]);
 
