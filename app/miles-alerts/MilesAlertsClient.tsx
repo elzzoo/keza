@@ -5,6 +5,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import type { MilesAlert } from "@/lib/miles-alerts";
 
+class AlertAccessDenied extends Error {}
+
 const L = {
   fr: {
     title: "Alertes Miles",
@@ -13,6 +15,7 @@ const L = {
     noneOnDevice: "Nous t'avons envoyé un lien de gestion si des alertes existent pour cet email.",
     errorSendingLink: "Impossible d'envoyer le lien de gestion",
     errorLoading: "Erreur lors du chargement des alertes",
+    expiredLink: "Ce lien de gestion n'est plus valide. Demandez-en un nouveau.",
     confirmDelete: "Supprimer cette alerte ?",
     missingToken: "Jeton de gestion manquant pour cette alerte",
     errorDeleting: "Erreur lors de la suppression",
@@ -32,6 +35,7 @@ const L = {
     noneOnDevice: "We sent a manage link if alerts exist for that email.",
     errorSendingLink: "Unable to send manage link",
     errorLoading: "Error loading alerts",
+    expiredLink: "This management link is no longer valid. Request a new one.",
     confirmDelete: "Delete this alert?",
     missingToken: "Missing manage token for this alert",
     errorDeleting: "Error deleting alert",
@@ -73,11 +77,16 @@ export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps
     localStorage.setItem(`keza:miles-alerts:token:${forEmail.toLowerCase().trim()}`, token);
   };
 
+  const clearStoredToken = (forEmail: string) => {
+    localStorage.removeItem(`keza:miles-alerts:token:${forEmail.toLowerCase().trim()}`);
+  };
+
   const loadAlerts = async (forEmail: string, token: string) => {
     const normalizedEmail = forEmail.toLowerCase().trim();
     const res = await fetch(`/api/miles-alerts?email=${encodeURIComponent(normalizedEmail)}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (res.status === 401) throw new AlertAccessDenied();
     if (!res.ok) throw new Error("Failed to fetch");
     const data = await res.json();
     setAlerts(data.alerts || []);
@@ -95,7 +104,14 @@ export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps
     storeToken(normalizedEmail, tokenParam);
     setLoading(true);
     loadAlerts(normalizedEmail, tokenParam)
-      .catch(() => toast.error(t.errorLoading))
+      .catch((error) => {
+        if (error instanceof AlertAccessDenied) {
+          clearStoredToken(normalizedEmail);
+          toast.error(t.expiredLink);
+        } else {
+          toast.error(t.errorLoading);
+        }
+      })
       .finally(() => setLoading(false));
 
     params.delete("email");
@@ -123,6 +139,8 @@ export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps
       return;
     }
 
+    setAlerts([]);
+    setSearched(false);
     const token = getStoredToken(email);
     if (!token) {
       setLoading(true);
@@ -130,7 +148,7 @@ export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps
         await requestManageLink(email);
         toast.success(t.noneOnDevice);
         setAlerts([]);
-        setSearched(true);
+        setSearched(false);
       } catch {
         toast.error(t.errorSendingLink);
       } finally {
@@ -142,8 +160,18 @@ export function MilesAlertsClient({ initialLang = "fr" }: MilesAlertsClientProps
     setLoading(true);
     try {
       await loadAlerts(email, token);
-    } catch {
-      toast.error(t.errorLoading);
+    } catch (error) {
+      if (error instanceof AlertAccessDenied) {
+        clearStoredToken(email);
+        try {
+          await requestManageLink(email);
+          toast.success(t.noneOnDevice);
+        } catch {
+          toast.error(t.errorSendingLink);
+        }
+      } else {
+        toast.error(t.errorLoading);
+      }
     } finally {
       setLoading(false);
     }

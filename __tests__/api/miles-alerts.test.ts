@@ -22,7 +22,6 @@ jest.mock("@/lib/miles-alerts", () => ({
 const VALID_TOKEN = "test-manage-token";
 const TOKEN_OWNER_EMAIL = "test@example.com";
 jest.mock("@/lib/alertTokens", () => ({
-  createManageAlertsToken: jest.fn(() => VALID_TOKEN),
   verifyManageAlertsToken: jest.fn(
     (email: string, token: string | null | undefined) =>
       token === VALID_TOKEN && email.toLowerCase().trim() === TOKEN_OWNER_EMAIL
@@ -62,8 +61,7 @@ describe("POST /api/miles-alerts", () => {
     jest.clearAllMocks();
   });
 
-  // Success case
-  it("creates alert with valid request and returns 201 with a manage token", async () => {
+  it("creates an alert without disclosing email-scoped management access", async () => {
     const body = {
       email: " TEST@example.com ",
       route: " sin-lax ",
@@ -79,7 +77,6 @@ describe("POST /api/miles-alerts", () => {
       route: "SIN-LAX",
       program: "Singapore KrisFlyer",
       thresholdCpp: 1.5,
-      manageToken: VALID_TOKEN,
     });
     expect(mockCreateMilesAlert).toHaveBeenCalledWith({
       email: "test@example.com",
@@ -87,6 +84,24 @@ describe("POST /api/miles-alerts", () => {
       program: "Singapore KrisFlyer",
       thresholdCpp: 1.5,
     });
+  });
+
+  it("does not turn anonymous alert creation into access to the email's existing alerts", async () => {
+    mockCreateMilesAlert.mockResolvedValueOnce(undefined);
+    const created = await POST(makeReq("POST", {
+      email: "victim@example.com",
+      route: "SIN-LAX",
+      program: "Flying Blue",
+      thresholdCpp: 1.5,
+    }));
+    expect(created.status).toBe(201);
+    const body = await created.json();
+    expect(body).not.toHaveProperty("manageToken");
+    expect(body).not.toHaveProperty("token");
+
+    const listed = await GET(makeReq("GET", undefined, { email: "victim@example.com" }));
+    expect(listed.status).toBe(401);
+    expect(mockGetMilesAlertsByEmail).not.toHaveBeenCalled();
   });
 
   it("returns 400 when email is invalid", async () => {

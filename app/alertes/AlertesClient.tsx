@@ -175,6 +175,7 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [alertFreqs, setAlertFreqs] = useState<Record<string, "instant" | "daily" | "weekly">>({});
@@ -191,6 +192,7 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
     setLoading(true);
     setFetchError(false);
     setNotice(null);
+    setAccessNotice(null);
     setAlerts(null);
     try {
       const res = await fetch(
@@ -201,6 +203,14 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
           }
         }
       );
+      if (res.status === 401) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setManageToken("");
+        setAccessNotice(initialLang === "fr"
+          ? "Ce lien de gestion n'est plus valide. Demande un nouveau lien ci-dessous."
+          : "This management link is no longer valid. Request a new link below.");
+        return;
+      }
       if (!res.ok) {
         console.error(`[AlertesClient] fetchAlerts failed with status ${res.status}`);
         throw new Error(`HTTP ${res.status}`);
@@ -216,7 +226,7 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
     } finally {
       setLoading(false);
     }
-  }, []); // setters from useState are stable — no deps needed
+  }, [initialLang]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -255,6 +265,7 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
     setLoading(true);
     setFetchError(false);
     setNotice(null);
+    setAccessNotice(null);
     try {
       const res = await fetch("/api/alerts/manage-link", {
         method: "POST",
@@ -404,6 +415,8 @@ export function AlertesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en
             <span>{notice}</span>
           </p>
         )}
+
+        {accessNotice && <p className="mb-4 text-sm text-amber-600">{accessNotice}</p>}
 
         {/* Error */}
         {fetchError && (

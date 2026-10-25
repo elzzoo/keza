@@ -109,6 +109,20 @@ describe("AlertesClient", () => {
     );
   });
 
+  it("discards a revoked manage token and offers a fresh link", async () => {
+    localStorage.setItem("keza:alertes:email", "solo@example.com");
+    localStorage.setItem("keza:alertes:token", "legacy-token");
+    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 401 });
+
+    render(<AlertesClient />);
+
+    await waitFor(() => {
+      expect(localStorage.getItem("keza:alertes:token")).toBeNull();
+      expect(screen.getByText(/demande un nouveau lien/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText("3 alerte(s) active(s)")).not.toBeInTheDocument();
+  });
+
   it("keeps the alerts management surface free of visible emoji-led UI", () => {
     const source = readFileSync(path.join(process.cwd(), "app/alertes/AlertesClient.tsx"), "utf8");
     expect(source).not.toMatch(/[🔔✅🎉⚡📅📆]/u);

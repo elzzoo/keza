@@ -9,10 +9,12 @@ interface AlertTokenPayload {
   sub: string;
   action: AlertTokenAction;
   exp: number;
+  v?: number;
 }
 
 const MANAGE_TTL_SECONDS = 7 * 24 * 60 * 60;
 const UNSUBSCRIBE_TTL_SECONDS = 180 * 24 * 60 * 60;
+const MANAGE_TOKEN_VERSION = 2;
 
 function getTokenSecret(): string | undefined {
   // ALERT_TOKEN_SECRET is required. Never fall back to ADMIN_SECRET or CRON_SECRET —
@@ -66,6 +68,7 @@ export function createManageAlertsToken(email: string): string | null {
     sub: email.trim().toLowerCase(),
     action: "manage",
     exp: Math.floor(Date.now() / 1000) + MANAGE_TTL_SECONDS,
+    v: MANAGE_TOKEN_VERSION,
   });
 }
 
@@ -73,6 +76,7 @@ export function verifyManageAlertsToken(email: string, token: string | null | un
   const payload = readToken(token);
   return (
     payload?.action === "manage" &&
+    payload.v === MANAGE_TOKEN_VERSION &&
     safeCompare(payload.sub, email.trim().toLowerCase())
   );
 }

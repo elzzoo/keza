@@ -94,7 +94,6 @@ describe("MilesAlertModal", () => {
         route: "SIN-LAX",
         program: "Singapore KrisFlyer",
         thresholdCpp: 1.8,
-        manageToken: "test-manage-token",
       }),
     });
 
@@ -131,7 +130,7 @@ describe("MilesAlertModal", () => {
         route: "SIN-LAX",
         program: "Singapore KrisFlyer",
         thresholdCpp: 1.8,
-        manageToken: "test-manage-token",
+        manageToken: "unexpected-token",
       }),
     });
 
@@ -146,6 +145,7 @@ describe("MilesAlertModal", () => {
     await waitFor(() => {
       expect(localStorage.getItem("keza:alertes:email")).toBe("test@example.com");
     });
+    expect(localStorage.getItem("keza:miles-alerts:token:test@example.com")).toBeNull();
   });
 
   it("closes modal after successful submission", async () => {
@@ -158,7 +158,6 @@ describe("MilesAlertModal", () => {
         route: "SIN-LAX",
         program: "Singapore KrisFlyer",
         thresholdCpp: 1.8,
-        manageToken: "test-manage-token",
       }),
     });
 
@@ -205,7 +204,6 @@ describe("MilesAlertModal", () => {
         route: "SIN-LAX",
         program: "Singapore KrisFlyer",
         thresholdCpp: 1.8,
-        manageToken: "test-manage-token",
       }),
     });
 

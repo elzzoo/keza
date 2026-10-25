@@ -70,6 +70,19 @@ describe("MilesAlertsClient", () => {
     expect(localStorage.getItem("keza:miles-alerts:token:test@example.com")).toBe("fresh-token");
   });
 
+  it("forgets an old emailed token rejected by the server", async () => {
+    window.history.replaceState({}, "", "/miles-alerts?email=test%40example.com&token=legacy-token");
+    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 401 });
+
+    render(<MilesAlertsClient />);
+
+    await waitFor(() => {
+      expect(localStorage.getItem(`keza:miles-alerts:token:${TEST_EMAIL}`)).toBeNull();
+      expect(toast.error).toHaveBeenCalledWith("Ce lien de gestion n'est plus valide. Demandez-en un nouveau.");
+    });
+    expect(screen.queryByText(/Vos alertes/)).not.toBeInTheDocument();
+  });
+
   describe("Search form", () => {
     it("renders search form with email input and search button", () => {
       render(<MilesAlertsClient />);
@@ -170,6 +183,26 @@ describe("MilesAlertsClient", () => {
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith("Erreur lors du chargement des alertes");
       });
+    });
+
+    it("requests a new manage link when a saved token is revoked", async () => {
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({ ok: false, status: 401 })
+        .mockResolvedValueOnce({ ok: true });
+
+      render(<MilesAlertsClient />);
+      await userEvent.type(screen.getByPlaceholderText("your@email.com"), TEST_EMAIL);
+      fireEvent.click(screen.getByText("Rechercher"));
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith("/api/miles-alerts/manage-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: TEST_EMAIL }),
+        });
+        expect(localStorage.getItem(`keza:miles-alerts:token:${TEST_EMAIL}`)).toBeNull();
+      });
+      expect(toast.success).toHaveBeenCalledWith("Nous t'avons envoyé un lien de gestion si des alertes existent pour cet email.");
     });
   });
 

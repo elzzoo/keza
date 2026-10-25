@@ -418,6 +418,40 @@ test.describe("CI smoke", () => {
       await expect(page).toHaveURL(/\/en\/alertes\?source=email#manage$/);
       expect(authorization).toBe("Bearer test-token");
     });
+
+    test("revoked price-alert link is removed and can be renewed", async ({ page }) => {
+      let requests = 0;
+      await page.route("**/api/alerts?**", (route) => route.fulfill({ status: 401, json: { error: "Unauthorized" } }));
+      await page.route("**/api/alerts/manage-link", (route) => {
+        requests += 1;
+        return route.fulfill({ status: 200, json: { ok: true } });
+      });
+
+      await page.goto("/en/alertes?email=alex%40example.com&token=legacy-token#manage");
+      await expect(page).toHaveURL(/\/en\/alertes#manage$/);
+      await expect(page.getByText(/management link is no longer valid/i)).toBeVisible();
+      expect(await page.evaluate(() => localStorage.getItem("keza:alertes:token"))).toBeNull();
+      await page.getByRole("button", { name: /send link/i }).click();
+      await expect(page.getByText(/check your email for the management link/i)).toBeVisible();
+      expect(requests).toBe(1);
+    });
+
+    test("revoked miles-alert link is removed and can be renewed", async ({ page }) => {
+      let requests = 0;
+      await page.route("**/api/miles-alerts?**", (route) => route.fulfill({ status: 401, json: { error: "Unauthorized" } }));
+      await page.route("**/api/miles-alerts/manage-link", (route) => {
+        requests += 1;
+        return route.fulfill({ status: 200, json: { ok: true } });
+      });
+
+      await page.goto("/en/miles-alerts?email=alex%40example.com&token=legacy-token#manage");
+      await expect(page).toHaveURL(/\/en\/miles-alerts#manage$/);
+      await expect(page.getByText(/management link is no longer valid/i)).toBeVisible();
+      expect(await page.evaluate(() => localStorage.getItem("keza:miles-alerts:token:alex@example.com"))).toBeNull();
+      await page.getByRole("button", { name: "Search" }).click();
+      await expect(page.getByText(/we sent a manage link/i)).toBeVisible();
+      expect(requests).toBe(1);
+    });
   });
 
   test("switches a static legal page from FR to EN", async ({ page }) => {

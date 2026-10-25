@@ -1,7 +1,7 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { createMilesAlert, getMilesAlertsByEmail, deactivateMilesAlert } from "@/lib/miles-alerts";
-import { createManageAlertsToken, verifyManageAlertsToken } from "@/lib/alertTokens";
+import { verifyManageAlertsToken } from "@/lib/alertTokens";
 import { rateLimitResponse } from "@/lib/ratelimit";
 import { isValidEmail, isValidIata } from "@/lib/validate";
 
@@ -9,10 +9,9 @@ import { isValidEmail, isValidIata } from "@/lib/validate";
 // accepted an alertId (format "email:route:program", guessable) with no
 // proof of ownership — anyone who knew or guessed a victim's email could
 // enumerate or delete their miles alerts. Fixed by reusing the same
-// HMAC-signed manage token already used by /api/alerts (lib/alertTokens.ts,
-// stateless — verifiable from just the email + server secret). POST now
-// returns the token; the client stores it and must present it as
-// "Authorization: Bearer <token>" on GET/DELETE.
+// HMAC-signed manage token already used by /api/alerts (lib/alertTokens.ts).
+// POST must never return that email-scoped token: creating an alert does not
+// prove control of the email. GET/DELETE require a token delivered by email.
 //
 // If the local token is lost, /api/miles-alerts/manage-link emails a fresh
 // signed link without exposing whether a given email has existing alerts.
@@ -45,7 +44,7 @@ function normalizeRoute(route: string): string | null {
  * Create a new miles alert
  *
  * Body: { email, route, program, thresholdCpp }
- * Response: 201 with alert details + manageToken on success, 400 on validation error, 500 on error
+ * Response: 201 with alert details on success, 400 on validation error, 500 on error
  */
 export async function POST(request: NextRequest) {
   const limited = await rateLimitResponse(request, {
@@ -100,8 +99,6 @@ export async function POST(request: NextRequest) {
       thresholdCpp: body.thresholdCpp,
     });
 
-    const manageToken = createManageAlertsToken(email);
-
     // Return the created alert
     return NextResponse.json(
       {
@@ -109,7 +106,6 @@ export async function POST(request: NextRequest) {
         route,
         program,
         thresholdCpp: body.thresholdCpp,
-        manageToken,
       },
       { status: 201 }
     );

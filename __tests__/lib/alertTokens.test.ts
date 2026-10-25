@@ -1,3 +1,4 @@
+import { createHmac } from "crypto";
 import {
   createManageAlertsToken,
   createUnsubscribeAlertToken,
@@ -34,5 +35,19 @@ describe("alert tokens", () => {
     const token = createManageAlertsToken("user@example.com");
     expect(token).toBeTruthy();
     expect(verifyManageAlertsToken("user@example.com", `${token}x`)).toBe(false);
+  });
+
+  it("rejects legacy manage tokens that could have been returned by anonymous creation", () => {
+    const legacyPayload = Buffer.from(JSON.stringify({
+      sub: "user@example.com",
+      action: "manage",
+      exp: Math.floor(Date.now() / 1000) + 3_600,
+    })).toString("base64url");
+    const signature = createHmac("sha256", "test-alert-secret")
+      .update(legacyPayload)
+      .digest("base64url");
+
+    expect(verifyManageAlertsToken("user@example.com", `${legacyPayload}.${signature}`)).toBe(false);
+    expect(verifyManageAlertsToken("user@example.com", createManageAlertsToken("user@example.com"))).toBe(true);
   });
 });

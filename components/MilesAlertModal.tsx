@@ -20,7 +20,7 @@ const L = {
     cppHint: "Alerte quand CPP ≤",
     submit: "Créer l'alerte",
     submitting: "Création…",
-    success: "Alerte créée !",
+    success: "Alerte créée. Le lien de gestion est disponible dans Alertes Miles.",
     error: "Erreur, réessayez.",
     routeLabel: "Route",
     programLabel: "Programme",
@@ -33,7 +33,7 @@ const L = {
     cppHint: "Alert when CPP ≤",
     submit: "Create alert",
     submitting: "Creating…",
-    success: "Alert created!",
+    success: "Alert created. Request a management link from Miles Alerts.",
     error: "Error, please retry.",
     routeLabel: "Route",
     programLabel: "Program",
@@ -110,15 +110,8 @@ export function MilesAlertModal({
         return;
       }
 
-      const data = await res.json();
       toast.success(t.success);
       localStorage.setItem("keza:alertes:email", email.toLowerCase().trim());
-      // Manage token proves ownership for GET/DELETE on /api/miles-alerts —
-      // see app/api/miles-alerts/route.ts for why this replaced the old
-      // "just pass an email" access model.
-      if (data.manageToken) {
-        localStorage.setItem(`keza:miles-alerts:token:${email.toLowerCase().trim()}`, data.manageToken);
-      }
       onClose();
     } catch {
       toast.error(t.error);
