@@ -113,6 +113,35 @@ test.describe("CI smoke", () => {
     await expect(page.getByLabel("Nom", { exact: true })).toHaveValue("");
   });
 
+  test("comparison language switch keeps all selected destinations in the URL", async ({ page }) => {
+    await page.goto("/comparer?a=CDG&b=NRT&c=DXB#comparison");
+    await expect(page.getByRole("heading", { name: "Comparer des destinations" })).toBeVisible();
+    for (const [slot, iata] of [[1, "CDG"], [2, "NRT"], [3, "DXB"]] as const) {
+      await expect(page.getByRole("combobox", { name: `Destination ${slot}` })).toHaveValue(iata);
+    }
+
+    await page.getByRole("button", { name: "en", exact: true }).click();
+    await expect(page).toHaveURL(/\/en\/comparer\?a=CDG&b=NRT&c=DXB#comparison$/, { timeout: 15_000 });
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("heading", { name: "Compare destinations" })).toBeVisible();
+    await expect(page.locator('link[rel="canonical"][href$="/en/comparer"]').first()).toBeAttached();
+    if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    for (const [slot, iata] of [[1, "CDG"], [2, "NRT"], [3, "DXB"]] as const) {
+      await expect(page.getByRole("combobox", { name: `Destination ${slot}` })).toHaveValue(iata);
+    }
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("heading", { name: "Compare destinations" })).toBeVisible();
+    await page.getByRole("combobox", { name: "Destination 3" }).selectOption("LHR");
+    await expect(page).toHaveURL(/\/en\/comparer\?a=CDG&b=NRT&c=LHR#comparison$/, { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "fr", exact: true }).click();
+    await expect(page).toHaveURL(/\/comparer\?a=CDG&b=NRT&c=LHR#comparison$/, { timeout: 15_000 });
+    await expect(page.locator('link[rel="canonical"][href$="/comparer"]').first()).toBeAttached();
+    if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.getByRole("heading", { name: "Comparer des destinations" })).toBeVisible();
+  });
+
   test.describe("mocked search", () => {
     test.use({ serviceWorkers: "block" });
 

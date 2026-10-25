@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -10,6 +10,7 @@ import { computeDealRatio, classifyDeal } from "@/lib/dealsEngine";
 import { getMonthlyPrices } from "@/lib/priceHistory";
 import type { DealRecommendation } from "@/lib/dealsEngine";
 import { destinationCity, destinationMonthLabel, type SupportedLang } from "@/lib/destinationLocale";
+import { localizedPath } from "@/lib/localizedPath";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -78,6 +79,16 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
   const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const fr = lang === "fr";
 
+  useEffect(() => {
+    setLang(initialLang);
+    document.documentElement.lang = initialLang;
+  }, [initialLang]);
+
+  const handleLangChange = (target: "fr" | "en") => {
+    const path = localizedPath(window.location.pathname, target);
+    router.replace(`${path}${window.location.search}${window.location.hash}`, { scroll: false });
+  };
+
   const slotA = searchParams.get("a")?.toUpperCase() ?? "";
   const slotB = searchParams.get("b")?.toUpperCase() ?? "";
   const slotC = searchParams.get("c")?.toUpperCase() ?? "";
@@ -98,7 +109,8 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
     } else {
       params.delete(slot);
     }
-    router.replace(`${fr ? "/comparer" : "/en/comparer"}?${params.toString()}`);
+    const query = params.toString();
+    router.replace(`${fr ? "/comparer" : "/en/comparer"}${query ? `?${query}` : ""}${window.location.hash}`);
   }
 
   const selected = useMemo(
@@ -117,7 +129,7 @@ export function ComparateurClient({ initialLang = "fr" }: { initialLang?: "fr" |
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={setLang} />
+      <Header lang={lang} onLangChange={handleLangChange} />
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 pb-12">
         {/* Hero */}
