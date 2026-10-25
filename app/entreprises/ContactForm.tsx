@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import type { BusinessContactDraft, BusinessContactSnapshot } from "@/lib/businessLocaleHandoff";
 
 interface Props {
   lang: "fr" | "en";
@@ -59,12 +60,24 @@ const T = {
   },
 };
 
-const EMPTY_FORM = { name: "", company: "", email: "", teamSize: "", message: "" };
+const EMPTY_FORM: BusinessContactDraft = { name: "", company: "", email: "", teamSize: "", message: "" };
 
-export function ContactForm({ lang }: Props) {
+export interface ContactFormHandle {
+  snapshot(): BusinessContactSnapshot;
+  restore(snapshot: BusinessContactSnapshot): void;
+}
+
+export const ContactForm = forwardRef<ContactFormHandle, Props>(function ContactForm({ lang }, ref) {
   const t = T[lang];
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [form, setForm] = useState(EMPTY_FORM);
+  useImperativeHandle(ref, () => ({
+    snapshot: () => ({ draft: { ...form }, status }),
+    restore: (snapshot) => {
+      setForm({ ...snapshot.draft });
+      setStatus(snapshot.status);
+    },
+  }), [form, status]);
   const fieldId = (name: keyof typeof EMPTY_FORM) => `business-contact-${lang}-${name}`;
   const errorId = `business-contact-${lang}-error`;
 
@@ -207,4 +220,4 @@ export function ContactForm({ lang }: Props) {
       )}
     </form>
   );
-}
+});

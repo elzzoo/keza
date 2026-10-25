@@ -78,6 +78,41 @@ test.describe("CI smoke", () => {
     ).toBeVisible();
   });
 
+  test("business language switch keeps the unsent contact draft on the matching URL", async ({ page }) => {
+    let contactPosts = 0;
+    await page.route("**/api/contact", (route) => {
+      contactPosts += 1;
+      return route.abort();
+    });
+    await page.goto("/entreprises?campaign=smoke#contact");
+    await page.getByLabel("Nom", { exact: true }).fill("Marie Dupont");
+    await page.getByLabel("Entreprise", { exact: true }).fill("Acme Corp");
+    await page.getByLabel("Email professionnel").fill("marie@example.com");
+    await page.getByLabel("Taille de l'équipe").selectOption("11-50");
+    await page.getByLabel("Message (optionnel)").fill("Projet de voyage annuel");
+
+    await page.getByRole("button", { name: "en", exact: true }).click();
+    await expect(page).toHaveURL(/\/en\/entreprises\?campaign=smoke#contact$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator('link[rel="canonical"][href$="/en/entreprises"]').first()).toBeAttached();
+    if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Marie Dupont");
+    await expect(page.getByLabel("Company", { exact: true })).toHaveValue("Acme Corp");
+    await expect(page.getByLabel("Work email")).toHaveValue("marie@example.com");
+    await expect(page.getByLabel("Team size")).toHaveValue("11-50");
+    await expect(page.getByLabel("Message (optional)")).toHaveValue("Projet de voyage annuel");
+
+    await page.getByRole("button", { name: "fr", exact: true }).click();
+    await expect(page).toHaveURL(/\/entreprises\?campaign=smoke#contact$/);
+    await expect(page.locator('link[rel="canonical"][href$="/entreprises"]').first()).toBeAttached();
+    if (process.env.STRICT_CANONICAL) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.getByLabel("Nom", { exact: true })).toHaveValue("Marie Dupont");
+    expect(contactPosts).toBe(0);
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.getByLabel("Nom", { exact: true })).toHaveValue("");
+  });
+
   test.describe("mocked search", () => {
     test.use({ serviceWorkers: "block" });
 

@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { ContactForm } from "./ContactForm";
+import { localizedPath } from "@/lib/localizedPath";
+import { clearBusinessLocaleHandoff, readBusinessLocaleHandoff, saveBusinessLocaleHandoff } from "@/lib/businessLocaleHandoff";
+import { ContactForm, type ContactFormHandle } from "./ContactForm";
 
 // Note: metadata export requires a server component.
 // Since we use "use client" for lang state, metadata is declared but
@@ -201,12 +204,33 @@ const T = {
 };
 
 export function EntreprisesClient({ initialLang = "fr" }: { initialLang?: "fr" | "en" }) {
+  const router = useRouter();
+  const contactForm = useRef<ContactFormHandle>(null);
   const [lang, setLang] = useState<"fr" | "en">(initialLang);
   const t = T[lang];
 
+  useEffect(() => {
+    setLang(initialLang);
+    document.documentElement.lang = initialLang;
+    const snapshot = readBusinessLocaleHandoff(initialLang);
+    if (snapshot) contactForm.current?.restore(snapshot);
+    clearBusinessLocaleHandoff();
+  }, [initialLang]);
+
+  const handleLangChange = (target: "fr" | "en") => {
+    const snapshot = contactForm.current?.snapshot();
+    if (snapshot?.status === "sending") {
+      document.documentElement.lang = lang;
+      return;
+    }
+    if (snapshot) saveBusinessLocaleHandoff(target, snapshot);
+    const path = localizedPath(window.location.pathname, target);
+    router.replace(`${path}${window.location.search}${window.location.hash}`, { scroll: false });
+  };
+
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      <Header lang={lang} onLangChange={setLang} />
+      <Header lang={lang} onLangChange={handleLangChange} />
 
       <main className="flex-1">
 
@@ -366,7 +390,7 @@ export function EntreprisesClient({ initialLang = "fr" }: { initialLang?: "fr" |
               <p className="text-muted text-sm">{t.contactSub}</p>
             </div>
             <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-card">
-              <ContactForm lang={lang} />
+              <ContactForm ref={contactForm} lang={lang} />
             </div>
           </div>
         </section>

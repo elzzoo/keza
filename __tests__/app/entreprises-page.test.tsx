@@ -2,6 +2,10 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { EntreprisesClient } from "@/app/entreprises/EntreprisesClient";
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: jest.fn() }),
+}));
+
 jest.mock("@/components/Header", () => ({
   Header: ({ lang }: { lang: "fr" | "en" }) => <header data-testid="header">{lang}</header>,
 }));
