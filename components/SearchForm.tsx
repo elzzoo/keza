@@ -208,7 +208,7 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
         buffer += decoder.decode(value, { stream: true });
 
         // SSE events are separated by double newlines
-        const chunks = buffer.split("\n\n");
+        const chunks = buffer.split(/\r?\n\r?\n/);
         buffer = chunks.pop() ?? ""; // keep incomplete trailing chunk
 
         for (const chunk of chunks) {

@@ -385,6 +385,27 @@ test.describe("CI smoke", () => {
       expect(intercepted).toBe(true);
     });
 
+    test("FR search accepts CRLF-delimited SSE results", async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const result = {
+        from: "CDG", to: "JFK", price: 650, totalPrice: 650, cashCost: 650,
+        airlines: ["CRLF Airline"], stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+        milesCost: 700, savings: -50, recommendation: "USE_CASH",
+        bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+        disclaimer: "Indicative fare", source: "TP", priceConfidence: "LOW",
+      };
+      await page.route("**/api/search/stream", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: ${JSON.stringify({ type: "final", results: [result] })}\r\n\r\n`,
+      }));
+
+      await page.goto(`/?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+      await expect(page.getByText("CRLF Airline")).toBeVisible();
+    });
+
     test("FR search result creates a price alert at a 10% lower target", async ({ page }) => {
       await page.addInitScript(() => {
         localStorage.setItem("keza:visited", "true");
