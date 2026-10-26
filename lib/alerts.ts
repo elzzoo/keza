@@ -355,6 +355,13 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
+async function sendAlertEmail(payload: Parameters<Resend["emails"]["send"]>[0]): Promise<void> {
+  const result = await getResend().emails.send(payload);
+  if (result?.error) {
+    throw new Error(`Resend rejected alert email: ${result.error.name} (${result.error.statusCode ?? "unknown"})`);
+  }
+}
+
 export async function sendDigestEmail(
   email: string,
   items: Array<{ alert: PriceAlert; currentPrice: number }>,
@@ -559,8 +566,7 @@ export async function sendDigestEmail(
 </body></html>`;
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: email,
       subject,
@@ -583,8 +589,7 @@ export async function sendPriceDropEmail(alert: PriceAlert, newPrice: number): P
   const searchUrl = withUtm(`${BASE_URL}/?from=${alert.from}&to=${alert.to}`, "keza", "price-drop");
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ ${alert.from}→${alert.to} : -${drop}% ($${newPrice})`,
@@ -660,8 +665,7 @@ export async function sendMilesAlertEmail(
   const targetDisplay = targetCpp.toFixed(2);
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ ${alert.from}→${alert.to} : ${program} vaut ${cppDisplay}¢/pt maintenant !`,
@@ -722,8 +726,7 @@ export async function sendAlertPreDeactivationEmail(alert: PriceAlert): Promise<
     : `${BASE_URL}/alertes`;
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from:    FROM_EMAIL,
       to:      alert.email,
       subject: `⚠️ Votre alerte ${alert.from}→${alert.to} expire bientôt`,
@@ -775,8 +778,7 @@ export async function sendAlertConfirmationEmail(alert: PriceAlert): Promise<boo
   const unsubUrl = `${BASE_URL}/api/alerts/unsubscribe?id=${encodeURIComponent(alert.id)}&token=${encodeURIComponent(unsubToken ?? "")}`;
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ Alerte active : ${alert.from} → ${alert.to} | Xalifly`,
@@ -873,8 +875,7 @@ export async function sendOnboardingJ3Email(
       `;
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: alert.email,
       subject: `✈ Mise à jour Xalifly — ta route ${alert.from} → ${alert.to}`,
@@ -957,8 +958,7 @@ export async function sendOnboardingJ7Email(alert: PriceAlert): Promise<boolean>
   const proUrl = withUtm(`${SITE_URL}/pro`, "keza", "onboarding-j7-pro");
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: alert.email,
       subject: `🎯 Xalifly — invite un ami et débloquez des avantages`,
@@ -1039,8 +1039,7 @@ export async function sendManageAlertsEmail(email: string, alerts: PriceAlert[])
   );
 
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAlertEmail({
       from: FROM_EMAIL,
       to: normalizedEmail,
       subject: `Gérer tes alertes prix | Xalifly`,
