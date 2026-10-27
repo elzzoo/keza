@@ -25,6 +25,11 @@ export interface LiveDeal extends RawDeal {
   multiplier: string;               // "×1.9" — display only
 }
 
+export function dealSearchPath(deal: Pick<RawDeal, "from" | "to">, lang: "fr" | "en"): string {
+  const path = lang === "en" ? "/en" : "/";
+  return `${path}?${new URLSearchParams({ from: deal.from, to: deal.to })}`;
+}
+
 // Thresholds (cents per mile)
 const MILES_WIN_THRESHOLD  = 1.5;
 const CASH_WIN_THRESHOLD   = 1.0;

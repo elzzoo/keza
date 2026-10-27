@@ -6,7 +6,7 @@ import { DealsPageClient } from "@/app/deals/DealsPageClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { redis } from "@/lib/redis";
 import { DEALS_KEY } from "@/lib/redisKeys";
-import { sortDeals } from "@/lib/dealsEngine";
+import { dealSearchPath, sortDeals } from "@/lib/dealsEngine";
 import type { LiveDeal, RawDeal } from "@/lib/dealsEngine";
 import { SITE_URL } from "@/lib/siteConfig";
 import { logWarn } from "@/lib/logger";
@@ -75,7 +75,7 @@ export default async function EnDealsPage() {
       "@type": "ListItem",
       position: i + 1,
       name: `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired} miles`,
-      url: `${SITE_URL}/?from=${deal.from}&to=${deal.to}`,
+      url: `${SITE_URL}${dealSearchPath(deal, "en")}`,
     })),
   };
 

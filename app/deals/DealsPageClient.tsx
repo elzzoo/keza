@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { dealPriceContext, type LiveDeal, type DealRecommendation } from "@/lib/dealsEngine";
+import { dealPriceContext, dealSearchPath, type LiveDeal, type DealRecommendation } from "@/lib/dealsEngine";
 import { trackDealsFilter, trackDealShare } from "@/lib/analytics";
 import { SITE_URL } from "@/lib/siteConfig";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
@@ -98,7 +98,7 @@ function ShareDealButton({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | 
   const [state, setState] = useState<"idle" | "copied" | "shared">("idle");
 
   const handleShare = async () => {
-    const url = `${SITE_URL}/?from=${deal.from}&to=${deal.to}&utm_source=share&utm_medium=deal`;
+    const url = `${SITE_URL}${dealSearchPath(deal, lang)}&utm_source=share&utm_medium=deal`;
     const text = lang === "en"
       ? `${deal.from} → ${deal.to} — $${deal.cashPrice} or ${deal.milesRequired.toLocaleString("en-US")} miles (${deal.program}) via Xalifly`
       : `${deal.from} → ${deal.to} — $${deal.cashPrice} ou ${deal.milesRequired.toLocaleString("fr-FR")} miles (${deal.program}) via Xalifly`;
@@ -163,7 +163,7 @@ function ShareDealButton({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | 
 
 function DealCard({ deal, lang = "fr" }: { deal: LiveDeal; lang?: "fr" | "en" }) {
   const colors = RECOMMENDATION_COLORS[deal.recommendation];
-  const searchUrl = `/?from=${deal.from}&to=${deal.to}`;
+  const searchUrl = dealSearchPath(deal, lang);
 
   return (
     <div className={`bg-surface border ${colors.border} rounded-2xl p-5 flex flex-col gap-4 hover:bg-surface-2 transition-colors`}>
