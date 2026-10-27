@@ -385,6 +385,31 @@ test.describe("CI smoke", () => {
       expect(intercepted).toBe(true);
     });
 
+    test("EN search submits the selected route and shows an empty result", async ({ page }) => {
+      await page.addInitScript(() => {
+        localStorage.setItem("keza:visited", "true");
+        localStorage.setItem("keza_profile", JSON.stringify({ hasOnboarded: true }));
+      });
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      await page.route("**/api/search/stream", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: ${JSON.stringify({ type: "final", results: [], partial: false, forexRate: 1 })}\n\n`,
+      }));
+
+      await page.goto(`/en?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      const submit = page.getByRole("button", { name: /search|optimize/i });
+      await expect(submit).toBeEnabled();
+      const searchRequest = page.waitForRequest((request) =>
+        request.url().endsWith("/api/search/stream") && request.method() === "POST"
+      );
+      await submit.click();
+      expect((await searchRequest).postDataJSON()).toMatchObject({
+        from: "CDG", to: "JFK", date, tripType: "oneway", cabin: "economy",
+      });
+      await expect(page.getByText("Data unavailable for this route at the moment")).toBeVisible();
+    });
+
     test("FR search accepts CRLF-delimited SSE results", async ({ page }) => {
       await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
       const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
