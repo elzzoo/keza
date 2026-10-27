@@ -75,7 +75,7 @@ jobs:
   # ── Bounded local E2E smoke ──────────────────────────────────────────────────
   e2e-smoke:
     name: E2E smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit
     env:
       RESEND_API_KEY: "re_fake"
