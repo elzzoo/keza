@@ -184,8 +184,8 @@ export default async function RoutePage({ params }: Props) {
         acceptedAnswer: {
           "@type": "Answer",
           text: routeMeta
-            ? `En classe économique, comptez environ ${routeMeta.milesToEconomy.toLocaleString("fr-FR")} miles, et ${routeMeta.milesToBusiness.toLocaleString("fr-FR")} miles en business. Les meilleurs programmes sur cette route sont ${routeMeta.bestPrograms.join(", ")}.`
-            : `Les besoins en miles varient selon le programme et les disponibilités. Xalifly vérifie les 33 programmes de fidélité en temps réel pour trouver le meilleur rachat.`,
+            ? `En classe économique, comptez environ ${routeMeta.milesToEconomy.toLocaleString("fr-FR")} miles, et ${routeMeta.milesToBusiness.toLocaleString("fr-FR")} miles en business. Parmi les programmes à comparer pour cette route : ${routeMeta.bestPrograms.join(", ")}. La disponibilité des sièges primes et le coût exact sont à confirmer auprès du programme.`
+            : `Le nombre de miles dépend du programme, des dates et des places disponibles. Xalifly compare des estimations indicatives, sans vérifier en temps réel la disponibilité des sièges primes. Confirmez le coût exact auprès du programme avant de réserver.`,
         },
       },
       {

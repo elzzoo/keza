@@ -147,8 +147,8 @@ export default async function EnRoutePage({ params }: Props) {
       acceptedAnswer: {
         "@type": "Answer",
         text: routeMeta
-          ? `Economy class typically requires around ${routeMeta.milesToEconomy.toLocaleString("en-US")} miles, and business class around ${routeMeta.milesToBusiness.toLocaleString("en-US")} miles. The best programs for this route are ${routeMeta.bestPrograms.join(", ")}.`
-          : `Miles requirements vary by program and availability. Xalifly checks all 33 loyalty programs in real time to find the best redemption for your dates.`,
+          ? `Economy class typically requires around ${routeMeta.milesToEconomy.toLocaleString("en-US")} miles, and business class around ${routeMeta.milesToBusiness.toLocaleString("en-US")} miles. Programs worth comparing for this route include ${routeMeta.bestPrograms.join(", ")}. Confirm award-seat availability and the exact mileage with the program.`
+          : `Mileage requirements vary by program, date and seat availability. Xalifly compares indicative estimates but does not verify award-seat availability in real time. Confirm the exact cost with the program before booking.`,
       },
     },
     {
