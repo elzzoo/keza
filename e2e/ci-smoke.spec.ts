@@ -648,5 +648,42 @@ test.describe("CI smoke", () => {
       expect(checkoutCalls).toBe(1);
       expect(waitlistCalls).toBe(1);
     });
+
+    test("authenticated checkout follows a successful payment URL without joining the waitlist", async ({ page, context, baseURL }) => {
+      const site = new URL(baseURL ?? "http://localhost:3000");
+      test.skip(!["localhost", "127.0.0.1"].includes(site.hostname), "Uses a signed local test session");
+
+      const email = "pro-smoke@example.com";
+      const secret = process.env.NEXTAUTH_SECRET ?? "fake-nextauth-secret-32-chars-minimum";
+      const token = await encode({ token: { email, sub: "pro-smoke-user" }, secret, maxAge: 3600 });
+      await context.addCookies([{ name: "next-auth.session-token", value: token, url: site.origin, sameSite: "Lax" }]);
+
+      const checkoutUrl = `${site.origin}/__checkout_smoke__`;
+      let checkoutCalls = 0;
+      let waitlistCalls = 0;
+      await page.route("**/api/pro/checkout", async (route) => {
+        checkoutCalls += 1;
+        expect(route.request().postDataJSON()).toEqual({ email });
+        await route.fulfill({ status: 200, json: { url: checkoutUrl } });
+      });
+      await page.route("**/api/pro/waitlist", (route) => {
+        waitlistCalls += 1;
+        return route.abort();
+      });
+      await page.route("**/__checkout_smoke__", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<title>Test checkout destination</title>",
+      }));
+
+      await page.goto("/pro");
+      await expect(page.getByPlaceholder("ton@email.com")).toHaveValue(email);
+      await page.getByRole("button", { name: /Passer en Pro — 9\$ \/ mois/ }).click();
+
+      await expect(page).toHaveURL(checkoutUrl);
+      await expect(page).toHaveTitle("Test checkout destination");
+      expect(checkoutCalls).toBe(1);
+      expect(waitlistCalls).toBe(0);
+    });
   });
 });
