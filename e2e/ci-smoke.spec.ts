@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { encode } from "next-auth/jwt";
 
 test.describe("CI smoke", () => {
   test("FR home has the expected title", async ({ page }) => {
@@ -615,5 +616,37 @@ test.describe("CI smoke", () => {
         expect(checkoutCalls).toBe(0);
       });
     }
+
+    test("authenticated checkout falls back to the waitlist when payments are unavailable", async ({ page, context, baseURL }) => {
+      const site = new URL(baseURL ?? "http://localhost:3000");
+      test.skip(!["localhost", "127.0.0.1"].includes(site.hostname), "Uses a signed local test session");
+
+      const email = "pro-smoke@example.com";
+      const secret = process.env.NEXTAUTH_SECRET ?? "fake-nextauth-secret-32-chars-minimum";
+      const token = await encode({ token: { email, sub: "pro-smoke-user" }, secret, maxAge: 3600 });
+      await context.addCookies([{ name: "next-auth.session-token", value: token, url: site.origin, sameSite: "Lax" }]);
+
+      let checkoutCalls = 0;
+      let waitlistCalls = 0;
+      await page.route("**/api/pro/checkout", async (route) => {
+        checkoutCalls += 1;
+        expect(route.request().postDataJSON()).toEqual({ email });
+        await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "Payments unavailable" }) });
+      });
+      await page.route("**/api/pro/waitlist", async (route) => {
+        waitlistCalls += 1;
+        expect(route.request().postDataJSON()).toEqual({ email });
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ position: 7 }) });
+      });
+
+      await page.goto("/pro");
+      await expect(page.getByPlaceholder("ton@email.com")).toHaveValue(email);
+      await page.getByRole("button", { name: /Passer en Pro — 9\$ \/ mois/ }).click();
+
+      await expect(page.getByText("Tu es sur la liste !")).toBeVisible();
+      await expect(page.getByText("Tu es n°7 sur la liste.", { exact: false })).toBeVisible();
+      expect(checkoutCalls).toBe(1);
+      expect(waitlistCalls).toBe(1);
+    });
   });
 });
