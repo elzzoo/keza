@@ -56,8 +56,6 @@ export async function GET(request: Request) {
   });
   if (limited) return limited;
 
-  const now = new Date().toUTCString();
-
   // Pick the first 10 routes from the popular-routes list for the feed
   const feedRoutes = POPULAR_ROUTES.slice(0, 10);
 
@@ -68,8 +66,7 @@ export async function GET(request: Request) {
     return {
       title: `${fromLabel} → ${toLabel} — Analyse cash vs miles`,
       link: `${SITE_URL}/flights/${route}`,
-      description: `Comparez le prix cash et le coût en miles sur ${fromLabel}-${toLabel}. Xalifly calcule en temps réel quelle option vous fait économiser le plus.`,
-      pubDate: now,
+      description: `Explorez une estimation cash vs miles pour ${fromLabel}-${toLabel}. Confirmez le tarif et la disponibilité auprès du fournisseur avant de réserver.`,
       guid: `${SITE_URL}/flights/${route}`,
     };
   });
@@ -77,11 +74,10 @@ export async function GET(request: Request) {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Xalifly — Deals vols cash vs miles</title>
+    <title>Xalifly — Comparaisons vols cash vs miles</title>
     <link>${SITE_URL}</link>
-    <description>Les meilleurs deals vols : comparez cash et miles en temps réel.</description>
+    <description>Itinéraires populaires pour comparer les prix cash et une estimation du coût en miles.</description>
     <language>fr</language>
-    <lastBuildDate>${now}</lastBuildDate>
     <atom:link href="${SITE_URL}/api/feed" rel="self" type="application/rss+xml" />
     ${items
       .map(
@@ -90,7 +86,6 @@ export async function GET(request: Request) {
       <title><![CDATA[${item.title}]]></title>
       <link>${item.link}</link>
       <description><![CDATA[${item.description}]]></description>
-      <pubDate>${item.pubDate}</pubDate>
       <guid isPermaLink="true">${item.guid}</guid>
     </item>`
       )
