@@ -123,6 +123,31 @@ describe("FlightCard", () => {
     expect(screen.getByText(/Estimated price/i)).toBeInTheDocument();
   });
 
+  it.each([
+    { lang: "en", routeLabel: "Airline listed for this route", cta: "Search flights", unverified: "Fare and savings unverified" },
+    { lang: "fr", routeLabel: "Compagnie répertoriée sur cette liaison", cta: "Rechercher des vols", unverified: "Tarif et économies non vérifiés" },
+  ] as const)("does not present a supplemental entry as a verified flight in $lang", ({ lang, routeLabel, cta, unverified }) => {
+    render(<FlightCard flight={{
+      ...baseFlight,
+      source: "SYNTHETIC",
+      priceConfidence: "ESTIMATED",
+      isSupplemental: true,
+      bestOption: { ...bestOption, chartSource: "ESTIMATE" },
+      bookingLink: "https://www.aviasales.com/search/CDGJFK",
+      verdictLabel: "MILES_WINS",
+    }} lang={lang} />);
+
+    expect(screen.getByText(routeLabel)).toBeInTheDocument();
+    expect(screen.getByText(unverified)).toBeInTheDocument();
+    expect(screen.getByText(lang === "fr" ? "Horaires à vérifier" : "Schedule unverified")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: cta })).toHaveAttribute("href", "https://www.aviasales.com/search/CDGJFK");
+    expect(screen.queryByText(lang === "fr" ? "Direct" : "Nonstop")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? /Tu économises/ : /You save/)).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "Miles gagnent" : "Miles win")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "Prix confirmé" : "Confirmed price")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "Voir sur le site de la compagnie" : "Check airline website")).not.toBeInTheDocument();
+  });
+
   it("renders economy cabin label (Cash label)", () => {
     render(<FlightCard flight={baseFlight} lang="en" />);
     // The cash column label

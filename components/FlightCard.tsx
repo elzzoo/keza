@@ -198,9 +198,10 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   const stops      = flight.stops ?? 0;
   const duration   = flight.duration;
   const bestOption = flight.bestOption;
-  const isUseMiles = flight.recommendation === "USE_MILES";
+  const isSupplemental = Boolean(flight.isSupplemental);
+  const isUseMiles = !isSupplemental && flight.recommendation === "USE_MILES";
   const savingsRatio = flight.cashCost > 0 ? Math.abs(flight.savings) / flight.cashCost : 0;
-  const isNearParity = savingsRatio < 0.05 && bestOption !== null;
+  const isNearParity = !isSupplemental && savingsRatio < 0.05 && bestOption !== null;
   const isBusinessMode = checkBusinessMode(flight.cabin);
 
   const [showAlts,   setShowAlts]   = useState(false);
@@ -242,13 +243,13 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
 
         {/* Verdict badge — top-right corner (or next to global best if present) */}
         <div className="absolute top-3 right-3 flex gap-2 items-center">
-          {isGlobalBest && (
+          {isGlobalBest && !isSupplemental && (
             <div className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/30">
               <FlightCardIcon name="award" className="h-3 w-3" />
               {fr ? "Meilleure offre" : "Best deal"}
             </div>
           )}
-          {flight.verdictLabel && (
+          {flight.verdictLabel && !isSupplemental && (
             <div className={clsx(
               "text-[10px] font-bold px-2 py-0.5 rounded-full border",
               flight.verdictLabel === "MILES_WINS"
@@ -291,22 +292,26 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         </button>
 
         {/* Seat alert button — top-right */}
-        <div className="absolute top-1 right-1 z-10">
-          <SeatAlertButton
-            from={flight.from}
-            to={flight.to}
-            cabin={flight.cabin}
-            currentPrice={isUseMiles ? (bestOption?.taxes ?? 0) : flight.cashCost}
-            lang={lang}
-          />
-        </div>
+        {!isSupplemental && (
+          <div className="absolute top-1 right-1 z-10">
+            <SeatAlertButton
+              from={flight.from}
+              to={flight.to}
+              cabin={flight.cabin}
+              currentPrice={isUseMiles ? (bestOption?.taxes ?? 0) : flight.cashCost}
+              lang={lang}
+            />
+          </div>
+        )}
 
         {/* Primary message — generated client-side so it uses the user's currency */}
         <div className={clsx(
           "text-lg font-black",
           isUseMiles ? "text-blue-400" : "text-amber-400"
         )}>
-          {isNearParity
+          {isSupplemental
+            ? (fr ? "Tarif et économies non vérifiés" : "Fare and savings unverified")
+            : isNearParity
             ? (fr ? "≈ Prix équivalent — garde tes miles" : "≈ Equivalent — keep your miles")
             : !bestOption
               ? (fr ? "Paiement cash uniquement" : "Cash only")
@@ -328,7 +333,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         {/* Program context line */}
         {bestOption && (
           <div className="text-[11px] text-muted mt-0.5">
-            via {bestOption.program} ({TYPE_LABEL[lang][bestOption.type].toLowerCase()})
+            via {bestOption.program}{!isSupplemental && ` (${TYPE_LABEL[lang][bestOption.type].toLowerCase()})`}
           </div>
         )}
 
@@ -336,8 +341,10 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         <div className="text-[11px] text-muted mt-1.5 flex items-center justify-center gap-1.5 flex-wrap">
           <span>{city(flight.from, lang)} → {city(flight.to, lang)}</span>
           <span className="text-subtle">·</span>
-          <span>{stops === 0 ? (fr ? "Direct" : "Nonstop") : `${stops} ${fr ? "escale" : "stop"}${stops > 1 ? "s" : ""}`}</span>
-          {duration && duration > 0 && (
+          <span>{isSupplemental
+            ? (fr ? "Horaires à vérifier" : "Schedule unverified")
+            : stops === 0 ? (fr ? "Direct" : "Nonstop") : `${stops} ${fr ? "escale" : "stop"}${stops > 1 ? "s" : ""}`}</span>
+          {!isSupplemental && duration && duration > 0 && (
             <>
               <span className="text-subtle">·</span>
               <span>{formatDuration(duration, lang)}</span>
@@ -350,7 +357,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
             </>
           )}
           {/* Confidence badge — only shown for estimates or non-HIGH confidence */}
-          {bestOption && (bestOption.chartSource === "ESTIMATE" || confidence !== "HIGH") && (
+          {!isSupplemental && bestOption && (bestOption.chartSource === "ESTIMATE" || confidence !== "HIGH") && (
             <span className={clsx(
               "text-[9px] font-semibold px-1.5 py-0.5 rounded border",
               badge.color
@@ -375,15 +382,15 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         </div>
       )}
 
-      {/* Supplemental airline — price is indicative (not from the airline's own booking system) */}
+      {/* Supplemental airline — neither a dated flight nor its fare was verified. */}
       {flight.isSupplemental && (
         <div className="bg-sky-500/10 text-sky-400 border-b border-sky-500/20 px-5 py-2 text-[11px] text-center font-medium space-y-0.5">
           <div className="flex items-center justify-center gap-1.5">
             <FlightCardIcon name="plane" className="h-3.5 w-3.5" />
-            {fr ? "Vol direct disponible" : "Direct flight available"}
+            {fr ? "Compagnie répertoriée sur cette liaison" : "Airline listed for this route"}
           </div>
           <div className="text-sky-400/70 text-[10px]">
-            {fr ? "Prix indicatif (non temps réel) — vérifier sur le site de la compagnie" : "Indicative price (not real-time) — check airline website"}
+            {fr ? "Aucun vol confirmé pour ces dates ; prix estimé à partir d'autres vols" : "No flight confirmed for these dates; fare estimated from other flights"}
           </div>
         </div>
       )}
@@ -401,9 +408,9 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
       {/* COST COMPARISON — side by side */}
       <div className="grid grid-cols-2 divide-x divide-border border-t border-border">
         {/* Cash */}
-        <div className={clsx("px-4 py-3.5 text-center relative", !isUseMiles && !isNearParity && "bg-success/5")}>
+        <div className={clsx("px-4 py-3.5 text-center relative", !isSupplemental && !isUseMiles && !isNearParity && "bg-success/5")}>
           {/* Checkmark for accessibility (not just color) */}
-          {!isUseMiles && !isNearParity && cashCost > 0 && (
+          {!isSupplemental && !isUseMiles && !isNearParity && cashCost > 0 && (
             <div className="absolute top-1.5 right-1.5 text-success text-lg">✓</div>
           )}
           {flight.isSupplemental ? (
@@ -436,7 +443,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
         {/* Miles */}
         <div className={clsx("px-4 py-3.5 text-center relative", isUseMiles && !isNearParity && "bg-blue-500/5")}>
           {/* Checkmark for accessibility (not just color) */}
-          {isUseMiles && !isNearParity && milesCost > 0 && (
+          {!isSupplemental && isUseMiles && !isNearParity && milesCost > 0 && (
             <div className="absolute top-1.5 right-1.5 text-blue-400 text-lg">✓</div>
           )}
           {milesCost > 0 ? (
@@ -476,7 +483,9 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                 ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
                 : "bg-surface-2 text-muted border-border"
             )}>
-              {TYPE_LABEL[lang][bestOption.type]}
+              {isSupplemental
+                ? (fr ? "Programme miles" : "Miles program")
+                : TYPE_LABEL[lang][bestOption.type]}
             </span>
             <span className="text-[12px] font-bold text-fg">
               {bestOption.program}
@@ -497,7 +506,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               {formatMiles(bestOption.milesRequired)} miles × {bestOption.valuePerMile.toFixed(1)}{bestOption.type === "TRANSFER" ? "¢/pt" : "¢/mile"} + {fmt(bestOption.taxes)} taxes = <span className="font-bold text-fg">{fmt(milesCost)}</span>
             </div>
             {/* Show miles alert CTA only when CPP is ≥ 1.0¢ — below that it's not worth alerting */}
-            {bestOption.valuePerMile >= 1.0 && (
+            {!isSupplemental && bestOption.valuePerMile >= 1.0 && (
               <MilesAlertButton
                 from={flight.from}
                 to={flight.to}
@@ -721,7 +730,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
             {flight.isSupplemental
-              ? (fr ? "Voir sur le site de la compagnie" : "Check airline website")
+              ? (fr ? "Rechercher des vols" : "Search flights")
               : (fr ? CTA_COPY[variant].fr : CTA_COPY[variant].en)}
           </a>
         </div>

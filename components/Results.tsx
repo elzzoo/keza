@@ -30,7 +30,7 @@ interface Props {
 const L = {
   fr: {
     results: "Résultats",
-    found: (n: number) => `${n} vol${n > 1 ? "s" : ""} trouvé${n > 1 ? "s" : ""}`,
+    found: (n: number) => `${n} vol${n !== 1 ? "s" : ""} trouvé${n !== 1 ? "s" : ""}`,
     best: "Meilleur prix",
     savings: "Économie max",
     all: "Tous",
@@ -62,13 +62,13 @@ const L = {
     qualityUnknownOnly: "Source de prix non vérifiée. Confirmez le tarif final avant réservation.",
     qualityMixedUnknown: "Certains prix ont une source non vérifiée. Confirmez les tarifs avant réservation.",
     showingSorted: (visible: number, total: number, sort: string) =>
-      `${visible} sur ${total} vol${total > 1 ? "s" : ""} affiché${visible > 1 ? "s" : ""} · trié par ${sort}`,
+      `${visible} résultat${visible > 1 ? "s" : ""} sur ${total} affiché${visible > 1 ? "s" : ""} · trié par ${sort}`,
     sortValue: "meilleure valeur",
     sortPrice: "prix le plus bas",
     noDirect: "Aucun vol direct dans ces résultats",
-    noDirectDesc: "Des options avec escale sont disponibles. Réinitialisez le filtre ou consultez « Avec escales ».",
+    noDirectDesc: "Aucun horaire direct confirmé. Réinitialisez le filtre pour revoir les autres options.",
     noStops: "Aucun vol avec escale dans ces résultats",
-    noStopsDesc: "Les résultats disponibles sont directs. Réinitialisez le filtre pour les revoir.",
+    noStopsDesc: "Aucun horaire avec escale confirmé. Réinitialisez le filtre pour revoir les autres options.",
     noMiles: "Aucune option miles dans ce filtre",
     noMilesDesc: "Les vols affichés sont mieux classés en cash pour l’instant. Essayez « Tous » ou ajustez les escales.",
     noCash: "Aucun vol en cash trouvé",
@@ -77,7 +77,7 @@ const L = {
   },
   en: {
     results: "Results",
-    found: (n: number) => `${n} flight${n > 1 ? "s" : ""} found`,
+    found: (n: number) => `${n} flight${n !== 1 ? "s" : ""} found`,
     best: "Best price",
     savings: "Max savings",
     all: "All",
@@ -109,13 +109,13 @@ const L = {
     qualityUnknownOnly: "Price source is unverified. Confirm the final fare before booking.",
     qualityMixedUnknown: "Some price sources are unverified. Confirm fares before booking.",
     showingSorted: (visible: number, total: number, sort: string) =>
-      `${visible} of ${total} flight${total > 1 ? "s" : ""} shown · sorted by ${sort}`,
+      `${visible} of ${total} result${total > 1 ? "s" : ""} shown · sorted by ${sort}`,
     sortValue: "best value",
     sortPrice: "lowest price",
     noDirect: "No nonstop flights in these results",
-    noDirectDesc: "Connecting options are available. Reset the filter or use “With stops”.",
+    noDirectDesc: "No nonstop schedule was confirmed. Reset the filter to review other options.",
     noStops: "No connecting flights in these results",
-    noStopsDesc: "The available results are nonstop. Reset the filter to see them again.",
+    noStopsDesc: "No connecting schedule was confirmed. Reset the filter to review other options.",
     noMiles: "No miles options in this filter",
     noMilesDesc: "The visible flights currently rank better as cash fares. Try “All” or adjust the stops filter.",
     noCash: "No cash options found",
@@ -312,20 +312,22 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const stopsFiltered = useMemo(() => {
     let r = [...results];
-    if (stopFilter === "direct") r = r.filter(x => (x.stops ?? 0) === 0);
-    if (stopFilter === "stops")  r = r.filter(x => (x.stops ?? 0) > 0);
+    if (stopFilter === "direct") r = r.filter(x => !x.isSupplemental && (x.stops ?? 0) === 0);
+    if (stopFilter === "stops")  r = r.filter(x => !x.isSupplemental && (x.stops ?? 0) > 0);
     return r;
   }, [results, stopFilter]);
 
+  const sourcedResults = useMemo(() => results.filter(r => !r.isSupplemental), [results]);
+
   const counts = useMemo(() => ({
-    miles: stopsFiltered.filter(r => r.recommendation === "USE_MILES").length,
-    cash:  stopsFiltered.filter(r => r.recommendation === "USE_CASH" || r.recommendation === "IF_HAVE_MILES").length,
+    miles: stopsFiltered.filter(r => !r.isSupplemental && r.recommendation === "USE_MILES").length,
+    cash:  stopsFiltered.filter(r => !r.isSupplemental && (r.recommendation === "USE_CASH" || r.recommendation === "IF_HAVE_MILES")).length,
   }), [stopsFiltered]);
 
-  const bestPrice  = results.length ? Math.min(...results.map(r => r.totalPrice ?? 0)) : 0;
-  const maxSavings = results.length ? Math.max(0, ...results.map(r => r.savings)) : 0;
-  const maxSavingsIsIndicative = results.length > 0 && (() => {
-    const bestSavingsResult = results.reduce<typeof results[0] | null>(
+  const bestPrice  = sourcedResults.length ? Math.min(...sourcedResults.map(r => r.totalPrice ?? 0)) : 0;
+  const maxSavings = sourcedResults.length ? Math.max(0, ...sourcedResults.map(r => r.savings)) : 0;
+  const maxSavingsIsIndicative = sourcedResults.length > 0 && (() => {
+    const bestSavingsResult = sourcedResults.reduce<typeof sourcedResults[0] | null>(
       (best, r) => r.savings > (best?.savings ?? 0) ? r : best, null
     );
     return bestSavingsResult !== null && getPriceQuality(bestSavingsResult) !== "live";
@@ -340,20 +342,24 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   // Use milesOptions from the best-deal result, fallback to first result
   const bestResultOptions =
-    results.find(r => r.bestOption?.isBestDeal === true)?.milesOptions ??
-    results[0]?.milesOptions ??
+    sourcedResults.find(r => r.bestOption?.isBestDeal === true)?.milesOptions ??
+    sourcedResults[0]?.milesOptions ??
     [];
 
   // Check if there are any direct flights
-  const hasDirectFlights = results.some(r => (r.stops ?? 0) === 0);
-  const allWithStops = results.length > 0 && !hasDirectFlights;
+  const hasDirectFlights = sourcedResults.some(r => (r.stops ?? 0) === 0);
+  const allWithStops = sourcedResults.length > 0 && !hasDirectFlights;
 
   const filtered = useMemo(() => {
     let r = [...stopsFiltered];
-    if (tab === "miles") r = r.filter(x => x.recommendation === "USE_MILES");
-    if (tab === "cash")  r = r.filter(x => x.recommendation === "USE_CASH" || x.recommendation === "IF_HAVE_MILES");
-    if (sortBy === "price") r.sort((a, b) => (a.totalPrice ?? 0) - (b.totalPrice ?? 0));
-    else r.sort((a, b) => b.savings - a.savings);
+    if (tab === "miles") r = r.filter(x => !x.isSupplemental && x.recommendation === "USE_MILES");
+    if (tab === "cash")  r = r.filter(x => !x.isSupplemental && (x.recommendation === "USE_CASH" || x.recommendation === "IF_HAVE_MILES"));
+    r.sort((a, b) => {
+      if (Boolean(a.isSupplemental) !== Boolean(b.isSupplemental)) return a.isSupplemental ? 1 : -1;
+      return sortBy === "price"
+        ? (a.totalPrice ?? 0) - (b.totalPrice ?? 0)
+        : b.savings - a.savings;
+    });
     return r;
   }, [stopsFiltered, tab, sortBy]);
 
@@ -486,7 +492,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
                 : `Updated at ${lastUpdatedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`}
             </span>
           ) : null}
-          <span className="text-xs text-subtle">{t.found(results.length)}</span>
+          <span className="text-xs text-subtle">{t.found(sourcedResults.length)}</span>
         </div>
       </div>
 
@@ -494,18 +500,18 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       {results.length > 0 && (
         <div className="grid grid-cols-3 gap-2.5 stagger-children">
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
-            <p className="text-xl font-black text-fg">{results.length}</p>
+            <p className="text-xl font-black text-fg">{sourcedResults.length}</p>
             <p className="text-[11px] text-muted mt-0.5">{lang === "fr" ? "vols trouvés" : "flights found"}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
             <p className={`font-black text-warning ${fmt(bestPrice).length > 10 ? "text-sm" : "text-xl"}`}>
-              <span className="text-xs font-medium text-muted mr-0.5">{lang === "fr" ? "dès" : "from"}</span>{fmt(bestPrice)}
+              {bestPrice > 0 ? <><span className="text-xs font-medium text-muted mr-0.5">{lang === "fr" ? "dès" : "from"}</span>{fmt(bestPrice)}</> : "—"}
             </p>
             <p className="text-[11px] text-muted mt-0.5">{t.best}</p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
             <p className={`font-black text-success ${fmt(maxSavings).length > 10 ? "text-sm" : "text-xl"}`}>
-              +{fmt(maxSavings)}
+              {sourcedResults.length > 0 ? `+${fmt(maxSavings)}` : "—"}
               {maxSavings > 0 && maxSavingsIsIndicative && (
                 <span className="text-[9px] font-medium text-muted/70 ml-1 align-middle">
                   {lang === "fr" ? "(indicatif)" : "(indicative)"}
@@ -593,10 +599,10 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
       )}
 
       {/* Card recommendation (transfer savings) */}
-      {results.length > 0 && <CardRecommendation results={results} lang={lang} formatPrice={formatPrice} />}
+      {sourcedResults.length > 0 && <CardRecommendation results={sourcedResults} lang={lang} formatPrice={formatPrice} />}
 
       {/* Portfolio check */}
-      {results.length > 0 && (
+      {sourcedResults.length > 0 && (
         <PortfolioCheck milesOptions={bestResultOptions} lang={lang} />
       )}
 

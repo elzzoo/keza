@@ -194,11 +194,11 @@ describe("Results", () => {
       <Results results={flights} loading={false} lang="en" onBack={noop} />
     );
 
-    expect(screen.getByText(/2 of 2 flights shown · sorted by best value/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 of 2 results shown · sorted by best value/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Price"));
 
-    expect(screen.getByText(/2 of 2 flights shown · sorted by lowest price/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 of 2 results shown · sorted by lowest price/i)).toBeInTheDocument();
   });
 
   it("shows a contextual empty state when filters hide existing results", () => {
@@ -213,11 +213,56 @@ describe("Results", () => {
     fireEvent.click(screen.getByText("Direct"));
 
     expect(screen.getByText(/No nonstop flights in these results/i)).toBeInTheDocument();
-    expect(screen.getByText(/Connecting options are available/i)).toBeInTheDocument();
+    expect(screen.getByText(/No nonstop schedule was confirmed/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText(/Reset filters/i));
 
     expect(screen.getAllByTestId("flight-card")).toHaveLength(2);
+  });
+
+  it("excludes unverified supplemental entries from the direct filter", () => {
+    render(<Results results={[
+      makeFlight({ searchId: "real", source: "DUFFEL", stops: 0 }),
+      makeFlight({ searchId: "supplemental", source: "SYNTHETIC", stops: 0, isSupplemental: true }),
+    ]} loading={false} lang="en" onBack={noop} />);
+
+    expect(screen.getAllByTestId("flight-card")).toHaveLength(2);
+    fireEvent.click(screen.getByText("Direct"));
+    expect(screen.getAllByTestId("flight-card")).toHaveLength(1);
+  });
+
+  it("keeps synthetic estimates out of fare and savings summaries", () => {
+    render(<Results results={[
+      makeFlight({ searchId: "real", source: "DUFFEL", totalPrice: 800, savings: 200 }),
+      makeFlight({ searchId: "synthetic", from: "LHR", to: "LAX", source: "SYNTHETIC", isSupplemental: true, totalPrice: 100, savings: 700 }),
+    ]} loading={false} lang="en" onBack={noop} formatPrice={(usd) => `$${usd}`} />);
+
+    expect(screen.getByText("1 flight found")).toBeInTheDocument();
+    expect(screen.getByText("Best price").parentElement).toHaveTextContent("$800");
+    expect(screen.getByText("Max savings").parentElement).toHaveTextContent("$200");
+    expect(screen.queryByText("$100")).not.toBeInTheDocument();
+    expect(screen.getAllByTestId("flight-card")[0]).toHaveTextContent("CDG → JFK");
+    fireEvent.click(screen.getByText("Price"));
+    expect(screen.getAllByTestId("flight-card")[0]).toHaveTextContent("CDG → JFK");
+  });
+
+  it("does not offer a price alert or a recommendation from synthetic results alone", () => {
+    render(<Results
+      results={[makeFlight({ source: "SYNTHETIC", isSupplemental: true, totalPrice: 100, savings: 700 })]}
+      loading={false}
+      lang="en"
+      onBack={noop}
+      searchMeta={{ from: "CDG", to: "JFK", cabin: "economy" }}
+      formatPrice={(usd) => `$${usd}`}
+    />);
+
+    expect(screen.getByText("0 flights found")).toBeInTheDocument();
+    expect(screen.getByText("Best price").parentElement).toHaveTextContent("—");
+    expect(screen.getByText("Max savings").parentElement).toHaveTextContent("—");
+    expect(screen.queryByTestId("price-alert-form")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("card-recommendation")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Direct"));
+    expect(screen.queryByTestId("flight-card")).not.toBeInTheDocument();
   });
 
   it("summarizes price confidence by source", () => {
