@@ -38,6 +38,7 @@ jest.mock("@/components/FlightFilters", () => ({
   }) => (
     <div data-testid="flight-filters">
       <button type="button" onClick={() => onStopFilter("direct")}>Direct</button>
+      <button type="button" onClick={() => onStopFilter("stops")}>With stops</button>
       <button type="button" onClick={() => onSortBy("price")}>Price</button>
     </div>
   ),
@@ -262,6 +263,45 @@ describe("Results", () => {
     expect(screen.queryByTestId("price-alert-form")).not.toBeInTheDocument();
     expect(screen.queryByTestId("card-recommendation")).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("Direct"));
+    expect(screen.queryByTestId("flight-card")).not.toBeInTheDocument();
+  });
+
+  it("keeps synthetic multi-leg estimates out of sourced summaries and stop filters", () => {
+    render(<Results results={[
+      makeFlight({ searchId: "real", source: "DUFFEL", stops: 0, totalPrice: 800, savings: 200 }),
+      makeFlight({ searchId: "multi-leg", from: "LHR", to: "LAX", source: "SYNTHETIC", priceConfidence: "ESTIMATED", stops: 1, totalPrice: 100, savings: 700 }),
+    ]} loading={false} lang="en" onBack={noop} formatPrice={(usd) => `$${usd}`} />);
+
+    expect(screen.getByText("1 flight found")).toBeInTheDocument();
+    expect(screen.getByText("Best price").parentElement).toHaveTextContent("$800");
+    expect(screen.getByText("Max savings").parentElement).toHaveTextContent("$200");
+    expect(screen.getAllByTestId("flight-card")[0]).toHaveTextContent("CDG → JFK");
+    fireEvent.click(screen.getByText("Price"));
+    expect(screen.getAllByTestId("flight-card")[0]).toHaveTextContent("CDG → JFK");
+    fireEvent.click(screen.getByText("With stops"));
+    expect(screen.queryByTestId("flight-card")).not.toBeInTheDocument();
+  });
+
+  it("does not create price alerts or recommendations from a synthetic multi-leg result alone", () => {
+    render(<Results
+      results={[makeFlight({ source: "SYNTHETIC", priceConfidence: "ESTIMATED", stops: 1, totalPrice: 100, savings: 700 })]}
+      loading={false}
+      lang="en"
+      onBack={noop}
+      searchMeta={{ from: "CDG", to: "JFK", cabin: "economy" }}
+      formatPrice={(usd) => `$${usd}`}
+    />);
+
+    expect(screen.getByText("0 flights found")).toBeInTheDocument();
+    expect(screen.getByText("Best price").parentElement).toHaveTextContent("—");
+    expect(screen.getByText("Max savings").parentElement).toHaveTextContent("—");
+    expect(screen.queryByTestId("price-alert-form")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("card-recommendation")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("portfolio-check")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: /Use miles/ }));
+    expect(screen.queryByTestId("flight-card")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: /All/ }));
+    fireEvent.click(screen.getByText("With stops"));
     expect(screen.queryByTestId("flight-card")).not.toBeInTheDocument();
   });
 

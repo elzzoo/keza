@@ -6,6 +6,7 @@ import { FlightCard } from "./FlightCard";
 import { FlightFilters, type SortBy } from "./FlightFilters";
 import { CardRecommendation } from "./CardRecommendation";
 import { PriceAlertForm } from "./PriceAlertForm";
+import { isSyntheticFlight } from "@/lib/flightResultTrust";
 import { PriceTrendBadge } from "./PriceTrendBadge";
 import { TPCacheDisclaimer } from "./TPCacheDisclaimer";
 import PortfolioCheck from "@/components/PortfolioCheck";
@@ -204,7 +205,7 @@ type PriceQualitySummary = {
 };
 
 function getPriceQuality(result: FlightResult): keyof PriceQualitySummary {
-  if (result.isSupplemental || result.source === "SYNTHETIC" || result.priceConfidence === "ESTIMATED" || result.priceIsEstimate || result.cabinPriceEstimated) {
+  if (isSyntheticFlight(result) || result.priceConfidence === "ESTIMATED" || result.priceIsEstimate || result.cabinPriceEstimated) {
     return "estimated";
   }
   if (result.source === "TP") return "cached";
@@ -312,16 +313,16 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const stopsFiltered = useMemo(() => {
     let r = [...results];
-    if (stopFilter === "direct") r = r.filter(x => !x.isSupplemental && (x.stops ?? 0) === 0);
-    if (stopFilter === "stops")  r = r.filter(x => !x.isSupplemental && (x.stops ?? 0) > 0);
+    if (stopFilter === "direct") r = r.filter(x => !isSyntheticFlight(x) && (x.stops ?? 0) === 0);
+    if (stopFilter === "stops")  r = r.filter(x => !isSyntheticFlight(x) && (x.stops ?? 0) > 0);
     return r;
   }, [results, stopFilter]);
 
-  const sourcedResults = useMemo(() => results.filter(r => !r.isSupplemental), [results]);
+  const sourcedResults = useMemo(() => results.filter(r => !isSyntheticFlight(r)), [results]);
 
   const counts = useMemo(() => ({
-    miles: stopsFiltered.filter(r => !r.isSupplemental && r.recommendation === "USE_MILES").length,
-    cash:  stopsFiltered.filter(r => !r.isSupplemental && (r.recommendation === "USE_CASH" || r.recommendation === "IF_HAVE_MILES")).length,
+    miles: stopsFiltered.filter(r => !isSyntheticFlight(r) && r.recommendation === "USE_MILES").length,
+    cash:  stopsFiltered.filter(r => !isSyntheticFlight(r) && (r.recommendation === "USE_CASH" || r.recommendation === "IF_HAVE_MILES")).length,
   }), [stopsFiltered]);
 
   const bestPrice  = sourcedResults.length ? Math.min(...sourcedResults.map(r => r.totalPrice ?? 0)) : 0;
@@ -352,10 +353,10 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const filtered = useMemo(() => {
     let r = [...stopsFiltered];
-    if (tab === "miles") r = r.filter(x => !x.isSupplemental && x.recommendation === "USE_MILES");
-    if (tab === "cash")  r = r.filter(x => !x.isSupplemental && (x.recommendation === "USE_CASH" || x.recommendation === "IF_HAVE_MILES"));
+    if (tab === "miles") r = r.filter(x => !isSyntheticFlight(x) && x.recommendation === "USE_MILES");
+    if (tab === "cash")  r = r.filter(x => !isSyntheticFlight(x) && (x.recommendation === "USE_CASH" || x.recommendation === "IF_HAVE_MILES"));
     r.sort((a, b) => {
-      if (Boolean(a.isSupplemental) !== Boolean(b.isSupplemental)) return a.isSupplemental ? 1 : -1;
+      if (isSyntheticFlight(a) !== isSyntheticFlight(b)) return isSyntheticFlight(a) ? 1 : -1;
       return sortBy === "price"
         ? (a.totalPrice ?? 0) - (b.totalPrice ?? 0)
         : b.savings - a.savings;

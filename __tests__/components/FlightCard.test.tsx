@@ -113,14 +113,14 @@ describe("FlightCard", () => {
     expect(screen.getByText(/Pay cash/i)).toBeInTheDocument();
   });
 
-  it("shows estimated price notice when source is SYNTHETIC", () => {
+  it("marks a SYNTHETIC itinerary as unconfirmed even without isSupplemental", () => {
     const estimatedFlight: FlightResult = {
       ...baseFlight,
       source: "SYNTHETIC",
       isSupplemental: false,
     };
     render(<FlightCard flight={estimatedFlight} lang="en" />);
-    expect(screen.getByText(/Estimated price/i)).toBeInTheDocument();
+    expect(screen.getByText(/Estimated itinerary, flight unconfirmed/i)).toBeInTheDocument();
   });
 
   it.each([
@@ -146,6 +146,45 @@ describe("FlightCard", () => {
     expect(screen.queryByText(lang === "fr" ? "Miles gagnent" : "Miles win")).not.toBeInTheDocument();
     expect(screen.queryByText(lang === "fr" ? "Prix confirmé" : "Confirmed price")).not.toBeInTheDocument();
     expect(screen.queryByText(lang === "fr" ? "Voir sur le site de la compagnie" : "Check airline website")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { lang: "en", routeLabel: "Estimated itinerary, flight unconfirmed", cta: "Search flights", unverified: "Fare and savings unverified" },
+    { lang: "fr", routeLabel: "Itinéraire estimé, vol non confirmé", cta: "Rechercher des vols", unverified: "Tarif et économies non vérifiés" },
+  ] as const)("does not present a synthetic multi-leg estimate as a verified flight in $lang", ({ lang, routeLabel, cta, unverified }) => {
+    render(<FlightCard flight={{
+      ...baseFlight,
+      source: "SYNTHETIC",
+      priceConfidence: "ESTIMATED",
+      stops: 1,
+      duration: 720,
+      bookingLink: "https://www.aviasales.com/search/CDGJFK",
+      verdictLabel: "MILES_WINS",
+    }} lang={lang} isGlobalBest />);
+
+    expect(screen.getByText(routeLabel)).toBeInTheDocument();
+    expect(screen.getByText(unverified)).toBeInTheDocument();
+    expect(screen.getByText(lang === "fr" ? "Horaires à vérifier" : "Schedule unverified")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: cta })).toHaveAttribute("href", "https://www.aviasales.com/search/CDGJFK");
+    expect(screen.queryByText(lang === "fr" ? /Tu économises/ : /You save/)).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "Meilleure offre" : "Best deal")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "Miles gagnent" : "Miles win")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "Voir sur le site de la compagnie" : "Check airline website")).not.toBeInTheDocument();
+    expect(screen.queryByText(lang === "fr" ? "1 escale" : "1 stop")).not.toBeInTheDocument();
+  });
+
+  it("uses a route-search label when an estimated itinerary has no booking link", () => {
+    render(<FlightCard flight={{
+      ...baseFlight,
+      source: "SYNTHETIC",
+      priceConfidence: "ESTIMATED",
+      bestOption: null,
+      recommendation: "USE_CASH",
+      bookingLink: undefined,
+    }} lang="en" />);
+
+    expect(screen.getByRole("link", { name: /Search flights on Google Flights/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Search this flight on Google Flights/i)).not.toBeInTheDocument();
   });
 
   it("renders economy cabin label (Cash label)", () => {
