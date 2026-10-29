@@ -432,6 +432,31 @@ test.describe("CI smoke", () => {
       await expect(page.getByText("CRLF Airline")).toBeVisible();
     });
 
+    test("synthetic multi-leg result is unconfirmed and cannot set a price alert", async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      await page.route("**/api/search/stream", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: ${JSON.stringify({ type: "final", results: [{
+          from: "DSS", to: "NRT", price: 420, totalPrice: 420, cashCost: 420,
+          airlines: [], stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+          milesCost: 30000, savings: 180, recommendation: "USE_MILES",
+          bestOption: null, milesOptions: [], explanation: "Estimated connection",
+          disclaimer: "Indicative route", source: "SYNTHETIC", priceConfidence: "ESTIMATED",
+        }], partial: false, forexRate: 1 })}\n\n`,
+      }));
+
+      await page.goto(`/?from=DSS&to=NRT&date=${date}&tripType=oneway`);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+
+      await expect(page.getByText("Itinéraire estimé, vol non confirmé")).toBeVisible();
+      await expect(page.getByRole("link", { name: /Rechercher des vols sur Google Flights/ })).toBeVisible();
+      await expect(page.getByText("0 vols trouvés")).toBeVisible();
+      await expect(page.getByText("Alerte prix", { exact: true })).toHaveCount(0);
+      await expect(page.getByRole("tab", { name: /Utilisez miles/i })).toHaveAttribute("aria-selected", "false");
+    });
+
     test("FR search result creates a price alert at a 10% lower target", async ({ page }) => {
       await page.addInitScript(() => {
         localStorage.setItem("keza:visited", "true");
