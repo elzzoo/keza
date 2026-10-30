@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { getFlightResultKey, Results } from "@/components/Results";
 import type { FlightResult } from "@/lib/engine";
@@ -109,12 +109,20 @@ describe("Results", () => {
     expect(getFlightResultKey(base)).toBe(getFlightResultKey({ ...base }));
   });
 
-  it("shows loading spinner when loading=true", () => {
-    render(
-      <Results results={[]} loading={true} lang="en" onBack={noop} />
-    );
-    // Animated loader shows first step message
-    expect(screen.getByText(/Connecting to live pricing sources/i)).toBeInTheDocument();
+  it("shows an accessible loading status without invented progress", () => {
+    jest.useFakeTimers();
+    try {
+      render(
+        <Results results={[]} loading={true} lang="en" onBack={noop} />
+      );
+      expect(screen.getByRole("status")).toHaveTextContent("Searching available fares");
+      expect(screen.getByRole("status").parentElement).toHaveAttribute("aria-busy", "true");
+      act(() => jest.advanceTimersByTime(12_000));
+      expect(screen.getByRole("status")).toHaveTextContent("Searching available fares");
+      expect(screen.queryByText(/Flight data retrieved|Ranking the best offers/i)).not.toBeInTheDocument();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("shows skeleton cards when loading=true", () => {
@@ -425,6 +433,6 @@ describe("Results", () => {
     render(
       <Results results={[]} loading={true} lang="fr" onBack={noop} />
     );
-    expect(screen.getByText(/Connexion aux sources de prix/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Recherche des tarifs disponibles");
   });
 });

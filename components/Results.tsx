@@ -125,7 +125,7 @@ const L = {
   },
 };
 
-type ResultIconName = "signal" | "plane" | "calculator" | "rank" | "info" | "warning";
+type ResultIconName = "signal" | "plane" | "info" | "warning";
 
 function ResultIcon({ name, className = "h-4 w-4" }: { name: ResultIconName; className?: string }) {
   const common = {
@@ -153,29 +153,6 @@ function ResultIcon({ name, className = "h-4 w-4" }: { name: ResultIconName; cla
       <svg {...common}>
         <path d="M22 2 11 13" />
         <path d="m22 2-7 20-4-9-9-4 20-7Z" />
-      </svg>
-    );
-  }
-  if (name === "calculator") {
-    return (
-      <svg {...common}>
-        <rect x="4" y="3" width="16" height="18" rx="2" />
-        <path d="M8 7h8" />
-        <path d="M8 11h.01" />
-        <path d="M12 11h.01" />
-        <path d="M16 11h.01" />
-        <path d="M8 15h.01" />
-        <path d="M12 15h.01" />
-        <path d="M16 15h.01" />
-      </svg>
-    );
-  }
-  if (name === "rank") {
-    return (
-      <svg {...common}>
-        <path d="M8 21V10" />
-        <path d="M12 21V3" />
-        <path d="M16 21v-7" />
       </svg>
     );
   }
@@ -390,75 +367,17 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
     setSortBy("value");
   };
 
-  // Animated progress loader state
-  const loadingSteps = lang === "fr"
-    ? [
-        { icon: "signal" as const, msg: "Connexion aux sources de prix en temps réel…" },
-        { icon: "plane" as const,  msg: "Données de vol récupérées, analyse en cours…" },
-        { icon: "calculator" as const,  msg: "Calcul des options miles & cash…" },
-        { icon: "rank" as const,  msg: "Tri des meilleures offres pour vous…" },
-      ]
-    : [
-        { icon: "signal" as const, msg: "Connecting to live pricing sources…" },
-        { icon: "plane" as const,  msg: "Flight data retrieved, analysing…" },
-        { icon: "calculator" as const,  msg: "Computing miles & cash options…" },
-        { icon: "rank" as const,  msg: "Ranking the best offers for you…" },
-      ];
-
-  const [loadStep, setLoadStep] = useState(0);
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    if (!loading) { setLoadStep(0); setProgress(0); return; }
-    setLoadStep(0);
-    setProgress(0);
-    // Cycle messages every 1.8s
-    const stepTimer = setInterval(() => {
-      setLoadStep(s => Math.min(s + 1, loadingSteps.length - 1));
-    }, 1800);
-    // Progress bar fills over 8s (matches typical search time)
-    const start = Date.now();
-    const DURATION = 8000;
-    const progTimer = setInterval(() => {
-      const elapsed = Date.now() - start;
-      setProgress(Math.min(Math.round((elapsed / DURATION) * 100), 95));
-    }, 80);
-    return () => { clearInterval(stepTimer); clearInterval(progTimer); };
-    // Safe to ignore exhaustive-deps: stepTimer and progTimer are internal timers
-    // created and destroyed within this effect; they don't need to be listed as dependencies
-  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
-
   if (loading) {
-    const step = loadingSteps[loadStep];
     return (
-      <div className="space-y-4 animate-fade-up">
-        {/* Step message */}
-        <div className="flex items-center gap-3">
+      <div className="space-y-4 animate-fade-up" aria-busy="true">
+        <div role="status" className="flex items-center gap-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary">
-            <ResultIcon name={step.icon} className="h-4 w-4" />
+            <ResultIcon name="signal" className="h-4 w-4" />
           </span>
-          <span className="text-sm text-muted font-medium flex-1">{step.msg}</span>
-        </div>
-        {/* Progress bar */}
-        <div className="h-1.5 bg-surface-2 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-100 ease-linear"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        {/* Step dots */}
-        <div className="flex items-center gap-1.5">
-          {loadingSteps.map((s, i) => (
-            <div
-              key={`loading-step-${i}`}
-              className={clsx(
-                "h-1 rounded-full transition-all duration-300",
-                i <= loadStep
-                  ? "bg-primary w-4"
-                  : "bg-surface-2 w-1"
-              )}
-            />
-          ))}
+          <span className="text-sm text-muted font-medium flex-1">
+            {lang === "fr" ? "Recherche des tarifs disponibles…" : "Searching available fares…"}
+          </span>
+          <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/25 border-t-primary" aria-hidden="true" />
         </div>
         {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
       </div>
