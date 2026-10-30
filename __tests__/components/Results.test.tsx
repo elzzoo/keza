@@ -146,6 +146,21 @@ describe("Results", () => {
     expect(cards).toHaveLength(3);
   });
 
+  it("shows fares before recommendations, portfolio and alert actions", () => {
+    render(<Results
+      results={[makeFlight({ source: "DUFFEL", priceConfidence: "HIGH" })]}
+      loading={false}
+      lang="en"
+      onBack={noop}
+      searchMeta={{ from: "CDG", to: "JFK", cabin: "economy" }}
+    />);
+
+    const card = screen.getByTestId("flight-card");
+    for (const id of ["card-recommendation", "portfolio-check", "price-alert-form"]) {
+      expect(card.compareDocumentPosition(screen.getByTestId(id)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
   it("shows back button", () => {
     render(
       <Results results={[]} loading={false} lang="en" onBack={noop} />

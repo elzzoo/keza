@@ -610,26 +610,6 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         </div>
       )}
 
-      {/* Card recommendation (transfer savings) */}
-      {sourcedResults.length > 0 && <CardRecommendation results={sourcedResults} lang={lang} formatPrice={formatPrice} />}
-
-      {/* Portfolio check */}
-      {sourcedResults.length > 0 && (
-        <PortfolioCheck milesOptions={bestResultOptions} lang={lang} />
-      )}
-
-      {/* Price alert form */}
-      {results.length > 0 && searchMeta && bestPrice > 0 && (
-        <PriceAlertForm
-          from={searchMeta.from}
-          to={searchMeta.to}
-          cabin={searchMeta.cabin}
-          currentPrice={bestPrice}
-          lang={lang}
-          formatPrice={formatPrice}
-        />
-      )}
-
       {/* Recommendation tabs */}
       <div
         role="tablist"
@@ -723,6 +703,23 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         </div>
       )}
       </div>
+
+      {sourcedResults.length > 0 && <CardRecommendation results={sourcedResults} lang={lang} formatPrice={formatPrice} />}
+
+      {sourcedResults.length > 0 && (
+        <PortfolioCheck milesOptions={bestResultOptions} lang={lang} />
+      )}
+
+      {results.length > 0 && searchMeta && bestPrice > 0 && (
+        <PriceAlertForm
+          from={searchMeta.from}
+          to={searchMeta.to}
+          cabin={searchMeta.cabin}
+          currentPrice={bestPrice}
+          lang={lang}
+          formatPrice={formatPrice}
+        />
+      )}
     </div>
   );
 }

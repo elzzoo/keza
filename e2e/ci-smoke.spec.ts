@@ -459,6 +459,7 @@ test.describe("CI smoke", () => {
     });
 
     test("FR search result creates a price alert at a 10% lower target", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
       await page.addInitScript(() => {
         localStorage.setItem("keza:visited", "true");
         localStorage.setItem("keza_profile", JSON.stringify({ hasOnboarded: true }));
@@ -487,6 +488,9 @@ test.describe("CI smoke", () => {
       await expect(search).toBeEnabled();
       await search.click();
       await expect(page.getByText("Alerte prix", { exact: true })).toBeVisible();
+      const resultTop = await page.locator("#results-tabpanel").evaluate((element) => element.getBoundingClientRect().top + window.scrollY);
+      const alertTop = await page.getByText("Alerte prix", { exact: true }).evaluate((element) => element.getBoundingClientRect().top + window.scrollY);
+      expect(resultTop).toBeLessThan(alertTop);
       await page.getByPlaceholder("Votre email").fill("alex@example.com");
       await page.getByRole("button", { name: "Créer l'alerte" }).click();
 
