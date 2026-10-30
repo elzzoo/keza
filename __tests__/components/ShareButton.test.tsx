@@ -25,9 +25,6 @@ describe("ShareButton", () => {
       tripType: "oneway" as const,
       pax: 1,
     },
-    savings: "$450",
-    bestPrice: "$1,200",
-    bestProgram: "Singapore KrisFlyer",
   };
 
   beforeEach(() => {
@@ -104,7 +101,7 @@ describe("ShareButton", () => {
     });
   });
 
-  it("constructs correct share URL with all parameters", async () => {
+  it("shares the route without unverified fare claims", async () => {
     const mockWriteText = jest.fn(() => Promise.resolve());
     (navigator.clipboard.writeText as jest.Mock).mockImplementation(mockWriteText);
 
@@ -122,9 +119,10 @@ describe("ShareButton", () => {
       expect(urlString).toContain("cabin=economy");
       expect(urlString).toContain("tripType=oneway");
       expect(urlString).toContain("pax=1");
-      expect(urlString).toContain("savings=%24450");
-      expect(urlString).toContain("price=%241%2C200");
-      expect(urlString).toContain("program=Singapore+KrisFlyer");
+      const url = new URL(urlString);
+      expect(url.searchParams.has("savings")).toBe(false);
+      expect(url.searchParams.has("price")).toBe(false);
+      expect(url.searchParams.has("program")).toBe(false);
     });
   });
 });

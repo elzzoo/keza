@@ -16,18 +16,11 @@ function sanitizeIata(value: string): string {
   return /^[A-Z]{3}$/.test(normalized) ? normalized : "";
 }
 
-function boundedText(value: string, maxLength: number): string {
-  return value.replace(/[\r\n<>]/g, "").trim().slice(0, maxLength);
-}
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const from     = sanitizeIata(searchParams.get("from") ?? "");
   const to       = sanitizeIata(searchParams.get("to") ?? "");
-  const savings  = boundedText(searchParams.get("savings") ?? "", 24);   // e.g. "$450"
-  const price    = boundedText(searchParams.get("price") ?? "", 24);     // e.g. "$1 200"
-  const program  = boundedText(searchParams.get("program") ?? "", 40);   // e.g. "Flying Blue"
   const lang     = searchParams.get("lang") === "en" ? "en" : "fr";
   const cabinParam = searchParams.get("cabin") ?? "economy";
   const cabin    = ["economy", "premium", "business", "first"].includes(cabinParam)
@@ -153,50 +146,6 @@ export async function GET(request: NextRequest) {
                 {toCity}
               </div>
 
-              {/* Savings or best price row */}
-              <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-                {savings && (
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "12px 24px",
-                    background: "rgba(16,185,129,0.12)",
-                    border: "1px solid rgba(16,185,129,0.3)",
-                    borderRadius: "12px",
-                  }}>
-                    <div style={{ display: "flex", color: "#10B981", fontSize: "28px", fontWeight: 900 }}>
-                      +{savings}
-                    </div>
-                    <div style={{ color: "#6EE7B7", fontSize: "18px", fontWeight: 600 }}>
-                      {lang === "fr" ? "économisés" : "saved"}
-                    </div>
-                  </div>
-                )}
-                {price && (
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "12px 24px",
-                    background: "rgba(245,158,11,0.12)",
-                    border: "1px solid rgba(245,158,11,0.3)",
-                    borderRadius: "12px",
-                  }}>
-                    <div style={{ color: "#94A3B8", fontSize: "16px" }}>
-                      {lang === "fr" ? "dès" : "from"}
-                    </div>
-                    <div style={{ color: "#FCD34D", fontSize: "28px", fontWeight: 900 }}>
-                      {price}
-                    </div>
-                  </div>
-                )}
-                {program && (
-                  <div style={{ display: "flex", color: "#64748B", fontSize: "18px", fontWeight: 500 }}>
-                    {lang === "fr" ? "avec" : "with"} {program}
-                  </div>
-                )}
-              </div>
             </>
           ) : (
             /* Generic / homepage OG */
