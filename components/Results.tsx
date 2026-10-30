@@ -319,6 +319,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   }, [results, stopFilter]);
 
   const sourcedResults = useMemo(() => results.filter(r => !isSyntheticFlight(r)), [results]);
+  const indicativeCount = results.length - sourcedResults.length;
 
   const counts = useMemo(() => ({
     miles: stopsFiltered.filter(r => !isSyntheticFlight(r) && r.recommendation === "USE_MILES").length,
@@ -473,7 +474,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   return (
     <div className="space-y-4 animate-fade-up">
       {/* Back + header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <button
           onClick={onBack}
           className="text-sm text-muted hover:text-fg transition-colors font-medium flex items-center gap-1"
@@ -493,7 +494,13 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
                 : `Updated at ${lastUpdatedAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`}
             </span>
           ) : null}
-          <span className="text-xs text-subtle">{t.found(sourcedResults.length)}</span>
+          <span className="text-right text-xs text-subtle">
+            {indicativeCount > 0
+              ? lang === "fr"
+                ? `${sourcedResults.length} tarif${sourcedResults.length !== 1 ? "s" : ""} trouvé${sourcedResults.length !== 1 ? "s" : ""} · ${indicativeCount} itinéraire${indicativeCount !== 1 ? "s" : ""} indicatif${indicativeCount !== 1 ? "s" : ""}`
+                : `${sourcedResults.length} fare${sourcedResults.length !== 1 ? "s" : ""} found · ${indicativeCount} indicative itinerar${indicativeCount !== 1 ? "ies" : "y"}`
+              : t.found(sourcedResults.length)}
+          </span>
         </div>
       </div>
 
@@ -502,7 +509,11 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
         <div className="grid grid-cols-3 gap-2.5 stagger-children">
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
             <p className="text-xl font-black text-fg">{sourcedResults.length}</p>
-            <p className="text-[11px] text-muted mt-0.5">{lang === "fr" ? "vols trouvés" : "flights found"}</p>
+            <p className="text-[11px] text-muted mt-0.5">
+              {indicativeCount > 0
+                ? (lang === "fr" ? "tarifs trouvés" : "fares found")
+                : (lang === "fr" ? "vols trouvés" : "flights found")}
+            </p>
           </div>
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
             <p className={`font-black text-warning ${fmt(bestPrice).length > 10 ? "text-sm" : "text-xl"}`}>

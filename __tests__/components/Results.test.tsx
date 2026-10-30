@@ -238,7 +238,7 @@ describe("Results", () => {
       makeFlight({ searchId: "synthetic", from: "LHR", to: "LAX", source: "SYNTHETIC", isSupplemental: true, totalPrice: 100, savings: 700 }),
     ]} loading={false} lang="en" onBack={noop} formatPrice={(usd) => `$${usd}`} />);
 
-    expect(screen.getByText("1 flight found")).toBeInTheDocument();
+    expect(screen.getByText("1 fare found · 1 indicative itinerary")).toBeInTheDocument();
     expect(screen.getByText("Best price").parentElement).toHaveTextContent("$800");
     expect(screen.getByText("Max savings").parentElement).toHaveTextContent("$200");
     expect(screen.queryByText("$100")).not.toBeInTheDocument();
@@ -257,7 +257,7 @@ describe("Results", () => {
       formatPrice={(usd) => `$${usd}`}
     />);
 
-    expect(screen.getByText("0 flights found")).toBeInTheDocument();
+    expect(screen.getByText("0 fares found · 1 indicative itinerary")).toBeInTheDocument();
     expect(screen.getByText("Best price").parentElement).toHaveTextContent("—");
     expect(screen.getByText("Max savings").parentElement).toHaveTextContent("—");
     expect(screen.queryByTestId("price-alert-form")).not.toBeInTheDocument();
@@ -272,7 +272,7 @@ describe("Results", () => {
       makeFlight({ searchId: "multi-leg", from: "LHR", to: "LAX", source: "SYNTHETIC", priceConfidence: "ESTIMATED", stops: 1, totalPrice: 100, savings: 700 }),
     ]} loading={false} lang="en" onBack={noop} formatPrice={(usd) => `$${usd}`} />);
 
-    expect(screen.getByText("1 flight found")).toBeInTheDocument();
+    expect(screen.getByText("1 fare found · 1 indicative itinerary")).toBeInTheDocument();
     expect(screen.getByText("Best price").parentElement).toHaveTextContent("$800");
     expect(screen.getByText("Max savings").parentElement).toHaveTextContent("$200");
     expect(screen.getAllByTestId("flight-card")[0]).toHaveTextContent("CDG → JFK");
@@ -292,7 +292,7 @@ describe("Results", () => {
       formatPrice={(usd) => `$${usd}`}
     />);
 
-    expect(screen.getByText("0 flights found")).toBeInTheDocument();
+    expect(screen.getByText("0 fares found · 1 indicative itinerary")).toBeInTheDocument();
     expect(screen.getByText("Best price").parentElement).toHaveTextContent("—");
     expect(screen.getByText("Max savings").parentElement).toHaveTextContent("—");
     expect(screen.queryByTestId("price-alert-form")).not.toBeInTheDocument();
@@ -303,6 +303,19 @@ describe("Results", () => {
     fireEvent.click(screen.getByRole("tab", { name: /All/ }));
     fireEvent.click(screen.getByText("With stops"));
     expect(screen.queryByTestId("flight-card")).not.toBeInTheDocument();
+  });
+
+  it("distinguishes indicative itineraries from supplier fares in French", () => {
+    render(<Results
+      results={[makeFlight({ source: "SYNTHETIC", priceConfidence: "ESTIMATED", stops: 1 })]}
+      loading={false}
+      lang="fr"
+      onBack={noop}
+    />);
+
+    expect(screen.getByText("0 tarifs trouvés · 1 itinéraire indicatif")).toBeInTheDocument();
+    expect(screen.getByText("tarifs trouvés")).toBeInTheDocument();
+    expect(screen.getByText("Meilleur prix").parentElement).toHaveTextContent("—");
   });
 
   it("summarizes price confidence by source", () => {

@@ -433,6 +433,7 @@ test.describe("CI smoke", () => {
     });
 
     test("synthetic multi-leg result is unconfirmed and cannot set a price alert", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
       await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
       const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       await page.route("**/api/search/stream", (route) => route.fulfill({
@@ -452,7 +453,7 @@ test.describe("CI smoke", () => {
 
       await expect(page.getByText("Itinéraire estimé, vol non confirmé")).toBeVisible();
       await expect(page.getByRole("link", { name: /Rechercher des vols sur Google Flights/ })).toBeVisible();
-      await expect(page.getByText("0 vols trouvés")).toBeVisible();
+      await expect(page.getByText("0 tarifs trouvés · 1 itinéraire indicatif")).toBeVisible();
       await expect(page.getByText("Alerte prix", { exact: true })).toHaveCount(0);
       await expect(page.getByRole("tab", { name: /Utilisez miles/i })).toHaveAttribute("aria-selected", "false");
     });
