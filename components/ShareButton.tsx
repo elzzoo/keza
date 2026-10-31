@@ -21,7 +21,8 @@ export function ShareButton({ lang, searchParams }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = useCallback(async () => {
-    const url = new URL(typeof window !== "undefined" ? window.location.origin + "/" : "https://keza-taupe.vercel.app/");
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://keza-taupe.vercel.app";
+    const url = new URL(lang === "en" ? "/en" : "/", origin);
     url.searchParams.set("from", searchParams.from);
     url.searchParams.set("to", searchParams.to);
     url.searchParams.set("date", searchParams.date);

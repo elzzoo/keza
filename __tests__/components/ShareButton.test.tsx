@@ -120,9 +120,21 @@ describe("ShareButton", () => {
       expect(urlString).toContain("tripType=oneway");
       expect(urlString).toContain("pax=1");
       const url = new URL(urlString);
+      expect(url.pathname).toBe("/en");
       expect(url.searchParams.has("savings")).toBe(false);
       expect(url.searchParams.has("price")).toBe(false);
       expect(url.searchParams.has("program")).toBe(false);
     });
+  });
+
+  it("keeps French shared searches on the French home", async () => {
+    render(<ShareButton {...defaultProps} lang="fr" />);
+    fireEvent.click(screen.getByRole("button", { name: /partager/i }));
+
+    await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
+    const url = new URL((navigator.clipboard.writeText as jest.Mock).mock.calls[0][0] as string);
+    expect(url.pathname).toBe("/");
+    expect(url.searchParams.get("from")).toBe("CDG");
+    expect(url.searchParams.get("to")).toBe("LAX");
   });
 });
