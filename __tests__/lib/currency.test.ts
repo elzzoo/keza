@@ -120,6 +120,13 @@ describe("currency", () => {
       }
     });
 
+    test("countries without their own supported currency use USD, not a neighboring currency", () => {
+      const unsupported = ["CM", "GA", "TD", "CG", "CF", "GQ", "TN", "DZ", "TZ", "UG", "NZ", "MX"];
+      for (const country of unsupported) {
+        expect(currencyForCountry(country)).toBe("USD");
+      }
+    });
+
     test("unknown country defaults to USD", () => {
       expect(currencyForCountry("XX")).toBe("USD");
     });

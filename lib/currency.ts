@@ -55,14 +55,12 @@ const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   EE: "EUR", LV: "EUR", LT: "EUR", CY: "EUR", MT: "EUR", HR: "EUR",
   // CFA Zone (West Africa)
   SN: "XOF", CI: "XOF", ML: "XOF", BF: "XOF", NE: "XOF", TG: "XOF", BJ: "XOF", GW: "XOF",
-  // CFA Zone (Central Africa) — same XOF display
-  CM: "XOF", GA: "XOF", TD: "XOF", CG: "XOF", CF: "XOF", GQ: "XOF",
   // Maghreb
-  MA: "MAD", TN: "EUR", DZ: "EUR",
+  MA: "MAD",
   // Nigeria
   NG: "NGN",
   // East Africa
-  KE: "KES", TZ: "KES", UG: "KES",
+  KE: "KES",
   // Southern Africa
   ZA: "ZAR",
   // Egypt
@@ -72,10 +70,10 @@ const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   // Americas
   US: "USD", PR: "USD",
   CA: "CAD",
-  BR: "BRL", MX: "USD",
+  BR: "BRL",
   // Asia-Pacific
   JP: "JPY",
-  AU: "AUD", NZ: "AUD",
+  AU: "AUD",
   IN: "INR",
   // Middle East
   AE: "AED", SA: "SAR",
@@ -87,7 +85,7 @@ const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   CH: "CHF",
 };
 
-/** Get default currency for a country ISO2 code */
+/** Unknown countries and currencies not supported by the UI fall back to USD. */
 export function currencyForCountry(countryCode: string): CurrencyCode {
   return COUNTRY_TO_CURRENCY[countryCode.toUpperCase()] ?? "USD";
 }

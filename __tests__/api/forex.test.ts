@@ -115,6 +115,14 @@ describe("GET /api/forex", () => {
       expect(body.detected.currency).toBe("USD");
       expect(body.detected.country).toBeNull();
     });
+
+    it("does not label a Central African visitor's prices as West African CFA", async () => {
+      mockRedisGet.mockResolvedValue(MOCK_RATES);
+      const res = await GET(makeRequest("CM"));
+      const body = await res.json();
+      expect(body.detected.country).toBe("CM");
+      expect(body.detected.currency).toBe("USD");
+    });
   });
 
   describe("response shape", () => {
