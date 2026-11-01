@@ -6,6 +6,8 @@
  * Performance target: <1ms per conversion
  */
 
+import { resolveDisplayCurrency } from "./currency";
+
 /** Exchange rates: currency code → conversion rate from USD */
 export type ExchangeRates = Record<string, number>;
 
@@ -86,6 +88,12 @@ export function formatCurrency(
     // Fallback for invalid currency or locale
     return `${currency} ${amount.toFixed(2)}`;
   }
+}
+
+/** Format a USD amount without mislabelling it when the requested FX rate is unavailable. */
+export function formatUsdAmount(amount: number, currency: string, rates: ExchangeRates): string {
+  const displayCurrency = resolveDisplayCurrency(currency, rates);
+  return formatCurrency(convertPrice(amount, "USD", displayCurrency, rates), displayCurrency);
 }
 
 /**

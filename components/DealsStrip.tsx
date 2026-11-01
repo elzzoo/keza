@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 import { trackDealClick } from "@/lib/analytics";
-import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { formatUsdAmount } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
 import { useDeals } from "@/hooks/useDeals";
 import { Badge, Card } from "@/components/ui";
@@ -116,7 +116,7 @@ export function DealsStrip({ lang, onDealClick }: Props) {
                     {isMilesWin ? deal.multiplier : t.cashWin}
                   </Badge>
                   <div className="text-[11px] font-bold text-fg mt-0.5">
-                    {formatCurrency(convertPrice(deal.cashPrice, "USD", currency, exchangeRates), currency)}
+                    {formatUsdAmount(deal.cashPrice, currency, exchangeRates)}
                   </div>
                 </div>
               </Card>

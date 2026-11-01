@@ -3,6 +3,7 @@ import {
   QUICK_CURRENCIES,
   currencyForCountry,
   formatPrice,
+  resolveDisplayCurrency,
   convertUSD,
   type CurrencyCode,
 } from "@/lib/currency";
@@ -140,6 +141,20 @@ describe("currency", () => {
   });
 
   describe("price formatting", () => {
+    test.each([undefined, 0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+      "falls back to an explicitly labelled USD amount for unusable EUR rate %s",
+      (rate) => {
+        const rates: Record<string, number> = rate === undefined ? {} : { EUR: rate };
+        expect(resolveDisplayCurrency("EUR", rates)).toBe("USD");
+        expect(formatPrice(100, "EUR", rates)).toBe("$100");
+      },
+    );
+
+    test("rejects an unknown currency even if its rate exists", () => {
+      expect(resolveDisplayCurrency("__proto__", { __proto__: 2 })).toBe("USD");
+      expect(resolveDisplayCurrency("XYZ", { XYZ: 2 })).toBe("USD");
+    });
+
     test("formatPrice with USD currency and rate 1", () => {
       const rates = { USD: 1 };
       const result = formatPrice(800, "USD", rates);

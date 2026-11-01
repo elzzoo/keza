@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { formatUsdAmount } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
 import { useDeals } from "@/hooks/useDeals";
 
@@ -87,7 +87,7 @@ export function DealSpotlight({ lang, onDealClick }: Props) {
         {/* Price comparison */}
         <div className="flex-shrink-0 text-right">
           <div className="text-xs text-muted line-through">
-            {formatCurrency(convertPrice(deal.cashPrice, "USD", currency, exchangeRates), currency)}
+            {formatUsdAmount(deal.cashPrice, currency, exchangeRates)}
           </div>
           <div className="font-black text-amber-700 dark:text-amber-400 text-lg leading-tight">
             {deal.milesRequired.toLocaleString()}

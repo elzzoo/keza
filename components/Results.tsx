@@ -13,7 +13,7 @@ import PortfolioCheck from "@/components/PortfolioCheck";
 import { Badge, Button, EmptyState } from "@/components/ui";
 import clsx from "clsx";
 import { isBusinessMode } from "@/lib/businessMode";
-import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { formatUsdAmount } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
 
 interface Props {
@@ -270,10 +270,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
   const { currency, exchangeRates } = useProfile();
 
   // Use provided formatPrice, or convert USD to user's currency and format
-  const fmt = formatPrice ?? ((usd: number) => {
-    const converted = convertPrice(usd, "USD", currency, exchangeRates);
-    return formatCurrency(converted, currency);
-  });
+  const fmt = formatPrice ?? ((usd: number) => formatUsdAmount(usd, currency, exchangeRates));
 
   const [tab, setTab] = useState<"all" | "miles" | "cash">("all");
   const [stopFilter, setStopFilter] = useState<"all" | "direct" | "stops">("all");

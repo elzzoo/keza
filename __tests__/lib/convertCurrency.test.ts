@@ -1,4 +1,19 @@
-import { convertPrice } from "@/lib/convertCurrency";
+import { convertPrice, formatUsdAmount } from "@/lib/convertCurrency";
+
+describe("formatUsdAmount", () => {
+  test("uses a valid requested FX rate", () => {
+    expect(formatUsdAmount(100, "EUR", { EUR: 0.92 })).toContain("92.00");
+    expect(formatUsdAmount(100, "EUR", { EUR: 0.92 })).toContain("€");
+  });
+
+  test.each([undefined, 0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "labels the original amount as USD when the requested rate is unusable: %s",
+    (rate) => {
+      const rates: Record<string, number> = rate === undefined ? {} : { NGN: rate };
+      expect(formatUsdAmount(100, "NGN", rates)).toBe("$100.00");
+    },
+  );
+});
 
 describe("convertPrice", () => {
   const rates = { EUR: 0.92, GBP: 0.79, XOF: 656.5 };

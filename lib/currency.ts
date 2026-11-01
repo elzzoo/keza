@@ -102,16 +102,24 @@ function formatNumber(n: number, config: CurrencyConfig): string {
   return formatted;
 }
 
-/** Format a USD amount into a target currency */
+/** A requested currency is displayable only when its conversion rate is valid. */
+export function resolveDisplayCurrency(currency: string, rates: Record<string, number>): CurrencyCode {
+  if (currency === "USD") return "USD";
+  const rate = rates[currency];
+  return Object.prototype.hasOwnProperty.call(CURRENCIES, currency) && Number.isFinite(rate) && rate > 0
+    ? currency as CurrencyCode
+    : "USD";
+}
+
+/** Format a USD amount in the requested currency, or in USD when its rate is unavailable. */
 export function formatPrice(
   usdAmount: number,
   currency: CurrencyCode,
   rates: Record<string, number>
 ): string {
-  const config = CURRENCIES[currency];
-  if (!config) return `$${Math.round(usdAmount)}`;
-
-  const rate = currency === "USD" ? 1 : (rates[currency] ?? 1);
+  const displayCurrency = resolveDisplayCurrency(currency, rates);
+  const config = CURRENCIES[displayCurrency];
+  const rate = displayCurrency === "USD" ? 1 : rates[displayCurrency];
   const converted = usdAmount * rate;
   const formatted = formatNumber(converted, config);
 

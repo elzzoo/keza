@@ -13,7 +13,7 @@ import { SeatAlertButton } from "@/components/SeatAlertButton";
 import { AwardAvailabilityDisclaimer } from "@/components/AwardAvailabilityDisclaimer";
 import { toggleFavoriteRoute, isFavoriteRoute } from "@/lib/userProfile";
 import { getAchievedCpp, rateCpp, CPP_RATING_DISPLAY } from "@/lib/mileValue";
-import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { formatUsdAmount } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
 import dynamic from "next/dynamic";
 const PortfolioCheck = dynamic(() => import("@/components/PortfolioCheck"), { ssr: false });
@@ -183,10 +183,7 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
   const { currency, exchangeRates } = useProfile();
 
   // Use provided formatPrice, or convert USD to user's currency and format
-  const fmt = formatPrice ?? ((usd: number) => {
-    const converted = convertPrice(usd, "USD", currency, exchangeRates);
-    return formatCurrency(converted, currency);
-  });
+  const fmt = formatPrice ?? ((usd: number) => formatUsdAmount(usd, currency, exchangeRates));
 
   const [variant, setVariant] = useState<"A" | "B">("A");
 

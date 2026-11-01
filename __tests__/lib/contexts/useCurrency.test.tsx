@@ -14,7 +14,7 @@
 // hook is visible through both.
 
 import React from "react";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -68,7 +68,12 @@ describe("useCurrency / ProfileContext currency consistency", () => {
     expect(result.current.currencyHook.currency).toBe("JPY");
   });
 
-  it("formatPrice() converts using the currency set via the header's setCurrency path", () => {
+  it("formatPrice() converts using the currency set via the header when a rate exists", async () => {
+    (global.fetch as jest.Mock).mockImplementation((url: string) =>
+      url === "/api/exchange-rates"
+        ? Promise.resolve({ ok: true, json: async () => ({ rates: { EUR: 0.92 } }) })
+        : Promise.reject(new Error("network disabled in test"))
+    );
     const { result } = renderHook(
       () => ({ currencyHook: useCurrency(), profileHook: useProfile() }),
       { wrapper }
@@ -78,7 +83,21 @@ describe("useCurrency / ProfileContext currency consistency", () => {
       result.current.profileHook.setCurrency("EUR");
     });
 
-    // formatPrice must not still be formatting in USD after the switch.
-    expect(result.current.currencyHook.formatPrice(100)).not.toMatch(/^\$100$/);
+    await waitFor(() => expect(result.current.currencyHook.formatPrice(100)).toContain("92"));
+    expect(result.current.currencyHook.formatPrice(100)).toContain("€");
+  });
+
+  it("formatPrice() labels the amount USD when the selected currency has no rate", () => {
+    const { result } = renderHook(
+      () => ({ currencyHook: useCurrency(), profileHook: useProfile() }),
+      { wrapper }
+    );
+
+    act(() => {
+      result.current.profileHook.setCurrency("EUR");
+    });
+
+    expect(result.current.currencyHook.currency).toBe("EUR");
+    expect(result.current.currencyHook.formatPrice(100)).toBe("$100");
   });
 });

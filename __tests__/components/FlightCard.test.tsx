@@ -96,6 +96,20 @@ describe("FlightCard", () => {
     expect(screen.getByText(/\$800/)).toBeInTheDocument();
   });
 
+  it("shows USD instead of a false NGN amount when the FX rate is missing", () => {
+    const useProfile = jest.requireMock("@/hooks/useProfile").useProfile as jest.Mock;
+    useProfile.mockImplementationOnce(() => ({
+      profile: null,
+      isLoaded: false,
+      currency: "NGN",
+      exchangeRates: {},
+    }));
+
+    render(<FlightCard flight={baseFlight} lang="en" />);
+    expect(screen.getByText(/\$800/)).toBeInTheDocument();
+    expect(screen.queryByText(/NGN/)).not.toBeInTheDocument();
+  });
+
   it("renders USE_MILES recommendation — shows savings message", () => {
     render(<FlightCard flight={baseFlight} lang="en" />);
     // The banner should mention savings with miles

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { convertPrice, formatCurrency } from "@/lib/convertCurrency";
+import { formatUsdAmount } from "@/lib/convertCurrency";
 import { useProfile } from "@/hooks/useProfile";
 
 interface CalendarDay {
@@ -64,10 +64,7 @@ export function PriceHeatmap({ from, to, lang, cabin, onSelectMonth, formatPrice
   const { currency, exchangeRates } = useProfile();
 
   // Use provided formatPrice, or convert USD to user's currency and format
-  const fmt = formatPrice ?? ((usd: number) => {
-    const converted = convertPrice(usd, "USD", currency, exchangeRates);
-    return formatCurrency(converted, currency);
-  });
+  const fmt = formatPrice ?? ((usd: number) => formatUsdAmount(usd, currency, exchangeRates));
 
   const mult = CABIN_MULT[cabin ?? "economy"] ?? 1;
   const monthNames = fr ? MONTHS_SHORT_FR : MONTHS_SHORT_EN;
