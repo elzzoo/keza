@@ -327,6 +327,31 @@ test.describe("CI smoke", () => {
       expect(requestCabins).toEqual(["economy", "business"]);
     });
 
+    test("supplier result shows a qualified quote and its cash price", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
+      const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      await page.route("**/api/calendar**", (route) => route.fulfill({ json: { days: [] } }));
+      await page.route("**/api/search/stream", (route) => route.fulfill({
+        status: 200,
+        contentType: "text/event-stream",
+        body: `data: ${JSON.stringify({ type: "final", results: [{
+          from: "CDG", to: "JFK", price: 650, cashCost: 650,
+          airlines: ["Test Airline"], stops: 0, cabin: "economy", tripType: "oneway", passengers: 1,
+          milesCost: 700, savings: -50, recommendation: "USE_CASH",
+          bestOption: null, milesOptions: [], explanation: "Cash is cheaper",
+          disclaimer: "Verify before booking", source: "AMADEUS", priceConfidence: "HIGH",
+        }], partial: false, forexRate: 1 })}\n\n`,
+      }));
+
+      await page.goto(`/?from=CDG&to=JFK&date=${date}&tripType=oneway`);
+      await page.getByRole("button", { name: /optimiser mon vol/i }).click();
+      await expect(page.getByText("Tarif fournisseur")).toBeVisible();
+      await expect(page.getByText(/Tarifs issus des fournisseurs, parfois mis en cache/i)).toBeVisible();
+      await expect(page.getByText("Meilleur prix").locator("..")).toContainText("650");
+      await expect(page.getByText(/Prix temps réel/i)).toHaveCount(0);
+    });
+
     test("switching language during partial streaming keeps the result marked partial", async ({ page }) => {
       await page.addInitScript(() => localStorage.setItem("keza:visited", "true"));
       const date = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
