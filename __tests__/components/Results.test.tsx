@@ -225,6 +225,22 @@ describe("Results", () => {
     expect(screen.getByText(/2 of 2 results shown · sorted by lowest price/i)).toBeInTheDocument();
   });
 
+  it("uses the displayed cash cost for the best fare and price sort", () => {
+    const flights = [
+      makeFlight({ searchId: "missing-total", from: "CDG", to: "JFK", price: 600, cashCost: 600, totalPrice: undefined }),
+      makeFlight({ searchId: "different-total", from: "LHR", to: "LAX", price: 700, cashCost: 700, totalPrice: 500 }),
+      makeFlight({ searchId: "invalid-price", from: "DXB", to: "NRT", price: 0, cashCost: 0, totalPrice: 0 }),
+    ];
+    render(<Results results={flights} loading={false} lang="en" onBack={noop} formatPrice={(usd) => `$${usd}`} />);
+
+    expect(screen.getByText("Best price").parentElement).toHaveTextContent("$600");
+    fireEvent.click(screen.getByText("Price"));
+    const cards = screen.getAllByTestId("flight-card");
+    expect(cards[0]).toHaveTextContent("CDG → JFK");
+    expect(cards[1]).toHaveTextContent("LHR → LAX");
+    expect(cards[2]).toHaveTextContent("DXB → NRT");
+  });
+
   it("shows a contextual empty state when filters hide existing results", () => {
     const flights = [
       makeFlight({ searchId: "s1", stops: 1 }),

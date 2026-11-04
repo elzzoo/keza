@@ -211,6 +211,12 @@ function getPriceQualityMessage(summary: PriceQualitySummary, lang: "fr" | "en")
   return t.qualityCachedOnly;
 }
 
+function comparableCashPrice(result: FlightResult): number {
+  return Number.isFinite(result.cashCost) && result.cashCost > 0
+    ? result.cashCost
+    : Number.POSITIVE_INFINITY;
+}
+
 export function getFlightResultKey(flight: FlightResult): string {
   const airlines = [...flight.airlines].sort().join("+") || "unknown";
   const returnAirlines = [...(flight.returnAirlines ?? [])].sort().join("+") || "none";
@@ -300,7 +306,8 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
     cash:  stopsFiltered.filter(r => !isSyntheticFlight(r) && (r.recommendation === "USE_CASH" || r.recommendation === "IF_HAVE_MILES")).length,
   }), [stopsFiltered]);
 
-  const bestPrice  = sourcedResults.length ? Math.min(...sourcedResults.map(r => r.totalPrice ?? 0)) : 0;
+  const lowestCashPrice = Math.min(...sourcedResults.map(comparableCashPrice));
+  const bestPrice = Number.isFinite(lowestCashPrice) ? lowestCashPrice : 0;
   const maxSavings = sourcedResults.length ? Math.max(0, ...sourcedResults.map(r => r.savings)) : 0;
   const priceQuality = useMemo(() => getPriceQualitySummary(results), [results]);
   const priceQualityItems = [
@@ -326,9 +333,12 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
     if (tab === "cash")  r = r.filter(x => !isSyntheticFlight(x) && (x.recommendation === "USE_CASH" || x.recommendation === "IF_HAVE_MILES"));
     r.sort((a, b) => {
       if (isSyntheticFlight(a) !== isSyntheticFlight(b)) return isSyntheticFlight(a) ? 1 : -1;
-      return sortBy === "price"
-        ? (a.totalPrice ?? 0) - (b.totalPrice ?? 0)
-        : b.savings - a.savings;
+      if (sortBy === "price") {
+        const aPrice = comparableCashPrice(a);
+        const bPrice = comparableCashPrice(b);
+        return aPrice === bPrice ? 0 : aPrice - bPrice;
+      }
+      return b.savings - a.savings;
     });
     return r;
   }, [stopsFiltered, tab, sortBy]);
