@@ -357,11 +357,28 @@ describe("Results", () => {
     );
 
     expect(screen.getByText("Price confidence")).toBeInTheDocument();
-    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText("Supplier quote")).toBeInTheDocument();
     expect(screen.getByText("Cache")).toBeInTheDocument();
     expect(screen.getByText("Estimated")).toBeInTheDocument();
-    expect(screen.getByText(/Live prices are available for part/i)).toBeInTheDocument();
-    expect(screen.queryByText("(indicative)")).not.toBeInTheDocument();
+    expect(screen.getByText(/Some fares come from suppliers and may be cached/i)).toBeInTheDocument();
+    expect(screen.getByText("(indicative)")).toBeInTheDocument();
+    expect(screen.queryByText("Live")).not.toBeInTheDocument();
+  });
+
+  it("does not present a high-confidence supplier quote as real-time in French", () => {
+    render(
+      <Results
+        results={[makeFlight({ source: "AMADEUS", priceConfidence: "HIGH" })]}
+        loading={false}
+        lang="fr"
+        onBack={noop}
+      />
+    );
+
+    expect(screen.getByText("Tarif fournisseur")).toBeInTheDocument();
+    expect(screen.getByText(/parfois mis en cache/i)).toBeInTheDocument();
+    expect(screen.getByText("(indicatif)")).toBeInTheDocument();
+    expect(screen.queryByText(/Prix temps réel/i)).not.toBeInTheDocument();
   });
 
   it("does not claim a live fare when the source is missing or unverified", () => {
@@ -411,7 +428,7 @@ describe("Results", () => {
     expect(screen.queryByText("Live")).not.toBeInTheDocument();
   });
 
-  it("distinguishes mixed live and unverified results", () => {
+  it("distinguishes mixed supplier quotes and unverified results", () => {
     render(
       <Results
         results={[
@@ -424,9 +441,9 @@ describe("Results", () => {
       />
     );
 
-    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText("Supplier quote")).toBeInTheDocument();
     expect(screen.getByText("Unverified")).toBeInTheDocument();
-    expect(screen.getByText(/Live prices are available for part/i)).toBeInTheDocument();
+    expect(screen.getByText(/Some fares come from suppliers and may be cached/i)).toBeInTheDocument();
   });
 
   it("shows loading text in French when lang=fr", () => {

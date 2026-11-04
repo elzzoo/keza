@@ -51,12 +51,12 @@ const L = {
     businessBannerTitle: "Mode Business — comparaison vs prix Business cash",
     businessBannerDesc: "Les miles en Business offrent souvent 5–8× plus de valeur qu'en éco · Prix cash estimé (×4 éco)",
     qualityTitle: "Qualité des prix",
-    qualityLive: "Live",
+    qualityProviderQuote: "Tarif fournisseur",
     qualityCached: "Cache",
     qualityEstimated: "Estimé",
     qualityUnknown: "Non vérifié",
-    qualityAllLive: "Prix temps réel disponibles sur tous les résultats affichés.",
-    qualitySomeLive: "Prix temps réel disponibles sur une partie des résultats. Vérifiez les autres tarifs avant réservation.",
+    qualityAllProviderQuote: "Tarifs issus des fournisseurs, parfois mis en cache. Confirmez prix et disponibilité avant réservation.",
+    qualitySomeProviderQuote: "Une partie des tarifs provient des fournisseurs et peut être mise en cache. Confirmez prix et disponibilité avant réservation.",
     qualityCachedOnly: "Prix issus de cache fournisseur. Vérifiez le tarif final avant réservation.",
     qualityEstimatedOnly: "Prix indicatifs. Vérifiez auprès de la compagnie avant de décider.",
     qualityMixedEstimate: "Résultats mêlant cache fournisseur et estimations de route.",
@@ -98,12 +98,12 @@ const L = {
     businessBannerTitle: "Business mode — compared against Business cash price",
     businessBannerDesc: "Miles in Business often deliver 5–8× more value than economy · Cash price estimated (×4 eco)",
     qualityTitle: "Price confidence",
-    qualityLive: "Live",
+    qualityProviderQuote: "Supplier quote",
     qualityCached: "Cache",
     qualityEstimated: "Estimated",
     qualityUnknown: "Unverified",
-    qualityAllLive: "Live prices are available for every displayed result.",
-    qualitySomeLive: "Live prices are available for part of these results. Verify other fares before booking.",
+    qualityAllProviderQuote: "Fares come from suppliers and may be cached. Confirm price and availability before booking.",
+    qualitySomeProviderQuote: "Some fares come from suppliers and may be cached. Confirm price and availability before booking.",
     qualityCachedOnly: "Prices come from provider cache. Verify the final fare before booking.",
     qualityEstimatedOnly: "Prices are indicative. Verify with the airline before deciding.",
     qualityMixedEstimate: "Results combine provider cache and route estimates.",
@@ -175,7 +175,7 @@ function ResultIcon({ name, className = "h-4 w-4" }: { name: ResultIconName; cla
 }
 
 type PriceQualitySummary = {
-  live: number;
+  providerQuote: number;
   cached: number;
   estimated: number;
   unknown: number;
@@ -186,7 +186,7 @@ function getPriceQuality(result: FlightResult): keyof PriceQualitySummary {
     return "estimated";
   }
   if (result.source === "TP") return "cached";
-  if ((result.source === "DUFFEL" || result.source === "AMADEUS") && result.priceConfidence === "HIGH") return "live";
+  if ((result.source === "DUFFEL" || result.source === "AMADEUS") && result.priceConfidence === "HIGH") return "providerQuote";
   return "unknown";
 }
 
@@ -196,14 +196,14 @@ function getPriceQualitySummary(results: FlightResult[]): PriceQualitySummary {
       summary[getPriceQuality(result)] += 1;
       return summary;
     },
-    { live: 0, cached: 0, estimated: 0, unknown: 0 }
+    { providerQuote: 0, cached: 0, estimated: 0, unknown: 0 }
   );
 }
 
 function getPriceQualityMessage(summary: PriceQualitySummary, lang: "fr" | "en") {
   const t = L[lang];
-  if (summary.live > 0 && summary.cached === 0 && summary.estimated === 0 && summary.unknown === 0) return t.qualityAllLive;
-  if (summary.live > 0) return t.qualitySomeLive;
+  if (summary.providerQuote > 0 && summary.cached === 0 && summary.estimated === 0 && summary.unknown === 0) return t.qualityAllProviderQuote;
+  if (summary.providerQuote > 0) return t.qualitySomeProviderQuote;
   if (summary.unknown > 0 && summary.cached === 0 && summary.estimated === 0) return t.qualityUnknownOnly;
   if (summary.unknown > 0) return t.qualityMixedUnknown;
   if (summary.estimated > 0 && summary.cached > 0) return t.qualityMixedEstimate;
@@ -302,15 +302,9 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
 
   const bestPrice  = sourcedResults.length ? Math.min(...sourcedResults.map(r => r.totalPrice ?? 0)) : 0;
   const maxSavings = sourcedResults.length ? Math.max(0, ...sourcedResults.map(r => r.savings)) : 0;
-  const maxSavingsIsIndicative = sourcedResults.length > 0 && (() => {
-    const bestSavingsResult = sourcedResults.reduce<typeof sourcedResults[0] | null>(
-      (best, r) => r.savings > (best?.savings ?? 0) ? r : best, null
-    );
-    return bestSavingsResult !== null && getPriceQuality(bestSavingsResult) !== "live";
-  })();
   const priceQuality = useMemo(() => getPriceQualitySummary(results), [results]);
   const priceQualityItems = [
-    { key: "live", label: t.qualityLive, count: priceQuality.live, tone: "success" as const },
+    { key: "provider-quote", label: t.qualityProviderQuote, count: priceQuality.providerQuote, tone: "neutral" as const },
     { key: "cached", label: t.qualityCached, count: priceQuality.cached, tone: "warning" as const },
     { key: "estimated", label: t.qualityEstimated, count: priceQuality.estimated, tone: "neutral" as const },
     { key: "unknown", label: t.qualityUnknown, count: priceQuality.unknown, tone: "neutral" as const },
@@ -440,7 +434,7 @@ export function Results({ results, loading, lang, onBack, partial, liveRefreshin
           <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center animate-scale-in hover-lift">
             <p className={`font-black text-success ${fmt(maxSavings).length > 10 ? "text-sm" : "text-xl"}`}>
               {sourcedResults.length > 0 ? `+${fmt(maxSavings)}` : "—"}
-              {maxSavings > 0 && maxSavingsIsIndicative && (
+              {maxSavings > 0 && (
                 <span className="text-[9px] font-medium text-muted/70 ml-1 align-middle">
                   {lang === "fr" ? "(indicatif)" : "(indicative)"}
                 </span>
