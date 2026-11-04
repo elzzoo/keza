@@ -1,20 +1,38 @@
 import * as Sentry from "@sentry/nextjs";
 
 export interface SearchTiming {
-  cacheHitTime: number;
-  duffelTime: number;
-  tpTime: number;
+  cacheHitTime?: number;
+  duffelTime?: number;
+  tpTime?: number;
   totalTime: number;
+  providerSources: Array<string | undefined>;
   partial?: boolean;
   fromCache?: boolean;
-  duffelResultCount?: number;
-  tpResultCount?: number;
   totalResultCount?: number;
+}
+
+export function summarizeSearchProviders(sources: ReadonlyArray<string | undefined>): {
+  provider: string;
+  duffelResultCount: number;
+  tpResultCount: number;
+} {
+  const names: Record<string, string> = {
+    DUFFEL: "duffel",
+    AMADEUS: "amadeus",
+    TP: "travelpayouts",
+    SYNTHETIC: "synthetic",
+  };
+  const providers = new Set(sources.map((source) => source ? names[source] ?? "unknown" : "unknown"));
+  return {
+    provider: providers.size === 0 ? "none" : providers.size === 1 ? [...providers][0] : "mixed",
+    duffelResultCount: sources.filter((source) => source === "DUFFEL").length,
+    tpResultCount: sources.filter((source) => source === "TP").length,
+  };
 }
 
 /**
  * Track search performance metrics and log to Sentry for monitoring.
- * Records per-provider latency, cache hits, and result counts.
+ * Records measured latency and result provenance. Provider latency is omitted when unknown.
  */
 export async function trackSearchPerformance(
   route: string,
@@ -22,21 +40,20 @@ export async function trackSearchPerformance(
 ): Promise<void> {
   try {
     const {
-      cacheHitTime,
       duffelTime,
       tpTime,
       totalTime,
+      providerSources,
       partial = false,
       fromCache = false,
-      duffelResultCount = 0,
-      tpResultCount = 0,
       totalResultCount = 0,
     } = timing;
+    const { provider, duffelResultCount, tpResultCount } = summarizeSearchProviders(providerSources);
 
     // Log structured message for easy Sentry filtering
     const status = fromCache ? "cache_hit" : partial ? "partial" : "complete";
     Sentry.captureMessage(
-      `Search latency [${status}] ${route}: duffel=${duffelTime}ms tp=${tpTime}ms total=${totalTime}ms results=${totalResultCount}`,
+      `Search latency [${status}] ${route}: provider=${provider} total=${totalTime}ms results=${totalResultCount}`,
       "info"
     );
 
@@ -59,9 +76,9 @@ export async function trackSearchPerformance(
         },
       },
       measurements: {
-        cache_hit_time: { value: cacheHitTime, unit: "millisecond" },
-        duffel_time: { value: duffelTime, unit: "millisecond" },
-        tp_time: { value: tpTime, unit: "millisecond" },
+        ...(timing.cacheHitTime !== undefined ? { cache_hit_time: { value: timing.cacheHitTime, unit: "millisecond" as const } } : {}),
+        ...(duffelTime !== undefined ? { duffel_time: { value: duffelTime, unit: "millisecond" as const } } : {}),
+        ...(tpTime !== undefined ? { tp_time: { value: tpTime, unit: "millisecond" as const } } : {}),
         total_time: { value: totalTime, unit: "millisecond" },
         duffel_result_count: { value: duffelResultCount, unit: "none" },
         tp_result_count: { value: tpResultCount, unit: "none" },
@@ -70,7 +87,7 @@ export async function trackSearchPerformance(
       tags: {
         route: route,
         search_type: status,
-        provider: duffelTime > 0 && tpTime > 0 ? "merged" : duffelTime > 0 ? "duffel" : "travelpayouts",
+        provider,
         latency_bucket: getLatencyBucket(totalTime),
       },
     });

@@ -186,10 +186,8 @@ export async function POST(request: Request) {
 
     // Track performance metrics with detailed breakdown
     await trackSearchPerformance(`${from}-${to}`, {
-      cacheHitTime: fromCache ? 100 : 0,
-      duffelTime: partial ? 0 : responseTimeMs,
-      tpTime: partial ? responseTimeMs : 0,
       totalTime: responseTimeMs,
+      providerSources: results.map((result) => result.source),
       partial,
       fromCache,
       totalResultCount: results.length,

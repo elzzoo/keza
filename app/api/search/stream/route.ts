@@ -24,7 +24,7 @@ export const maxDuration = 10;
  * If only a partial was sent before an error, the client keeps the partial.
  *
  * Performance tracking:
- * - Measures cache hit time, Duffel time, TP time, and total time
+ * - Measures total request time and counts results by their actual source
  * - Logs results to Sentry for performance monitoring
  * - Falls back only to profile-aware caches if search fails
  */
@@ -67,42 +67,24 @@ export async function POST(request: Request) {
 
       // Fetch forex rate in background — attach to both partial and final
       const forexPromise = getForexRate().catch(() => 600);
-      let cacheHitTime = 0;
-      let duffelTime = 0;
-      let tpTime = 0;
-      let duffelResultCount = 0;
-      let tpResultCount = 0;
-
       try {
-        const searchStart = Date.now();
         const finalResults = await searchEngineStream(
           searchParams,
           async (partial: FlightResult[]) => {
             partialSent = true;
-            duffelResultCount = partial.length;
             const forexRate = await forexPromise;
             send({ type: "partial", results: partial, forexRate });
-            // Duffel results arrive in the partial — measure from start to here
-            duffelTime = Date.now() - searchStart;
           },
           requestId,
         );
         const totalTime = Date.now() - _t0;
 
-        // Calculate TP contribution (merged results minus Duffel-only)
-        tpTime = totalTime - duffelTime;
-        tpResultCount = Math.max(0, finalResults.length - duffelResultCount);
-
-        // Track performance metrics with detailed breakdown
+        // Track only measured timing and provider provenance from final results.
         await trackSearchPerformance(`${from}-${to}`, {
-          cacheHitTime,
-          duffelTime,
-          tpTime,
           totalTime,
+          providerSources: finalResults.map((result) => result.source),
           partial: !partialSent,
           fromCache: false,
-          duffelResultCount,
-          tpResultCount,
           totalResultCount: finalResults.length,
         });
 
@@ -114,10 +96,6 @@ export async function POST(request: Request) {
             {
               route: `${from}-${to}`,
               totalTime,
-              duffelTime,
-              tpTime,
-              duffelResults: duffelResultCount,
-              tpResults: tpResultCount,
               totalResults: finalResults.length,
               passengers,
               cabin: searchParams.cabin,
@@ -149,7 +127,6 @@ export async function POST(request: Request) {
               .catch(() => null);
             if (cached && cached.length > 0) {
               fallbackResults = cached;
-              cacheHitTime = Date.now() - _t0;
               logWarn(
                 `[api/search/stream] fallback to cache ${ver}`,
                 undefined,
