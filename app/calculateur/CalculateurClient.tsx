@@ -4,11 +4,16 @@ import { useState, useMemo } from "react";
 import type { MilesPriceRecord } from "@/data/milesPrices";
 import { isMilesReviewStale } from "@/lib/milesFreshness";
 
-export function CalculateurClient({ programs, lang = "fr", asOfDate }: { programs: MilesPriceRecord[]; forexRate?: number; lang?: "fr" | "en"; asOfDate?: string }) {
+function isValidForexRate(rate: number | undefined): rate is number {
+  return typeof rate === "number" && Number.isFinite(rate) && rate > 400 && rate < 800;
+}
+
+export function CalculateurClient({ programs, forexRate, lang = "fr", asOfDate }: { programs: MilesPriceRecord[]; forexRate?: number; lang?: "fr" | "en"; asOfDate?: string }) {
   const [miles, setMiles] = useState(50000);
   const [idx, setIdx]     = useState(0);
   const program           = programs[idx];
   const valueUsd          = useMemo(() => Math.round(miles * program.valueCents / 100), [miles, program]);
+  const xofValue          = isValidForexRate(forexRate) ? Math.round(valueUsd * forexRate) : null;
 
   return (
     <div className="bg-surface border border-border rounded-2xl p-6 space-y-5">
@@ -44,16 +49,17 @@ export function CalculateurClient({ programs, lang = "fr", asOfDate }: { program
         <p className="text-xs text-muted mb-1">{miles.toLocaleString()} {program.program} {lang === "en" ? "miles are worth approximately" : "miles valent environ"}</p>
         <p className="text-4xl font-black text-primary">${valueUsd}</p>
         <div className="flex flex-wrap justify-center gap-2 mt-2">
-          {[
-            { code: "XOF", symbol: "FCFA", rate: 605 },
-            { code: "EUR", symbol: "€", rate: 0.92 },
-            { code: "GBP", symbol: "£", rate: 0.79 },
-          ].map(({ code, symbol, rate }) => (
-            <span key={code} className="text-xs text-muted bg-surface-2 border border-border px-2 py-1 rounded-lg">
-              {code} <span className="text-fg font-semibold">{code === "XOF" ? Math.round(valueUsd * rate).toLocaleString("fr-FR") : (valueUsd * rate).toFixed(0)}{" "}{symbol}</span>
+          {xofValue !== null ? (
+            <span className="text-xs text-muted bg-surface-2 border border-border px-2 py-1 rounded-lg">
+              XOF <span className="text-fg font-semibold">{xofValue.toLocaleString("fr-FR")} FCFA</span>
             </span>
-          ))}
+          ) : (
+            <span className="text-xs text-muted bg-surface-2 border border-border px-2 py-1 rounded-lg">
+              XOF - {lang === "en" ? "rate unavailable" : "taux indisponible"}
+            </span>
+          )}
         </div>
+        {xofValue !== null && <p className="text-xs text-muted mt-1">{lang === "en" ? "Approximate conversion" : "Conversion indicative"}</p>}
         <p className="text-xs text-muted mt-3">{lang === "en" ? `Based on ${program.valueCents.toFixed(1)}¢ / mile · Confidence: ${program.confidence}` : `Basé sur ${program.valueCents.toFixed(1)}¢ / mile · Confiance : ${program.confidence}`}</p>
         <p className="text-xs text-muted mt-1">
           {lang === "en" ? "Value dated" : "Valeur datée du"} {program.lastUpdated}

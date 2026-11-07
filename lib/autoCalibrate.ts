@@ -169,14 +169,13 @@ export async function getForexRate(): Promise<number> {
   const FALLBACK_RATE = 600; // approximate if all APIs fail
   const FALLBACK_CACHE_TTL = 24 * 60 * 60; // cache fallback for 24h when APIs fail
 
-  try {
-    // Check cache first
-    const cached = await redis.get<number>(CACHE_KEY).catch(() => null);
-    if (typeof cached === "number" && cached > 400 && cached < 800) {
-      return cached;
-    }
+  const cached = await redis.get<number>(CACHE_KEY).catch(() => null);
+  if (typeof cached === "number" && cached > 400 && cached < 800) {
+    return cached;
+  }
 
-    // Try free API with 2s timeout — must not block the search response path.
+  // Each provider gets its own attempt; a timeout on the primary must not skip the backup.
+  try {
     const ctrl1 = new AbortController();
     const timer1 = setTimeout(() => ctrl1.abort(), 2_000);
     const res = await fetch(
@@ -193,7 +192,11 @@ export async function getForexRate(): Promise<number> {
       }
     }
 
-    // Fallback: try backup API with 2s timeout
+  } catch {
+    // Try the backup provider below.
+  }
+
+  try {
     const ctrl2 = new AbortController();
     const timer2 = setTimeout(() => ctrl2.abort(), 2_000);
     const res2 = await fetch(
@@ -210,7 +213,7 @@ export async function getForexRate(): Promise<number> {
       }
     }
   } catch {
-    // Fall through to fallback
+    // Both providers are unavailable.
   }
 
   // Both APIs failed — cache the hardcoded fallback so we don't retry both APIs on every request
