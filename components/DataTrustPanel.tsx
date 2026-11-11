@@ -16,12 +16,22 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
   const latestReview = formatLatestMilesReviewShort(lang);
   const latestReviewDate = getLatestMilesReviewDate();
   const valuationsStale = !latestReviewDate || isMilesReviewStale(latestReviewDate);
+
+  const fareBody = lang === "fr"
+    ? compact
+      ? "Duffel : tarifs recherchés en direct. Aviasales : cache récent. Prix et disponibilité à confirmer avant de réserver."
+      : "Duffel peut fournir des tarifs recherchés en direct. Aviasales propose des prix récents mis en cache. Certains vols affichent des estimations ; prix et disponibilité restent à confirmer."
+    : compact
+      ? "Duffel: fares searched directly. Aviasales: recent cache. Confirm price and availability before booking."
+      : "Duffel may provide fares searched directly. Aviasales supplies recently cached prices. Some flights show estimates; price and availability still need confirmation.";
+
   const copy = lang === "fr"
     ? {
         title: "Qualité des données",
         subtitle: "Ce que Xalifly utilise pour décider cash ou miles.",
-        liveTitle: "Prix cash live",
-        liveBody: "Fares issus de Duffel et Aviasales, puis rafraîchis pendant la recherche.",
+        fareTitle: "Prix fournisseurs",
+        fareBadge: "Duffel · cache TP",
+        fareBody,
         valuesTitle: `${PROGRAM_COUNT} valeurs miles/points`,
         valuesBody: valuationsStale
           ? `Dernière date du référentiel : ${latestReview}. Estimations anciennes à revalider.`
@@ -29,13 +39,15 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
         confidenceTitle: "Confiance affichée",
         confidenceBody: `${HIGH_CONFIDENCE_COUNT} programmes en confiance élevée, avec taxes et estimations signalées.`,
         source: "Sources : Duffel, Aviasales, ThePointsGuy, NerdWallet, AwardWallet",
+        bookingNote: "Vérifiez le prix et la disponibilité sur le site du fournisseur avant de réserver.",
         reviewed: valuationsStale ? "Estimations anciennes" : "Référence miles",
       }
     : {
         title: "Data quality",
         subtitle: "What Xalifly uses to decide cash or miles.",
-        liveTitle: "Live cash fares",
-        liveBody: "Fares come from Duffel and Aviasales, then refresh during search.",
+        fareTitle: "Fare sources",
+        fareBadge: "Duffel · TP cache",
+        fareBody,
         valuesTitle: `${PROGRAM_COUNT} miles & points values`,
         valuesBody: valuationsStale
           ? `Latest reference date: ${latestReview}. Older estimates need review.`
@@ -43,11 +55,12 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
         confidenceTitle: "Visible confidence",
         confidenceBody: `${HIGH_CONFIDENCE_COUNT} programs are high confidence, with taxes and estimates called out.`,
         source: "Sources: Duffel, Aviasales, ThePointsGuy, NerdWallet, AwardWallet",
+        bookingNote: "Verify price and availability on the provider's site before booking.",
         reviewed: valuationsStale ? "Older estimates" : "Miles reference",
       };
 
   const items = [
-    { title: copy.liveTitle, body: copy.liveBody, tone: "success" as const, badge: lang === "fr" ? "live" : "live" },
+    { title: copy.fareTitle, body: copy.fareBody, tone: "primary" as const, badge: copy.fareBadge },
     { title: copy.valuesTitle, body: copy.valuesBody, tone: valuationsStale ? "warning" as const : "primary" as const, badge: copy.reviewed },
     { title: copy.confidenceTitle, body: copy.confidenceBody, tone: "warning" as const, badge: "HIGH / MED / LOW" },
   ];
@@ -92,6 +105,9 @@ export function DataTrustPanel({ lang = "fr", compact = false, className }: Data
 
       <p className="mt-3 border-t border-border/60 pt-3 text-[11px] text-muted">
         {copy.source}
+      </p>
+      <p className="mt-2 text-[11px] text-muted">
+        {copy.bookingNote}
       </p>
     </Card>
   );
