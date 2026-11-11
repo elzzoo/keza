@@ -185,6 +185,9 @@ function getPriceQuality(result: FlightResult): keyof PriceQualitySummary {
   if (isSyntheticFlight(result) || result.priceConfidence === "ESTIMATED" || result.priceIsEstimate || result.cabinPriceEstimated) {
     return "estimated";
   }
+  const hasPositivePrice = [result.cashCost, result.totalPrice, result.price]
+    .some((value) => typeof value === "number" && Number.isFinite(value) && value > 0);
+  if (!hasPositivePrice) return "unknown";
   if (result.source === "TP") return "cached";
   if ((result.source === "DUFFEL" || result.source === "AMADEUS") && result.priceConfidence === "HIGH") return "providerQuote";
   return "unknown";

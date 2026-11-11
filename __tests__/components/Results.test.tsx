@@ -462,6 +462,42 @@ describe("Results", () => {
     expect(screen.getByText(/Some fares come from suppliers and may be cached/i)).toBeInTheDocument();
   });
 
+  it.each([
+    ["fr", ["Tarif fournisseur", "Cache", "Estimé"]],
+    ["en", ["Supplier quote", "Cache", "Estimated"]],
+  ] as const)("classifies three simulated corridors in %s", (lang, labels) => {
+    render(
+      <Results
+        results={[
+          makeFlight({ searchId: "dss-cdg", from: "DSS", to: "CDG", source: "DUFFEL", priceConfidence: "HIGH" }),
+          makeFlight({ searchId: "abj-cdg", from: "ABJ", to: "CDG", source: "TP", priceConfidence: "LOW" }),
+          makeFlight({ searchId: "los-lhr", from: "LOS", to: "LHR", source: "SYNTHETIC", priceConfidence: "ESTIMATED", isSupplemental: true }),
+        ]}
+        loading={false}
+        lang={lang}
+        onBack={noop}
+      />
+    );
+
+    for (const label of labels) expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.getByText("DSS → CDG")).toBeInTheDocument();
+    expect(screen.getByText("ABJ → CDG")).toBeInTheDocument();
+  });
+
+  it("does not label a zero-price supplier result as a quote", () => {
+    render(
+      <Results
+        results={[makeFlight({ source: "DUFFEL", priceConfidence: "HIGH", cashCost: 0, totalPrice: 0, price: 0 })]}
+        loading={false}
+        lang="en"
+        onBack={noop}
+      />
+    );
+
+    expect(screen.getByText("Unverified")).toBeInTheDocument();
+    expect(screen.queryByText("Supplier quote")).not.toBeInTheDocument();
+  });
+
   it("shows loading text in French when lang=fr", () => {
     render(
       <Results results={[]} loading={true} lang="fr" onBack={noop} />
