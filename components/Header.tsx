@@ -63,9 +63,9 @@ export function Header({ lang, onLangChange }: Props) {
   const router = useRouter();
   const nav = NAV[lang];
   const secondaryNav = SECONDARY_NAV[lang];
-  const liveBadgeTitle = lang === "fr"
-    ? "Prix cash : données temps réel (Duffel + Aviasales) · Valeurs miles : estimations de marché basées sur les barèmes publiés"
-    : "Cash prices: live data (Duffel + Aviasales) · Miles values: market estimates based on published award charts";
+  const qualityBadgeTitle = lang === "fr"
+    ? "Prix cash : tarifs fournisseurs ou caches, à confirmer avant réservation · Valeurs miles : estimations"
+    : "Cash fares: supplier prices or cached fares, confirm before booking · Miles values: estimates";
 
   return (
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-md border-b border-border">
@@ -95,14 +95,16 @@ export function Header({ lang, onLangChange }: Props) {
         </nav>
 
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-          {/* Live badge — cash prices are live; miles values are market estimates */}
           <span
-            title={liveBadgeTitle}
-            className="hidden sm:flex flex-col items-start px-2.5 py-1 rounded-full bg-success/10 border border-success/15 cursor-help"
+            title={qualityBadgeTitle}
+            aria-label={qualityBadgeTitle}
+            className="hidden sm:flex flex-col items-start px-2.5 py-1 rounded-full bg-surface-2 border border-border cursor-help"
           >
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot flex-shrink-0" />
-              <span className="text-[10px] font-semibold text-success leading-none">Cash · Live</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-muted flex-shrink-0" />
+              <span className="text-[10px] font-semibold text-muted leading-none">
+                {lang === "fr" ? "Cash · indicatif" : "Cash · indicative"}
+              </span>
             </span>
             <span className="text-[9px] text-muted/70 leading-none mt-0.5 pl-3">
               {lang === "fr" ? "Miles · estimés" : "Miles · estimated"}

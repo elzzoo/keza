@@ -52,15 +52,36 @@ describe("Header", () => {
     expect(screen.getByText("Cash or Miles?")).toBeInTheDocument();
   });
 
-  it("localizes the live price badge", () => {
+  it("localizes the data quality badge with accurate qualified copy", () => {
     const { rerender } = render(<Header {...defaultProps} />);
 
+    expect(screen.getByText("Cash · indicative")).toBeInTheDocument();
     expect(screen.getByText("Miles · estimated")).toBeInTheDocument();
-    expect(screen.getByTitle(/Cash prices: live data/)).toBeInTheDocument();
+    expect(screen.getByTitle(/supplier prices or cached fares/)).toBeInTheDocument();
+    expect(screen.getByTitle(/confirm before booking/)).toBeInTheDocument();
 
     rerender(<Header {...defaultProps} lang="fr" />);
+    expect(screen.getByText("Cash · indicatif")).toBeInTheDocument();
     expect(screen.getByText("Miles · estimés")).toBeInTheDocument();
-    expect(screen.getByTitle(/Prix cash : données temps réel/)).toBeInTheDocument();
+    expect(screen.getByTitle(/tarifs fournisseurs ou caches/)).toBeInTheDocument();
+    expect(screen.getByTitle(/à confirmer avant réservation/)).toBeInTheDocument();
+  });
+
+  it("EN badge makes no unqualified live claim", () => {
+    render(<Header {...defaultProps} />);
+    expect(screen.queryByText("Cash · Live")).not.toBeInTheDocument();
+    // title/aria-label must not claim plain "live data"
+    const badge = screen.getByTitle(/supplier prices or cached fares/);
+    expect(badge).not.toHaveAttribute("title", expect.stringContaining("live data"));
+    expect(badge).not.toHaveAttribute("title", expect.stringContaining("données temps réel"));
+  });
+
+  it("FR badge makes no unqualified live claim", () => {
+    render(<Header {...defaultProps} lang="fr" />);
+    expect(screen.queryByText("Cash · Live")).not.toBeInTheDocument();
+    const badge = screen.getByTitle(/tarifs fournisseurs ou caches/);
+    expect(badge).not.toHaveAttribute("title", expect.stringContaining("live data"));
+    expect(badge).not.toHaveAttribute("title", expect.stringContaining("données temps réel"));
   });
 
   it("renders all navigation items on desktop", () => {
