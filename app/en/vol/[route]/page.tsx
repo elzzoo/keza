@@ -100,7 +100,7 @@ export async function generateMetadata(
   const pageUrl  = `${SITE_URL}/en/vol/${route}`;
   // See the FR /vol/[route] page for the full rationale: this canonicalizes
   // to /en/flights/{ROUTE} instead of itself to avoid duplicate-content
-  // overlap with the live, broader-coverage /flights corridor pages.
+  // overlap with the dated-search, broader-coverage /flights corridor pages.
   const canonicalRouteFr = `${SITE_URL}/flights/${from}-${to}`;
   const canonicalRouteEn = `${SITE_URL}/en/flights/${from}-${to}`;
 
@@ -163,17 +163,6 @@ export default async function EnRoutePage(
         ],
       },
       {
-        "@type": "Product",
-        name: `${fromCity} to ${toCity} Flights`,
-        description: `Cash vs miles comparison for ${from}→${to}. Best programs: ${meta.bestPrograms.join(", ")}.`,
-        brand: { "@type": "Brand", name: "Xalifly" },
-        offers: {
-          "@type": "AggregateOffer",
-          priceCurrency: "USD",
-          availability: "https://schema.org/InStock",
-        },
-      },
-      {
         "@type": "FAQPage",
         mainEntity: [
           {
@@ -206,8 +195,8 @@ export default async function EnRoutePage(
             acceptedAnswer: {
               "@type": "Answer",
               text: meta.isNonstop
-                ? `Yes, nonstop flights are available between ${fromCity} and ${toCity} with ${meta.airlines.join(", ")}.`
-                : `Flights between ${fromCity} and ${toCity} typically connect via ${meta.hub ?? "a major hub"}. Airlines include ${meta.airlines.join(", ")}.`,
+                ? `This route is typically served nonstop by ${meta.airlines.join(", ")}. Check schedules and availability for your dates.`
+                : `This route typically connects via ${meta.hub ?? "a major hub"}. Check schedules and availability for your dates.`,
             },
           },
         ],
@@ -245,8 +234,8 @@ export default async function EnRoutePage(
           </h1>
 
           <p className="text-muted text-base leading-relaxed max-w-2xl">
-            Compare the true cost of {from}→{to} flights between {fromCity} ({fromCountry}) and {toCity} ({toCountry}) —
-            live cash prices vs the value of your miles on {meta.bestPrograms.slice(0, 2).join(", ")} and more.
+            Explore indicative miles values for {from}→{to} between {fromCity} ({fromCountry}) and {toCity} ({toCountry}).
+            Search for your dates to compare offered cash fares with miles options on {meta.bestPrograms.slice(0, 2).join(", ")} and more.
           </p>
 
           <Link
@@ -262,7 +251,7 @@ export default async function EnRoutePage(
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: "Flight time",      value: formatDuration(meta.durationMin),             icon: "duration" as const },
-            { label: "Nonstop",          value: meta.isNonstop ? "Yes" : `Via ${meta.hub ?? "hub"}`, icon: "nonstop" as const },
+            { label: "Typical nonstop", value: meta.isNonstop ? "Yes" : `Via ${meta.hub ?? "hub"}`, icon: "nonstop" as const },
             { label: "Economy (miles)",  value: meta.milesToEconomy.toLocaleString("en-US"),  icon: "economy" as const },
             { label: "Business (miles)", value: meta.milesToBusiness.toLocaleString("en-US"), icon: "business" as const },
           ].map(stat => (
@@ -416,7 +405,7 @@ export default async function EnRoutePage(
             Ready to compare {fromCity} → {toCity}?
           </p>
           <p className="text-sm text-muted">
-            Xalifly pulls live prices and tells you whether your miles are worth more than the cash price.
+            Search your dates, then verify fares and availability with the seller before booking.
           </p>
           <Link
             href={searchUrl}

@@ -102,7 +102,7 @@ export async function generateMetadata(
   const pageUrl  = `${SITE_URL}/vol/${route}`;
   // /vol/[route] and /flights/[route] render overlapping corridor content
   // (same ROUTE_META-derived FAQ, stats, "best programs") for any pair also
-  // reachable at /flights — which additionally has live pricing and covers
+  // reachable at /flights — which additionally has dated search results and covers
   // every IATA pair, not just the ones in ROUTE_META. To avoid Google
   // treating these as duplicate content, this page keeps serving real
   // visitors and internal links (profile "recent routes", related-routes
@@ -169,17 +169,6 @@ export default async function RoutePage(
         ],
       },
       {
-        "@type": "Product",
-        name: `Vol ${fromCity} → ${toCity}`,
-        description: `Comparaison cash vs miles pour le vol ${from}→${to}. Meilleurs programmes : ${meta.bestPrograms.join(", ")}.`,
-        brand: { "@type": "Brand", name: "Xalifly" },
-        offers: {
-          "@type": "AggregateOffer",
-          priceCurrency: "USD",
-          availability: "https://schema.org/InStock",
-        },
-      },
-      {
         "@type": "FAQPage",
         mainEntity: [
           {
@@ -212,8 +201,8 @@ export default async function RoutePage(
             acceptedAnswer: {
               "@type": "Answer",
               text: meta.isNonstop
-                ? `Oui, des vols sans escale sont disponibles entre ${fromCity} et ${toCity} avec ${meta.airlines.join(", ")}.`
-                : `Les vols entre ${fromCity} et ${toCity} ont généralement une escale via ${meta.hub ?? "un hub majeur"}. Les compagnies incluent ${meta.airlines.join(", ")}.`,
+                ? `Cette route est généralement desservie sans escale par ${meta.airlines.join(", ")}. Vérifiez les horaires et la disponibilité pour vos dates.`
+                : `Cette route passe généralement par ${meta.hub ?? "un hub majeur"}. Vérifiez les horaires et la disponibilité pour vos dates.`,
             },
           },
         ],
@@ -252,8 +241,8 @@ export default async function RoutePage(
           </h1>
 
           <p className="text-muted text-base leading-relaxed max-w-2xl">
-            Comparez le vrai coût du vol {from}→{to} entre {fromCity} ({fromCountry}) et {toCity} ({toCountry}) —
-            prix cash en temps réel vs valeur de vos miles sur {meta.bestPrograms.slice(0, 2).join(", ")} et plus.
+            Explorez les repères miles pour {from}→{to} entre {fromCity} ({fromCountry}) et {toCity} ({toCountry}).
+            Lancez une recherche pour vos dates afin de comparer les tarifs cash proposés aux options miles sur {meta.bestPrograms.slice(0, 2).join(", ")} et plus.
           </p>
 
           <Link
@@ -269,7 +258,7 @@ export default async function RoutePage(
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: "Durée vol",       value: formatDuration(meta.durationMin),              icon: "duration" as const },
-            { label: "Vol direct",      value: meta.isNonstop ? "Oui" : `Via ${meta.hub ?? "hub"}`, icon: "nonstop" as const },
+            { label: "Direct habituel", value: meta.isNonstop ? "Oui" : `Via ${meta.hub ?? "hub"}`, icon: "nonstop" as const },
             { label: "Éco (miles)",     value: meta.milesToEconomy.toLocaleString("fr-FR"),   icon: "economy" as const },
             { label: "Business (miles)",value: meta.milesToBusiness.toLocaleString("fr-FR"),  icon: "business" as const },
           ].map(stat => (
@@ -423,7 +412,7 @@ export default async function RoutePage(
             Prêt à comparer {fromCity} → {toCity} ?
           </p>
           <p className="text-sm text-muted">
-            Xalifly récupère les prix en temps réel et calcule si vos miles valent plus que le prix cash.
+            Recherchez vos dates, puis vérifiez prix et disponibilité auprès du vendeur avant de réserver.
           </p>
           <Link
             href={searchUrl}

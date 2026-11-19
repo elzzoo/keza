@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Cash vs Miles Flights — All Routes | Xalifly",
-    description: "50+ international routes compared cash vs miles in real time.",
+    description: "Explore 50+ routes with indicative miles estimates. Check fares for your dates before booking.",
     url: `${SITE_URL}/en/vol`,
     siteName: "Xalifly",
     images: [{ url: `${SITE_URL}/api/og`, width: 1200, height: 630 }],
@@ -75,8 +75,8 @@ export default function EnVolIndexPage() {
             All routes <span className="text-primary">Cash vs Miles</span>
           </h1>
           <p className="text-muted text-sm leading-relaxed max-w-2xl">
-            Select a route to see live prices, the best miles programs,
-            and whether your points are worth more than the cash price.
+            Explore routes and miles programs. Search for your dates,
+            then verify fares and availability before booking.
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export default function EnVolIndexPage() {
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {rt.isNonstop && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20 font-semibold">Nonstop</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20 font-semibold">Nonstop possible</span>
                       )}
                       <span className="text-[10px] text-muted group-hover:text-primary transition-colors">→</span>
                     </div>

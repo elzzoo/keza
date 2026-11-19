@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Vols Cash vs Miles — Toutes les routes | Xalifly",
-    description: "50+ routes internationales comparées cash vs miles en temps réel.",
+    description: "Plus de 50 routes avec repères miles indicatifs. Vérifiez les tarifs pour vos dates avant réservation.",
     url: `${SITE_URL}/vol`,
     siteName: "Xalifly",
     locale: "fr_FR",
@@ -79,8 +79,8 @@ export default function VolIndexPage() {
             Toutes nos routes <span className="text-primary">Cash vs Miles</span>
           </h1>
           <p className="text-muted text-sm leading-relaxed max-w-2xl">
-            Sélectionnez une route pour voir les prix en temps réel, les meilleurs programmes miles,
-            et si vos points valent plus que le prix cash.
+            Explorez les routes et les programmes miles. Lancez une recherche pour vos dates,
+            puis vérifiez le tarif et la disponibilité avant de réserver.
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export default function VolIndexPage() {
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {rt.isNonstop && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20 font-semibold">Direct</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/10 text-success border border-success/20 font-semibold">Direct possible</span>
                       )}
                       <span className="text-[10px] text-muted group-hover:text-primary transition-colors">→</span>
                     </div>
