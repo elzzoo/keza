@@ -71,6 +71,7 @@ export async function searchEngine(
     cabin       = "economy",
     passengers  = 1,
     userPrograms = [],
+    cardMarket,
   } = params;
 
   const directOnly = stops === "direct";
@@ -87,6 +88,7 @@ export async function searchEngine(
     cabin,
     passengers,
     userPrograms,
+    cardMarket,
   });
 
   // 1. Cache check + effectivePrices in parallel
@@ -324,7 +326,8 @@ export async function searchEngine(
             effectivePrices,
             undefined,
             date,
-            undefined
+            undefined,
+            cardMarket
           );
           enriched.searchId = searchId;
           enriched.priceConfidence = "ESTIMATED"; // Mark as multi-leg estimate
@@ -339,7 +342,7 @@ export async function searchEngine(
 
   const searchId = crypto.randomUUID();
   const results: FlightResult[] = withPromos.map((f) => {
-    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date, returnDate);
+    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date, returnDate, cardMarket);
     r.searchId = searchId;
     return r;
   });
@@ -377,7 +380,7 @@ export async function searchEngine(
       tripType === "roundtrip"
         ? { ...f, from: f.to ?? "", to: f.from ?? "" }
         : undefined;
-    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, syntheticReturn, date, returnDate);
+    const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, syntheticReturn, date, returnDate, cardMarket);
     r.searchId = searchId;
     return r;
   });
@@ -386,7 +389,7 @@ export async function searchEngine(
   allResults = applyHomeCarrierGuarantees({
     results: allResults,
     outbound,
-    params: { from, to, date, returnDate, cabin, passengers, tripType, userPrograms },
+    params: { from, to, date, returnDate, cabin, passengers, tripType, userPrograms, cardMarket },
     effectivePrices,
     searchId,
   });

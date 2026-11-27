@@ -1,4 +1,5 @@
 import type { SearchParams } from "@/lib/engine";
+import { parseCardMarket } from "@/lib/cardMarket";
 
 const IATA_RE = /^[A-Z]{3}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -82,6 +83,7 @@ export function parseSearchParams(body: Partial<SearchParams>): SearchInputResul
       stops: body.stops === "direct" ? "direct" : "any",
       cabin,
       passengers,
+      cardMarket: parseCardMarket(body.cardMarket),
       userPrograms: Array.isArray(body.userPrograms)
         ? body.userPrograms.filter((p): p is string => typeof p === "string").slice(0, 20)
         : [],

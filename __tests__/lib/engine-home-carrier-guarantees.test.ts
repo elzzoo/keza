@@ -75,6 +75,7 @@ describe("applyHomeCarrierGuarantees", () => {
       undefined,
       "2026-10-01",
       undefined,
+      undefined, // cardMarket
     );
     expect(nextResults[0].searchId).toBe("search-1");
   });

@@ -35,7 +35,7 @@ async function buildResults(
 ): Promise<FlightResult[]> {
   const {
     cabin = "economy", passengers = 1, userPrograms = [],
-    tripType = "oneway", date, returnDate,
+    tripType = "oneway", date, returnDate, cardMarket,
   } = params;
 
   const withPromos     = applyPromotions(outbound, promotions);
@@ -57,7 +57,7 @@ async function buildResults(
   // Parallelize enrich() for all flights via Promise.all
   const results: FlightResult[] = await Promise.all(
     withPromos.map(f => Promise.resolve(
-      enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date!, returnDate)
+      enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, bestReturnFor(f), date!, returnDate, cardMarket)
     ))
   );
 
@@ -102,6 +102,7 @@ export async function searchEngineStream(
       cabin       = "economy",
       passengers  = 1,
       userPrograms = [],
+      cardMarket,
     } = params;
 
     const directOnly  = stops === "direct";
@@ -116,6 +117,7 @@ export async function searchEngineStream(
       cabin,
       passengers,
       userPrograms,
+      cardMarket,
     });
 
     // Load cache + prices + promotions all in parallel (before any provider call)
@@ -233,7 +235,7 @@ export async function searchEngineStream(
       const synRet: NormalizedFlight | undefined = tripType === "roundtrip"
         ? { ...f, from: f.to ?? "", to: f.from ?? "" }
         : undefined;
-      const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, synRet, date!, returnDate);
+      const r = enrich(f, cabin, passengers, userPrograms, tripType, effectivePrices, synRet, date!, returnDate, cardMarket);
       r.searchId = searchId;
       return r;
     });
@@ -242,7 +244,7 @@ export async function searchEngineStream(
     allResults = applyHomeCarrierGuarantees({
       results: allResults,
       outbound,
-      params: { from, to, date: date!, returnDate, cabin, passengers, tripType, userPrograms },
+      params: { from, to, date: date!, returnDate, cabin, passengers, tripType, userPrograms, cardMarket },
       effectivePrices,
       searchId,
     });

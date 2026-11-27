@@ -13,6 +13,7 @@ import { buildScenarios, type Scenario } from "./scenarioEngine";
 import { PROGRAM_TO_AIRLINE, getProgramsForAirline, getCorridorGuarantees } from "./programEngine";
 import { buildOption, synthesizeTransferOptions, synthesizeDynamicOptions, synthesizeAcquisitionOptions, filterZoneAwareOptions, accessibilityPenalty } from "./optionBuilder";
 import { getBonusTransfers } from "./costEngine";
+import { isBankAvailable, type CardMarket } from "./cardMarket";
 import { AIRPORTS, type Airport } from "@/data/airports";
 import type { Cabin, TripType } from "./engine";
 
@@ -30,6 +31,7 @@ export interface FlightInput {
   cabin: Cabin;
   tripType: TripType;
   passengers: number;
+  cardMarket?: CardMarket; // where the traveller's cards were issued (default US)
 }
 
 export interface MilesOption {
@@ -239,7 +241,7 @@ export function buildCostOptions(
   // ── Transfer options ──────────────────────────────────────────────────────
   milesOptions.push(...synthesizeTransferOptions(
     milesOptions,
-    getBonusTransfers(),
+    getBonusTransfers().filter((b) => isBankAvailable(b.from, flight.cardMarket)),
     { from, to, totalPrice: cashTotal, airlines, cabin, tripType, passengers },
     effectivePrices,
   ));
@@ -263,6 +265,7 @@ export function buildCostOptions(
       sortedForAcquisition,
       cashTotal,
       effectivePrices,
+      flight.cardMarket,
     ));
   }
 

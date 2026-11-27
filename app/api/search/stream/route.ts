@@ -8,6 +8,7 @@ import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { trackSearchPerformance, isPerformanceAcceptable } from "@/lib/performance";
 import { parseSearchParams } from "@/lib/searchInput";
+import { resolveCardMarket } from "@/lib/cardMarket";
 import { buildSearchCacheKey } from "@/lib/searchCacheKey";
 import { countStreamSearch } from "@/lib/streamSearchCounters";
 
@@ -54,7 +55,10 @@ export async function POST(request: Request) {
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
-  const searchParams = parsed.params;
+  const searchParams = {
+      ...parsed.params,
+      cardMarket: resolveCardMarket(parsed.params.cardMarket, request.headers.get("x-vercel-ip-country")),
+    };
   const { from, to, date, passengers } = searchParams;
 
   const encoder = new TextEncoder();
@@ -120,6 +124,7 @@ export async function POST(request: Request) {
             cabin: searchParams.cabin!,
             passengers,
             userPrograms: searchParams.userPrograms,
+        cardMarket: searchParams.cardMarket,
           };
           const versions = [CACHE_VERSION, ...CACHE_VERSION_FALLBACKS];
           let fallbackResults: FlightResult[] = [];

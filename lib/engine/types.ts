@@ -15,6 +15,7 @@ export interface SearchParams {
   cabin?: Cabin;           // default "economy"
   passengers?: number;     // default 1
   userPrograms?: string[];
+  cardMarket?: import("../cardMarket").CardMarket; // default "US"
 }
 
 // ─── Public API surface ──────────────────────────────────────────────────────

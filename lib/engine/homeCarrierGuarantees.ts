@@ -7,7 +7,7 @@ import type { Cabin, FlightResult, SearchParams, TripType } from "./types";
 interface ApplyHomeCarrierGuaranteesOptions {
   results: FlightResult[];
   outbound: NormalizedFlight[];
-  params: Pick<SearchParams, "from" | "to" | "date" | "returnDate" | "tripType" | "cabin" | "passengers" | "userPrograms">;
+  params: Pick<SearchParams, "from" | "to" | "date" | "returnDate" | "tripType" | "cabin" | "passengers" | "userPrograms" | "cardMarket">;
   effectivePrices: Map<string, number>;
   searchId: string;
 }
@@ -28,6 +28,7 @@ export function applyHomeCarrierGuarantees({
     passengers = 1,
     tripType = "oneway",
     userPrograms = [],
+    cardMarket,
   } = params;
   const routeKey = `${from.toUpperCase()}-${to.toUpperCase()}`;
   const guarantees = HOME_CARRIER_PROGRAMS[routeKey] ?? [];
@@ -65,6 +66,7 @@ export function applyHomeCarrierGuarantees({
       tripType === "roundtrip" ? { ...guaranteedFlight, from: to, to: from } : undefined,
       date,
       returnDate,
+      cardMarket,
     );
     guaranteedResult.searchId = searchId;
     nextResults ??= [...results];

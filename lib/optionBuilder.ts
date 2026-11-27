@@ -12,6 +12,7 @@ import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
 import { GLOBAL_PROGRAMS, PROGRAMS_BY_NAME } from "./globalPrograms";
 import { calculateAcquisitionCost } from "./milesAcquisition";
+import type { CardMarket } from "./cardMarket";
 import { AIRPORTS, type Airport } from "@/data/airports";
 import { PROGRAM_TO_AIRLINE } from "./programEngine";
 import type { Cabin, TripType } from "./engine";
@@ -392,11 +393,12 @@ export function synthesizeAcquisitionOptions(
   sortedForAcquisition: MilesOption[],
   cashTotal: number,
   _effectivePrices: Map<string, number>,
+  cardMarket?: CardMarket,
 ): MilesOption[] {
   const newOptions: MilesOption[] = [];
 
   for (const opt of sortedForAcquisition) {
-    const acquisition = calculateAcquisitionCost(opt.program, opt.milesRequired);
+    const acquisition = calculateAcquisitionCost(opt.program, opt.milesRequired, cardMarket);
     if (!acquisition.cheapest) continue;
 
     const totalAcquisitionCost = acquisition.cheapest.costUsd + opt.taxes;

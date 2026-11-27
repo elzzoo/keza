@@ -11,6 +11,7 @@ export interface SearchCacheKeyParams {
   cabin: Cabin | string;
   passengers: number;
   userPrograms: readonly string[];
+  cardMarket?: string;
 }
 
 export function buildSearchCacheKey(version: string, params: SearchCacheKeyParams): string {
@@ -30,5 +31,7 @@ export function buildSearchCacheKey(version: string, params: SearchCacheKeyParam
     params.cabin,
     params.passengers,
     profileHash,
+    // US keys keep their shape; other markets get their own entries.
+    ...(params.cardMarket === "OTHER" ? ["intl"] : []),
   ].join(":");
 }

@@ -13,6 +13,7 @@ import { logError, logWarn } from "@/lib/logger";
 import { redis } from "@/lib/redis";
 import { TOTAL_SAVINGS_KEY } from "@/lib/redisKeys";
 import { parseSearchParams } from "@/lib/searchInput";
+import { resolveCardMarket } from "@/lib/cardMarket";
 import { buildSearchCacheKey } from "@/lib/searchCacheKey";
 import { recordSearchObservability } from "@/lib/searchObservability";
 
@@ -49,7 +50,10 @@ export async function POST(request: Request) {
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const searchParams = parsed.params;
+    const searchParams = {
+      ...parsed.params,
+      cardMarket: resolveCardMarket(parsed.params.cardMarket, request.headers.get("x-vercel-ip-country")),
+    };
     const { from, to, date, passengers } = searchParams;
 
     // Race the search against a hard timeout.
@@ -83,6 +87,7 @@ export async function POST(request: Request) {
         cabin: searchParams.cabin!,
         passengers,
         userPrograms: searchParams.userPrograms,
+        cardMarket: searchParams.cardMarket,
       };
       const versions = [CACHE_VERSION, ...CACHE_VERSION_FALLBACKS];
       results = [];

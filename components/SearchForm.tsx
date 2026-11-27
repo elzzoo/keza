@@ -11,6 +11,7 @@ import { useOnboarding } from "@/lib/contexts/onboardingContext";
 import { trackSearch } from "@/lib/analytics";
 import { toast } from "sonner";
 import clsx from "clsx";
+import { CardMarketSelect, readCardMarket } from "./CardMarketSelect";
 
 interface Props {
   onResults: (r: FlightResult[], partial?: boolean) => void;
@@ -176,6 +177,7 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
       returnDate: tripType === "roundtrip" ? retDate : undefined,
       tripType, cabin: searchCabin, passengers,
       userPrograms: programs ? programs.split(",").map(p => p.trim()).filter(Boolean) : [],
+      cardMarket: readCardMarket(),
     });
 
     let partialReceived = false;
@@ -548,6 +550,8 @@ export const SearchForm = forwardRef<SearchFormHandle, Props>(function SearchFor
           </label>
           <ProgramsPicker value={programs} onChange={setPrograms} lang={lang} />
         </div>
+
+        <CardMarketSelect lang={lang} />
 
         {/* Error */}
         {error && (

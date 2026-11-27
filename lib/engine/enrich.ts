@@ -7,6 +7,7 @@ import type { Cabin, TripType, FlightResult, Stops } from "./types";
 import { CABIN_MULTIPLIER } from "./types";
 import { buildAviasalesUrl } from "./travelpayouts";
 import { roundPrice } from "../roundPrice";
+import type { CardMarket } from "../cardMarket";
 
 export { CABIN_MULTIPLIER };
 
@@ -40,6 +41,7 @@ export function enrich(
   returnFlight?: NormalizedFlight,
   searchDate?: string,
   returnDate?: string,
+  cardMarket?: CardMarket,
 ): FlightResult {
   // Duffel flights already price the exact cabin — don't double-apply the multiplier.
   const outboundMultiplier = f.cabinResolved ? 1 : CABIN_MULTIPLIER[cabin];
@@ -84,6 +86,7 @@ export function enrich(
     cabin,
     tripType,
     passengers,
+    cardMarket,
   };
 
   const comparison  = buildCostOptions(flightInput, effectivePrices);

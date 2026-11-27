@@ -12,6 +12,7 @@
  */
 
 import { roundPrice } from "./roundPrice";
+import { isBankAvailable, type CardMarket } from "./cardMarket";
 import { TRANSFER_BONUSES, isPromoActive } from "@/data/transferBonuses";
 
 // ---------------------------------------------------------------------------
@@ -235,6 +236,7 @@ const BONUS_SOURCE_NAMES: Record<string, string> = {
 export function calculateAcquisitionCost(
   program: string,
   milesNeeded: number,
+  cardMarket: CardMarket = "US",
 ): AcquisitionResult {
   if (milesNeeded <= 0) {
     return {
@@ -276,6 +278,7 @@ export function calculateAcquisitionCost(
 
   // ── Path 2: Bank point transfers ─────────────────────────────────────
   for (const bank of data.transferPartnersFrom) {
+    if (!isBankAvailable(bank, cardMarket)) continue;
     const from = BONUS_SOURCE_NAMES[bank] ?? bank;
     const bonus = TRANSFER_BONUSES.find(
       (b) => b.from === from && b.to === program && isPromoActive(b),
