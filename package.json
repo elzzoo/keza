@@ -22,16 +22,16 @@
     "test:live": "RUN_LIVE_TESTS=1 jest __tests__/integration __tests__/api/cron __tests__/lib/alertsEngine.test.ts __tests__/lib/p1-4-cache-race-condition.test.ts"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
-    "@sentry/nextjs": "^10.50.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "@sentry/nextjs": "^10.78.0",
     "@upstash/redis": "^1.37.0",
     "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
     "fast-sha256": "^1.3.0",
-    "inngest": "^4.7.0",
-    "next": "15.3.9",
-    "next-auth": "^4.24.14",
+    "inngest": "^4.27.0",
+    "next": "15.5.29",
+    "next-auth": "^4.24.15",
     "pg": "^8.23.0",
     "react": "^18",
     "react-dom": "^18",
@@ -41,14 +41,14 @@
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "web-push": "^3.6.7",
-    "zod": "^4.4.3"
+    "zod": "^4.6.7"
   },
   "overrides": {
     "d3-color": ">=3.1.0",
     "glob": ">=10.4.6"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^16.2.6",
+    "@next/bundle-analyzer": "^15.5.29",
     "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -62,7 +62,7 @@
     "@types/web-push": "^3.6.4",
     "chrome-launcher": "^1.1.0",
     "eslint": "^8",
-    "eslint-config-next": "15.3.9",
+    "eslint-config-next": "15.5.29",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
     "lighthouse": "^12.0.0",
