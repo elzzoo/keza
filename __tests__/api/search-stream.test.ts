@@ -23,6 +23,12 @@ const mockTrackSearchPerformance = jest.fn();
 const mockRedisGet = jest.fn();
 const mockIsPerformanceAcceptable = jest.fn();
 
+const mockCountStreamSearch = jest.fn();
+
+jest.mock("@/lib/streamSearchCounters", () => ({
+  countStreamSearch: (...args: unknown[]) => mockCountStreamSearch(...args),
+}));
+
 jest.mock("@/lib/engine/stream", () => ({
   searchEngineStream: (...args: unknown[]) => mockSearchEngineStream(...args),
 }));
@@ -1235,6 +1241,30 @@ describe("POST /api/search/stream", () => {
       expect(mockIsPerformanceAcceptable).toHaveBeenCalledWith(
         expect.any(Number)
       );
+    });
+  });
+
+  describe("search counting", () => {
+    const request = () =>
+      new Request("http://localhost/api/search/stream", {
+        method: "POST",
+        body: JSON.stringify({ from: "DSS", to: "CDG", date: FUTURE_DATE, passengers: 1 }),
+      });
+
+    it("counts a delivered search once", async () => {
+      mockSearchEngineStream.mockResolvedValue([]);
+      await (await POST(request())).text();
+
+      expect(mockCountStreamSearch).toHaveBeenCalledTimes(1);
+      expect(mockCountStreamSearch).toHaveBeenCalledWith("DSS", "CDG");
+    });
+
+    it("does not count a search that returned an error", async () => {
+      mockSearchEngineStream.mockRejectedValue(new Error("engine down"));
+      mockRedisGet.mockResolvedValue(null);
+      await (await POST(request())).text();
+
+      expect(mockCountStreamSearch).not.toHaveBeenCalled();
     });
   });
 });

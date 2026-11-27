@@ -9,6 +9,7 @@ import { redis } from "@/lib/redis";
 import { trackSearchPerformance, isPerformanceAcceptable } from "@/lib/performance";
 import { parseSearchParams } from "@/lib/searchInput";
 import { buildSearchCacheKey } from "@/lib/searchCacheKey";
+import { countStreamSearch } from "@/lib/streamSearchCounters";
 
 // Vercel Hobby hard-kills at 10s. SSE partial arrives in ~2-3s, final in ~5-8s — fits.
 export const maxDuration = 10;
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
 
         const forexRate = await forexPromise;
         send({ type: "final", results: finalResults, forexRate });
+        await countStreamSearch(from, to);
       } catch (err) {
         logError("[api/search/stream]", err, { requestId });
 
@@ -148,6 +150,7 @@ export async function POST(request: Request) {
               forexRate,
               fromCache: true,
             });
+            await countStreamSearch(from, to);
           } else {
             // No cache, send error
             send({
