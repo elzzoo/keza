@@ -27,7 +27,7 @@ import { mergeProviderFlights, prependDirectTravelpayoutsFallback } from "./prov
 //  2. A post-processing fix is deployed that must invalidate stale results
 //  3. New field added to miles options or cost comparison
 // See keza-project skill for full rules.
-export const CACHE_VERSION = "v31"; // profile-aware keys must never read v30 results
+export const CACHE_VERSION = "v32"; // transfer bonuses with end dates
 
 // Older caches have no profile identity and can contain another user's optimization.
 export const CACHE_VERSION_FALLBACKS: readonly string[] = [];

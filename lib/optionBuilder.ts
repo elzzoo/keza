@@ -6,7 +6,7 @@ import { getZone } from "./zones";
 import { getAwardTaxes } from "@/data/awardTaxes";
 import { getMilesRequired } from "@/data/awardCharts";
 import { MILES_PRICE_MAP, MILES_CONFIDENCE_MAP, DEFAULT_MILE_VALUE_CENTS, type Confidence } from "@/data/milesPrices";
-import { getEffectiveRatio } from "@/data/transferBonuses";
+import { getEffectiveRatio, isPromoActive } from "@/data/transferBonuses";
 import type { TransferBonusRecord } from "@/data/transferBonuses";
 import { ALLIANCES } from "./alliances";
 import { estimateMilesRequired, type CabinClass } from "./dynamicAwardEngine";
@@ -218,8 +218,10 @@ export function synthesizeTransferOptions(
     const taxes = getAwardTaxesForTransfer(airlineForTaxes, cabin, passengers, from, to, originZone, destZone)
       * (tripType === "roundtrip" ? 2 : 1);
 
-    const promoApplied = bonus.promoRatio
-      ? `${bonus.from} bonus ${Math.round((ratio - 1) * 100)}%`
+    // Only advertise a bonus while it is actually running.
+    const bonusPct = isPromoActive(bonus) ? Math.round((ratio / bonus.baseRatio - 1) * 100) : 0;
+    const promoApplied = bonusPct > 0
+      ? `${bonus.from} bonus ${bonusPct}%`
       : undefined;
 
     const opt = buildOption(
@@ -235,6 +237,8 @@ export function synthesizeTransferOptions(
     );
     if (promoApplied) {
       opt.promoApplied = promoApplied;
+      opt.promoBonusPct = bonusPct;
+      opt.promoValidUntil = bonus.promoValidUntil;
       opt.explanation = buildOptionExplanation("TRANSFER", bonus.to, bonus.from, sourceMiles, taxes, promoApplied);
     }
     newOptions.push(opt);

@@ -46,7 +46,7 @@ describe("Cache Version Centralization", () => {
 
   it("does not fall back to caches created without profile identity", async () => {
     const engineModule = await import("@/lib/engine");
-    expect(engineModule.CACHE_VERSION).toBe("v31");
+    expect(engineModule.CACHE_VERSION).toBe("v32");
     expect(engineModule.CACHE_VERSION_FALLBACKS).toEqual([]);
   });
 

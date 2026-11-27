@@ -633,7 +633,9 @@ export const FlightCard = memo(function FlightCard({ flight, lang, formatPrice, 
                       {opt.promoApplied && (
                         <span className="inline-flex items-center gap-1 text-[9px] text-success font-bold shrink-0">
                           <FlightCardIcon name="gift" className="h-3 w-3" />
-                          bonus
+                          {opt.promoBonusPct ? `+${opt.promoBonusPct}%` : "bonus"}
+                          {opt.promoValidUntil &&
+                            ` ${fr ? "jusqu'au" : "until"} ${new Date(`${opt.promoValidUntil}T00:00:00Z`).toLocaleDateString(fr ? "fr-FR" : "en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`}
                         </span>
                       )}
                     </div>

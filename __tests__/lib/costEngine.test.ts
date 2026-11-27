@@ -986,6 +986,8 @@ describe("European programs (P5 Task 2.1)", () => {
     });
 
     it("Qatar Privilege Club registered (MIDDLE_EAST → NORTH_AMERICA)", () => {
+      // After the dated Capital One bonus, which would otherwise win as TRANSFER.
+      jest.useFakeTimers().setSystemTime(new Date("2027-06-01T00:00:00Z"));
       const flight: FlightInput = {
         from: "DOH",
         to: "LAX",
@@ -1000,6 +1002,7 @@ describe("European programs (P5 Task 2.1)", () => {
       const qp = milesOptions.find((o) => o.program === "Qatar Privilege Club");
       expect(qp).toBeDefined();
       expect(qp!.type).toBe("DIRECT");
+      jest.useRealTimers();
     });
 
     it("American AAdvantage appears in PROGRAM_TO_AIRLINE mapping", () => {

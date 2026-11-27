@@ -8,10 +8,11 @@
  *  1. Direct purchase from the airline (buy miles)
  *  2. Transfer from bank/credit-card points
  *
- * Self-contained — imports types only, no project dependencies.
+ * Running transfer bonuses come from data/transferBonuses.ts.
  */
 
 import { roundPrice } from "./roundPrice";
+import { TRANSFER_BONUSES, isPromoActive } from "@/data/transferBonuses";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -133,7 +134,7 @@ const PROGRAM_DATA: Record<string, ProgramAcquisitionData> = {
   "Qatar Privilege Club": {
     purchaseMileCostPer1000: 30,
     marketValueCents: 1.4,
-    transferPartnersFrom: ["Citi ThankYou", "Bilt Rewards", "Marriott Bonvoy"],
+    transferPartnersFrom: ["Citi ThankYou", "Capital One Miles", "Bilt Rewards", "Marriott Bonvoy"],
     transferRatios: { "Marriott Bonvoy": 0.333 },
   },
   "Cathay Pacific Asia Miles": {
@@ -213,6 +214,12 @@ const BANK_POINT_COST_CENTS: Record<string, number> = {
   "Brex Rewards":             1.5,
 };
 
+/** Names used here -> short names used in data/transferBonuses.ts */
+const BONUS_SOURCE_NAMES: Record<string, string> = {
+  "Chase Ultimate Rewards": "Chase UR",
+  "Amex Membership Rewards": "Amex MR",
+};
+
 // ---------------------------------------------------------------------------
 // Core engine
 // ---------------------------------------------------------------------------
@@ -263,13 +270,17 @@ export function calculateAcquisitionCost(
       source: program,
       costUsd: roundPrice(costUsd),
       costPer1000: data.purchaseMileCostPer1000,
-      note: "Direct purchase from airline (sale pricing)",
+      note: "Indicative purchase price, not a verified sale. Check the program's site.",
     });
   }
 
   // ── Path 2: Bank point transfers ─────────────────────────────────────
   for (const bank of data.transferPartnersFrom) {
-    const ratio = data.transferRatios?.[bank] ?? 1.0;
+    const from = BONUS_SOURCE_NAMES[bank] ?? bank;
+    const bonus = TRANSFER_BONUSES.find(
+      (b) => b.from === from && b.to === program && isPromoActive(b),
+    );
+    const ratio = bonus?.promoRatio ?? data.transferRatios?.[bank] ?? 1.0;
     const pointsNeeded = Math.ceil(milesNeeded / ratio);
     const costPerPointCents = BANK_POINT_COST_CENTS[bank];
 
@@ -289,7 +300,7 @@ export function calculateAcquisitionCost(
         ratio < 1
           ? `Transfer ratio ${Math.round(1 / ratio)}:1 (${Math.round(1 / ratio)} bank points = 1 mile)`
           : ratio > 1
-          ? `Transfer bonus ${Math.round((ratio - 1) * 100)}% (${ratio}× miles per point)`
+          ? `Transfer bonus ${Math.round((ratio - 1) * 100)}% (${ratio}× miles per point)${bonus?.promoValidUntil ? ` until ${bonus.promoValidUntil}` : ""}`
           : "1:1 transfer",
     });
   }

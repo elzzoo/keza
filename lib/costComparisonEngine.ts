@@ -48,6 +48,8 @@ export interface MilesOption {
 
   confidence: Confidence;         // HIGH / MEDIUM / LOW
   promoApplied?: string;
+  promoBonusPct?: number;         // running transfer bonus, e.g. 40
+  promoValidUntil?: string;       // ISO date, last day of that bonus
   explanation: string;     // e.g. "Flying Blue direct · 30 000 miles + $300 taxes"
   isBestDeal: boolean;     // true only on the cheapest option after deduplication
   chartSource: "REAL" | "ESTIMATE";

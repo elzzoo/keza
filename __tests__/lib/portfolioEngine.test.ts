@@ -27,6 +27,10 @@ const options = [aviosOpt, flyingBlueOpt]; // avios cheaper
 
 // ─── NO_PORTFOLIO ─────────────────────────────────────────────────────────────
 
+// Pinned after every dated transfer bonus: these cases assert base 1:1 ratios.
+beforeAll(() => jest.useFakeTimers().setSystemTime(new Date("2027-06-01T00:00:00Z")));
+afterAll(() => jest.useRealTimers());
+
 describe("NO_PORTFOLIO", () => {
   it("returns NO_PORTFOLIO when balances and bankPoints are empty objects", () => {
     const result = checkPortfolio(options, {}, {});

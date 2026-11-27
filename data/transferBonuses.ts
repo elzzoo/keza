@@ -8,9 +8,20 @@ export interface TransferBonusRecord {
   to: string;                 // destination program  e.g. "Flying Blue"
   baseRatio: number;          // 1.0 = 1:1,  1.25 = 25% bonus (1000 pts → 1250 miles)
   promoRatio?: number;        // active bonus ratio (overrides baseRatio)
-  promoValidUntil?: string;   // ISO date
+  promoValidUntil?: string;   // ISO date, last day included
+  promoSourceUrl?: string;    // where the bonus was checked
+  promoVerifiedAt?: string;   // ISO date of that check
   transferTime: string;       // "instant" | "1-3 days"
 }
+
+// Bonuses below were listed identically by four specialist trackers on
+// 2026-11-27 (upgradedpoints, awardwallet, travel-on-points, milesforfamily).
+// Not confirmed on the issuers' own sites (login required). Expired entries are
+// ignored automatically by getEffectiveRatio().
+const CHECKED = {
+  promoSourceUrl: "https://upgradedpoints.com/news/current-credit-card-transfer-bonuses/",
+  promoVerifiedAt: "2026-11-27",
+};
 
 export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   // Amex Membership Rewards
@@ -24,7 +35,7 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   // Chase Ultimate Rewards
   { from: "Chase UR", to: "United MileagePlus",      baseRatio: 1.0, transferTime: "instant" },
   { from: "Chase UR", to: "Flying Blue",             baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR", to: "British Airways Avios",   baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR", to: "British Airways Avios",   baseRatio: 1.0, promoRatio: 1.3, promoValidUntil: "2026-12-01", ...CHECKED, transferTime: "instant" },
   { from: "Chase UR", to: "Emirates Skywards",       baseRatio: 1.0, transferTime: "instant" },
   { from: "Chase UR", to: "JetBlue TrueBlue",        baseRatio: 1.0, transferTime: "instant" },
   { from: "Chase UR", to: "Southwest Rapid Rewards", baseRatio: 1.0, transferTime: "instant" },
@@ -36,7 +47,7 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Citi ThankYou", to: "Emirates Skywards",     baseRatio: 1.0, transferTime: "1-3 days" },
 
   // Capital One
-  { from: "Capital One Miles", to: "Flying Blue",          baseRatio: 1.0, transferTime: "instant" },
+  { from: "Capital One Miles", to: "Flying Blue",          baseRatio: 1.0, promoRatio: 1.2, promoValidUntil: "2026-11-30", ...CHECKED, transferTime: "instant" },
   { from: "Capital One Miles", to: "Turkish Miles&Smiles", baseRatio: 1.0, transferTime: "instant" },
   { from: "Capital One Miles", to: "Air Canada Aeroplan",  baseRatio: 1.0, transferTime: "instant" },
   { from: "Capital One Miles", to: "Emirates Skywards",    baseRatio: 1.0, transferTime: "instant" },
@@ -45,6 +56,8 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Capital One Miles", to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
   { from: "Capital One Miles", to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },
   { from: "Capital One Miles", to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
+
+  { from: "Capital One Miles", to: "Qatar Privilege Club", baseRatio: 1.0, promoRatio: 1.15, promoValidUntil: "2026-12-14", ...CHECKED, transferTime: "1-3 days" },
 
   // Singapore KrisFlyer (Amex, Chase, Citi, Capital One already added)
   { from: "Amex MR",          to: "Singapore KrisFlyer",  baseRatio: 1.0, transferTime: "instant" },
@@ -55,17 +68,17 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Amex MR",          to: "ANA Mileage Club",     baseRatio: 1.0, transferTime: "instant" },
 
   // LifeMiles (Avianca)
-  { from: "Amex MR",          to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR",          to: "LifeMiles",            baseRatio: 1.0, promoRatio: 1.1, promoValidUntil: "2026-12-16", ...CHECKED, transferTime: "instant" },
   { from: "Citi ThankYou",    to: "LifeMiles",            baseRatio: 1.0, transferTime: "1-3 days" },
   { from: "Brex Rewards",     to: "LifeMiles",            baseRatio: 1.0, transferTime: "instant" },
 
   // Iberia Avios Plus
   { from: "Amex MR",          to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR",         to: "Iberia Avios Plus",    baseRatio: 1.0, transferTime: "instant" },
+  { from: "Chase UR",         to: "Iberia Avios Plus",    baseRatio: 1.0, promoRatio: 1.3, promoValidUntil: "2026-12-01", ...CHECKED, transferTime: "instant" },
 
   // Virgin Atlantic Flying Club
-  { from: "Amex MR",          to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
-  { from: "Chase UR",         to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "instant" },
+  { from: "Amex MR",          to: "Virgin Atlantic Flying Club", baseRatio: 1.0, promoRatio: 1.3, promoValidUntil: "2026-11-30", ...CHECKED, transferTime: "instant" },
+  { from: "Chase UR",         to: "Virgin Atlantic Flying Club", baseRatio: 1.0, promoRatio: 1.4, promoValidUntil: "2026-12-30", ...CHECKED, transferTime: "instant" },
   { from: "Citi ThankYou",    to: "Virgin Atlantic Flying Club", baseRatio: 1.0, transferTime: "1-3 days" },
 
   // Air Canada Aeroplan (Chase UR — one of Chase's most valuable partners)
@@ -132,15 +145,16 @@ export const TRANSFER_BONUSES: TransferBonusRecord[] = [
   { from: "Bilt Rewards",     to: "Cathay Pacific Asia Miles",     baseRatio: 1.0, transferTime: "instant" },
 ];
 
-// Returns effective ratio (promo if set and not expired, else base).
+// True while the bonus is running. The end date is inclusive (until 23:59 UTC).
 // A promoRatio WITHOUT a promoValidUntil date is treated as indefinitely valid —
 // the caller must set promoValidUntil explicitly to enforce an expiry.
+export function isPromoActive(record: TransferBonusRecord, now: Date = new Date()): boolean {
+  if (!record.promoRatio) return false;
+  if (!record.promoValidUntil) return true;
+  return new Date(`${record.promoValidUntil.slice(0, 10)}T23:59:59.999Z`) >= now;
+}
+
+// Returns effective ratio (promo if active, else base).
 export function getEffectiveRatio(record: TransferBonusRecord): number {
-  if (record.promoRatio) {
-    // If an expiry is set, check it; if absent, treat the promo as active
-    if (!record.promoValidUntil || new Date(record.promoValidUntil) >= new Date()) {
-      return record.promoRatio;
-    }
-  }
-  return record.baseRatio;
+  return isPromoActive(record) ? record.promoRatio! : record.baseRatio;
 }

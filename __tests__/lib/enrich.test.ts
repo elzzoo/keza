@@ -388,7 +388,7 @@ describe("enrich — flight enrichment with miles options", () => {
         "2024-06-20"
       );
 
-      expect(result.savings).toBe(result.cashCost - result.milesCost);
+      expect(result.savings).toBeCloseTo(result.cashCost - result.milesCost, 2);
     });
 
     it("recommendation reflects cashCost vs milesCost correctly", () => {

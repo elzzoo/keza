@@ -388,6 +388,7 @@ export const GLOBAL_PROGRAMS: LoyaltyProgram[] = [
     taxProfile: "medium",
     transferPartnersFrom: [
       "Citi ThankYou",
+      "Capital One Miles",
       "Bilt Rewards",
       "Marriott Bonvoy",
     ],
